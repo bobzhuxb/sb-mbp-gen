@@ -1,5 +1,4 @@
 # Spring Boot + MyBatis Plus 代码生成器
-Spring Boot + MyBatis Plus生成器相关
 
 项目工程说明：
 
