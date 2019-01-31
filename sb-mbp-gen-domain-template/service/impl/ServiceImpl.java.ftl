@@ -48,7 +48,6 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     @Autowired
     private ${toFrom.toFromEntityType}Service ${toFrom.toFromEntityName}Service;
 	</#list>
-	
     <#list fromToList as fromTo>
 
     @Autowired
@@ -67,16 +66,23 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 			long ${entityName}Id = ${entityName}DTO.getId();
 			<#list fromToList as fromTo>
 			<#if fromTo.relationType == "OneToMany">
-			if (${entityName}DTO.get${fromTo.fromToEntityType}List() != null) {
-			</#if>
-			<#if fromTo.relationType == "OneToOne">
-			if (${entityName}DTO.get${fromTo.fromToEntityType}() != null) {
-			</#if>
+			if (${entityName}DTO.get${fromTo.fromToEntityUName}List() != null) {
 				// 清空${fromTo.fromToComment}列表
 				${fromTo.fromToEntityName}Mapper.deleteByMap(new HashMap<String, Object>() {{
 					put("${fromTo.fromColumnName}", ${entityName}Id);
 				}});
 			}
+			</#if>
+			<#if fromTo.relationType == "OneToOne">
+			if (${entityName}DTO.get${fromTo.fromToEntityUName}() != null) {
+			    if (${entityName}DTO.get${fromTo.fromToEntityUName}().getId() == null) {
+				    // 删除${fromTo.fromToComment}
+				    ${fromTo.fromToEntityName}Mapper.deleteByMap(new HashMap<String, Object>() {{
+					    put("${fromTo.fromColumnName}", ${entityName}Id);
+				    }});
+                }
+			}
+			</#if>
 			</#list>
 		}
         ${eentityName} ${entityName} = new ${eentityName}();
@@ -88,12 +94,12 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 		</#if>
 		<#list fromToList as fromTo>
 		<#if fromTo.relationType == "OneToMany">
-        if (${entityName}DTO.get${fromTo.fromToEntityType}List() != null) {
+        if (${entityName}DTO.get${fromTo.fromToEntityUName}List() != null) {
             // 新增${fromTo.fromToComment}
-            for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${entityName}DTO.get${fromTo.fromToEntityType}List()) {
+            for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${entityName}DTO.get${fromTo.fromToEntityUName}List()) {
                 ${fromTo.fromToEntityType} ${fromTo.fromToEntityName} = new ${fromTo.fromToEntityType}();
                 MyBeanUtil.copyNonNullProperties(${fromTo.fromToEntityName}DTO, ${fromTo.fromToEntityName});
-                ${fromTo.fromToEntityName}.set${eentityName}Id(${entityName}Id);
+                ${fromTo.fromToEntityName}.set${fromTo.toFromEntityUName}Id(${entityName}Id);
                 ${fromTo.fromToEntityName}.setInsertTime(${entityName}DTO.getInsertTime());
                 ${fromTo.fromToEntityName}.setUpdateTime(${entityName}DTO.getUpdateTime());
                 ${fromTo.fromToEntityName}Mapper.insert(${fromTo.fromToEntityName});
@@ -101,15 +107,21 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         }
 		</#if>
 		<#if fromTo.relationType == "OneToOne">
-        if (${entityName}DTO.get${fromTo.fromToEntityType}() != null) {
-            // 新增${fromTo.fromToComment}
-            ${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO = ${entityName}DTO.get${fromTo.fromToEntityType}();
+        if (${entityName}DTO.get${fromTo.fromToEntityUName}() != null) {
+            // 新增或更新${fromTo.fromToComment}
+            ${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO = ${entityName}DTO.get${fromTo.fromToEntityUName}();
             ${fromTo.fromToEntityType} ${fromTo.fromToEntityName} = new ${fromTo.fromToEntityType}();
             MyBeanUtil.copyNonNullProperties(${fromTo.fromToEntityName}DTO, ${fromTo.fromToEntityName});
-            ${fromTo.fromToEntityName}.set${eentityName}Id(${entityName}Id);
+            ${fromTo.fromToEntityName}.set${fromTo.toFromEntityUName}Id(${entityName}Id);
             ${fromTo.fromToEntityName}.setInsertTime(${entityName}DTO.getInsertTime());
             ${fromTo.fromToEntityName}.setUpdateTime(${entityName}DTO.getUpdateTime());
-            ${fromTo.fromToEntityName}Mapper.insert(${fromTo.fromToEntityName});
+			if (${entityName}DTO.get${fromTo.fromToEntityUName}().getId() == null) {
+                // 新增
+                ${fromTo.fromToEntityName}Mapper.insert(${fromTo.fromToEntityName});
+            } else {
+                // 更新
+                ${fromTo.fromToEntityName}Mapper.updateById(${fromTo.fromToEntityName});
+            }
         }
 		</#if>
 		</#list>
@@ -271,11 +283,11 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     public String getJoinSql(${eentityName}Criteria criteria) {
         String joinSubSql = "";
 		<#list toFromList as toFrom>
-        if (criteria.get${toFrom.toFromEntityType}() != null) {
+        if (criteria.get${toFrom.toFromEntityUName}() != null) {
             joinSubSql += " left join " + ${toFrom.toFromEntityType}.getTableName() + " on "
                     + ${toFrom.toFromEntityType}.getTableName() + ".id = " + ${eentityName}.getTableName()
-                    + "." + ${toFrom.toFromEntityType}.getTableName() + "_id";
-            joinSubSql += ${toFrom.toFromEntityName}Service.getJoinSql(criteria.get${toFrom.toFromEntityType}());
+                    + ".${toFrom.fromColumnName}";
+            joinSubSql += ${toFrom.toFromEntityName}Service.getJoinSql(criteria.get${toFrom.toFromEntityUName}());
         }
 		</#list>
         return joinSubSql;
@@ -320,7 +332,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                     MyBeanUtil.copyNonNullProperties(${fromTo.fromToEntityName}, ${fromTo.fromToEntityName}DTO);
                     return ${fromTo.fromToEntityName}DTO;
                 }).collect(Collectors.toList());
-                ${entityName}DTO.set${fromTo.fromToEntityType}List(${fromTo.fromToEntityName}List);
+                ${entityName}DTO.set${fromTo.fromToEntityUName}List(${fromTo.fromToEntityName}List);
                 // 继续追查
                 if (${fromTo.fromToEntityName}List != null && ${fromTo.fromToEntityName}List.size() > 0) {
 			</#if>
@@ -335,7 +347,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                     ${fromTo.fromToEntityName}DTO = new ${fromTo.fromToEntityType}DTO();
                     MyBeanUtil.copyNonNullProperties(${fromTo.fromToEntityName}, ${fromTo.fromToEntityName}DTO);
                 }
-                ${entityName}DTO.set${fromTo.fromToEntityType}(${fromTo.fromToEntityName}DTO);
+                ${entityName}DTO.set${fromTo.fromToEntityUName}(${fromTo.fromToEntityName}DTO);
                 // 继续追查
                 if (${fromTo.fromToEntityName}DTO != null) {
 			</#if>
@@ -368,7 +380,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 			<#list toFromList as toFrom>
             if (associationNameList.contains("${toFrom.toFromEntityName}")) {
 			    // 获取${toFrom.toFromComment}
-                Long ${toFrom.toFromEntityName}Id = ${entityName}DTO.get${toFrom.toFromEntityType}Id();
+                Long ${toFrom.toFromEntityName}Id = ${entityName}DTO.get${toFrom.toFromEntityUName}Id();
                 if (${toFrom.toFromEntityName}Id == null) {
                     return ${entityName}DTO;
                 }
@@ -382,7 +394,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                 BaseCriteria ${toFrom.toFromEntityName}Criteria = new BaseCriteria();
                 ${toFrom.toFromEntityName}Criteria.setAssociationNameList(associationName2List);
                 Optional<${toFrom.toFromEntityType}DTO> ${toFrom.toFromEntityName}Optional = ${toFrom.toFromEntityName}Service.findOne(${toFrom.toFromEntityName}Id, ${toFrom.toFromEntityName}Criteria);
-                ${entityName}DTO.set${toFrom.toFromEntityType}(${toFrom.toFromEntityName}Optional.isPresent() ? ${toFrom.toFromEntityName}Optional.get() : null);
+                ${entityName}DTO.set${toFrom.toFromEntityUName}(${toFrom.toFromEntityName}Optional.isPresent() ? ${toFrom.toFromEntityName}Optional.get() : null);
             }
 			</#list>
         }

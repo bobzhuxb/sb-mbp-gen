@@ -25,6 +25,7 @@ public class ${eentityName} extends BaseDomain {
     </#list>
 	<#list toFromList as toFrom>
 
+    @ApiModelProperty(value = "${toFrom.toFromComment}ID")
     private Long ${toFrom.toFromEntityName}Id;    // ${toFrom.toFromComment}ID
 	</#list>
 
@@ -47,11 +48,11 @@ public class ${eentityName} extends BaseDomain {
     </#list>
 	<#list toFromList as toFrom>
 
-    public Long get${toFrom.toFromEntityType}Id() {
+    public Long get${toFrom.toFromEntityUName}Id() {
         return ${toFrom.toFromEntityName}Id;
     }
 
-    public void set${toFrom.toFromEntityType}Id(Long ${toFrom.toFromEntityName}Id) {
+    public void set${toFrom.toFromEntityUName}Id(Long ${toFrom.toFromEntityName}Id) {
         this.${toFrom.toFromEntityName}Id = ${toFrom.toFromEntityName}Id;
     }
 	</#list>
@@ -91,7 +92,7 @@ public class ${eentityName} extends BaseDomain {
             ", ${field.camelName}=<#if field.javaType == 'String'>'</#if>" + get${field.ccamelName}()<#if field.javaType == 'String'> + "'"</#if> +
             </#list>
 			<#list toFromList as toFrom>
-            ", ${toFrom.toFromEntityName}Id=" + get${toFrom.toFromEntityType}Id() +
+            ", ${toFrom.toFromEntityName}Id=" + get${toFrom.toFromEntityUName}Id() +
 			</#list>
             "}";
     }

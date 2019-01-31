@@ -79,28 +79,33 @@ public class JdlParseUtil {
                     // relationship内容行
                     relationshipDTO = new RelationshipDTO();
                     relationshipDTO.setRelationType(currentRelationType);
-                    Pattern pattern = Pattern.compile("(\\w+)\\{(\\w+)\\}\\s+to\\s+(\\w+)");    // 匹配的模式
+                    Pattern pattern = Pattern.compile("(\\w+)\\{(\\w+)\\|(\\w+)\\}\\s+to\\s+(\\w+)");    // 匹配的模式
                     Matcher matcher = pattern.matcher(jdlLine);
                     if (matcher.find()) {
                         // relationship行匹配验证成功
                         String toFromEntityType = matcher.group(1);
-                        String fromToEntityType = matcher.group(3);
+                        String toFromEntityName = matcher.group(2);
+                        String fromToEntityName = matcher.group(3);
+                        String fromToEntityType = matcher.group(4);
                         relationshipDTO.setToFromEntityType(toFromEntityType);
+                        relationshipDTO.setToFromEntityName(toFromEntityName);
+                        relationshipDTO.setToFromEntityUName(StringUtil.camelToUpperFirst(toFromEntityName));
                         relationshipDTO.setToFromEntityTable(StringUtil.camelToUnderline(toFromEntityType));
-                        relationshipDTO.setFromToEntityName(matcher.group(2));
-                        relationshipDTO.setFromToEntityType(matcher.group(3));
+                        relationshipDTO.setFromToEntityType(fromToEntityType);
+                        relationshipDTO.setFromToEntityName(fromToEntityName);
+                        relationshipDTO.setFromToEntityUName(StringUtil.camelToUpperFirst(fromToEntityName));
                         relationshipDTO.setFromToEntityTable(StringUtil.camelToUnderline(fromToEntityType));
-                        relationshipDTO.setToFromEntityName(
-                                toFromEntityType.substring(0, 1).toLowerCase() + toFromEntityType.substring(1));
-                        relationshipDTO.setFromColumnName(StringUtil.camelToUnderline(matcher.group(1)) + "_id");
+                        relationshipDTO.setFromColumnName(StringUtil.camelToUnderline(toFromEntityName) + "_id");
                     }
                     // 找到内容行上面的注释
                     Pattern patternComment = Pattern.compile("//\\s+([^\\{\\}]+)\\{([^\\{\\}]+)\\}");   // 匹配的模式
                     Matcher matcherComment = patternComment.matcher(currentComment);
                     if (matcherComment.find()) {
                         // relationship的注释行匹配验证成功
-                        relationshipDTO.setToFromComment(matcherComment.group(1));
-                        relationshipDTO.setFromToComment(matcherComment.group(2));
+                        String toFromComment = matcherComment.group(1);
+                        String fromToComment = matcherComment.group(2);
+                        relationshipDTO.setToFromComment(toFromComment);
+                        relationshipDTO.setFromToComment(fromToComment);
                     }
                     relationshipDTOList.add(relationshipDTO);
                     // 使用过一次comment就置空

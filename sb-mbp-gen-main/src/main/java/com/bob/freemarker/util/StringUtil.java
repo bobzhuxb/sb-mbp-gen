@@ -52,4 +52,16 @@ public class StringUtil {
         return underlineName;
     }
 
+    /**
+     * 驼峰标识转首字母大写
+     * @param camelName 驼峰标识
+     * @return 首字母大写的驼峰标识
+     */
+    public static String camelToUpperFirst(String camelName) {
+        if (null == camelName || "".equals(camelName)) {
+            return camelName;
+        }
+        return camelName.substring(0, 1).toUpperCase() + camelName.substring(1);
+    }
+
 }

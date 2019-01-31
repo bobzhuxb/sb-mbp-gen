@@ -52,31 +52,31 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
 	</#list>
 	<#list toFromList as toFrom>
 
-    public LongFilter get${toFrom.toFromEntityType}Id() {
+    public LongFilter get${toFrom.toFromEntityUName}Id() {
         return ${toFrom.toFromEntityName}Id;
     }
 	
-	public void set${toFrom.toFromEntityType}Id(LongFilter ${toFrom.toFromEntityName}Id) {
+	public void set${toFrom.toFromEntityUName}Id(LongFilter ${toFrom.toFromEntityName}Id) {
         this.${toFrom.toFromEntityName}Id = ${toFrom.toFromEntityName}Id;
     }
 	</#list>
 	<#list fromToList as fromTo>
 
-    public LongFilter get${fromTo.fromToEntityType}Id() {
+    public LongFilter get${fromTo.fromToEntityUName}Id() {
         return ${fromTo.fromToEntityName}Id;
     }
 	
-	public void set${fromTo.fromToEntityType}Id(LongFilter ${fromTo.fromToEntityName}Id) {
+	public void set${fromTo.fromToEntityUName}Id(LongFilter ${fromTo.fromToEntityName}Id) {
         this.${fromTo.fromToEntityName}Id = ${fromTo.fromToEntityName}Id;
     }
 	</#list>
 	<#list toFromList as toFrom>
 
-    public ${toFrom.toFromEntityType}Criteria get${toFrom.toFromEntityType}() {
+    public ${toFrom.toFromEntityType}Criteria get${toFrom.toFromEntityUName}() {
         return ${toFrom.toFromEntityName};
     }
 
-    public void set${toFrom.toFromEntityType}(${toFrom.toFromEntityType}Criteria ${toFrom.toFromEntityName}) {
+    public void set${toFrom.toFromEntityUName}(${toFrom.toFromEntityType}Criteria ${toFrom.toFromEntityName}) {
         this.${toFrom.toFromEntityName} = ${toFrom.toFromEntityName};
     }
 	</#list>

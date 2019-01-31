@@ -59,41 +59,41 @@ public class ${eentityName}DTO extends BaseDTO {
 	</#list>
 	<#list toFromList as toFrom>
 
-    public Long get${toFrom.toFromEntityType}Id() {
+    public Long get${toFrom.toFromEntityUName}Id() {
         return ${toFrom.toFromEntityName}Id;
     }
 
-    public void set${toFrom.toFromEntityType}Id(Long ${toFrom.toFromEntityName}Id) {
+    public void set${toFrom.toFromEntityUName}Id(Long ${toFrom.toFromEntityName}Id) {
         this.${toFrom.toFromEntityName}Id = ${toFrom.toFromEntityName}Id;
     }
 	</#list>
 	<#list toFromList as toFrom>
 
-    public ${toFrom.toFromEntityType}DTO get${toFrom.toFromEntityType}() {
+    public ${toFrom.toFromEntityType}DTO get${toFrom.toFromEntityUName}() {
         return ${toFrom.toFromEntityName};
     }
 
-    public void set${toFrom.toFromEntityType}(${toFrom.toFromEntityType}DTO ${toFrom.toFromEntityName}) {
+    public void set${toFrom.toFromEntityUName}(${toFrom.toFromEntityType}DTO ${toFrom.toFromEntityName}) {
         this.${toFrom.toFromEntityName} = ${toFrom.toFromEntityName};
     }
 	</#list>
 	<#list fromToList as fromTo>
 
 	<#if fromTo.relationType == "OneToMany">
-    public List<${fromTo.fromToEntityType}DTO> get${fromTo.fromToEntityType}List() {
+    public List<${fromTo.fromToEntityType}DTO> get${fromTo.fromToEntityUName}List() {
         return ${fromTo.fromToEntityName}List;
     }
 
-    public void set${fromTo.fromToEntityType}List(List<${fromTo.fromToEntityType}DTO> ${fromTo.fromToEntityName}List) {
+    public void set${fromTo.fromToEntityUName}List(List<${fromTo.fromToEntityType}DTO> ${fromTo.fromToEntityName}List) {
         this.${fromTo.fromToEntityName}List = ${fromTo.fromToEntityName}List;
     }
 	</#if>
 	<#if fromTo.relationType == "OneToOne">
-    public ${fromTo.fromToEntityType}DTO get${fromTo.fromToEntityType}() {
+    public ${fromTo.fromToEntityType}DTO get${fromTo.fromToEntityUName}() {
         return ${fromTo.fromToEntityName};
     }
 
-    public void set${fromTo.fromToEntityType}(${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}) {
+    public void set${fromTo.fromToEntityUName}(${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}) {
         this.${fromTo.fromToEntityName} = ${fromTo.fromToEntityName};
     }
 	</#if>
@@ -128,7 +128,7 @@ public class ${eentityName}DTO extends BaseDTO {
             ", ${field.camelName}=<#if field.javaType == 'String'>'</#if>" + get${field.ccamelName}()<#if field.javaType == 'String'> + "'"</#if> +
             </#list>
 			<#list toFromList as toFrom>
-			", ${toFrom.toFromEntityName}Id=" + get${toFrom.toFromEntityType}Id() +
+			", ${toFrom.toFromEntityName}Id=" + get${toFrom.toFromEntityUName}Id() +
 			</#list>
             "}";
     }
