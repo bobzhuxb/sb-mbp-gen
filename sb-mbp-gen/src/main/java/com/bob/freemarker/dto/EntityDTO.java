@@ -1,0 +1,55 @@
+package com.bob.freemarker.dto;
+
+import java.util.List;
+
+/**
+ * 通用实体
+ */
+public class EntityDTO {
+
+    private String entityComment;   // 类注释
+    private String eentityName;     // 首字母大写（驼峰标识）的实体名称
+    private String entityUrl;       // 实体在URL中的名称
+    private String tableName;       // 实体对应的数据库表名
+    private List<EntityFieldDTO> fieldList;     // 域（成员变量）
+
+    public String getEntityComment() {
+        return entityComment;
+    }
+
+    public void setEntityComment(String entityComment) {
+        this.entityComment = entityComment;
+    }
+
+    public String getEentityName() {
+        return eentityName;
+    }
+
+    public void setEentityName(String eentityName) {
+        this.eentityName = eentityName;
+    }
+
+    public String getEntityUrl() {
+        return entityUrl;
+    }
+
+    public void setEntityUrl(String entityUrl) {
+        this.entityUrl = entityUrl;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public List<EntityFieldDTO> getFieldList() {
+        return fieldList;
+    }
+
+    public void setFieldList(List<EntityFieldDTO> fieldList) {
+        this.fieldList = fieldList;
+    }
+}

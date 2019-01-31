@@ -1,0 +1,242 @@
+package com.bob.sm.util;
+
+import com.bob.sm.annotation.RestClassAllow;
+import com.bob.sm.annotation.RestFieldAllow;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+/**
+ * Bean操作工具类
+ */
+public class MyBeanUtil {
+
+    /**
+     * 拷贝对象的非空属性
+     * @param src
+     * @param target
+     */
+    public static void copyNonNullProperties(Object src, Object target) {
+        BeanUtils.copyProperties(src, target, getNullPropertyNames(src));
+    }
+
+    /**
+     * 拷贝对象的非空属性
+     * @param src
+     * @param target
+     * @param exceptPropertyNames 排除的属性（不拷贝）
+     */
+    public static void copyNonNullProperties(Object src, Object target, List<String> exceptPropertyNames) {
+        List<String> notCopyPropertyNameList = Arrays.stream(getNullPropertyNames(src)).collect(Collectors.toList());
+        for (String exceptPropertyName : exceptPropertyNames) {
+            if (!notCopyPropertyNameList.contains(exceptPropertyName)) {
+                notCopyPropertyNameList.add(exceptPropertyName);
+            }
+        }
+        BeanUtils.copyProperties(src, target, notCopyPropertyNameList.stream().toArray(String[]::new));
+    }
+
+    /**
+     * 获取对象的值为null的属性
+     * @param source
+     * @return
+     */
+    public static String[] getNullPropertyNames(Object source) {
+        final BeanWrapper src = new BeanWrapperImpl(source);
+        java.beans.PropertyDescriptor[] pds = src.getPropertyDescriptors();
+
+        Set<String> emptyNames = new HashSet<>();
+        for(java.beans.PropertyDescriptor pd : pds) {
+            try {
+                Object srcValue = src.getPropertyValue(pd.getName());
+                if (srcValue == null) emptyNames.add(pd.getName());
+            } catch (Exception e) {
+                continue;
+            }
+        }
+        String[] result = new String[emptyNames.size()];
+        return emptyNames.toArray(result);
+    }
+
+    /**
+     * 根据属性名获取属性值
+     * @param fieldName
+     * @param object
+     * @return
+     */
+    public static Object getFieldValueByFieldName(String fieldName, Object object) {
+        try {
+            Field field = object.getClass().getDeclaredField(fieldName);
+            // 设置对象的访问权限，保证对private的属性的访问
+            field.setAccessible(true);
+            return field.get(object);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 根据属性名设置属性值
+     * @param fieldName
+     * @param value
+     * @param object
+     * @return
+     */
+    public static void setFieldValueByFieldName(String fieldName, Object value, Object object) {
+        try {
+            // 获取属性（使用apache的包可以获取包括父类的属性）
+            Field field = FieldUtils.getField(object.getClass(), fieldName, true);
+            // 设置对象的访问权限，保证对private的属性的访问
+            if (field != null) {
+                field.setAccessible(true);
+                field.set(object, value);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 根据注解名设置属性值
+     * @param annotationClass
+     * @param value
+     * @param object
+     * @return
+     */
+    public static<T extends Annotation> Object setFieldValueByAnnotationName(Class<T> annotationClass, Object value, Object object) {
+        try {
+            Field[] fields = object.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                T annotation = field.getAnnotation(annotationClass);
+                if (annotation != null) {
+                    // 设置对象的访问权限，保证对private的属性的访问
+                    field.setAccessible(true);
+                    field.set(object, value);
+                }
+            }
+            return object;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 根据注解名和属性设置属性值
+     * @param annotationClass
+     * @param defaultValue
+     * @param object
+     * @return
+     */
+    public static <T extends Annotation> Object setFieldValueByAnnotationNameAttr(Class<T> annotationClass, String attrName, Object defaultValue, Object object) {
+        try {
+            Field[] fields = object.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                T annotation = field.getAnnotation(annotationClass);
+                if (annotation != null) {
+                    // 设置对象的访问权限，保证对private的属性的访问
+                    field.setAccessible(true);
+                    Object value = field.get(object);
+                    if (value == null) {
+                        Method annotationMethod = annotation.annotationType().getDeclaredMethod(attrName);
+                        if (annotationMethod != null) {
+                            value = annotationMethod.invoke(annotation);
+                        } else {
+                            value = defaultValue;
+                        }
+                    }
+                    switch (field.getGenericType().toString()) {
+                        case "class java.lang.String":
+                            field.set(object, value.toString());
+                            break;
+                        case "class java.lang.Integer":
+                            field.set(object, Integer.parseInt(value.toString()));
+                            break;
+                        case "class java.lang.Double":
+                            field.set(object, Double.parseDouble(value.toString()));
+                            break;
+                        case "class java.lang.Boolean":
+                            field.set(object, new Boolean(value.toString()));
+                            break;
+                        default:
+                            field.set(object, value);
+                            break;
+                    }
+                }
+            }
+            return object;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 根据get/set许可屏蔽相关属性
+     * @param toValue
+     * @param object
+     * @return
+     */
+    public static <T extends Annotation> Object setFieldValueByRestFieldAllow(String attrName, Object toValue, Object object) {
+        try {
+            Field[] fields = object.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                RestFieldAllow annotation = field.getAnnotation(RestFieldAllow.class);
+                if (annotation != null) {
+                    Method annotationMethod = annotation.annotationType().getDeclaredMethod(attrName);
+                    if (annotationMethod != null) {
+                        Object annotationValue = annotationMethod.invoke(annotation);
+                        if (annotationValue instanceof Boolean && !(Boolean)annotationValue) {
+                            // 设置对象的访问权限，保证对private的属性的访问
+                            field.setAccessible(true);
+                            // 不允许访问或设置，设置为固定值
+                            field.set(object, toValue);
+                        }
+                    }
+                }
+            }
+            return object;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 根据类的get/set许可屏蔽所有属性
+     * @param toValue
+     * @param object
+     * @return
+     */
+    public static <T extends Annotation> Object setAllFieldValue(String attrName, Object toValue, Object object) {
+        // 关闭类的所有属性设置
+        try {
+            RestClassAllow annotation = object.getClass().getAnnotation(RestClassAllow.class);
+            if (annotation != null) {
+                Method annotationMethod = annotation.annotationType().getDeclaredMethod(attrName);
+                if (annotationMethod != null) {
+                    Object annotationValue = annotationMethod.invoke(annotation);
+                    if (annotationValue instanceof Boolean && !(Boolean) annotationValue) {
+                        Field[] fields = object.getClass().getDeclaredFields();
+                        for (Field field : fields) {
+                            // 设置对象的访问权限，保证对private的属性的访问
+                            field.setAccessible(true);
+                            field.set(object, toValue);
+                        }
+                    }
+                }
+            }
+            return object;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+}

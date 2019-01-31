@@ -1,0 +1,53 @@
+// 会议
+entity SmMeeting {
+    // 会议编号
+    meetingNo String,
+    // 会议名称
+    name String
+}
+
+// 会议详细
+entity SmMeetingDetail {
+    // 详细描述
+    detailInfo String,
+    // 详情浏览次数
+    detailViews Integer
+}
+
+// 会议日程
+entity SmMeetingSchedule {
+    // 开始日期
+    startTime String,
+    // 结束日期
+    entTime String,
+    // 内容
+    content String
+}
+
+// 会议嘉宾
+entity SmMeetingGuest {
+    // 姓名
+    name String,
+    // 描述
+    descr String
+}
+
+// 会议嘉宾照片
+entity SmMeetingGuestPhoto {
+    // 照片相对路径
+    relativePath String
+}
+
+relationship OneToOne {
+    // 会议{会议详情}
+	SmMeeting{smMeetingDetail} to SmMeetingDetail
+}
+
+relationship OneToMany {
+    // 会议{会议日程}
+	SmMeeting{smMeetingSchedule} to SmMeetingSchedule,
+    // 会议{会议嘉宾}
+	SmMeeting{smMeetingGuest} to SmMeetingGuest
+    // 会议嘉宾{嘉宾照片}
+	SmMeetingGuest{smMeetingGuestPhoto} to SmMeetingGuestPhoto
+}
