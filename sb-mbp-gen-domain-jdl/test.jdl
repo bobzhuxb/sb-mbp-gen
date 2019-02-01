@@ -1,7 +1,15 @@
+// 工作人员
+entity SmPerson {
+    // 姓名
+    name String
+    // 手机号
+    cell String
+}
+
 // 会议
 entity SmMeeting {
     // 会议编号
-    meetingNo String,
+    meetingNo String
     // 会议名称
     name String
 }
@@ -9,7 +17,7 @@ entity SmMeeting {
 // 会议详细
 entity SmMeetingDetail {
     // 详细描述
-    detailInfo String,
+    detailInfo String
     // 详情浏览次数
     detailViews Integer
 }
@@ -17,9 +25,9 @@ entity SmMeetingDetail {
 // 会议日程
 entity SmMeetingSchedule {
     // 开始日期
-    startTime String,
+    startTime String
     // 结束日期
-    entTime String,
+    entTime String
     // 内容
     content String
 }
@@ -27,7 +35,7 @@ entity SmMeetingSchedule {
 // 会议嘉宾
 entity SmMeetingGuest {
     // 姓名
-    name String,
+    name String
     // 描述
     descr String
 }
@@ -40,14 +48,18 @@ entity SmMeetingGuestPhoto {
 
 relationship OneToOne {
     // 会议{会议详情}
-	SmMeeting{smMeetingDetail} to SmMeetingDetail
+	SmMeeting{smMeetingDetail} to SmMeetingDetail{smMeeting}
 }
 
 relationship OneToMany {
+    // 组织者{会议}
+	SmPerson{asmMeeting} to SmMeeting{organizer}
+    // 联系人{会议}
+	SmPerson{bsmMeeting} to SmMeeting{contractor}
     // 会议{会议日程}
-	SmMeeting{smMeetingSchedule} to SmMeetingSchedule,
+	SmMeeting{smMeetingSchedule} to SmMeetingSchedule{smMeeting}
     // 会议{会议嘉宾}
-	SmMeeting{smMeetingGuest} to SmMeetingGuest
+	SmMeeting{smMeetingGuest} to SmMeetingGuest{smMeeting}
     // 会议嘉宾{嘉宾照片}
-	SmMeetingGuest{smMeetingGuestPhoto} to SmMeetingGuestPhoto
+	SmMeetingGuest{smMeetingGuestPhoto} to SmMeetingGuestPhoto{smMeetingGuest}
 }

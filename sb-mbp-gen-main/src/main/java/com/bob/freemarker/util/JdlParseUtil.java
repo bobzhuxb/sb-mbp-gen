@@ -79,14 +79,14 @@ public class JdlParseUtil {
                     // relationship内容行
                     relationshipDTO = new RelationshipDTO();
                     relationshipDTO.setRelationType(currentRelationType);
-                    Pattern pattern = Pattern.compile("(\\w+)\\{(\\w+)\\|(\\w+)\\}\\s+to\\s+(\\w+)");    // 匹配的模式
+                    Pattern pattern = Pattern.compile("(\\w+)\\{(\\w+)\\}\\s+to\\s+(\\w+)\\{(\\w+)\\}");    // 匹配的模式
                     Matcher matcher = pattern.matcher(jdlLine);
                     if (matcher.find()) {
                         // relationship行匹配验证成功
                         String toFromEntityType = matcher.group(1);
-                        String toFromEntityName = matcher.group(2);
-                        String fromToEntityName = matcher.group(3);
-                        String fromToEntityType = matcher.group(4);
+                        String fromToEntityName = matcher.group(2);
+                        String fromToEntityType = matcher.group(3);
+                        String toFromEntityName = matcher.group(4);
                         relationshipDTO.setToFromEntityType(toFromEntityType);
                         relationshipDTO.setToFromEntityName(toFromEntityName);
                         relationshipDTO.setToFromEntityUName(StringUtil.camelToUpperFirst(toFromEntityName));

@@ -23,7 +23,7 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
 	</#list>
 	<#list fromToList as fromTo>
 
-    private LongFilter ${fromTo.fromToEntityName}Id;    // ${fromTo.fromToComment}ID
+    private ${fromTo.fromToEntityType}Criteria ${fromTo.fromToEntityName}List;    // ${fromTo.fromToComment}
 	</#list>
 	<#list toFromList as toFrom>
 
@@ -62,12 +62,12 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
 	</#list>
 	<#list fromToList as fromTo>
 
-    public LongFilter get${fromTo.fromToEntityUName}Id() {
-        return ${fromTo.fromToEntityName}Id;
+    public ${fromTo.fromToEntityType}Criteria get${fromTo.fromToEntityUName}List() {
+        return ${fromTo.fromToEntityName}List;
     }
 	
-	public void set${fromTo.fromToEntityUName}Id(LongFilter ${fromTo.fromToEntityName}Id) {
-        this.${fromTo.fromToEntityName}Id = ${fromTo.fromToEntityName}Id;
+	public void set${fromTo.fromToEntityUName}List(${fromTo.fromToEntityType}Criteria ${fromTo.fromToEntityName}List) {
+        this.${fromTo.fromToEntityName}List = ${fromTo.fromToEntityName}List;
     }
 	</#list>
 	<#list toFromList as toFrom>
