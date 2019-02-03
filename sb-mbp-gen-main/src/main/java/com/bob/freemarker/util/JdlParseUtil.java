@@ -91,10 +91,12 @@ public class JdlParseUtil {
                         relationshipDTO.setToFromEntityName(toFromEntityName);
                         relationshipDTO.setToFromEntityUName(StringUtil.camelToUpperFirst(toFromEntityName));
                         relationshipDTO.setToFromEntityTable(StringUtil.camelToUnderline(toFromEntityType));
+                        relationshipDTO.setToFromEntityUrl(StringUtil.camelToCenterline(toFromEntityType));
                         relationshipDTO.setFromToEntityType(fromToEntityType);
                         relationshipDTO.setFromToEntityName(fromToEntityName);
                         relationshipDTO.setFromToEntityUName(StringUtil.camelToUpperFirst(fromToEntityName));
                         relationshipDTO.setFromToEntityTable(StringUtil.camelToUnderline(fromToEntityType));
+                        relationshipDTO.setFromToEntityUrl(StringUtil.camelToCenterline(fromToEntityType));
                         relationshipDTO.setFromColumnName(StringUtil.camelToUnderline(toFromEntityName) + "_id");
                     }
                     // 找到内容行上面的注释

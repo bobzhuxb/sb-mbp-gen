@@ -6,7 +6,7 @@ import java.util.List;
 
 public class BaseCriteria {
 
-    private NothingFilter doNothing;    // 无任何操作
+    private NothingFilter nothing;    // 无任何操作
 
     private LongFilter operateUserId;    // 操作者用户ID
 
@@ -18,12 +18,12 @@ public class BaseCriteria {
 
     private List<String> associationNameList;   // 关联属性获取（列出的属性都会关联查询）
 
-    public NothingFilter getDoNothing() {
-        return doNothing;
+    public NothingFilter getNothing() {
+        return nothing;
     }
 
-    public void setDoNothing(NothingFilter doNothing) {
-        this.doNothing = doNothing;
+    public void setNothing(NothingFilter nothing) {
+        this.nothing = nothing;
     }
 
     public LongFilter getOperateUserId() {

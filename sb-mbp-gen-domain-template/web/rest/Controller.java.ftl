@@ -148,7 +148,7 @@ public class ${eentityName}Controller {
             @ApiImplicitParam(name="${field.camelName}.equals",value="${field.comment}"),
 			</#list>
 			<#list toFromList as toFrom>
-			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals",value="关联的${toFrom.toFromComment}"),
+			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals",value="关联的${toFrom.toFromComment}，?对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
 			</#list>
     })
     @GetMapping("/${entityUrl}-all")
@@ -174,7 +174,7 @@ public class ${eentityName}Controller {
             @ApiImplicitParam(name="${field.camelName}.equals",value="${field.comment}"),
 			</#list>
 			<#list toFromList as toFrom>
-			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals",value="关联的${toFrom.toFromComment}"),
+			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals",value="关联的${toFrom.toFromComment}，?对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
 			</#list>
     })
     @GetMapping("/${entityUrl}")
@@ -196,7 +196,7 @@ public class ${eentityName}Controller {
             @ApiImplicitParam(name="${field.camelName}.equals",value="${field.comment}"),
 			</#list>
 			<#list toFromList as toFrom>
-			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals",value="关联的${toFrom.toFromComment}"),
+			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals",value="关联的${toFrom.toFromComment}，?对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
 			</#list>
     })
     @GetMapping("/${entityUrl}-count")
