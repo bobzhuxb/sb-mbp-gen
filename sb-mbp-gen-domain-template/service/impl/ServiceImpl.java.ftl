@@ -173,13 +173,16 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     @Transactional(readOnly = true)
     public List<${eentityName}DTO> findAll(${eentityName}Criteria criteria) {
         log.debug("Service ==> 查询所有${eentityName}DTO {}", criteria);
-        Wrapper<${eentityName}> wrapper = new MbpUtil().getWrapper(null, criteria, ${eentityName}.class);
+        // 表对应的序号Map
+        Map<String, Integer> tableIndexMap = new HashMap<>();
+        String dataQuerySql = getDataQuerySql(criteria, tableIndexMap);
+        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap);
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(wrapper, criteria);
         if (!dataFilterPass) {
             return new ArrayList<>();
         }
-        return baseMapper.joinSelectList(getDataQuerySql(criteria), wrapper).stream()
+        return baseMapper.joinSelectList(dataQuerySql, wrapper).stream()
                 .map(${eentityName} -> {return doConvert(${eentityName}, criteria);}).collect(Collectors.toList());
     }
 
@@ -193,15 +196,19 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     public IPage<${eentityName}DTO> findPage(${eentityName}Criteria criteria, MbpPage pageable) {
         log.debug("Service ==> 分页查询${eentityName}DTO {}, {}", criteria, pageable);
         Page<${eentityName}> pageQuery = new Page<>(pageable.getCurrent(), pageable.getSize());
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class);
+        // 表对应的序号Map
+        Map<String, Integer> tableIndexMap = new HashMap<>();
+        String dataQuerySql = getDataQuerySql(criteria, tableIndexMap);
+        String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
+        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap);
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(wrapper, criteria);
         if (!dataFilterPass) {
             return MbpPage.empty();
         }
-        IPage<${eentityName}DTO> pageResult = baseMapper.joinSelectPage(pageQuery, getDataQuerySql(criteria), wrapper)
+        IPage<${eentityName}DTO> pageResult = baseMapper.joinSelectPage(pageQuery, dataQuerySql, wrapper)
                     .convert(${entityName} -> {return doConvert(${entityName}, criteria);});
-        int totalCount = baseMapper.joinSelectCount(getCountQuerySql(criteria), wrapper);
+        int totalCount = baseMapper.joinSelectCount(countQuerySql, wrapper);
         pageResult.setTotal((long)totalCount);
         return pageResult;
     }
@@ -214,13 +221,16 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     @Transactional(readOnly = true)
     public int findCount(${eentityName}Criteria criteria) {
         log.debug("Service ==> 查询个数${eentityName}DTO {}", criteria);
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class);
+        // 表对应的序号Map
+        Map<String, Integer> tableIndexMap = new HashMap<>();
+        String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
+        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap);
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(wrapper, criteria);
         if (!dataFilterPass) {
             return 0;
         }
-        return baseMapper.joinSelectCount(getCountQuerySql(criteria), wrapper);
+        return baseMapper.joinSelectCount(countQuerySql, wrapper);
     }
 
     /**
@@ -232,7 +242,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     private Wrapper<${eentityName}> idEqualsPrepare(Long id, BaseCriteria criteria) {
         ${eentityName}Criteria ${entityName}Criteria = new ${eentityName}Criteria();
         MyBeanUtil.copyNonNullProperties(criteria, ${entityName}Criteria);
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, ${entityName}Criteria, ${eentityName}.class);
+        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, ${entityName}Criteria, ${eentityName}.class, null, null);
         ((QueryWrapper<${eentityName}>)wrapper).eq("id", id);
         return wrapper;
     }
@@ -252,8 +262,11 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 获取查询数据的SQL
      * @return
      */
-    private String getDataQuerySql(${eentityName}Criteria criteria) {
-        String joinDataSql = "select " + ${eentityName}.getTableName() + ".*" + getFromAndJoinSql(criteria);
+    private String getDataQuerySql(${eentityName}Criteria criteria, Map<String, Integer> tableIndexMap) {
+        int tableCount = 0;
+        final int fromTableCount = tableCount;
+        String joinDataSql = "SELECT " + ${eentityName}.getTableName() + "_" + tableCount + ".*"
+		        + getFromAndJoinSql(criteria, tableCount, fromTableCount, tableIndexMap);
         return joinDataSql;
     }
 
@@ -261,8 +274,10 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 获取查询数量的SQL
      * @return
      */
-    private String getCountQuerySql(${eentityName}Criteria criteria) {
-        String joinCountSql = "select count(0)" + getFromAndJoinSql(criteria);
+    private String getCountQuerySql(${eentityName}Criteria criteria, Map<String, Integer> tableIndexMap) {
+        int tableCount = 0;
+        final int fromTableCount = tableCount;
+        String joinCountSql = "SELECT COUNT(0)" + getFromAndJoinSql(criteria, tableCount, fromTableCount, tableIndexMap);
         return joinCountSql;
     }
 
@@ -270,9 +285,10 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 获取from和级联SQL
      * @return
      */
-    private String getFromAndJoinSql(${eentityName}Criteria criteria) {
-        String joinSubSql = " from " + ${eentityName}.getTableName();
-        joinSubSql += getJoinSql(criteria);
+    private String getFromAndJoinSql(${eentityName}Criteria criteria, int tableCount, int fromTableCount,
+                                     Map<String, Integer> tableIndexMap) {
+        String joinSubSql = " FROM " + ${eentityName}.getTableName() + " as " + ${eentityName}.getTableName() + "_" + tableCount;
+        joinSubSql += getJoinSql(criteria, tableCount, fromTableCount, null, tableIndexMap);
         return joinSubSql;
     }
 
@@ -280,14 +296,23 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 获取级联SQL
      * @return
      */
-    public String getJoinSql(${eentityName}Criteria criteria) {
+    public String getJoinSql(${eentityName}Criteria criteria, int tableCount, int fromTableCount, String lastFieldName,
+                             Map<String, Integer> tableIndexMap) {
         String joinSubSql = "";
 		<#list toFromList as toFrom>
         if (criteria.get${toFrom.toFromEntityUName}() != null) {
-            joinSubSql += " left join " + ${toFrom.toFromEntityType}.getTableName() + " on "
-                    + ${toFrom.toFromEntityType}.getTableName() + ".id = " + ${eentityName}.getTableName()
+            tableCount++;
+            joinSubSql += " LEFT JOIN " + ${toFrom.toFromEntityType}.getTableName() + " as " + ${toFrom.toFromEntityType}.getTableName() + "_" + tableCount + " ON "
+                    + ${toFrom.toFromEntityType}.getTableName() + "_" + tableCount + ".id = " + ${eentityName}.getTableName() + "_" + fromTableCount
                     + ".${toFrom.fromColumnName}";
-            joinSubSql += ${toFrom.toFromEntityName}Service.getJoinSql(criteria.get${toFrom.toFromEntityUName}());
+            String tableKey = "${toFrom.toFromEntityName}";
+            if (lastFieldName != null) {
+                // 拼接key
+                tableKey = lastFieldName + "." + tableKey;
+            }
+            tableIndexMap.put(tableKey, tableCount);
+            joinSubSql += ${toFrom.toFromEntityName}Service.getJoinSql(criteria.get${toFrom.toFromEntityUName}(), tableCount, tableCount, tableKey,
+			        tableIndexMap);
         }
 		</#list>
         return joinSubSql;

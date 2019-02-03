@@ -15,16 +15,29 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MbpUtil {
 
-    public static <T, C> Wrapper<T> getWrapper(QueryWrapper<T> wrapper, C criteria, Class clazz) {
+    public static <T, C> Wrapper<T> getWrapper(QueryWrapper<T> wrapper, C criteria, Class clazz, String lastFieldName,
+                                               Map<String, Integer> tableIndexMap) {
         if (wrapper == null) {
             wrapper = new QueryWrapper<>();
         }
         // 获取表名字
         String tableName = ((TableName)clazz.getAnnotation(TableName.class)).value();
+        // 获取SQL中修改后的表名字
+        if (tableIndexMap != null) {
+            if (lastFieldName != null) {
+                Integer tableIndex = tableIndexMap.get(lastFieldName);
+                if (tableIndex != null) {
+                    tableName = tableName + "_" + tableIndex;
+                }
+            } else {
+                tableName = tableName + "_0";
+            }
+        }
         // 获取传入的查询条件的类和域
         Class criteriaClazz = criteria.getClass();
         // orderBy条件
@@ -130,7 +143,9 @@ public class MbpUtil {
                     String typeName = result.getClass().getName();
                     String domainTypeName = typeName.substring(typeName.lastIndexOf(".") + 1, typeName.lastIndexOf("Criteria"));
                     Class entityClass = Class.forName("com.bob.sm.domain." + domainTypeName);
-                    wrapper = (QueryWrapper<T>)getWrapper(wrapper, result, entityClass);
+                    // 级联的域名
+                    String nowFieldName = lastFieldName == null ? fieldName : lastFieldName + "." + fieldName;
+                    wrapper = (QueryWrapper<T>)getWrapper(wrapper, result, entityClass, nowFieldName, tableIndexMap);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
