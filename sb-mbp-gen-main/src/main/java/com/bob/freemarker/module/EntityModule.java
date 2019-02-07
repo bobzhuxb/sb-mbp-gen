@@ -117,6 +117,21 @@ public class EntityModule {
             associationNameComment += "）";
         }
         root.put("associationNameComment", associationNameComment);
+        // 关联的数据字典说明
+        String dictionaryNameList = "";
+        for (EntityFieldDTO fieldDTO : fieldList) {
+            if (fieldDTO.getDictionaryType() != null) {
+                if ("".equals(dictionaryNameList)) {
+                    dictionaryNameList += "（";
+                }
+                dictionaryNameList += fieldDTO.getCamelNameDic() + "：" + fieldDTO.getCommentDic() + "、";
+            }
+        }
+        if (!"".equals(dictionaryNameList)) {
+            dictionaryNameList = dictionaryNameList.substring(0, dictionaryNameList.length() - 1);
+            dictionaryNameList += "）";
+        }
+        root.put("dictionaryNameList", dictionaryNameList);
 
         generateDomain(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateDTO(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);

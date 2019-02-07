@@ -18,6 +18,8 @@ public class BaseCriteria {
 
     private List<String> associationNameList;   // 关联属性获取（列出的属性都会关联查询）
 
+    private List<String> dictionaryNameList;    // 关联数据字典值获取（列出的属性都会关联查询）
+
     public NothingFilter getNothing() {
         return nothing;
     }
@@ -64,5 +66,13 @@ public class BaseCriteria {
 
     public void setAssociationNameList(List<String> associationNameList) {
         this.associationNameList = associationNameList;
+    }
+
+    public List<String> getDictionaryNameList() {
+        return dictionaryNameList;
+    }
+
+    public void setDictionaryNameList(List<String> dictionaryNameList) {
+        this.dictionaryNameList = dictionaryNameList;
     }
 }

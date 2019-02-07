@@ -1,5 +1,6 @@
 package ${packageName}.domain;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -22,6 +23,11 @@ public class ${eentityName} extends BaseDomain {
 
     @ApiModelProperty(value = "${field.comment}")
     private ${field.javaType} ${field.camelName};    // ${field.comment}
+	<#if (field.dictionaryType)??>
+    
+    @TableField(exist = false)
+    private String ${field.camelNameDic};    // ${field.commentDic}（数据字典值）
+	</#if>
     </#list>
 	<#list toFromList as toFrom>
 
@@ -45,6 +51,16 @@ public class ${eentityName} extends BaseDomain {
     public void set${field.ccamelName}(${field.javaType} ${field.camelName}) {
         this.${field.camelName} = ${field.camelName};
     }
+	<#if (field.dictionaryType)??>
+    
+    public String get${field.ccamelNameDic}() {
+        return ${field.camelNameDic};
+    }
+
+    public void set${field.ccamelNameDic}(String ${field.camelNameDic}) {
+        this.${field.camelNameDic} = ${field.camelNameDic};
+    }
+	</#if>
     </#list>
 	<#list toFromList as toFrom>
 

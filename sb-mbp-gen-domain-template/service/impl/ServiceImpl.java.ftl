@@ -265,8 +265,20 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     private String getDataQuerySql(${eentityName}Criteria criteria, Map<String, Integer> tableIndexMap) {
         int tableCount = 0;
         final int fromTableCount = tableCount;
-        String joinDataSql = "SELECT " + ${eentityName}.getTableName() + "_" + tableCount + ".*"
-		        + getFromAndJoinSql(criteria, tableCount, fromTableCount, tableIndexMap);
+        String joinDataSql = "SELECT " + ${eentityName}.getTableName() + "_" + tableCount + ".*";
+        // 处理关联数据字典值
+        List<String> dictionaryNameList = criteria.getDictionaryNameList();
+        if (dictionaryNameList != null) {
+            // 此处处理数据字典的JOIN
+			<#list fieldList as field>
+			<#if (field.dictionaryType)??>
+            if (dictionaryNameList.contains("${field.camelNameDic}")) {
+                joinDataSql += " ,base_dictionary_${field.camelNameUnderline}_" + tableCount + ".dic_value AS ${field.ccamelNameDicUnderline}";
+            }
+			</#if>
+			</#list>
+        }
+        joinDataSql += getFromAndJoinSql(criteria, tableCount, fromTableCount, tableIndexMap);
         return joinDataSql;
     }
 
@@ -287,7 +299,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      */
     private String getFromAndJoinSql(${eentityName}Criteria criteria, int tableCount, int fromTableCount,
                                      Map<String, Integer> tableIndexMap) {
-        String joinSubSql = " FROM " + ${eentityName}.getTableName() + " as " + ${eentityName}.getTableName() + "_" + tableCount;
+        String joinSubSql = " FROM " + ${eentityName}.getTableName() + " AS " + ${eentityName}.getTableName() + "_" + tableCount;
         joinSubSql += getJoinSql(criteria, tableCount, fromTableCount, null, tableIndexMap);
         return joinSubSql;
     }
@@ -299,10 +311,25 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     public String getJoinSql(${eentityName}Criteria criteria, int tableCount, int fromTableCount, String lastFieldName,
                              Map<String, Integer> tableIndexMap) {
         String joinSubSql = "";
+        // 处理关联数据字典值
+        List<String> dictionaryNameList = criteria.getDictionaryNameList();
+        if (dictionaryNameList != null) {
+            // 此处处理数据字典的JOIN
+			<#list fieldList as field>
+			<#if (field.dictionaryType)??>
+            if (dictionaryNameList.contains("${field.camelNameDic}")) {
+                joinSubSql += " LEFT JOIN base_dictionary AS base_dictionary_${field.camelNameUnderline}_" + tableCount + " ON "
+                        + "base_dictionary_${field.camelNameUnderline}_" + tableCount + ".dic_type = '${field.dictionaryType}' AND "
+                        + "base_dictionary_${field.camelNameUnderline}_" + tableCount + ".dic_code = " + ${eentityName}.getTableName() + "_" + fromTableCount
+                        + ".${field.camelNameUnderline}";
+            }
+			</#if>
+			</#list>
+        }
 		<#list toFromList as toFrom>
         if (criteria.get${toFrom.toFromEntityUName}() != null) {
             tableCount++;
-            joinSubSql += " LEFT JOIN " + ${toFrom.toFromEntityType}.getTableName() + " as " + ${toFrom.toFromEntityType}.getTableName() + "_" + tableCount + " ON "
+            joinSubSql += " LEFT JOIN " + ${toFrom.toFromEntityType}.getTableName() + " AS " + ${toFrom.toFromEntityType}.getTableName() + "_" + tableCount + " ON "
                     + ${toFrom.toFromEntityType}.getTableName() + "_" + tableCount + ".id = " + ${eentityName}.getTableName() + "_" + fromTableCount
                     + ".${toFrom.fromColumnName}";
             String tableKey = "${toFrom.toFromEntityName}";

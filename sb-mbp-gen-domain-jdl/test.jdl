@@ -1,9 +1,23 @@
+// 数据字典
+entity BaseDictionary {
+    // 数据字典类别编码
+    dicType String
+    // 数据字典代码
+    dicCode String
+    // 数据字典中文值
+    dicValue String
+    // 数据字典描述
+    dicDiscription String
+}
+
 // 工作人员
 entity SmPerson {
     // 姓名
     name String
     // 手机号
     cell String
+    // 民族##数据字典类型：NATION##
+    nationType String
 }
 
 // 会议
@@ -12,6 +26,8 @@ entity SmMeeting {
     meetingNo String
     // 会议名称
     name String
+    // 所属科室##数据字典类型：KESHI##
+    ksType String
 }
 
 // 会议详细
@@ -52,6 +68,8 @@ relationship OneToOne {
 }
 
 relationship OneToMany {
+    // 父数据字典{子数据字典}
+	BaseDictionary{child} to BaseDictionary{parent}
     // 组织者{会议}
 	SmPerson{asmMeeting} to SmMeeting{organizer}
     // 联系人{会议}

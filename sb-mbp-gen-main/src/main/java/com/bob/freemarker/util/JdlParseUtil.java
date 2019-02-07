@@ -32,6 +32,8 @@ public class JdlParseUtil {
         List<String> jdlLineList = FileUtil.readFileByLines(fullFileName, charsetName);
         // 当前注释内容
         String currentComment = null;
+        // 当前数据字典类型
+        String currentDictionaryType = null;
         // 当前entity名称
         String currentEntityName = null;
         // 当前entity
@@ -50,7 +52,14 @@ public class JdlParseUtil {
             }
             if (jdlLine.startsWith("//")) {
                 // 注释开始行，获取注释行内容
-                currentComment = jdlLine;
+                Pattern pattern = Pattern.compile("//\\s+([^#]+)##数据字典类型：([^#]+)##");   // 匹配的模式
+                Matcher matcher = pattern.matcher(jdlLine);
+                if (matcher.find()) {
+                    currentComment = "// " + matcher.group(1);
+                    currentDictionaryType = matcher.group(2);
+                } else {
+                    currentComment = jdlLine;
+                }
             } else if (jdlLine.contains("{")) {
                 // 包含{的行
                 if (jdlLine.startsWith("entity ")) {
@@ -143,10 +152,32 @@ public class JdlParseUtil {
                     String fieldComment = currentComment.substring(2).trim();
                     // 使用过一次comment就置空
                     currentComment = null;
+                    // 找到filedName行上面的注释中的dictionaryType
+                    String dictionaryType = currentDictionaryType;
+                    // 使用过一次dictionaryType就置空
+                    currentDictionaryType = null;
                     // insertTime和updateTime和operateUserId字段由生成器帮助生成，自动忽略
                     if (!"insertTime".equals(camelName) && !"updateTime".equals(camelName) && !"operateUserId".equals(camelName)) {
                         // 生成entity的field
-                        EntityFieldDTO entityFieldDTO = new EntityFieldDTO(camelName, javaType, fieldComment);
+                        EntityFieldDTO entityFieldDTO = null;
+                        if (dictionaryType == null) {
+                            entityFieldDTO = new EntityFieldDTO(camelName, javaType, fieldComment);
+                        } else {
+                            String camelNameDic = null;
+                            if (camelName.endsWith("Type")) {
+                                camelNameDic = camelName.substring(0, camelName.length() - 4) + "Value";
+                            } else {
+                                camelNameDic = camelName + "Value";
+                            }
+                            String commentDic = null;
+                            if (fieldComment.endsWith("类型")) {
+                                commentDic = fieldComment.substring(0, fieldComment.length() - 2) + "值";
+                            } else {
+                                commentDic = fieldComment + "值";
+                            }
+                            entityFieldDTO = new EntityFieldDTO(camelName, javaType, fieldComment, camelNameDic,
+                                    dictionaryType, commentDic);
+                        }
                         // 将field添加进entity
                         entityDTO.getFieldList().add(entityFieldDTO);
                     }

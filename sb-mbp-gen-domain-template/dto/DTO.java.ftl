@@ -17,6 +17,10 @@ public class ${eentityName}DTO extends BaseDTO {
 	<#list fieldList as field>
 
     private ${field.javaType} ${field.camelName};    // ${field.comment}
+	<#if (field.dictionaryType)??>
+    
+    private String ${field.camelNameDic};    // ${field.commentDic}（数据字典值）
+	</#if>
 	</#list>
 	<#list toFromList as toFrom>
 
@@ -56,6 +60,16 @@ public class ${eentityName}DTO extends BaseDTO {
     public void set${field.ccamelName}(${field.javaType} ${field.camelName}) {
         this.${field.camelName} = ${field.camelName};
     }
+	<#if (field.dictionaryType)??>
+    
+    public String get${field.ccamelNameDic}() {
+        return ${field.camelNameDic};
+    }
+
+    public void set${field.ccamelNameDic}(String ${field.camelNameDic}) {
+        this.${field.camelNameDic} = ${field.camelNameDic};
+    }
+	</#if>
 	</#list>
 	<#list toFromList as toFrom>
 
