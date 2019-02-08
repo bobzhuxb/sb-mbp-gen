@@ -164,13 +164,13 @@ public class JdlParseUtil {
                             entityFieldDTO = new EntityFieldDTO(camelName, javaType, fieldComment);
                         } else {
                             String camelNameDic = null;
-                            if (camelName.endsWith("Type")) {
+                            if (camelName.endsWith("Code")) {
                                 camelNameDic = camelName.substring(0, camelName.length() - 4) + "Value";
                             } else {
                                 camelNameDic = camelName + "Value";
                             }
                             String commentDic = null;
-                            if (fieldComment.endsWith("类型")) {
+                            if (fieldComment.endsWith("代码")) {
                                 commentDic = fieldComment.substring(0, fieldComment.length() - 2) + "值";
                             } else {
                                 commentDic = fieldComment + "值";

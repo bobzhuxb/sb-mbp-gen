@@ -16,8 +16,8 @@ entity SmPerson {
     name String
     // 手机号
     cell String
-    // 民族##数据字典类型：NATION##
-    nationType String
+    // 民族代码##数据字典类型：NATION##
+    nationCode String
 }
 
 // 会议
@@ -26,8 +26,8 @@ entity SmMeeting {
     meetingNo String
     // 会议名称
     name String
-    // 所属科室##数据字典类型：KESHI##
-    ksType String
+    // 所属科室代码##数据字典类型：KESHI##
+    ksCode String
 }
 
 // 会议详细

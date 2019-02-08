@@ -125,7 +125,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         }
 		</#if>
 		</#list>
-        ${entityName}DTO.setId(${entityName}.getId());
+        ${entityName}DTO.setId(${entityName}Id);
         return result ? new ReturnCommonDTO() : new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "保存失败");
     }
 
@@ -162,7 +162,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         if (!dataFilterPass) {
             return Optional.empty();
         }
-        return Optional.ofNullable(getOne(wrapper)).map(${entityName} -> {return doConvert(${entityName}, criteria);});
+        return Optional.ofNullable(getOne(wrapper)).map(${entityName} -> doConvert(${entityName}, criteria));
     }
 
     /**
@@ -183,7 +183,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             return new ArrayList<>();
         }
         return baseMapper.joinSelectList(dataQuerySql, wrapper).stream()
-                .map(${eentityName} -> {return doConvert(${eentityName}, criteria);}).collect(Collectors.toList());
+                .map(${entityName} -> doConvert(${entityName}, criteria)).collect(Collectors.toList());
     }
 
     /**
@@ -207,7 +207,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             return MbpPage.empty();
         }
         IPage<${eentityName}DTO> pageResult = baseMapper.joinSelectPage(pageQuery, dataQuerySql, wrapper)
-                    .convert(${entityName} -> {return doConvert(${entityName}, criteria);});
+                    .convert(${entityName} -> doConvert(${entityName}, criteria));
         int totalCount = baseMapper.joinSelectCount(countQuerySql, wrapper);
         pageResult.setTotal((long)totalCount);
         return pageResult;
