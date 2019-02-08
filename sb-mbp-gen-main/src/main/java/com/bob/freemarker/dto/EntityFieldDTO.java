@@ -2,6 +2,8 @@ package com.bob.freemarker.dto;
 
 import com.bob.freemarker.util.StringUtil;
 
+import java.util.List;
+
 /**
  * 通用域（成员变量）
  */
@@ -15,8 +17,9 @@ public class EntityFieldDTO {
     private String commentDic;          // 对应的数据字典中文名注释
     private String camelNameDic;        // 对应的数据字典中文标识名（首字母小写的驼峰标识名）
     private String ccamelNameDic;       // 对应的数据字典中文标识名（首字母大写的驼峰标识名）
-    private String ccamelNameDicUnderline;       // 对应的数据字典中文标识名（下划线连接）
+    private String ccamelNameDicUnderline;      // 对应的数据字典中文标识名（下划线连接）
     private String dictionaryType;      // 对应的数据字典类型
+    private List<String> annotationList;        // DTO的成员变量的注解
 
     public EntityFieldDTO(String camelName, String javaType, String comment, String camelNameDic,
                           String dictionaryType, String commentDic) {
@@ -114,5 +117,13 @@ public class EntityFieldDTO {
 
     public void setDictionaryType(String dictionaryType) {
         this.dictionaryType = dictionaryType;
+    }
+
+    public List<String> getAnnotationList() {
+        return annotationList;
+    }
+
+    public void setAnnotationList(List<String> annotationList) {
+        this.annotationList = annotationList;
     }
 }

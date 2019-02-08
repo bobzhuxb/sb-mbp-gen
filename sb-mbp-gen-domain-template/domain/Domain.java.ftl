@@ -2,8 +2,6 @@ package ${packageName}.domain;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Objects;
@@ -11,7 +9,6 @@ import java.util.Objects;
 /**
  * ${entityComment}
  */
-@ApiModel(description = "${entityComment}")
 @Data
 @TableName(value = "${tableName}")
 public class ${eentityName} extends BaseDomain {
@@ -20,18 +17,18 @@ public class ${eentityName} extends BaseDomain {
 
     private Long id;
     <#list fieldList as field>
+	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'operateUserId'>
 
-    @ApiModelProperty(value = "${field.comment}")
     private ${field.javaType} ${field.camelName};    // ${field.comment}
 	<#if (field.dictionaryType)??>
     
     @TableField(exist = false)
     private String ${field.camelNameDic};    // ${field.commentDic}（数据字典值）
 	</#if>
+	</#if>
     </#list>
 	<#list toFromList as toFrom>
 
-    @ApiModelProperty(value = "${toFrom.toFromComment}ID")
     private Long ${toFrom.toFromEntityName}Id;    // ${toFrom.toFromComment}ID
 	</#list>
 
@@ -43,6 +40,7 @@ public class ${eentityName} extends BaseDomain {
         this.id = id;
     }
     <#list fieldList as field>
+	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'operateUserId'>
 
     public ${field.javaType} get${field.ccamelName}() {
         return ${field.camelName};
@@ -60,6 +58,7 @@ public class ${eentityName} extends BaseDomain {
     public void set${field.ccamelNameDic}(String ${field.camelNameDic}) {
         this.${field.camelNameDic} = ${field.camelNameDic};
     }
+	</#if>
 	</#if>
     </#list>
 	<#list toFromList as toFrom>

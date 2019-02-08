@@ -34,6 +34,8 @@ public class JdlParseUtil {
         String currentComment = null;
         // 当前数据字典类型
         String currentDictionaryType = null;
+        // 当前注解列表
+        List<String> currentAnnotationList = null;
         // 当前entity名称
         String currentEntityName = null;
         // 当前entity
@@ -55,9 +57,17 @@ public class JdlParseUtil {
                 Pattern pattern = Pattern.compile("//\\s+([^#]+)##数据字典类型：([^#]+)##");   // 匹配的模式
                 Matcher matcher = pattern.matcher(jdlLine);
                 if (matcher.find()) {
+                    // 关联数据字典的注释行
                     currentComment = "// " + matcher.group(1);
                     currentDictionaryType = matcher.group(2);
+                } else if (jdlLine.startsWith("//@")) {
+                    // 注解行
+                    if (currentAnnotationList == null) {
+                        currentAnnotationList = new ArrayList<>();
+                    }
+                    currentAnnotationList.add(jdlLine.substring(2));
                 } else {
+                    // 普通注释行
                     currentComment = jdlLine;
                 }
             } else if (jdlLine.contains("{")) {
@@ -73,8 +83,11 @@ public class JdlParseUtil {
                         entityDTO.setEentityName(currentEntityName);
                         entityDTO.setFieldList(new ArrayList<>());
                         entityDTO.setEntityComment(currentComment.substring(2).trim());
+                        entityDTO.setAnnotationList(currentAnnotationList);
                         // 使用过一次comment就置空
                         currentComment = null;
+                        // 使用过一次annotationList就置空
+                        currentAnnotationList = null;
                     }
                 } else if (jdlLine.startsWith("relationship ")) {
                     // relationship开始行
@@ -118,9 +131,13 @@ public class JdlParseUtil {
                         relationshipDTO.setToFromComment(toFromComment);
                         relationshipDTO.setFromToComment(fromToComment);
                     }
-                    relationshipDTOList.add(relationshipDTO);
+                    relationshipDTO.setAnnotationList(currentAnnotationList);
                     // 使用过一次comment就置空
                     currentComment = null;
+                    // 使用过一次annotationList就置空
+                    currentAnnotationList = null;
+                    // 将关系添加到关系列表中
+                    relationshipDTOList.add(relationshipDTO);
                 }
             } else if ("}".equals(jdlLine)) {
                 // entity或relationship的结束行
@@ -178,6 +195,9 @@ public class JdlParseUtil {
                             entityFieldDTO = new EntityFieldDTO(camelName, javaType, fieldComment, camelNameDic,
                                     dictionaryType, commentDic);
                         }
+                        entityFieldDTO.setAnnotationList(currentAnnotationList);
+                        // 使用过一次annotationList就置空
+                        currentAnnotationList = null;
                         // 将field添加进entity
                         entityDTO.getFieldList().add(entityFieldDTO);
                     }

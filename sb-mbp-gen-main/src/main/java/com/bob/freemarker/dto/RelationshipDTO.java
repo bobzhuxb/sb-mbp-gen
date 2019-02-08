@@ -1,5 +1,7 @@
 package com.bob.freemarker.dto;
 
+import java.util.List;
+
 /**
  * 通用关系
  */
@@ -19,6 +21,7 @@ public class RelationshipDTO {
     private String fromColumnName;      // 关系from的数据库列名
     private String fromToComment;       // to在from中的注释
     private String toFromComment;       // from在to中的注释
+    private List<String> annotationList;        // DTO的成员变量的注解
 
     public String getRelationType() {
         return relationType;
@@ -130,5 +133,13 @@ public class RelationshipDTO {
 
     public void setToFromComment(String toFromComment) {
         this.toFromComment = toFromComment;
+    }
+
+    public List<String> getAnnotationList() {
+        return annotationList;
+    }
+
+    public void setAnnotationList(List<String> annotationList) {
+        this.annotationList = annotationList;
     }
 }

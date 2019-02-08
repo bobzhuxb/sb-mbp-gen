@@ -1,49 +1,75 @@
 // 数据字典
 entity BaseDictionary {
     // 数据字典类别编码
+	//@NotBlank
+	//@Size(min = 1, max = 255)
     dicType String
     // 数据字典代码
+	//@NotBlank
+	//@Size(min = 1, max = 255)
     dicCode String
     // 数据字典中文值
+	//@NotBlank
+	//@Size(min = 1, max = 255)
     dicValue String
     // 数据字典描述
+	//@Size(min = 1, max = 255)
     dicDiscription String
 }
 
 // 工作人员
 entity SmPerson {
     // 姓名
+	//@NotBlank
+	//@Size(min = 1, max = 255)
     name String
     // 手机号
+	//@NotBlank
+	//@ValidCell
     cell String
     // 民族代码##数据字典类型：NATION##
+	//@NotBlank
+	//@Size(min = 1, max = 255)
     nationCode String
 }
 
 // 会议
 entity SmMeeting {
     // 会议编号
+	//@RestFieldAllow(allowSet = false)
     meetingNo String
     // 会议名称
+	//@NotBlank
+	//@Size(min = 1, max = 255)
     name String
     // 所属科室代码##数据字典类型：KESHI##
+	//@NotBlank
+	//@Size(min = 1, max = 255)
     ksCode String
 }
 
 // 会议详细
 entity SmMeetingDetail {
     // 详细描述
+	//@Size(min = 1, max = 255)
     detailInfo String
     // 详情浏览次数
+	//@RestFieldAllow(allowSet = false)
     detailViews Integer
 }
 
 // 会议日程
 entity SmMeetingSchedule {
     // 开始日期
+	//@NotBlank
+	//ValidDate
     startTime String
     // 结束日期
+	//@NotBlank
+	//ValidDate
     entTime String
+	//@NotBlank
+	//@Size(min = 1, max = 255)
     // 内容
     content String
 }
@@ -51,19 +77,36 @@ entity SmMeetingSchedule {
 // 会议嘉宾
 entity SmMeetingGuest {
     // 姓名
+	//@NotBlank
+	//@Size(min = 1, max = 255)
     name String
     // 描述
+	//@Size(min = 1, max = 255)
     descr String
+}
+
+// 支付日志
+//@RestClassAllow(allowSet = false)
+entity SmPayLog {
+    // 接口类型
+    interType String
+    // 传入参数
+    param String
+    // 返回结果
+    result String
 }
 
 // 会议嘉宾照片
 entity SmMeetingGuestPhoto {
     // 照片相对路径
+	//@NotBlank
+	//@Size(min = 1, max = 255)
     relativePath String
 }
 
 relationship OneToOne {
     // 会议{会议详情}
+	//@Min(0)
 	SmMeeting{smMeetingDetail} to SmMeetingDetail{smMeeting}
 }
 

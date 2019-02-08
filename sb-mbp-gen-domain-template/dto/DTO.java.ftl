@@ -1,29 +1,47 @@
 package ${packageName}.dto;
 
+import ${packageName}.annotation.*;
+import ${packageName}.annotation.validation.*;
+import ${packageName}.domain.*;
+import javax.validation.constraints.*;
 <#if fromToList?? && (fromToList?size > 0) >
 import java.util.List;
 </#if>
-<#list fromToList as fromTo>
-import ${packageName}.domain.${fromTo.fromToEntityType};
-</#list>
 import java.util.Objects;
 
 /**
  * ${entityComment}
  */
+<#if (annotationList)??>
+<#list annotationList as annotation>
+${annotation}
+</#list>
+</#if>
 public class ${eentityName}DTO extends BaseDTO {
 
     private Long id;
 	<#list fieldList as field>
+	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'operateUserId'>
 
+	<#if (field.annotationList)??>
+	<#list field.annotationList as annotation>
+    ${annotation}
+	</#list>
+	</#if>
     private ${field.javaType} ${field.camelName};    // ${field.comment}
 	<#if (field.dictionaryType)??>
-    
+
     private String ${field.camelNameDic};    // ${field.commentDic}（数据字典值）
+	</#if>
 	</#if>
 	</#list>
 	<#list toFromList as toFrom>
 
+	<#if (toFrom.annotationList)??>
+	<#list toFrom.annotationList as annotation>
+    ${annotation}
+	</#list>
+	</#if>
     private Long ${toFrom.toFromEntityName}Id;    // ${toFrom.toFromComment}ID
 	</#list>
 	<#if (toFromList?? && (toFromList?size > 0)) || (fromToList?? && (fromToList?size > 0)) >
@@ -52,6 +70,7 @@ public class ${eentityName}DTO extends BaseDTO {
         this.id = id;
     }
 	<#list fieldList as field>
+	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'operateUserId'>
 	
     public ${field.javaType} get${field.ccamelName}() {
         return ${field.camelName};
@@ -69,6 +88,7 @@ public class ${eentityName}DTO extends BaseDTO {
     public void set${field.ccamelNameDic}(String ${field.camelNameDic}) {
         this.${field.camelNameDic} = ${field.camelNameDic};
     }
+	</#if>
 	</#if>
 	</#list>
 	<#list toFromList as toFrom>

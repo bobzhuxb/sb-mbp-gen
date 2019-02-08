@@ -11,6 +11,7 @@ public class EntityDTO {
     private String eentityName;     // 首字母大写（驼峰标识）的实体名称
     private String entityUrl;       // 实体在URL中的名称
     private String tableName;       // 实体对应的数据库表名
+    private List<String> annotationList;        // 实体DTO的注解
     private List<EntityFieldDTO> fieldList;     // 域（成员变量）
 
     public String getEntityComment() {
@@ -43,6 +44,14 @@ public class EntityDTO {
 
     public void setTableName(String tableName) {
         this.tableName = tableName;
+    }
+
+    public List<String> getAnnotationList() {
+        return annotationList;
+    }
+
+    public void setAnnotationList(List<String> annotationList) {
+        this.annotationList = annotationList;
     }
 
     public List<EntityFieldDTO> getFieldList() {
