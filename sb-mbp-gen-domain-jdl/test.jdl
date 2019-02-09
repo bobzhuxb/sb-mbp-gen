@@ -114,8 +114,10 @@ relationship OneToMany {
     // 父数据字典{子数据字典}
 	BaseDictionary{child} to BaseDictionary{parent}
     // 组织者{会议}
+    //!CASCADE:NULL
 	SmPerson{asmMeeting} to SmMeeting{organizer}
     // 联系人{会议}
+    //!CASCADE:NULL
 	SmPerson{bsmMeeting} to SmMeeting{contractor}
     // 会议{会议日程}
 	SmMeeting{smMeetingSchedule} to SmMeetingSchedule{smMeeting}

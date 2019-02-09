@@ -36,6 +36,8 @@ public class JdlParseUtil {
         String currentDictionaryType = null;
         // 当前注解列表
         List<String> currentAnnotationList = null;
+        // 当前删除模式（允许值：DELETE、NULL。默认：DELETE）
+        String currentDeleteType = null;
         // 当前entity名称
         String currentEntityName = null;
         // 当前entity
@@ -66,6 +68,9 @@ public class JdlParseUtil {
                         currentAnnotationList = new ArrayList<>();
                     }
                     currentAnnotationList.add(jdlLine.substring(2));
+                } else if (jdlLine.startsWith("//!CASCADE:")) {
+                    // 级联删除模式
+                    currentDeleteType = jdlLine.substring(11);
                 } else {
                     // 普通注释行
                     currentComment = jdlLine;
@@ -132,10 +137,19 @@ public class JdlParseUtil {
                         relationshipDTO.setFromToComment(fromToComment);
                     }
                     relationshipDTO.setAnnotationList(currentAnnotationList);
+                    if (currentDeleteType == null) {
+                        // 默认级联删除
+                        relationshipDTO.setFromToDeleteType("DELETE");
+                    } else {
+                        // 如果有值，则设置为指定值
+                        relationshipDTO.setFromToDeleteType(currentDeleteType);
+                    }
                     // 使用过一次comment就置空
                     currentComment = null;
                     // 使用过一次annotationList就置空
                     currentAnnotationList = null;
+                    // 使用过一次currentDeleteType就置空
+                    currentDeleteType = null;
                     // 将关系添加到关系列表中
                     relationshipDTOList.add(relationshipDTO);
                 }

@@ -130,20 +130,39 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     }
 
     /**
-     * 根据ID删除数据
+     * 根据ID删除数据（同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
      * @param id 主键ID
      * @return 结果返回码和消息
      */
     public ReturnCommonDTO deleteById(Long id) {
-        log.debug("Service ==> 删除${eentityName}DTO {}", id);
-		<#list fromToList as fromTo>
-        // 删除${fromTo.fromToComment}
-        ${fromTo.fromToEntityName}Mapper.deleteByMap(new HashMap<String, Object>() {{
-            put("${fromTo.fromColumnName}", id);
-        }});
-		</#list>
-        boolean result = removeById(id);
-        return result ? new ReturnCommonDTO() : new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "删除失败");
+        log.debug("Service ==> 根据ID删除${eentityName}DTO {}", id);
+		return deleteByMapCascade(new HashMap<String, Object>() {{put("id", id);}});
+    }
+
+    /**
+     * 根据指定条件删除数据（级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
+     * @param columnMap 表字段map对象
+     * @return 结果返回码和消息
+     */
+    public ReturnCommonDTO deleteByMapCascade(Map<String, Object> columnMap) {
+        log.debug("Service ==> 根据指定Map删除${eentityName}DTO {}", columnMap);
+		<#if (fromToList)?? && (fromToList?size > 0) >
+        // 删除级联实体或置空关联字段
+        listByMap(columnMap).forEach(${entityName} -> {
+			<#list fromToList as fromTo>
+			<#if fromTo.fromToDeleteType == 'DELETE'>
+            // 删除级联的${fromTo.fromToComment}
+            ${fromTo.fromToEntityName}Service.deleteByMapCascade(new HashMap<String, Object>() {{put("${fromTo.fromColumnName}", ${entityName}.getId());}});
+			<#else>
+            // ${fromTo.fromToComment}的${fromTo.fromColumnName}列级联置空
+            ${fromTo.fromToEntityName}Mapper.${fromTo.toFromEntityName}IdCascadeToNull(${entityName}.getId());
+			</#if>
+			</#list>
+        });
+		</#if>
+        // 根据指定条件删除${entityComment}数据
+        removeByMap(columnMap);
+        return new ReturnCommonDTO();
     }
 
     /**

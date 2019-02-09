@@ -87,14 +87,10 @@ dependencies {
 
 	// ===================================接口文档=====================================
 	// Swagger
-	compile ("io.springfox:springfox-swagger2:2.9.2") {
-		exclude module: 'mapstruct'
-		exclude module: 'swagger-annotations'
-		exclude module: 'swagger-models'
-	}
-	compile "io.springfox:springfox-swagger-ui:2.9.2"
-	compile "io.swagger:swagger-annotations:1.5.21"
-	compile "io.swagger:swagger-models:1.5.21"
+	compile "io.springfox:springfox-swagger2:2.5.0"
+	compile "io.springfox:springfox-swagger-ui:2.5.0"
+//	compile "io.swagger:swagger-annotations:1.5.21"
+//	compile "io.swagger:swagger-models:1.5.21"
 //	compile "io.springfox:springfox-bean-validators:2.9.2"
 //	compile "org.mapstruct:mapstruct-jdk8:1.2.0.Final"
 //	annotationProcessor "org.mapstruct:mapstruct-processor:1.2.0.Final"

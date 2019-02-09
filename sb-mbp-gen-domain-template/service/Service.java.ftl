@@ -16,6 +16,7 @@ public interface ${eentityName}Service extends IService<${eentityName}> {
 
     ReturnCommonDTO save(${eentityName}DTO ${entityName}DTO);
     ReturnCommonDTO deleteById(Long id);
+    ReturnCommonDTO deleteByMapCascade(Map<String, Object> deleteMap);
     Optional<${eentityName}DTO> findOne(Long id, BaseCriteria criteria);
     List<${eentityName}DTO> findAll(${eentityName}Criteria criteria);
     IPage<${eentityName}DTO> findPage(${eentityName}Criteria criteria, MbpPage pageable);

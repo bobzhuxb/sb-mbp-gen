@@ -125,8 +125,8 @@ public class ${eentityName}Controller {
      */
     @ApiOperation(value="获取单条-${entityComment}")
     @ApiImplicitParams({
-            @ApiImplicitParam(name="associationNameList", value="关联查询的字段${associationNameComment}"),
-            @ApiImplicitParam(name="dictionaryNameList", value="关联查询的数据字典值${dictionaryNameList}")
+            @ApiImplicitParam(name="associationNameList", paramType="path", value="关联查询的字段${associationNameComment}"),
+            @ApiImplicitParam(name="dictionaryNameList", paramType="path", value="关联查询的数据字典值${dictionaryNameList}")
     })
     @GetMapping("/${entityUrl}/{id}")
     public ResponseEntity<${eentityName}DTO> get${eentityName}(@ApiParam(name="主键ID") @PathVariable Long id, BaseCriteria criteria) {
@@ -143,14 +143,14 @@ public class ${eentityName}Controller {
      */
     @ApiOperation(value="获取所有-${entityComment}")
     @ApiImplicitParams({
-            @ApiImplicitParam(name="associationNameList", value="关联查询的字段${associationNameComment}"),
-            @ApiImplicitParam(name="dictionaryNameList", value="关联查询的数据字典值${dictionaryNameList}"),
-            @ApiImplicitParam(name="orderBy",value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
+            @ApiImplicitParam(name="associationNameList", paramType="path", value="关联查询的字段${associationNameComment}"),
+            @ApiImplicitParam(name="dictionaryNameList", paramType="path", value="关联查询的数据字典值${dictionaryNameList}"),
+            @ApiImplicitParam(name="orderBy", paramType="path", value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
 			<#list fieldList as field>
-            @ApiImplicitParam(name="${field.camelName}.equals",value="${field.comment}"),
+            @ApiImplicitParam(name="${field.camelName}.equals", paramType="path", value="${field.comment}"),
 			</#list>
 			<#list toFromList as toFrom>
-			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals",value="关联的${toFrom.toFromComment}，?对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
+			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
 			</#list>
     })
     @GetMapping("/${entityUrl}-all")
@@ -168,16 +168,16 @@ public class ${eentityName}Controller {
      */
     @ApiOperation(value="获取分页-${entityComment}")
     @ApiImplicitParams({
-            @ApiImplicitParam(name="associationNameList", value="关联查询的字段${associationNameComment}"),
-            @ApiImplicitParam(name="dictionaryNameList", value="关联查询的数据字典值${dictionaryNameList}"),
-            @ApiImplicitParam(name="orderBy",value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
-            @ApiImplicitParam(name="current",value="分页：当前页"),
-            @ApiImplicitParam(name="size",value="分页：每页大小"),
+            @ApiImplicitParam(name="associationNameList", paramType="path", value="关联查询的字段${associationNameComment}"),
+            @ApiImplicitParam(name="dictionaryNameList", paramType="path", value="关联查询的数据字典值${dictionaryNameList}"),
+            @ApiImplicitParam(name="orderBy", paramType="path", value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
+            @ApiImplicitParam(name="current", paramType="path", value="分页：当前页"),
+            @ApiImplicitParam(name="size", paramType="path", value="分页：每页大小"),
             <#list fieldList as field>
-            @ApiImplicitParam(name="${field.camelName}.equals",value="${field.comment}"),
+            @ApiImplicitParam(name="${field.camelName}.equals", paramType="path", value="${field.comment}"),
 			</#list>
 			<#list toFromList as toFrom>
-			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals",value="关联的${toFrom.toFromComment}，?对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
+			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
 			</#list>
     })
     @GetMapping("/${entityUrl}")
@@ -194,12 +194,12 @@ public class ${eentityName}Controller {
      */
     @ApiOperation(value="获取数量-${entityComment}")
     @ApiImplicitParams({
-            @ApiImplicitParam(name="orderBy",value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
+            @ApiImplicitParam(name="orderBy", paramType="path", value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
             <#list fieldList as field>
-            @ApiImplicitParam(name="${field.camelName}.equals",value="${field.comment}"),
+            @ApiImplicitParam(name="${field.camelName}.equals", paramType="path", value="${field.comment}"),
 			</#list>
 			<#list toFromList as toFrom>
-			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals",value="关联的${toFrom.toFromComment}，?对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
+			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
 			</#list>
     })
     @GetMapping("/${entityUrl}-count")

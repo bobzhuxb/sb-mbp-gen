@@ -18,6 +18,7 @@ public class RelationshipDTO {
     private String fromToEntityUName;   // 关系to的名称（首字母大写）
     private String fromToEntityTable;   // 关系to的表名
     private String fromToEntityUrl;     // 关系to的URL
+    private String fromToDeleteType;    // 关系to的删除模式（DELETE：级联删除、NULL：级联置空）
     private String fromColumnName;      // 关系from的数据库列名
     private String fromToComment;       // to在from中的注释
     private String toFromComment;       // from在to中的注释
@@ -109,6 +110,14 @@ public class RelationshipDTO {
 
     public void setFromToEntityUrl(String fromToEntityUrl) {
         this.fromToEntityUrl = fromToEntityUrl;
+    }
+
+    public String getFromToDeleteType() {
+        return fromToDeleteType;
+    }
+
+    public void setFromToDeleteType(String fromToDeleteType) {
+        this.fromToDeleteType = fromToDeleteType;
     }
 
     public String getFromColumnName() {

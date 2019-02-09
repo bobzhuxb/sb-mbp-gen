@@ -13,5 +13,11 @@
     <select id="joinSelectCount" resultType="int">
         ${r'${queryMain}'} ${r'${ew.customSqlSegment}'}
     </select>
+	<#list toFromList as toFrom>
+
+    <update id="${toFrom.toFromEntityName}IdCascadeToNull">
+        UPDATE ${tableName} SET ${toFrom.fromColumnName} = null WHERE ${toFrom.fromColumnName} = ${r'#{'}${toFrom.toFromEntityName}Id}
+    </update>
+	</#list>
 
 </mapper>
