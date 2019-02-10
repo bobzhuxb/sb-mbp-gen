@@ -94,7 +94,7 @@ public class FileUtil {
     /**
      * 遍历文件夹并加后缀
      */
-    public static void traverseFolderAddSuffixToFile(String path, String suffix) {
+    public static void traverseFolderAddSuffixToFile(String path, String suffix, String[] skipEntityStarts) {
         File file1 = new File(path);
         if (file1.exists()) {
             File[] files = file1.listFiles();
@@ -105,10 +105,22 @@ public class FileUtil {
                 for (File file2 : files) {
                     if (file2.isDirectory()) {
                         // 文件夹是file2.getAbsolutePath()
-                        traverseFolderAddSuffixToFile(file2.getAbsolutePath(), suffix);
+                        traverseFolderAddSuffixToFile(file2.getAbsolutePath(), suffix, skipEntityStarts);
                     } else {
-                        // 文件是file2.getAbsolutePath()
-                        file2.renameTo(new File(file2.getAbsolutePath() + suffix));
+                        // 删除相关实体（项目模板中不需要包含自定义实体）
+                        boolean deleted = false;
+                        String fileRealName = file2.getName();
+                        for (String skipEntityStartOne : skipEntityStarts) {
+                            if (fileRealName.startsWith(skipEntityStartOne)) {
+                                file2.delete();
+                                deleted = true;
+                                break;
+                            }
+                        }
+                        if (!deleted) {
+                            // 文件是file2.getAbsolutePath()
+                            file2.renameTo(new File(file2.getAbsolutePath() + suffix));
+                        }
                     }
                 }
             }

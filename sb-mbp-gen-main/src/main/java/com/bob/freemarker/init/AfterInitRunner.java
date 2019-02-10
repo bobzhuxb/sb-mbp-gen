@@ -51,14 +51,16 @@ public class AfterInitRunner implements CommandLineRunner {
             if (arg.equals("--help")) {
                 System.out.println("Spring Boot + MyBatis Plus代码生成器参数说明：\n\n" +
                         "注意：1、只支持mysql数据库。2、只支持3层的主包名，例如com.bob.sm。3、jdl文件中的实体字段，不要有insertTime" +
-                        "和updateTime和operateUserId字段，这两个字段分别表示数据行的插入和更新时间，由本代码生成器自动生成。4、" +
-                        "关于jdl文件的编辑：方法一（推荐）：在 https://start.jhipster.tech/jdl-studio/ 网站上编辑；方法二：使用" +
+                        "和updateTime和insertUserId和operateUserId字段，这两个字段分别表示数据行的插入和更新时间，由本代码生成器自动生成。" +
+                        "4、关于jdl文件的编辑：方法一（推荐）：在 https://start.jhipster.tech/jdl-studio/ 网站上编辑；方法二：使用" +
                         "Visual Studio Code的jhipster插件，新增jdl文件进行编辑\n\n" +
                         "    --help\t\t\t帮助及提示\n" +
                         "    --generate-template\t\t是否生成模板（yes：是且同时生成全代码和数据表。no：只生成全代码和数据表。" +
                         "update-entity：只更新实体代码和数据表。only：只生成模板。默认值：no）\n" +
                         "    --from-project-path\t\t生成模板的来源项目路径（如果generate-template填yes或only，则此参数必填）\n" +
                         "    --from-project-name\t\t生成模板的来源项目名称（默认值：sbmbpfrom）\n" +
+                        "    --skip-entity-start\t\t生成模板时过滤的实体名称开头（如果generate-template填yes或only，则需要此参数，" +
+                        "如果有多个，以英文逗号隔开。默认值：Sm）\n" +
                         "    --template-path\t\t指定的模板路径及生成的模板路径（generate-template为only或no或update-entity，" +
                         "则此参数必填。generate-template为yes，则忽略该参数。）\n" +
                         "    --template-name\t\t模板名称（默认值：sbmbptemplate）\n" +
@@ -78,7 +80,7 @@ public class AfterInitRunner implements CommandLineRunner {
                         "\n\n====> 示例：\n\n" +
                         "1、只生成模板：\n" +
                         "java -jar codeGenerate.jar --generate-template only --template-path 模板所在路径 --template-name " +
-                        "模板名称 --from-project-path 来源项目所在路径 --from-project-name 来源项目名称\n\n" +
+                        "模板名称 --from-project-path 来源项目所在路径 --from-project-name 来源项目名称 --skip-entity-start Sm\n\n" +
                         "2、只生成全代码和数据库：\n" +
                         "java -jar codeGenerate.jar --template-path 模板所在路径 --template-name 模板名称 --to-project-path " +
                         "生成的项目所在路径 --to-project-name 生成的项目名 --to-project-package 生成的项目的包名 " +
@@ -92,8 +94,8 @@ public class AfterInitRunner implements CommandLineRunner {
                         "4、生成模板、全代码和数据库：\n" +
                         "java -jar codeGenerate.jar --generate-template yes --template-path 模板所在路径 --template-name " +
                         "模板名称 --from-project-path 来源项目所在路径 --from-project-name 来源项目名称 --to-project-path " +
-                        "生成的项目所在路径 --to-project-name 生成的项目名 --to-project-package 生成的项目的包名 " +
-                        "--entity-template-path 实体模板所在的总路径 --entity-jdl-file 描述实体的JDL文件全路径名 " +
+                        "生成的项目所在路径 --skip-entity-start Sm --to-project-name 生成的项目名 --to-project-package " +
+                        "生成的项目的包名 --entity-template-path 实体模板所在的总路径 --entity-jdl-file 描述实体的JDL文件全路径名 " +
                         "--db-name 数据库名 --allow-change-table yes --delete-table-name-start Sm\n");
                 return;
             }
@@ -105,6 +107,8 @@ public class AfterInitRunner implements CommandLineRunner {
         String existProjectDirectory = null;
         // 生成框架模板的来源项目名称
         String existProjectName = "sbmbpfrom";
+        // 生成模板时过滤的实体名称开头（如果有多个，以英文逗号隔开）
+        String skipEntityStart = "Sm";
         // 项目框架模板总路径
         String templatePath = "D:\\IdeaWorkspace\\CodeAutoGenerate\\";
         // 框架模板的默认名称（文件夹名）
@@ -157,6 +161,8 @@ public class AfterInitRunner implements CommandLineRunner {
                     existProjectDirectory = args[i + 1] + "\\";
                 } else if (arg.equals("--from-project-name")) {
                     existProjectName = args[i + 1];
+                } else if (arg.equals("--skip-entity-start")) {
+                    skipEntityStart = args[i + 1];
                 } else if (arg.equals("--template-path")) {
                     templatePathExist = true;
                     templatePath = args[i + 1] + "\\";
@@ -293,7 +299,7 @@ public class AfterInitRunner implements CommandLineRunner {
         if ("yes".equals(generateTemplate) || "only".equals(generateTemplate)) {
             // 生成模板
             log.info("=======> 生成模板 start");
-            TemplateModule.generateTemplate(existProjectDirectory, templatePath, existProjectName, templateName);
+            TemplateModule.generateTemplate(existProjectDirectory, templatePath, existProjectName, templateName, skipEntityStart);
             log.info("=======> 生成模板 end");
         }
         if (!"only".equals(generateTemplate)) {

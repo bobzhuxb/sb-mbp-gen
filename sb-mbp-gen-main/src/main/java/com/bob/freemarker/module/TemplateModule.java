@@ -23,13 +23,15 @@ public class TemplateModule {
      * @param templateAllDirectory 模板所在路径
      * @param existProjectName 现有项目的项目名
      * @param templateProjectName 模板项目名
+     * @param skipEntityStart 过滤掉的实体名称开头
      * @throws Exception
      */
     public static void generateTemplate(String existProjectDirectory, String templateAllDirectory,
-                                        String existProjectName,
-                                        String templateProjectName) throws Exception {
+                                        String existProjectName, String templateProjectName,
+                                        String skipEntityStart) throws Exception {
         File projectFile = new File(existProjectDirectory + existProjectName);
         File templateFile = new File(templateAllDirectory + templateProjectName);
+        String[] skipEntityStarts = skipEntityStart.split("\\,");
         // 获取来源项目的包目录
         String existPackageName = "";
         File packageFile = new File(existProjectDirectory + existProjectName + "\\src\\main\\java");
@@ -68,12 +70,12 @@ public class TemplateModule {
         for (File level1TemplateFile : level1TemplateFiles) {
             if (level1TemplateFile.isDirectory()) {
                 if (".gradle".equals(level1TemplateFile.getName()) || ".idea".equals(level1TemplateFile.getName())
-                        || "build".equals(level1TemplateFile.getName())) {
-                    // 删除.gradle、.idea、build目录
+                        || "build".equals(level1TemplateFile.getName()) || "out".equals(level1TemplateFile.getName())) {
+                    // 删除.gradle、.idea、build、out目录
                     FileUtils.deleteDirectory(level1TemplateFile);
                 } else if ("src".equals(level1TemplateFile.getName())) {
                     // src目录所有文件追加后缀.ftl
-                    FileUtil.traverseFolderAddSuffixToFile(level1TemplateFile.getAbsolutePath(), ".ftl");
+                    FileUtil.traverseFolderAddSuffixToFile(level1TemplateFile.getAbsolutePath(), ".ftl", skipEntityStarts);
                 }
             } else {
                 // 其它项目文件追加后缀.ftl

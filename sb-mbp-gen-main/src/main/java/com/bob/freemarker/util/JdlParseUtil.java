@@ -157,7 +157,8 @@ public class JdlParseUtil {
                 // entity或relationship的结束行
                 if (entityDTO != null) {
                     // entity结束行
-                    // 最后，默认加上insertTime和updateTime和operateUserId字段
+                    // 最后，默认加上insertTime和updateTime和insertUserId和operateUserId字段
+                    entityDTO.getFieldList().add(new EntityFieldDTO("insertUserId", "Long", "创建者用户ID"));
                     entityDTO.getFieldList().add(new EntityFieldDTO("operateUserId", "Long", "操作者用户ID"));
                     entityDTO.getFieldList().add(new EntityFieldDTO("insertTime", "String", "插入时间"));
                     entityDTO.getFieldList().add(new EntityFieldDTO("updateTime", "String", "更新时间"));
@@ -187,8 +188,9 @@ public class JdlParseUtil {
                     String dictionaryType = currentDictionaryType;
                     // 使用过一次dictionaryType就置空
                     currentDictionaryType = null;
-                    // insertTime和updateTime和operateUserId字段由生成器帮助生成，自动忽略
-                    if (!"insertTime".equals(camelName) && !"updateTime".equals(camelName) && !"operateUserId".equals(camelName)) {
+                    // insertTime和updateTime和insertUserId和operateUserId字段由生成器帮助生成，自动忽略
+                    if (!"insertTime".equals(camelName) && !"updateTime".equals(camelName)
+                            && !"insertUserId".equals(camelName) && !"operateUserId".equals(camelName)) {
                         // 生成entity的field
                         EntityFieldDTO entityFieldDTO = null;
                         if (dictionaryType == null) {

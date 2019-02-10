@@ -8,6 +8,8 @@ public class BaseCriteria {
 
     private NothingFilter nothing;    // 无任何操作
 
+    private LongFilter insertUserId;    // 创建者用户ID
+
     private LongFilter operateUserId;    // 操作者用户ID
 
     private StringFilter insertTime;    // 插入时间
@@ -26,6 +28,14 @@ public class BaseCriteria {
 
     public void setNothing(NothingFilter nothing) {
         this.nothing = nothing;
+    }
+
+    public LongFilter getInsertUserId() {
+        return insertUserId;
+    }
+
+    public void setInsertUserId(LongFilter insertUserId) {
+        this.insertUserId = insertUserId;
     }
 
     public LongFilter getOperateUserId() {

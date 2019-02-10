@@ -5,6 +5,9 @@ import io.swagger.annotations.ApiModelProperty;
 
 public class BaseDomain implements Serializable {
 
+    @ApiModelProperty(value = "创建者用户ID")
+    private Long insertUserId;    // 创建者用户ID
+
     @ApiModelProperty(value = "操作者用户ID")
     private Long operateUserId;    // 操作者用户ID
 
@@ -13,6 +16,14 @@ public class BaseDomain implements Serializable {
 
     @ApiModelProperty(value = "更新时间")
     private String updateTime;    // 更新时间
+
+    public Long getInsertUserId() {
+        return insertUserId;
+    }
+
+    public void setInsertUserId(Long insertUserId) {
+        this.insertUserId = insertUserId;
+    }
 
     public Long getOperateUserId() {
         return operateUserId;

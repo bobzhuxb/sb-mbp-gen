@@ -73,7 +73,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 			<#if fromTo.relationType == "OneToMany">
 			if (${entityName}DTO.get${fromTo.fromToEntityUName}List() != null) {
 				// 清空${fromTo.fromToComment}列表
-				${fromTo.fromToEntityName}Mapper.deleteByMap(new HashMap<String, Object>() {{
+				${fromTo.fromToEntityName}Service.deleteByMapCascade(new HashMap<String, Object>() {{
 					put("${fromTo.fromColumnName}", ${entityName}Id);
 				}});
 			}
@@ -82,7 +82,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 			if (${entityName}DTO.get${fromTo.fromToEntityUName}() != null) {
 			    if (${entityName}DTO.get${fromTo.fromToEntityUName}().getId() == null) {
 				    // 删除${fromTo.fromToComment}
-				    ${fromTo.fromToEntityName}Mapper.deleteByMap(new HashMap<String, Object>() {{
+				    ${fromTo.fromToEntityName}Service.deleteByMapCascade(new HashMap<String, Object>() {{
 					    put("${fromTo.fromColumnName}", ${entityName}Id);
 				    }});
                 }
@@ -90,6 +90,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 			</#if>
 			</#list>
 		}
+        // 新增或更新${entityComment}（当前实体）
         ${eentityName} ${entityName} = new ${eentityName}();
         MyBeanUtil.copyNonNullProperties(${entityName}DTO, ${entityName});
         boolean result = saveOrUpdate(${entityName});
@@ -102,12 +103,12 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         if (${entityName}DTO.get${fromTo.fromToEntityUName}List() != null) {
             // 新增${fromTo.fromToComment}
             for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${entityName}DTO.get${fromTo.fromToEntityUName}List()) {
-                ${fromTo.fromToEntityType} ${fromTo.fromToEntityName} = new ${fromTo.fromToEntityType}();
-                MyBeanUtil.copyNonNullProperties(${fromTo.fromToEntityName}DTO, ${fromTo.fromToEntityName});
-                ${fromTo.fromToEntityName}.set${fromTo.toFromEntityUName}Id(${entityName}Id);
-                ${fromTo.fromToEntityName}.setInsertTime(${entityName}DTO.getInsertTime());
-                ${fromTo.fromToEntityName}.setUpdateTime(${entityName}DTO.getUpdateTime());
-                ${fromTo.fromToEntityName}Mapper.insert(${fromTo.fromToEntityName});
+                ${fromTo.fromToEntityName}DTO.setId(null);
+                ${fromTo.fromToEntityName}DTO.set${fromTo.toFromEntityUName}Id(${entityName}Id);
+                ${fromTo.fromToEntityName}DTO.setOperateUserId(${entityName}DTO.getOperateUserId());
+                ${fromTo.fromToEntityName}DTO.setInsertTime(${entityName}DTO.getInsertTime());
+                ${fromTo.fromToEntityName}DTO.setUpdateTime(${entityName}DTO.getUpdateTime());
+                ${fromTo.fromToEntityName}Service.save(${fromTo.fromToEntityName}DTO);
 			}
         }
 		</#if>
@@ -115,18 +116,11 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         if (${entityName}DTO.get${fromTo.fromToEntityUName}() != null) {
             // 新增或更新${fromTo.fromToComment}
             ${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO = ${entityName}DTO.get${fromTo.fromToEntityUName}();
-            ${fromTo.fromToEntityType} ${fromTo.fromToEntityName} = new ${fromTo.fromToEntityType}();
-            MyBeanUtil.copyNonNullProperties(${fromTo.fromToEntityName}DTO, ${fromTo.fromToEntityName});
-            ${fromTo.fromToEntityName}.set${fromTo.toFromEntityUName}Id(${entityName}Id);
-            ${fromTo.fromToEntityName}.setInsertTime(${entityName}DTO.getInsertTime());
-            ${fromTo.fromToEntityName}.setUpdateTime(${entityName}DTO.getUpdateTime());
-			if (${entityName}DTO.get${fromTo.fromToEntityUName}().getId() == null) {
-                // 新增
-                ${fromTo.fromToEntityName}Mapper.insert(${fromTo.fromToEntityName});
-            } else {
-                // 更新
-                ${fromTo.fromToEntityName}Mapper.updateById(${fromTo.fromToEntityName});
-            }
+            ${fromTo.fromToEntityName}DTO.set${fromTo.toFromEntityUName}Id(${entityName}Id);
+            ${fromTo.fromToEntityName}DTO.setOperateUserId(${entityName}DTO.getOperateUserId());
+            ${fromTo.fromToEntityName}DTO.setInsertTime(${entityName}DTO.getInsertTime());
+            ${fromTo.fromToEntityName}DTO.setUpdateTime(${entityName}DTO.getUpdateTime());
+			${fromTo.fromToEntityName}Service.save(${fromTo.fromToEntityName}DTO);
         }
 		</#if>
 		</#list>
