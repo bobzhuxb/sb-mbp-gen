@@ -93,6 +93,10 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         // 新增或更新${entityComment}（当前实体）
         ${eentityName} ${entityName} = new ${eentityName}();
         MyBeanUtil.copyNonNullProperties(${entityName}DTO, ${entityName});
+        if (${entityName}.getId() == null) {
+            // 新增
+            ${entityName}.setInsertUserId(${entityName}DTO.getOperateUserId());
+        }
         boolean result = saveOrUpdate(${entityName});
         long ${entityName}Id = ${entityName}.getId();
 		<#if fromToList?? && (fromToList?size > 0) >
@@ -105,6 +109,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${entityName}DTO.get${fromTo.fromToEntityUName}List()) {
                 ${fromTo.fromToEntityName}DTO.setId(null);
                 ${fromTo.fromToEntityName}DTO.set${fromTo.toFromEntityUName}Id(${entityName}Id);
+                ${fromTo.fromToEntityName}DTO.setInsertUserId(${entityName}DTO.getOperateUserId());
                 ${fromTo.fromToEntityName}DTO.setOperateUserId(${entityName}DTO.getOperateUserId());
                 ${fromTo.fromToEntityName}DTO.setInsertTime(${entityName}DTO.getInsertTime());
                 ${fromTo.fromToEntityName}DTO.setUpdateTime(${entityName}DTO.getUpdateTime());
@@ -117,6 +122,10 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             // 新增或更新${fromTo.fromToComment}
             ${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO = ${entityName}DTO.get${fromTo.fromToEntityUName}();
             ${fromTo.fromToEntityName}DTO.set${fromTo.toFromEntityUName}Id(${entityName}Id);
+            if (${fromTo.fromToEntityName}DTO.getId() == null) {
+                // 新增
+                ${fromTo.fromToEntityName}DTO.setInsertUserId(${entityName}DTO.getOperateUserId());
+            }
             ${fromTo.fromToEntityName}DTO.setOperateUserId(${entityName}DTO.getOperateUserId());
             ${fromTo.fromToEntityName}DTO.setInsertTime(${entityName}DTO.getInsertTime());
             ${fromTo.fromToEntityName}DTO.setUpdateTime(${entityName}DTO.getUpdateTime());
