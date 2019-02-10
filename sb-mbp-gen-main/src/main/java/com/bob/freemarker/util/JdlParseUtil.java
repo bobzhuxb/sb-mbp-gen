@@ -25,9 +25,12 @@ public class JdlParseUtil {
         List<EntityDTO> entityDTOList = new ArrayList<>();
         // relationship列表
         List<RelationshipDTO> relationshipDTOList = new ArrayList<>();
-        // 设置entity和relationship
+        // useDictionary列表
+        List<EntityDTO> useDictionaryList = new ArrayList<>();
+        // 设置entity、relationship和useDictionary
         erdto.setEntityDTOList(entityDTOList);
         erdto.setRelationshipDTOList(relationshipDTOList);
+        erdto.setUseDictionaryList(useDictionaryList);
         // JDL文件所有行
         List<String> jdlLineList = FileUtil.readFileByLines(fullFileName, charsetName);
         // 当前注释内容
@@ -56,23 +59,20 @@ public class JdlParseUtil {
             }
             if (jdlLine.startsWith("//")) {
                 // 注释开始行，获取注释行内容
-                Pattern pattern = Pattern.compile("//\\s+([^#]+)##数据字典类型：([^#]+)##");   // 匹配的模式
-                Matcher matcher = pattern.matcher(jdlLine);
-                if (matcher.find()) {
-                    // 关联数据字典的注释行
-                    currentComment = "// " + matcher.group(1);
-                    currentDictionaryType = matcher.group(2);
+                if (jdlLine.startsWith("//#DIC_TYPE:")) {
+                    // 关联的数据字典类型行
+                    currentDictionaryType = jdlLine.substring(12).trim();
                 } else if (jdlLine.startsWith("//@")) {
                     // 注解行
                     if (currentAnnotationList == null) {
                         currentAnnotationList = new ArrayList<>();
                     }
-                    currentAnnotationList.add(jdlLine.substring(2));
+                    currentAnnotationList.add(jdlLine.substring(2).trim());
                 } else if (jdlLine.startsWith("//!CASCADE:")) {
                     // 级联删除模式
-                    currentDeleteType = jdlLine.substring(11);
+                    currentDeleteType = jdlLine.substring(11).trim();
                 } else {
-                    // 普通注释行
+                    // 普通注释行（包含两个斜杠和空格）
                     currentComment = jdlLine;
                 }
             } else if (jdlLine.contains("{")) {
@@ -208,6 +208,32 @@ public class JdlParseUtil {
                             }
                             entityFieldDTO = new EntityFieldDTO(camelName, javaType, fieldComment, camelNameDic,
                                     dictionaryType, commentDic);
+                            // 设置使用数据字典的实体及字段
+                            EntityDTO nowUseDictionary = null;
+                            List<EntityFieldDTO> nowUseDictionaryFieldList = null;
+                            for (EntityDTO useDictionary : useDictionaryList) {
+                                if (useDictionary.getEentityName().equals(entityDTO.getEentityName())) {
+                                    nowUseDictionary = useDictionary;
+                                    break;
+                                }
+                            }
+                            if (nowUseDictionary == null) {
+                                nowUseDictionary = new EntityDTO();
+                                String eentityName = entityDTO.getEentityName();
+                                nowUseDictionary.setEentityName(eentityName);
+                                nowUseDictionary.setEntityName(eentityName.substring(0, 1).toLowerCase() + eentityName.substring(1));
+                                nowUseDictionary.setEntityComment(entityDTO.getEntityComment());
+                                nowUseDictionaryFieldList = new ArrayList<>();
+                                nowUseDictionary.setFieldList(nowUseDictionaryFieldList);
+                                useDictionaryList.add(nowUseDictionary);
+                            } else {
+                                nowUseDictionaryFieldList = nowUseDictionary.getFieldList();
+                            }
+                            EntityFieldDTO nowUseDictionaryField = new EntityFieldDTO();
+                            nowUseDictionaryField.setCamelName(camelName);
+                            nowUseDictionaryField.setCamelNameUnderline(StringUtil.camelToUnderline(camelName));
+                            nowUseDictionaryField.setDictionaryType(dictionaryType);
+                            nowUseDictionaryFieldList.add(nowUseDictionaryField);
                         }
                         entityFieldDTO.setAnnotationList(currentAnnotationList);
                         // 使用过一次annotationList就置空

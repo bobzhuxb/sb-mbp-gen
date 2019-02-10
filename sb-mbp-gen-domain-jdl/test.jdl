@@ -27,10 +27,16 @@ entity SmPerson {
 	//@NotBlank
 	//@ValidCell
     cell String
-    // 民族代码##数据字典类型：NATION##
+    // 民族代码
+	//#DIC_TYPE:NATION
 	//@NotBlank
 	//@Size(min = 1, max = 255)
     nationCode String
+    // 国家代码
+	//#DIC_TYPE:COUNTRY
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    countryCode String
 }
 
 // 会议
@@ -42,7 +48,8 @@ entity SmMeeting {
 	//@NotBlank
 	//@Size(min = 1, max = 255)
     name String
-    // 所属科室代码##数据字典类型：KESHI##
+    // 所属科室代码
+	//#DIC_TYPE:KESHI
 	//@NotBlank
 	//@Size(min = 1, max = 255)
     ksCode String
@@ -120,6 +127,7 @@ relationship OneToMany {
     //!CASCADE:NULL
 	SmPerson{bsmMeeting} to SmMeeting{contractor}
     // 会议{会议日程}
+    //!CASCADE:FORBIDDEN
 	SmMeeting{smMeetingSchedule} to SmMeetingSchedule{smMeeting}
     // 会议{会议嘉宾}
 	SmMeeting{smMeetingGuest} to SmMeetingGuest{smMeeting}

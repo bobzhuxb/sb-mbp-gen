@@ -18,6 +18,7 @@ import ${packageName}.security.SecurityUtils;
 import ${packageName}.service.*;
 import ${packageName}.util.MbpUtil;
 import ${packageName}.util.MyBeanUtil;
+import ${packageName}.web.rest.errors.CommonException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -53,6 +51,13 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     @Autowired
     private ${fromTo.fromToEntityType}Service ${fromTo.fromToEntityName}Service;
 	</#list>
+	<#if eentityName == 'BaseDictionary' && (useDictionaryList)?? && (useDictionaryList?size > 0) >
+	<#list useDictionaryList as useDictionary>
+
+    @Autowired
+	private ${useDictionary.eentityName}Mapper ${useDictionary.entityName}Mapper;
+	</#list>
+	</#if>
 
     /**
      * 新增或更新
@@ -149,13 +154,36 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 		<#if (fromToList)?? && (fromToList?size > 0) >
         // 删除级联实体或置空关联字段
         listByMap(columnMap).forEach(${entityName} -> {
+			<#if eentityName == 'BaseDictionary' && (useDictionaryList)?? && (useDictionaryList?size > 0) >
+            // 判断是否有使用该数据字典的数据
+			<#list useDictionaryList as useDictionary>
+			<#list useDictionary.fieldList as useDictionaryField>
+            if ("${useDictionaryField.dictionaryType}".equals(baseDictionary.getDicType())) {
+                int ${useDictionary.entityName}Count = ${useDictionary.entityName}Mapper.selectCount(
+                        new QueryWrapper<${useDictionary.eentityName}>().eq("${useDictionaryField.camelNameUnderline}", baseDictionary.getDicCode()));
+                if (${useDictionary.entityName}Count > 0) {
+                    throw new CommonException("有使用该数据字典的${useDictionary.entityComment}信息，无法删除。");
+                }
+            }
+			</#list>
+			</#list>
+			</#if>
 			<#list fromToList as fromTo>
 			<#if fromTo.fromToDeleteType == 'DELETE'>
             // 删除级联的${fromTo.fromToComment}
             ${fromTo.fromToEntityName}Service.deleteByMapCascade(new HashMap<String, Object>() {{put("${fromTo.fromColumnName}", ${entityName}.getId());}});
-			<#else>
+			</#if>
+			<#if fromTo.fromToDeleteType == 'NULL'>
             // ${fromTo.fromToComment}的${fromTo.fromColumnName}列级联置空
             ${fromTo.fromToEntityName}Mapper.${fromTo.toFromEntityName}IdCascadeToNull(${entityName}.getId());
+			</#if>
+			<#if fromTo.fromToDeleteType == 'FORBIDDEN'>
+            // 有级联的${fromTo.fromToComment}则不允许删除
+            int ${fromTo.fromToEntityName}Count = ${fromTo.fromToEntityName}Mapper.selectCount(
+                    new QueryWrapper<${fromTo.fromToEntityType}>().eq("${fromTo.fromColumnName}", ${entityName}.getId()));
+            if (${fromTo.fromToEntityName}Count > 0) {
+                throw new CommonException("有存在的${fromTo.fromToComment}，无法删除。");
+            }
 			</#if>
 			</#list>
         });

@@ -21,6 +21,8 @@ public class EntityFieldDTO {
     private String dictionaryType;      // 对应的数据字典类型
     private List<String> annotationList;        // DTO的成员变量的注解
 
+    public EntityFieldDTO() {}
+
     public EntityFieldDTO(String camelName, String javaType, String comment, String camelNameDic,
                           String dictionaryType, String commentDic) {
         this(camelName, javaType, comment);

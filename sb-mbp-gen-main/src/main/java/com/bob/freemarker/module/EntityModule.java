@@ -42,6 +42,8 @@ public class EntityModule {
         List<EntityDTO> entityDTOList = erdto.getEntityDTOList();
         // 获取relationshipList
         List<RelationshipDTO> relationshipList = erdto.getRelationshipDTOList();
+        // 获取useDictionaryList
+        List<EntityDTO> useDictionaryList = erdto.getUseDictionaryList();
         for (EntityDTO entityDTO : entityDTOList) {
             // 与本实体相关的relationship
             List<RelationshipDTO> relationshipListCurrent = new ArrayList<>();
@@ -56,7 +58,7 @@ public class EntityModule {
             entityDTO.setTableName(StringUtil.camelToUnderline(eentityName));
             List<EntityFieldDTO> fieldList = entityDTO.getFieldList();
             generateEntity(projectPath + projectName + "\\", packageName, entityComment, eentityName, fieldList,
-                    relationshipListCurrent, entityTemplatePath, cfg);
+                    relationshipListCurrent, useDictionaryList, entityTemplatePath, cfg);
         }
         return erdto;
     }
@@ -74,8 +76,8 @@ public class EntityModule {
      */
     private static void generateEntity(String projectDirectory, String packageName, String entityComment,
                                        String eentityName, List<EntityFieldDTO> fieldList,
-                                       List<RelationshipDTO> relationshipList, String entityTemplatePath,
-                                       Configuration cfg) throws Exception {
+                                       List<RelationshipDTO> relationshipList, List<EntityDTO> useDictionaryList,
+                                       String entityTemplatePath, Configuration cfg) throws Exception {
         Map root = new HashMap();
         // 主实体内容
         root.put("packageName", packageName);
@@ -88,6 +90,7 @@ public class EntityModule {
         root.put("tableName", tableName);
         root.put("entityUrl", entityUrl);
         root.put("fieldList", fieldList);
+        root.put("useDictionaryList", useDictionaryList);
 
         // from表示当前entity，to表示关联entity，fromTo表示当前entity的子属性，toFrom表示当前entity的父属性
         List<RelationshipDTO> fromToList = new ArrayList<>();

@@ -9,6 +9,7 @@ public class EntityDTO {
 
     private String entityComment;   // 类注释
     private String eentityName;     // 首字母大写（驼峰标识）的实体名称
+    private String entityName;      // 首字母小写（驼峰标识）的实体名称
     private String entityUrl;       // 实体在URL中的名称
     private String tableName;       // 实体对应的数据库表名
     private List<String> annotationList;        // 实体DTO的注解
@@ -28,6 +29,14 @@ public class EntityDTO {
 
     public void setEentityName(String eentityName) {
         this.eentityName = eentityName;
+    }
+
+    public String getEntityName() {
+        return entityName;
+    }
+
+    public void setEntityName(String entityName) {
+        this.entityName = entityName;
     }
 
     public String getEntityUrl() {

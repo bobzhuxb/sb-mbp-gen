@@ -83,23 +83,6 @@ public final class Constants {
         }
     }
 
-    // 数据字典类别
-    public enum dictionaryType implements EnumInter {
-        HOSPITAL_DEPART("HOSPITAL_DEPART", "科室");
-        private String value;
-        private String name;
-        private dictionaryType(String value, String name) {
-            this.value = value;
-            this.name = name;
-        }
-        public String getValue(){
-            return value;
-        }
-        public String getName(){
-            return name;
-        }
-    }
-
     // 操作许可是否允许被配置用于权限或用户
     public enum permissionAllowConfig implements EnumInter {
         YES(1, "允许配置"), NO(2, "不允许配置");
@@ -136,7 +119,7 @@ public final class Constants {
 
     // 系统通用返回状态
     public enum commonReturnStatus implements EnumInter {
-        SUCCESS("0", "操作成功"), FAIL("1", "操作失败");
+        SUCCESS("1", "操作成功"), FAIL("2", "操作失败");
         private String value;
         private String name;
         private commonReturnStatus(String value, String name) {

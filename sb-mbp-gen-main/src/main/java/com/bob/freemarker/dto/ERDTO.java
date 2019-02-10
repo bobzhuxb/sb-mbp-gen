@@ -7,8 +7,9 @@ import java.util.List;
  */
 public class ERDTO {
 
-    private List<EntityDTO> entityDTOList;
-    private List<RelationshipDTO> relationshipDTOList;
+    private List<EntityDTO> entityDTOList;      // 实体List
+    private List<RelationshipDTO> relationshipDTOList;      // 关系List
+    private List<EntityDTO> useDictionaryList;      // 使用数据字典的实体及字段List
 
     public List<EntityDTO> getEntityDTOList() {
         return entityDTOList;
@@ -24,5 +25,13 @@ public class ERDTO {
 
     public void setRelationshipDTOList(List<RelationshipDTO> relationshipDTOList) {
         this.relationshipDTOList = relationshipDTOList;
+    }
+
+    public List<EntityDTO> getUseDictionaryList() {
+        return useDictionaryList;
+    }
+
+    public void setUseDictionaryList(List<EntityDTO> useDictionaryList) {
+        this.useDictionaryList = useDictionaryList;
     }
 }

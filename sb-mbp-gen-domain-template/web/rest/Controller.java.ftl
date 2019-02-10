@@ -64,7 +64,13 @@ public class ${eentityName}Controller {
         if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
             return ResponseEntity.ok().headers(null).body(returnCommonDTO);
         }
-        ReturnCommonDTO resultDTO = ${entityName}Service.save(${entityName}DTO);
+        ReturnCommonDTO resultDTO = null;
+        try {
+            resultDTO = ${entityName}Service.save(${entityName}DTO);
+        } catch (CommonException e) {
+            log.error(e.getMessage(), e);
+            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
+        }
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -96,7 +102,13 @@ public class ${eentityName}Controller {
         if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
             return ResponseEntity.ok().headers(null).body(returnCommonDTO);
         }
-        ReturnCommonDTO resultDTO = ${entityName}Service.save(${entityName}DTO);
+        ReturnCommonDTO resultDTO = null;
+        try {
+            resultDTO = ${entityName}Service.save(${entityName}DTO);
+        } catch (CommonException e) {
+            log.error(e.getMessage(), e);
+            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
+        }
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -113,7 +125,13 @@ public class ${eentityName}Controller {
     @DeleteMapping("/${entityUrl}/{id}")
     public ResponseEntity<ReturnCommonDTO> delete${eentityName}(@ApiParam(name="主键ID") @PathVariable Long id) {
         log.debug("Controller ==> 根据ID删除${eentityName} : {}", id);
-        ReturnCommonDTO resultDTO = ${entityName}Service.deleteById(id);
+        ReturnCommonDTO resultDTO = null;
+        try {
+            resultDTO = ${entityName}Service.deleteById(id);
+        } catch (CommonException e) {
+            log.error(e.getMessage(), e);
+            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
+        }
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
