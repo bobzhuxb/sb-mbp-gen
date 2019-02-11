@@ -63,6 +63,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 新增或更新
      * @param ${entityName}DTO 新增或更新的内容
 	 * @return 结果返回码和消息
+	 * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
      */
     public ReturnCommonDTO save(${eentityName}DTO ${entityName}DTO) {
         log.debug("Service ==> 新增或修改${eentityName} {}", ${entityName}DTO);
@@ -141,6 +142,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 根据ID删除数据（同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
      * @param id 主键ID
      * @return 结果返回码和消息
+	 * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
      */
     public ReturnCommonDTO deleteById(Long id) {
         log.debug("Service ==> 根据ID删除${eentityName}DTO {}", id);
@@ -151,6 +153,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 根据ID列表删除数据（同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
      * @param idList 主键ID列表
      * @return 结果返回码和消息
+	 * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
      */
     public ReturnCommonDTO deleteByIdList(List<Long> idList) {
         log.debug("Service ==> 根据ID列表删除${eentityName}DTO {}", idList);
@@ -167,6 +170,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 根据指定条件删除数据（级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
      * @param columnMap 表字段map对象
      * @return 结果返回码和消息
+	 * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
      */
     public ReturnCommonDTO deleteByMapCascade(Map<String, Object> columnMap) {
         log.debug("Service ==> 根据指定Map删除${eentityName}DTO {}", columnMap);
