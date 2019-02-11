@@ -1,4 +1,4 @@
-package com.ts.tm.annotation.validation;
+package com.bob.sm.annotation.validation;
 
 import org.hibernate.validator.constraints.CompositionType;
 import org.hibernate.validator.constraints.ConstraintComposition;

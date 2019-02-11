@@ -283,6 +283,11 @@ public class AfterInitRunner implements CommandLineRunner {
         root.put("projectName", projectName);
         root.put("ProjectName", ProjectName);
         root.put("packageName", packageName);
+        root.put("dbIp", dbIp);
+        root.put("dbPort", dbPort);
+        root.put("dbName", dbName);
+        root.put("dbUsername", dbUsername);
+        root.put("dbPassword", dbPassword);
 
         // FreeMarker配置文件
         cfg = new Configuration(Configuration.VERSION_2_3_23);

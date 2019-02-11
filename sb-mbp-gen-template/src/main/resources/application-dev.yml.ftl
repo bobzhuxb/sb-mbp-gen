@@ -6,9 +6,9 @@ logging:
 spring:
     datasource:
         driverClassName: com.mysql.cj.jdbc.Driver
-        url: jdbc:mysql://localhost:3306/sbmbp?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false
-        username: root
-        password: 123456
+        url: jdbc:mysql://${dbIp}:${dbPort}/${dbName}?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false
+        username: ${dbUsername}
+        password: ${dbPassword}
     http:
         multipart:
             location: D:/localFile/sbmbp

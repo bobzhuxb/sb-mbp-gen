@@ -110,6 +110,7 @@ public class TemplateModule {
                 }
                 List<String> lineListNew = new ArrayList<>();
                 List<String> lineList = FileUtil.readFileByLines(subTemplateFile, "UTF-8");
+                boolean dbConfigStart = false;
                 for (String line : lineList) {
                     // 1、用正则 替换，源：\$\{([^\$\{\}]*)\}  目标：\$\{r'\$\{$1\}'\}
                     Pattern pattern = Pattern.compile(regex);    // 匹配的模式
@@ -132,7 +133,27 @@ public class TemplateModule {
                             .replace(upperProjectName, "${ProjectName}")
                             .replace(existPackageName, "${packageName}");
                     // 3、将yml配置文件中的数据库配置替换，包括${dbIp}、${dbPort}、${dbName}、${dbUsername}、${dbPassword}
-                    // 这个太麻烦，不做了，自己最后手动改吧
+                    if (subTemplateFile.getName().matches("application-\\w+\\.yml\\.ftl")) {
+                        Pattern patternUrl = Pattern.compile("url: jdbc:mysql://([^/\\:\\?])+\\:(\\d+)/(\\w+)\\?(.+)");    // 匹配的模式
+                        Matcher matcherUrl = patternUrl.matcher(line);
+                        if (matcherUrl.find()) {
+                            line = "        url: jdbc:mysql://${dbIp}:${dbPort}/${dbName}?" + matcherUrl.group(4);
+                            dbConfigStart = true;
+                        } else if (dbConfigStart) {
+                            Pattern patternUsername = Pattern.compile("username: (.+)");    // 匹配的模式
+                            Matcher matcherUsername = patternUsername.matcher(line);
+                            if (matcherUsername.find()) {
+                                line = "        username: ${dbUsername}";
+                            } else {
+                                Pattern patternPassword = Pattern.compile("password: (.+)");    // 匹配的模式
+                                Matcher matcherPassword = patternPassword.matcher(line);
+                                if (matcherPassword.find()) {
+                                    line = "        password: ${dbPassword}";
+                                    dbConfigStart = false;
+                                }
+                            }
+                        }
+                    }
                     // 最后，把修改后的行添加到lineListNew中
                     lineListNew.add(line);
                 }
