@@ -106,7 +106,7 @@ public class CommonServiceImpl implements CommonService {
             response.setCharacterEncoding("UTF-8");
             response.setContentType("application/vnd.ms-excel");
             // 一定要设置成xlsx格式
-            response.setHeader("Content-Disposition", "attachment;filename="
+            response.setHeader("Content-Disposition", "attachment;filename*=utf-8'zh_cn'"
                     + URLEncoder.encode(fileName + ".xlsx", "UTF-8"));
             // 输出流
             ServletOutputStream outputStream = null;
