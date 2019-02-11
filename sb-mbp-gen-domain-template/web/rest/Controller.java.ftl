@@ -113,11 +113,11 @@ public class ${eentityName}Controller {
     }
 
     /**
-     * 删除
+     * 单个删除
      * @param id 主键ID
      * @return 结果返回码和消息
      */
-    @ApiOperation(value="删除${entityComment}")
+    @ApiOperation(value="单个删除${entityComment}")
     @ApiResponses({
             @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败\n" +
                     "errMsg - 错误消息")
@@ -128,6 +128,33 @@ public class ${eentityName}Controller {
         ReturnCommonDTO resultDTO = null;
         try {
             resultDTO = ${entityName}Service.deleteById(id);
+        } catch (CommonException e) {
+            log.error(e.getMessage(), e);
+            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
+        }
+        return ResponseEntity.ok().headers(null).body(resultDTO);
+    }
+
+    /**
+     * 批量删除
+     * @param idList 主键ID列表
+     * @return 结果返回码和消息
+     */
+    @ApiOperation(value="批量删除${entityComment}")
+    @ApiResponses({
+            @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败\n" +
+                    "errMsg - 错误消息")
+    })
+    @DeleteMapping("/${entityUrl}")
+    public ResponseEntity<ReturnCommonDTO> delete${eentityName}s(
+            @ApiParam("[\n" +
+					"id1,id2,id3\n" +
+                    "]")
+        @RequestBody List<Long> idList) {
+        log.debug("Controller ==> 批量删除${eentityName} : {}", idList);
+        ReturnCommonDTO resultDTO = null;
+        try {
+            resultDTO = ${entityName}Service.deleteByIdList(idList);
         } catch (CommonException e) {
             log.error(e.getMessage(), e);
             resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());

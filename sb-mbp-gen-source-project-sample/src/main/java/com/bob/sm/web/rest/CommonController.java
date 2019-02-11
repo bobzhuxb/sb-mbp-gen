@@ -1,8 +1,8 @@
-package ${packageName}.web.rest;
+package com.bob.sm.web.rest;
 
-import ${packageName}.dto.help.ReturnFileUploadDTO;
-import ${packageName}.service.CommonService;
-import ${packageName}.web.rest.errors.InternalServerErrorException;
+import com.bob.sm.dto.help.ReturnFileUploadDTO;
+import com.bob.sm.service.CommonService;
+import com.bob.sm.web.rest.errors.InternalServerErrorException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -19,9 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 @Api(description="共通接口")
 @RestController
 @RequestMapping("/api")
-public class CommonResource {
+public class CommonController {
 
-    private final Logger log = LoggerFactory.getLogger(CommonResource.class);
+    private final Logger log = LoggerFactory.getLogger(CommonController.class);
 
     @Autowired
     private CommonService commonService;

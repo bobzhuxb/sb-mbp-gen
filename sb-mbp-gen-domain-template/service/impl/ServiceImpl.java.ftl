@@ -148,6 +148,22 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     }
 
     /**
+     * 根据ID列表删除数据（同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
+     * @param idList 主键ID列表
+     * @return 结果返回码和消息
+     */
+    public ReturnCommonDTO deleteByIdList(List<Long> idList) {
+        log.debug("Service ==> 根据ID列表删除${eentityName}DTO {}", idList);
+        for (long id : idList) {
+		    ReturnCommonDTO returnCommonDTO = deleteByMapCascade(new HashMap<String, Object>() {{put("id", id);}});
+            if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
+                throw new CommonException(returnCommonDTO.getErrMsg());
+            }
+        }
+        return new ReturnCommonDTO();
+    }
+
+    /**
      * 根据指定条件删除数据（级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
      * @param columnMap 表字段map对象
      * @return 结果返回码和消息

@@ -21,9 +21,9 @@ import javax.validation.Valid;
 @Api(description="微信")
 @RestController
 @RequestMapping("/api")
-public class WxResource {
+public class WxController {
 
-    private final Logger log = LoggerFactory.getLogger(WxResource.class);
+    private final Logger log = LoggerFactory.getLogger(WxController.class);
 
     @Autowired
     private WxService wxService;
