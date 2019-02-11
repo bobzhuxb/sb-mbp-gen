@@ -2,7 +2,7 @@ package ${packageName}.service.impl;
 
 import ${packageName}.config.YmlConfig;
 import ${packageName}.dto.help.ReturnFileUploadDTO;
-import ${packageName}.service.FileService;
+import ${packageName}.service.CommonService;
 import ${packageName}.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +16,9 @@ import java.util.Date;
 import java.util.Random;
 
 @Service
-public class FileServiceImpl implements FileService {
+public class CommonServiceImpl implements CommonService {
 
-    private final Logger log = LoggerFactory.getLogger(FileServiceImpl.class);
+    private final Logger log = LoggerFactory.getLogger(CommonServiceImpl.class);
 
     @Autowired
     private YmlConfig ymlConfig;

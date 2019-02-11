@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bob.sm.mapper.SmMeetingGuestPhotoMapper">
+
+    <select id="joinSelectList" resultType="com.bob.sm.domain.SmMeetingGuestPhoto">
+        ${queryMain} ${ew.customSqlSegment}
+    </select>
+
+    <select id="joinSelectPage" resultType="com.bob.sm.domain.SmMeetingGuestPhoto">
+        ${queryMain} ${ew.customSqlSegment}
+    </select>
+
+    <select id="joinSelectCount" resultType="int">
+        ${queryMain} ${ew.customSqlSegment}
+    </select>
+
+    <update id="smMeetingGuestIdCascadeToNull">
+        UPDATE sm_meeting_guest_photo SET sm_meeting_guest_id = null WHERE sm_meeting_guest_id = #{smMeetingGuestId}
+    </update>
+
+</mapper>

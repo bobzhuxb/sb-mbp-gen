@@ -1,32 +1,29 @@
 package com.bob.sm.domain;
 
-import com.bob.sm.domain.BaseDomain;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * 会议日程
  */
-@ApiModel(description = "会议日程")
 @Data
+@TableName(value = "sm_meeting_schedule")
 public class SmMeetingSchedule extends BaseDomain {
 
     private static final long serialVersionUID = 1L;
 
     private Long id;
 
-    @ApiModelProperty(value = "开始日期")
-    private String startTime;    // 开始日期
+    private String startTime;    // ValidDate
 
-    @ApiModelProperty(value = "结束日期")
-    private String entTime;    // 结束日期
+    private String entTime;    // ValidDate
 
-    @ApiModelProperty(value = "内容")
     private String content;    // 内容
+
+    private Long insertUserId;    // 创建者用户ID
 
     private Long smMeetingId;    // 会议ID
 
@@ -62,12 +59,27 @@ public class SmMeetingSchedule extends BaseDomain {
         this.content = content;
     }
 
+    public Long getInsertUserId() {
+        return insertUserId;
+    }
+
+    public void setInsertUserId(Long insertUserId) {
+        this.insertUserId = insertUserId;
+    }
+
     public Long getSmMeetingId() {
         return smMeetingId;
     }
 
     public void setSmMeetingId(Long smMeetingId) {
         this.smMeetingId = smMeetingId;
+    }
+	
+    /**
+     * 获取表名字
+     */
+    public static String getTableName() {
+        return (SmMeetingSchedule.class.getAnnotation(TableName.class)).value();
     }
 
     @Override
@@ -97,6 +109,10 @@ public class SmMeetingSchedule extends BaseDomain {
             ", startTime='" + getStartTime() + "'" +
             ", entTime='" + getEntTime() + "'" +
             ", content='" + getContent() + "'" +
+            ", insertUserId=" + getInsertUserId() +
+            ", operateUserId=" + getOperateUserId() +
+            ", insertTime='" + getInsertTime() + "'" +
+            ", updateTime='" + getUpdateTime() + "'" +
             ", smMeetingId=" + getSmMeetingId() +
             "}";
     }

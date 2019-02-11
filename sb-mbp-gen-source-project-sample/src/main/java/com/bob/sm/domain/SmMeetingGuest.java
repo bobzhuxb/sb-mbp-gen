@@ -1,29 +1,27 @@
 package com.bob.sm.domain;
 
-import com.bob.sm.domain.BaseDomain;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * 会议嘉宾
  */
-@ApiModel(description = "会议嘉宾")
 @Data
+@TableName(value = "sm_meeting_guest")
 public class SmMeetingGuest extends BaseDomain {
 
     private static final long serialVersionUID = 1L;
 
     private Long id;
 
-    @ApiModelProperty(value = "姓名")
     private String name;    // 姓名
 
-    @ApiModelProperty(value = "描述")
-    private String desc;    // 描述
+    private String descr;    // 描述
+
+    private Long insertUserId;    // 创建者用户ID
 
     private Long smMeetingId;    // 会议ID
 
@@ -43,12 +41,20 @@ public class SmMeetingGuest extends BaseDomain {
         this.name = name;
     }
 
-    public String getDesc() {
-        return desc;
+    public String getDescr() {
+        return descr;
     }
 
-    public void setDesc(String desc) {
-        this.desc = desc;
+    public void setDescr(String descr) {
+        this.descr = descr;
+    }
+
+    public Long getInsertUserId() {
+        return insertUserId;
+    }
+
+    public void setInsertUserId(Long insertUserId) {
+        this.insertUserId = insertUserId;
     }
 
     public Long getSmMeetingId() {
@@ -57,6 +63,13 @@ public class SmMeetingGuest extends BaseDomain {
 
     public void setSmMeetingId(Long smMeetingId) {
         this.smMeetingId = smMeetingId;
+    }
+	
+    /**
+     * 获取表名字
+     */
+    public static String getTableName() {
+        return (SmMeetingGuest.class.getAnnotation(TableName.class)).value();
     }
 
     @Override
@@ -84,7 +97,11 @@ public class SmMeetingGuest extends BaseDomain {
         return "SmMeetingGuest{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
-            ", desc='" + getDesc() + "'" +
+            ", descr='" + getDescr() + "'" +
+            ", insertUserId=" + getInsertUserId() +
+            ", operateUserId=" + getOperateUserId() +
+            ", insertTime='" + getInsertTime() + "'" +
+            ", updateTime='" + getUpdateTime() + "'" +
             ", smMeetingId=" + getSmMeetingId() +
             "}";
     }

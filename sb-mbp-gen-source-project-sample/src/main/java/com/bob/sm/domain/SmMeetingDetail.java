@@ -1,29 +1,27 @@
 package com.bob.sm.domain;
 
-import com.bob.sm.domain.BaseDomain;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * 会议详细
  */
-@ApiModel(description = "会议详细")
 @Data
+@TableName(value = "sm_meeting_detail")
 public class SmMeetingDetail extends BaseDomain {
 
     private static final long serialVersionUID = 1L;
 
     private Long id;
 
-    @ApiModelProperty(value = "详细描述")
     private String detailInfo;    // 详细描述
 
-    @ApiModelProperty(value = "详情浏览次数")
     private Integer detailViews;    // 详情浏览次数
+
+    private Long insertUserId;    // 创建者用户ID
 
     private Long smMeetingId;    // 会议ID
 
@@ -51,12 +49,27 @@ public class SmMeetingDetail extends BaseDomain {
         this.detailViews = detailViews;
     }
 
+    public Long getInsertUserId() {
+        return insertUserId;
+    }
+
+    public void setInsertUserId(Long insertUserId) {
+        this.insertUserId = insertUserId;
+    }
+
     public Long getSmMeetingId() {
         return smMeetingId;
     }
 
     public void setSmMeetingId(Long smMeetingId) {
         this.smMeetingId = smMeetingId;
+    }
+	
+    /**
+     * 获取表名字
+     */
+    public static String getTableName() {
+        return (SmMeetingDetail.class.getAnnotation(TableName.class)).value();
     }
 
     @Override
@@ -85,6 +98,10 @@ public class SmMeetingDetail extends BaseDomain {
             "id=" + getId() +
             ", detailInfo='" + getDetailInfo() + "'" +
             ", detailViews=" + getDetailViews() +
+            ", insertUserId=" + getInsertUserId() +
+            ", operateUserId=" + getOperateUserId() +
+            ", insertTime='" + getInsertTime() + "'" +
+            ", updateTime='" + getUpdateTime() + "'" +
             ", smMeetingId=" + getSmMeetingId() +
             "}";
     }

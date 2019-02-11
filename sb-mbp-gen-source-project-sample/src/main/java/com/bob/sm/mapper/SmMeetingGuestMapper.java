@@ -1,11 +1,14 @@
 package com.bob.sm.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.bob.sm.domain.SmMeetingGuest;
+import com.bob.sm.domain.*;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 会议嘉宾 Mapper
  */
-public interface SmMeetingGuestMapper extends BaseMapper<SmMeetingGuest> {
+public interface SmMeetingGuestMapper extends BaseCommonMapper<SmMeetingGuest> {
+
+    // 级联置空sm_meeting_id字段
+    void smMeetingIdCascadeToNull(@Param("smMeetingId")long smMeetingId);
 
 }

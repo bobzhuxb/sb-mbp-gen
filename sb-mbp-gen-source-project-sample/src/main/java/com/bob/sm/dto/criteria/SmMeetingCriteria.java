@@ -1,6 +1,8 @@
 package com.bob.sm.dto.criteria;
 
 import com.bob.sm.dto.criteria.filter.*;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -8,21 +10,34 @@ import java.util.Objects;
 /**
  * 会议 条件过滤器
  */
+@ApiModel(description = "会议")
 public class SmMeetingCriteria extends BaseCriteria implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private LongFilter id;
 
+    @ApiModelProperty(value = "会议编号")
     private StringFilter meetingNo;    // 会议编号
 
+    @ApiModelProperty(value = "会议名称")
     private StringFilter name;    // 会议名称
 
-    private LongFilter smMeetingDetailId;    // 会议详情ID
+    @ApiModelProperty(value = "所属科室代码")
+    private StringFilter ksCode;    // 所属科室代码
 
-    private LongFilter smMeetingScheduleId;    // 会议日程ID
+    @ApiModelProperty(value = "创建者用户ID")
+    private LongFilter insertUserId;    // 创建者用户ID
 
-    private LongFilter smMeetingGuestId;    // 会议嘉宾ID
+    @ApiModelProperty(value = "组织者ID")
+    private LongFilter organizerId;    // 组织者ID
+
+    @ApiModelProperty(value = "联系人ID")
+    private LongFilter contractorId;    // 联系人ID
+
+    private SmPersonCriteria organizer;    // 组织者
+
+    private SmPersonCriteria contractor;    // 联系人
 
     public SmMeetingCriteria() {
     }
@@ -50,29 +65,53 @@ public class SmMeetingCriteria extends BaseCriteria implements Serializable {
     public void setName(StringFilter name) {
         this.name = name;
     }
-
-    public LongFilter getSmMeetingDetailId() {
-        return smMeetingDetailId;
-    }
-	
-	public void setSmMeetingDetailId(LongFilter smMeetingDetailId) {
-        this.smMeetingDetailId = smMeetingDetailId;
+    
+    public StringFilter getKsCode() {
+        return ksCode;
     }
 
-    public LongFilter getSmMeetingScheduleId() {
-        return smMeetingScheduleId;
+    public void setKsCode(StringFilter ksCode) {
+        this.ksCode = ksCode;
     }
-	
-	public void setSmMeetingScheduleId(LongFilter smMeetingScheduleId) {
-        this.smMeetingScheduleId = smMeetingScheduleId;
+    
+    public LongFilter getInsertUserId() {
+        return insertUserId;
     }
 
-    public LongFilter getSmMeetingGuestId() {
-        return smMeetingGuestId;
+    public void setInsertUserId(LongFilter insertUserId) {
+        this.insertUserId = insertUserId;
+    }
+
+    public LongFilter getOrganizerId() {
+        return organizerId;
     }
 	
-	public void setSmMeetingGuestId(LongFilter smMeetingGuestId) {
-        this.smMeetingGuestId = smMeetingGuestId;
+	public void setOrganizerId(LongFilter organizerId) {
+        this.organizerId = organizerId;
+    }
+
+    public LongFilter getContractorId() {
+        return contractorId;
+    }
+	
+	public void setContractorId(LongFilter contractorId) {
+        this.contractorId = contractorId;
+    }
+
+    public SmPersonCriteria getOrganizer() {
+        return organizer;
+    }
+
+    public void setOrganizer(SmPersonCriteria organizer) {
+        this.organizer = organizer;
+    }
+
+    public SmPersonCriteria getContractor() {
+        return contractor;
+    }
+
+    public void setContractor(SmPersonCriteria contractor) {
+        this.contractor = contractor;
     }
 
     @Override
@@ -85,17 +124,22 @@ public class SmMeetingCriteria extends BaseCriteria implements Serializable {
         }
         final SmMeetingCriteria that = (SmMeetingCriteria) o;
         return
-            Objects.equals(id, that.id) &&
-            Objects.equals(meetingNo, that.meetingNo) &&
-            Objects.equals(name, that.name);
+            Objects.equals(id, that.id)
+            && Objects.equals(meetingNo, that.meetingNo)
+            && Objects.equals(name, that.name)
+            && Objects.equals(ksCode, that.ksCode)
+            && Objects.equals(insertUserId, that.insertUserId)
+            ;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
-        id,
-        meetingNo,
-        name
+        id
+        , meetingNo
+        , name
+        , ksCode
+        , insertUserId
         );
     }
 
@@ -105,7 +149,9 @@ public class SmMeetingCriteria extends BaseCriteria implements Serializable {
                 (id != null ? "id=" + id + ", " : "") +
                 (meetingNo != null ? "meetingNo=" + meetingNo + ", " : "") +
                 (name != null ? "name=" + name + ", " : "") +
-            "}";
+                (ksCode != null ? "ksCode=" + ksCode + ", " : "") +
+                (insertUserId != null ? "insertUserId=" + insertUserId + ", " : "") +
+                "}";
     }
 
 }

@@ -1,6 +1,8 @@
 package com.bob.sm.dto.criteria;
 
 import com.bob.sm.dto.criteria.filter.*;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -8,19 +10,29 @@ import java.util.Objects;
 /**
  * 会议日程 条件过滤器
  */
+@ApiModel(description = "会议日程")
 public class SmMeetingScheduleCriteria extends BaseCriteria implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private LongFilter id;
 
-    private StringFilter startTime;    // 开始日期
+    @ApiModelProperty(value = "ValidDate")
+    private StringFilter startTime;    // ValidDate
 
-    private StringFilter entTime;    // 结束日期
+    @ApiModelProperty(value = "ValidDate")
+    private StringFilter entTime;    // ValidDate
 
+    @ApiModelProperty(value = "内容")
     private StringFilter content;    // 内容
 
+    @ApiModelProperty(value = "创建者用户ID")
+    private LongFilter insertUserId;    // 创建者用户ID
+
+    @ApiModelProperty(value = "会议ID")
     private LongFilter smMeetingId;    // 会议ID
+
+    private SmMeetingCriteria smMeeting;    // 会议
 
     public SmMeetingScheduleCriteria() {
     }
@@ -56,6 +68,14 @@ public class SmMeetingScheduleCriteria extends BaseCriteria implements Serializa
     public void setContent(StringFilter content) {
         this.content = content;
     }
+    
+    public LongFilter getInsertUserId() {
+        return insertUserId;
+    }
+
+    public void setInsertUserId(LongFilter insertUserId) {
+        this.insertUserId = insertUserId;
+    }
 
     public LongFilter getSmMeetingId() {
         return smMeetingId;
@@ -63,6 +83,14 @@ public class SmMeetingScheduleCriteria extends BaseCriteria implements Serializa
 	
 	public void setSmMeetingId(LongFilter smMeetingId) {
         this.smMeetingId = smMeetingId;
+    }
+
+    public SmMeetingCriteria getSmMeeting() {
+        return smMeeting;
+    }
+
+    public void setSmMeeting(SmMeetingCriteria smMeeting) {
+        this.smMeeting = smMeeting;
     }
 
     @Override
@@ -75,19 +103,22 @@ public class SmMeetingScheduleCriteria extends BaseCriteria implements Serializa
         }
         final SmMeetingScheduleCriteria that = (SmMeetingScheduleCriteria) o;
         return
-            Objects.equals(id, that.id) &&
-            Objects.equals(startTime, that.startTime) &&
-            Objects.equals(entTime, that.entTime) &&
-            Objects.equals(content, that.content);
+            Objects.equals(id, that.id)
+            && Objects.equals(startTime, that.startTime)
+            && Objects.equals(entTime, that.entTime)
+            && Objects.equals(content, that.content)
+            && Objects.equals(insertUserId, that.insertUserId)
+            ;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
-        id,
-        startTime,
-        entTime,
-        content
+        id
+        , startTime
+        , entTime
+        , content
+        , insertUserId
         );
     }
 
@@ -98,7 +129,8 @@ public class SmMeetingScheduleCriteria extends BaseCriteria implements Serializa
                 (startTime != null ? "startTime=" + startTime + ", " : "") +
                 (entTime != null ? "entTime=" + entTime + ", " : "") +
                 (content != null ? "content=" + content + ", " : "") +
-            "}";
+                (insertUserId != null ? "insertUserId=" + insertUserId + ", " : "") +
+                "}";
     }
 
 }

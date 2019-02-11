@@ -1,5 +1,9 @@
 package com.bob.sm.dto;
 
+import com.bob.sm.annotation.*;
+import com.bob.sm.annotation.validation.*;
+import com.bob.sm.domain.*;
+import javax.validation.constraints.*;
 import java.util.Objects;
 
 /**
@@ -9,11 +13,17 @@ public class SmMeetingScheduleDTO extends BaseDTO {
 
     private Long id;
 
-    private String startTime;    // 开始日期
+    @NotBlank
+    private String startTime;    // ValidDate
 
-    private String entTime;    // 结束日期
+    @NotBlank
+    private String entTime;    // ValidDate
 
+    @NotBlank
+    @Size(min = 1, max = 255)
     private String content;    // 内容
+
+    private Long insertUserId;    // 创建者用户ID
 
     private Long smMeetingId;    // 会议ID
     
@@ -51,6 +61,14 @@ public class SmMeetingScheduleDTO extends BaseDTO {
 
     public void setContent(String content) {
         this.content = content;
+    }
+	
+    public Long getInsertUserId() {
+        return insertUserId;
+    }
+
+    public void setInsertUserId(Long insertUserId) {
+        this.insertUserId = insertUserId;
     }
 
     public Long getSmMeetingId() {
@@ -97,6 +115,10 @@ public class SmMeetingScheduleDTO extends BaseDTO {
             ", startTime='" + getStartTime() + "'" +
             ", entTime='" + getEntTime() + "'" +
             ", content='" + getContent() + "'" +
+            ", insertUserId=" + getInsertUserId() +
+            ", operateUserId=" + getOperateUserId() +
+            ", insertTime='" + getInsertTime() + "'" +
+            ", updateTime='" + getUpdateTime() + "'" +
 			", smMeetingId=" + getSmMeetingId() +
             "}";
     }

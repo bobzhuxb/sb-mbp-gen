@@ -1,6 +1,8 @@
 package com.bob.sm.dto.criteria;
 
 import com.bob.sm.dto.criteria.filter.*;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -8,17 +10,26 @@ import java.util.Objects;
 /**
  * 会议嘉宾 条件过滤器
  */
+@ApiModel(description = "会议嘉宾")
 public class SmMeetingGuestCriteria extends BaseCriteria implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private LongFilter id;
 
+    @ApiModelProperty(value = "姓名")
     private StringFilter name;    // 姓名
 
-    private StringFilter desc;    // 描述
+    @ApiModelProperty(value = "描述")
+    private StringFilter descr;    // 描述
 
+    @ApiModelProperty(value = "创建者用户ID")
+    private LongFilter insertUserId;    // 创建者用户ID
+
+    @ApiModelProperty(value = "会议ID")
     private LongFilter smMeetingId;    // 会议ID
+
+    private SmMeetingCriteria smMeeting;    // 会议
 
     public SmMeetingGuestCriteria() {
     }
@@ -39,12 +50,20 @@ public class SmMeetingGuestCriteria extends BaseCriteria implements Serializable
         this.name = name;
     }
     
-    public StringFilter getDesc() {
-        return desc;
+    public StringFilter getDescr() {
+        return descr;
     }
 
-    public void setDesc(StringFilter desc) {
-        this.desc = desc;
+    public void setDescr(StringFilter descr) {
+        this.descr = descr;
+    }
+    
+    public LongFilter getInsertUserId() {
+        return insertUserId;
+    }
+
+    public void setInsertUserId(LongFilter insertUserId) {
+        this.insertUserId = insertUserId;
     }
 
     public LongFilter getSmMeetingId() {
@@ -53,6 +72,14 @@ public class SmMeetingGuestCriteria extends BaseCriteria implements Serializable
 	
 	public void setSmMeetingId(LongFilter smMeetingId) {
         this.smMeetingId = smMeetingId;
+    }
+
+    public SmMeetingCriteria getSmMeeting() {
+        return smMeeting;
+    }
+
+    public void setSmMeeting(SmMeetingCriteria smMeeting) {
+        this.smMeeting = smMeeting;
     }
 
     @Override
@@ -65,17 +92,20 @@ public class SmMeetingGuestCriteria extends BaseCriteria implements Serializable
         }
         final SmMeetingGuestCriteria that = (SmMeetingGuestCriteria) o;
         return
-            Objects.equals(id, that.id) &&
-            Objects.equals(name, that.name) &&
-            Objects.equals(desc, that.desc);
+            Objects.equals(id, that.id)
+            && Objects.equals(name, that.name)
+            && Objects.equals(descr, that.descr)
+            && Objects.equals(insertUserId, that.insertUserId)
+            ;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
-        id,
-        name,
-        desc
+        id
+        , name
+        , descr
+        , insertUserId
         );
     }
 
@@ -84,8 +114,9 @@ public class SmMeetingGuestCriteria extends BaseCriteria implements Serializable
         return "SmMeetingGuestCriteria{" +
                 (id != null ? "id=" + id + ", " : "") +
                 (name != null ? "name=" + name + ", " : "") +
-                (desc != null ? "desc=" + desc + ", " : "") +
-            "}";
+                (descr != null ? "descr=" + descr + ", " : "") +
+                (insertUserId != null ? "insertUserId=" + insertUserId + ", " : "") +
+                "}";
     }
 
 }

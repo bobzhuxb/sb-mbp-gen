@@ -3,6 +3,7 @@ package com.bob.sm.service.impl;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bob.sm.config.Constants;
 import com.bob.sm.config.YmlConfig;
@@ -17,6 +18,7 @@ import com.bob.sm.security.SecurityUtils;
 import com.bob.sm.service.*;
 import com.bob.sm.util.MbpUtil;
 import com.bob.sm.util.MyBeanUtil;
+import com.bob.sm.web.rest.errors.CommonException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,23 +51,39 @@ public class SmMeetingDetailServiceImpl extends ServiceImpl<SmMeetingDetailMappe
 			// 修改
 			long smMeetingDetailId = smMeetingDetailDTO.getId();
 		}
+        // 新增或更新会议详细（当前实体）
         SmMeetingDetail smMeetingDetail = new SmMeetingDetail();
         MyBeanUtil.copyNonNullProperties(smMeetingDetailDTO, smMeetingDetail);
+        if (smMeetingDetail.getId() == null) {
+            // 新增
+            smMeetingDetail.setInsertUserId(smMeetingDetailDTO.getOperateUserId());
+        }
         boolean result = saveOrUpdate(smMeetingDetail);
         long smMeetingDetailId = smMeetingDetail.getId();
-        smMeetingDetailDTO.setId(smMeetingDetail.getId());
+        smMeetingDetailDTO.setId(smMeetingDetailId);
         return result ? new ReturnCommonDTO() : new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "保存失败");
     }
 
     /**
-     * 根据ID删除数据
+     * 根据ID删除数据（同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
      * @param id 主键ID
      * @return 结果返回码和消息
      */
     public ReturnCommonDTO deleteById(Long id) {
-        log.debug("Service ==> 删除SmMeetingDetailDTO {}", id);
-        boolean result = removeById(id);
-        return result ? new ReturnCommonDTO() : new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "删除失败");
+        log.debug("Service ==> 根据ID删除SmMeetingDetailDTO {}", id);
+		return deleteByMapCascade(new HashMap<String, Object>() {{put("id", id);}});
+    }
+
+    /**
+     * 根据指定条件删除数据（级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
+     * @param columnMap 表字段map对象
+     * @return 结果返回码和消息
+     */
+    public ReturnCommonDTO deleteByMapCascade(Map<String, Object> columnMap) {
+        log.debug("Service ==> 根据指定Map删除SmMeetingDetailDTO {}", columnMap);
+        // 根据指定条件删除会议详细数据
+        removeByMap(columnMap);
+        return new ReturnCommonDTO();
     }
 
     /**
@@ -87,13 +102,7 @@ public class SmMeetingDetailServiceImpl extends ServiceImpl<SmMeetingDetailMappe
         if (!dataFilterPass) {
             return Optional.empty();
         }
-        return Optional.ofNullable(getOne(wrapper)).map(smMeetingDetail -> {
-            SmMeetingDetailDTO smMeetingDetailDTO = new SmMeetingDetailDTO();
-            // TODO:在此处对每条数据做些处理，如果不需要处理，不用map即可
-            MyBeanUtil.copyNonNullProperties(smMeetingDetail, smMeetingDetailDTO);
-            getAssociations(smMeetingDetailDTO, criteria);
-            return smMeetingDetailDTO;
-        });
+        return Optional.ofNullable(getOne(wrapper)).map(smMeetingDetail -> doConvert(smMeetingDetail, criteria));
     }
 
     /**
@@ -104,21 +113,17 @@ public class SmMeetingDetailServiceImpl extends ServiceImpl<SmMeetingDetailMappe
     @Transactional(readOnly = true)
     public List<SmMeetingDetailDTO> findAll(SmMeetingDetailCriteria criteria) {
         log.debug("Service ==> 查询所有SmMeetingDetailDTO {}", criteria);
-        Wrapper<SmMeetingDetail> wrapper = new MbpUtil().getWrapper(criteria);
+        // 表对应的序号Map
+        Map<String, Integer> tableIndexMap = new HashMap<>();
+        String dataQuerySql = getDataQuerySql(criteria, tableIndexMap);
+        Wrapper<SmMeetingDetail> wrapper = MbpUtil.getWrapper(null, criteria, SmMeetingDetail.class, null, tableIndexMap);
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(wrapper, criteria);
         if (!dataFilterPass) {
             return new ArrayList<>();
         }
-        List<SmMeetingDetailDTO> smMeetingDetailDTOList = list(wrapper)
-            .stream().map(smMeetingDetail -> {
-                SmMeetingDetailDTO smMeetingDetailDTO = new SmMeetingDetailDTO();
-                // TODO:在此处对每条数据做些处理，如果不需要处理，不用map即可
-                MyBeanUtil.copyNonNullProperties(smMeetingDetail, smMeetingDetailDTO);
-                getAssociations(smMeetingDetailDTO, criteria);
-                return smMeetingDetailDTO;
-        }).collect(Collectors.toList());
-        return smMeetingDetailDTOList;
+        return baseMapper.joinSelectList(dataQuerySql, wrapper).stream()
+                .map(smMeetingDetail -> doConvert(smMeetingDetail, criteria)).collect(Collectors.toList());
     }
 
     /**
@@ -130,21 +135,21 @@ public class SmMeetingDetailServiceImpl extends ServiceImpl<SmMeetingDetailMappe
     @Transactional(readOnly = true)
     public IPage<SmMeetingDetailDTO> findPage(SmMeetingDetailCriteria criteria, MbpPage pageable) {
         log.debug("Service ==> 分页查询SmMeetingDetailDTO {}, {}", criteria, pageable);
-        MbpPage<SmMeetingDetail> pageQuery = new MbpPage<>(pageable.getCurrent(), pageable.getSize());
-        Wrapper<SmMeetingDetail> wrapper = MbpUtil.getWrapper(criteria);
+        Page<SmMeetingDetail> pageQuery = new Page<>(pageable.getCurrent(), pageable.getSize());
+        // 表对应的序号Map
+        Map<String, Integer> tableIndexMap = new HashMap<>();
+        String dataQuerySql = getDataQuerySql(criteria, tableIndexMap);
+        String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
+        Wrapper<SmMeetingDetail> wrapper = MbpUtil.getWrapper(null, criteria, SmMeetingDetail.class, null, tableIndexMap);
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(wrapper, criteria);
         if (!dataFilterPass) {
             return MbpPage.empty();
         }
-        IPage<SmMeetingDetailDTO> pageResult = ((MbpPage)MbpUtil.selectPage(baseMapper, pageQuery, wrapper))
-                .map(smMeetingDetail -> {
-                    SmMeetingDetailDTO smMeetingDetailDTO = new SmMeetingDetailDTO();
-                    // TODO:在此处对每条数据做些处理，如果不需要处理，不用map即可
-                    MyBeanUtil.copyNonNullProperties(smMeetingDetail, smMeetingDetailDTO);
-                    getAssociations(smMeetingDetailDTO, criteria);
-                    return smMeetingDetailDTO;
-                });
+        IPage<SmMeetingDetailDTO> pageResult = baseMapper.joinSelectPage(pageQuery, dataQuerySql, wrapper)
+                    .convert(smMeetingDetail -> doConvert(smMeetingDetail, criteria));
+        int totalCount = baseMapper.joinSelectCount(countQuerySql, wrapper);
+        pageResult.setTotal((long)totalCount);
         return pageResult;
     }
 
@@ -156,14 +161,16 @@ public class SmMeetingDetailServiceImpl extends ServiceImpl<SmMeetingDetailMappe
     @Transactional(readOnly = true)
     public int findCount(SmMeetingDetailCriteria criteria) {
         log.debug("Service ==> 查询个数SmMeetingDetailDTO {}", criteria);
-        Wrapper<SmMeetingDetail> wrapper = MbpUtil.getWrapper(criteria);
+        // 表对应的序号Map
+        Map<String, Integer> tableIndexMap = new HashMap<>();
+        String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
+        Wrapper<SmMeetingDetail> wrapper = MbpUtil.getWrapper(null, criteria, SmMeetingDetail.class, null, tableIndexMap);
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(wrapper, criteria);
         if (!dataFilterPass) {
             return 0;
         }
-        int count = count(wrapper);
-        return count;
+        return baseMapper.joinSelectCount(countQuerySql, wrapper);
     }
 
     /**
@@ -175,7 +182,7 @@ public class SmMeetingDetailServiceImpl extends ServiceImpl<SmMeetingDetailMappe
     private Wrapper<SmMeetingDetail> idEqualsPrepare(Long id, BaseCriteria criteria) {
         SmMeetingDetailCriteria smMeetingDetailCriteria = new SmMeetingDetailCriteria();
         MyBeanUtil.copyNonNullProperties(criteria, smMeetingDetailCriteria);
-        Wrapper<SmMeetingDetail> wrapper = MbpUtil.getWrapper(smMeetingDetailCriteria);
+        Wrapper<SmMeetingDetail> wrapper = MbpUtil.getWrapper(null, smMeetingDetailCriteria, SmMeetingDetail.class, null, null);
         ((QueryWrapper<SmMeetingDetail>)wrapper).eq("id", id);
         return wrapper;
     }
@@ -189,6 +196,88 @@ public class SmMeetingDetailServiceImpl extends ServiceImpl<SmMeetingDetailMappe
     private boolean dataAuthorityFilter(Wrapper<SmMeetingDetail> wrapper, BaseCriteria criteria) {
         // TODO: 数据权限的过滤写在这里
 		return true;
+    }
+	
+    /**
+     * 获取查询数据的SQL
+     * @return
+     */
+    private String getDataQuerySql(SmMeetingDetailCriteria criteria, Map<String, Integer> tableIndexMap) {
+        int tableCount = 0;
+        final int fromTableCount = tableCount;
+        String joinDataSql = "SELECT " + SmMeetingDetail.getTableName() + "_" + tableCount + ".*";
+        // 处理关联数据字典值
+        List<String> dictionaryNameList = criteria.getDictionaryNameList();
+        if (dictionaryNameList != null) {
+            // 此处处理数据字典的JOIN
+        }
+        joinDataSql += getFromAndJoinSql(criteria, tableCount, fromTableCount, tableIndexMap);
+        return joinDataSql;
+    }
+
+    /**
+     * 获取查询数量的SQL
+     * @return
+     */
+    private String getCountQuerySql(SmMeetingDetailCriteria criteria, Map<String, Integer> tableIndexMap) {
+        int tableCount = 0;
+        final int fromTableCount = tableCount;
+        String joinCountSql = "SELECT COUNT(0)" + getFromAndJoinSql(criteria, tableCount, fromTableCount, tableIndexMap);
+        return joinCountSql;
+    }
+
+    /**
+     * 获取from和级联SQL
+     * @return
+     */
+    private String getFromAndJoinSql(SmMeetingDetailCriteria criteria, int tableCount, int fromTableCount,
+                                     Map<String, Integer> tableIndexMap) {
+        String joinSubSql = " FROM " + SmMeetingDetail.getTableName() + " AS " + SmMeetingDetail.getTableName() + "_" + tableCount;
+        joinSubSql += getJoinSql(criteria, tableCount, fromTableCount, null, tableIndexMap);
+        return joinSubSql;
+    }
+
+    /**
+     * 获取级联SQL
+     * @return
+     */
+    public String getJoinSql(SmMeetingDetailCriteria criteria, int tableCount, int fromTableCount, String lastFieldName,
+                             Map<String, Integer> tableIndexMap) {
+        String joinSubSql = "";
+        // 处理关联数据字典值
+        List<String> dictionaryNameList = criteria.getDictionaryNameList();
+        if (dictionaryNameList != null) {
+            // 此处处理数据字典的JOIN
+        }
+        if (criteria.getSmMeeting() != null) {
+            tableCount++;
+            joinSubSql += " LEFT JOIN " + SmMeeting.getTableName() + " AS " + SmMeeting.getTableName() + "_" + tableCount + " ON "
+                    + SmMeeting.getTableName() + "_" + tableCount + ".id = " + SmMeetingDetail.getTableName() + "_" + fromTableCount
+                    + ".sm_meeting_id";
+            String tableKey = "smMeeting";
+            if (lastFieldName != null) {
+                // 拼接key
+                tableKey = lastFieldName + "." + tableKey;
+            }
+            tableIndexMap.put(tableKey, tableCount);
+            joinSubSql += smMeetingService.getJoinSql(criteria.getSmMeeting(), tableCount, tableCount, tableKey,
+			        tableIndexMap);
+        }
+        return joinSubSql;
+    }
+
+    /**
+     * 处理Domain到DTO的转换
+     * @param smMeetingDetail 原始Domain
+     * @param criteria 查询条件
+     * @return 转换后的DTO
+     */
+    private SmMeetingDetailDTO doConvert(SmMeetingDetail smMeetingDetail, BaseCriteria criteria) {
+        SmMeetingDetailDTO smMeetingDetailDTO = new SmMeetingDetailDTO();
+        // TODO:在此处对每条数据做些处理
+        MyBeanUtil.copyNonNullProperties(smMeetingDetail, smMeetingDetailDTO);
+        getAssociations(smMeetingDetailDTO, criteria);
+        return smMeetingDetailDTO;
     }
 
     /**

@@ -1,9 +1,10 @@
 package com.bob.sm.dto;
 
+import com.bob.sm.annotation.*;
+import com.bob.sm.annotation.validation.*;
+import com.bob.sm.domain.*;
+import javax.validation.constraints.*;
 import java.util.List;
-import com.bob.sm.domain.SmMeetingDetail;
-import com.bob.sm.domain.SmMeetingSchedule;
-import com.bob.sm.domain.SmMeetingGuest;
 import java.util.Objects;
 
 /**
@@ -13,17 +14,36 @@ public class SmMeetingDTO extends BaseDTO {
 
     private Long id;
 
+    @RestFieldAllow(allowSet = false)
     private String meetingNo;    // 会议编号
 
+    @NotBlank
+    @Size(min = 1, max = 255)
     private String name;    // 会议名称
+
+    @NotBlank
+    @Size(min = 1, max = 255)
+    private String ksCode;    // 所属科室代码
+
+    private String ksValue;    // 所属科室值（数据字典值）
+
+    private Long insertUserId;    // 创建者用户ID
+
+    private Long organizerId;    // 组织者ID
+
+    private Long contractorId;    // 联系人ID
     
 	///////////////////////// 附加关联属性 /////////////////////////
 
-    private List<SmMeetingDetail> smMeetingDetailList;    // 会议详情列表
+    private SmPersonDTO organizer;    // 组织者
 
-    private List<SmMeetingSchedule> smMeetingScheduleList;    // 会议日程列表
+    private SmPersonDTO contractor;    // 联系人
 
-    private List<SmMeetingGuest> smMeetingGuestList;    // 会议嘉宾列表
+    private SmMeetingDetailDTO smMeetingDetail;    // 会议详情
+
+    private List<SmMeetingScheduleDTO> smMeetingScheduleList;    // 会议日程列表
+
+    private List<SmMeetingGuestDTO> smMeetingGuestList;    // 会议嘉宾列表
 
     public Long getId() {
         return id;
@@ -48,28 +68,84 @@ public class SmMeetingDTO extends BaseDTO {
     public void setName(String name) {
         this.name = name;
     }
-
-    public List<SmMeetingDetail> getSmMeetingDetailList() {
-        return smMeetingDetailList;
+	
+    public String getKsCode() {
+        return ksCode;
     }
 
-    public void setSmMeetingDetailList(List<SmMeetingDetail> smMeetingDetailList) {
-        this.smMeetingDetailList = smMeetingDetailList;
+    public void setKsCode(String ksCode) {
+        this.ksCode = ksCode;
+    }
+    
+    public String getKsValue() {
+        return ksValue;
     }
 
-    public List<SmMeetingSchedule> getSmMeetingScheduleList() {
+    public void setKsValue(String ksValue) {
+        this.ksValue = ksValue;
+    }
+	
+    public Long getInsertUserId() {
+        return insertUserId;
+    }
+
+    public void setInsertUserId(Long insertUserId) {
+        this.insertUserId = insertUserId;
+    }
+
+    public Long getOrganizerId() {
+        return organizerId;
+    }
+
+    public void setOrganizerId(Long organizerId) {
+        this.organizerId = organizerId;
+    }
+
+    public Long getContractorId() {
+        return contractorId;
+    }
+
+    public void setContractorId(Long contractorId) {
+        this.contractorId = contractorId;
+    }
+
+    public SmPersonDTO getOrganizer() {
+        return organizer;
+    }
+
+    public void setOrganizer(SmPersonDTO organizer) {
+        this.organizer = organizer;
+    }
+
+    public SmPersonDTO getContractor() {
+        return contractor;
+    }
+
+    public void setContractor(SmPersonDTO contractor) {
+        this.contractor = contractor;
+    }
+
+    public SmMeetingDetailDTO getSmMeetingDetail() {
+        return smMeetingDetail;
+    }
+
+    public void setSmMeetingDetail(SmMeetingDetailDTO smMeetingDetail) {
+        this.smMeetingDetail = smMeetingDetail;
+    }
+
+    public List<SmMeetingScheduleDTO> getSmMeetingScheduleList() {
         return smMeetingScheduleList;
     }
 
-    public void setSmMeetingScheduleList(List<SmMeetingSchedule> smMeetingScheduleList) {
+    public void setSmMeetingScheduleList(List<SmMeetingScheduleDTO> smMeetingScheduleList) {
         this.smMeetingScheduleList = smMeetingScheduleList;
     }
 
-    public List<SmMeetingGuest> getSmMeetingGuestList() {
+    public List<SmMeetingGuestDTO> getSmMeetingGuestList() {
         return smMeetingGuestList;
     }
 
-    public void setSmMeetingGuestList(List<SmMeetingGuest> smMeetingGuestList) {
+    public void setSmMeetingGuestList(List<SmMeetingGuestDTO> smMeetingGuestList) {
         this.smMeetingGuestList = smMeetingGuestList;
     }
 
@@ -100,6 +176,13 @@ public class SmMeetingDTO extends BaseDTO {
             "id=" + getId() +
             ", meetingNo='" + getMeetingNo() + "'" +
             ", name='" + getName() + "'" +
+            ", ksCode='" + getKsCode() + "'" +
+            ", insertUserId=" + getInsertUserId() +
+            ", operateUserId=" + getOperateUserId() +
+            ", insertTime='" + getInsertTime() + "'" +
+            ", updateTime='" + getUpdateTime() + "'" +
+			", organizerId=" + getOrganizerId() +
+			", contractorId=" + getContractorId() +
             "}";
     }
 }

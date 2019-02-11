@@ -2,7 +2,7 @@ package com.bob.sm.service.impl;
 
 import com.bob.sm.config.YmlConfig;
 import com.bob.sm.dto.help.ReturnFileUploadDTO;
-import com.bob.sm.service.FileService;
+import com.bob.sm.service.CommonService;
 import com.bob.sm.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +16,9 @@ import java.util.Date;
 import java.util.Random;
 
 @Service
-public class FileServiceImpl implements FileService {
+public class CommonServiceImpl implements CommonService {
 
-    private final Logger log = LoggerFactory.getLogger(FileServiceImpl.class);
+    private final Logger log = LoggerFactory.getLogger(CommonServiceImpl.class);
 
     @Autowired
     private YmlConfig ymlConfig;

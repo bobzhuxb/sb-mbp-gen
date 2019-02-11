@@ -1,5 +1,9 @@
 package com.bob.sm.dto;
 
+import com.bob.sm.annotation.*;
+import com.bob.sm.annotation.validation.*;
+import com.bob.sm.domain.*;
+import javax.validation.constraints.*;
 import java.util.Objects;
 
 /**
@@ -9,10 +13,15 @@ public class SmMeetingDetailDTO extends BaseDTO {
 
     private Long id;
 
+    @Size(min = 1, max = 255)
     private String detailInfo;    // 详细描述
 
+    @RestFieldAllow(allowSet = false)
     private Integer detailViews;    // 详情浏览次数
 
+    private Long insertUserId;    // 创建者用户ID
+
+    @Min(0)
     private Long smMeetingId;    // 会议ID
     
 	///////////////////////// 附加关联属性 /////////////////////////
@@ -41,6 +50,14 @@ public class SmMeetingDetailDTO extends BaseDTO {
 
     public void setDetailViews(Integer detailViews) {
         this.detailViews = detailViews;
+    }
+	
+    public Long getInsertUserId() {
+        return insertUserId;
+    }
+
+    public void setInsertUserId(Long insertUserId) {
+        this.insertUserId = insertUserId;
     }
 
     public Long getSmMeetingId() {
@@ -86,6 +103,10 @@ public class SmMeetingDetailDTO extends BaseDTO {
             "id=" + getId() +
             ", detailInfo='" + getDetailInfo() + "'" +
             ", detailViews=" + getDetailViews() +
+            ", insertUserId=" + getInsertUserId() +
+            ", operateUserId=" + getOperateUserId() +
+            ", insertTime='" + getInsertTime() + "'" +
+            ", updateTime='" + getUpdateTime() + "'" +
 			", smMeetingId=" + getSmMeetingId() +
             "}";
     }

@@ -1,5 +1,10 @@
 package com.bob.sm.dto;
 
+import com.bob.sm.annotation.*;
+import com.bob.sm.annotation.validation.*;
+import com.bob.sm.domain.*;
+import javax.validation.constraints.*;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -9,15 +14,22 @@ public class SmMeetingGuestDTO extends BaseDTO {
 
     private Long id;
 
+    @NotBlank
+    @Size(min = 1, max = 255)
     private String name;    // 姓名
 
-    private String desc;    // 描述
+    @Size(min = 1, max = 255)
+    private String descr;    // 描述
+
+    private Long insertUserId;    // 创建者用户ID
 
     private Long smMeetingId;    // 会议ID
     
 	///////////////////////// 附加关联属性 /////////////////////////
 
     private SmMeetingDTO smMeeting;    // 会议
+
+    private List<SmMeetingGuestPhotoDTO> smMeetingGuestPhotoList;    // 嘉宾照片列表
 
     public Long getId() {
         return id;
@@ -35,12 +47,20 @@ public class SmMeetingGuestDTO extends BaseDTO {
         this.name = name;
     }
 	
-    public String getDesc() {
-        return desc;
+    public String getDescr() {
+        return descr;
     }
 
-    public void setDesc(String desc) {
-        this.desc = desc;
+    public void setDescr(String descr) {
+        this.descr = descr;
+    }
+	
+    public Long getInsertUserId() {
+        return insertUserId;
+    }
+
+    public void setInsertUserId(Long insertUserId) {
+        this.insertUserId = insertUserId;
     }
 
     public Long getSmMeetingId() {
@@ -57,6 +77,14 @@ public class SmMeetingGuestDTO extends BaseDTO {
 
     public void setSmMeeting(SmMeetingDTO smMeeting) {
         this.smMeeting = smMeeting;
+    }
+
+    public List<SmMeetingGuestPhotoDTO> getSmMeetingGuestPhotoList() {
+        return smMeetingGuestPhotoList;
+    }
+
+    public void setSmMeetingGuestPhotoList(List<SmMeetingGuestPhotoDTO> smMeetingGuestPhotoList) {
+        this.smMeetingGuestPhotoList = smMeetingGuestPhotoList;
     }
 
     @Override
@@ -85,7 +113,11 @@ public class SmMeetingGuestDTO extends BaseDTO {
         return "SmMeetingGuestDTO{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
-            ", desc='" + getDesc() + "'" +
+            ", descr='" + getDescr() + "'" +
+            ", insertUserId=" + getInsertUserId() +
+            ", operateUserId=" + getOperateUserId() +
+            ", insertTime='" + getInsertTime() + "'" +
+            ", updateTime='" + getUpdateTime() + "'" +
 			", smMeetingId=" + getSmMeetingId() +
             "}";
     }

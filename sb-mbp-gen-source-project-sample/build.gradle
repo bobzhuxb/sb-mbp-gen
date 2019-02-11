@@ -110,6 +110,10 @@ dependencies {
 	compile "org.apache.httpcomponents:httpclient"
 	// Alibaba的FastJson
 	compile "com.alibaba:fastjson:1.2.47"
+	// POI操作Office
+	compile "org.apache.poi:poi:3.17"
+	compile "org.apache.poi:poi-ooxml:3.17"
+	compile "org.apache.poi:poi-ooxml-schemas:3.17"
 	// 快速SAX模式的XML解析器
 	compile "com.fasterxml.jackson.datatype:jackson-datatype-hppc"
 	compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"

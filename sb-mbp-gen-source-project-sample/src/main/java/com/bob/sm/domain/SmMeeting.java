@@ -1,29 +1,36 @@
 package com.bob.sm.domain;
 
-import com.bob.sm.domain.BaseDomain;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * 会议
  */
-@ApiModel(description = "会议")
 @Data
+@TableName(value = "sm_meeting")
 public class SmMeeting extends BaseDomain {
 
     private static final long serialVersionUID = 1L;
 
     private Long id;
 
-    @ApiModelProperty(value = "会议编号")
     private String meetingNo;    // 会议编号
 
-    @ApiModelProperty(value = "会议名称")
     private String name;    // 会议名称
+
+    private String ksCode;    // 所属科室代码
+    
+    @TableField(exist = false)
+    private String ksValue;    // 所属科室值（数据字典值）
+
+    private Long insertUserId;    // 创建者用户ID
+
+    private Long organizerId;    // 组织者ID
+
+    private Long contractorId;    // 联系人ID
 
     public Long getId() {
         return id;
@@ -47,6 +54,53 @@ public class SmMeeting extends BaseDomain {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getKsCode() {
+        return ksCode;
+    }
+
+    public void setKsCode(String ksCode) {
+        this.ksCode = ksCode;
+    }
+    
+    public String getKsValue() {
+        return ksValue;
+    }
+
+    public void setKsValue(String ksValue) {
+        this.ksValue = ksValue;
+    }
+
+    public Long getInsertUserId() {
+        return insertUserId;
+    }
+
+    public void setInsertUserId(Long insertUserId) {
+        this.insertUserId = insertUserId;
+    }
+
+    public Long getOrganizerId() {
+        return organizerId;
+    }
+
+    public void setOrganizerId(Long organizerId) {
+        this.organizerId = organizerId;
+    }
+
+    public Long getContractorId() {
+        return contractorId;
+    }
+
+    public void setContractorId(Long contractorId) {
+        this.contractorId = contractorId;
+    }
+	
+    /**
+     * 获取表名字
+     */
+    public static String getTableName() {
+        return (SmMeeting.class.getAnnotation(TableName.class)).value();
     }
 
     @Override
@@ -75,6 +129,13 @@ public class SmMeeting extends BaseDomain {
             "id=" + getId() +
             ", meetingNo='" + getMeetingNo() + "'" +
             ", name='" + getName() + "'" +
+            ", ksCode='" + getKsCode() + "'" +
+            ", insertUserId=" + getInsertUserId() +
+            ", operateUserId=" + getOperateUserId() +
+            ", insertTime='" + getInsertTime() + "'" +
+            ", updateTime='" + getUpdateTime() + "'" +
+            ", organizerId=" + getOrganizerId() +
+            ", contractorId=" + getContractorId() +
             "}";
     }
 }

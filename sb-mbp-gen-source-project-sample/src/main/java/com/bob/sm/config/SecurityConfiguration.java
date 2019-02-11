@@ -86,6 +86,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.OPTIONS, "/**")
             // 权限系统地址前缀
             .antMatchers("/baseapi/**")
+                .antMatchers("/api/**")
             .antMatchers("/static/**")
             .antMatchers("/app/**/*.{js,html}")
             .antMatchers("/i18n/**")

@@ -47,11 +47,15 @@ public class SmMeetingDetailController {
             @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败\n" +
                     "errMsg - 错误消息")
     })
-    @PostMapping("/sm-meeting-details")
+    @PostMapping("/sm-meeting-detail")
     public ResponseEntity<ReturnCommonDTO> createSmMeetingDetail(
             @ApiParam("{\n" +
 					"  \"detailInfo\": \"详细描述\",\n" +
 					"  \"detailViews\": \"详情浏览次数\",\n" +
+					"  \"insertUserId\": \"创建者用户ID\",\n" +
+					"  \"operateUserId\": \"操作者用户ID\",\n" +
+					"  \"insertTime\": \"插入时间\",\n" +
+					"  \"updateTime\": \"更新时间\",\n" +
                     "}")
         @RequestBody @Valid SmMeetingDetailDTO smMeetingDetailDTO, BindingResult bindingResult) {
         log.debug("Controller ==> 新增SmMeetingDetail : {}", smMeetingDetailDTO);
@@ -63,7 +67,13 @@ public class SmMeetingDetailController {
         if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
             return ResponseEntity.ok().headers(null).body(returnCommonDTO);
         }
-        ReturnCommonDTO resultDTO = smMeetingDetailService.save(smMeetingDetailDTO);
+        ReturnCommonDTO resultDTO = null;
+        try {
+            resultDTO = smMeetingDetailService.save(smMeetingDetailDTO);
+        } catch (CommonException e) {
+            log.error(e.getMessage(), e);
+            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
+        }
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -78,11 +88,15 @@ public class SmMeetingDetailController {
             @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败\n" +
                     "errMsg - 错误消息")
     })
-    @PutMapping("/sm-meeting-details")
+    @PutMapping("/sm-meeting-detail")
     public ResponseEntity<ReturnCommonDTO> updateSmMeetingDetail(
             @ApiParam("{\n" +
 					"  \"detailInfo\": \"详细描述\",\n" +
 					"  \"detailViews\": \"详情浏览次数\",\n" +
+					"  \"insertUserId\": \"创建者用户ID\",\n" +
+					"  \"operateUserId\": \"操作者用户ID\",\n" +
+					"  \"insertTime\": \"插入时间\",\n" +
+					"  \"updateTime\": \"更新时间\",\n" +
                     "}")
         @RequestBody @Valid SmMeetingDetailDTO smMeetingDetailDTO, BindingResult bindingResult) {
         log.debug("Controller ==> 修改SmMeetingDetail : {}", smMeetingDetailDTO);
@@ -94,7 +108,13 @@ public class SmMeetingDetailController {
         if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
             return ResponseEntity.ok().headers(null).body(returnCommonDTO);
         }
-        ReturnCommonDTO resultDTO = smMeetingDetailService.save(smMeetingDetailDTO);
+        ReturnCommonDTO resultDTO = null;
+        try {
+            resultDTO = smMeetingDetailService.save(smMeetingDetailDTO);
+        } catch (CommonException e) {
+            log.error(e.getMessage(), e);
+            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
+        }
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -108,10 +128,16 @@ public class SmMeetingDetailController {
             @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败\n" +
                     "errMsg - 错误消息")
     })
-    @DeleteMapping("/sm-meeting-details/{id}")
+    @DeleteMapping("/sm-meeting-detail/{id}")
     public ResponseEntity<ReturnCommonDTO> deleteSmMeetingDetail(@ApiParam(name="主键ID") @PathVariable Long id) {
         log.debug("Controller ==> 根据ID删除SmMeetingDetail : {}", id);
-        ReturnCommonDTO resultDTO = smMeetingDetailService.deleteById(id);
+        ReturnCommonDTO resultDTO = null;
+        try {
+            resultDTO = smMeetingDetailService.deleteById(id);
+        } catch (CommonException e) {
+            log.error(e.getMessage(), e);
+            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
+        }
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -123,9 +149,10 @@ public class SmMeetingDetailController {
      */
     @ApiOperation(value="获取单条-会议详细")
     @ApiImplicitParams({
-            @ApiImplicitParam(name="associationNameList", value="关联查询的字段")
+            @ApiImplicitParam(name="associationNameList", paramType="path", value="关联查询的字段（smMeeting：会议）"),
+            @ApiImplicitParam(name="dictionaryNameList", paramType="path", value="关联查询的数据字典值")
     })
-    @GetMapping("/sm-meeting-details/{id}")
+    @GetMapping("/sm-meeting-detail/{id}")
     public ResponseEntity<SmMeetingDetailDTO> getSmMeetingDetail(@ApiParam(name="主键ID") @PathVariable Long id, BaseCriteria criteria) {
         log.debug("Controller ==> 根据ID查询SmMeetingDetail : {}, {}", id, criteria);
         Optional<SmMeetingDetailDTO> data = smMeetingDetailService.findOne(id, criteria);
@@ -140,10 +167,16 @@ public class SmMeetingDetailController {
      */
     @ApiOperation(value="获取所有-会议详细")
     @ApiImplicitParams({
-            @ApiImplicitParam(name="associationNameList", value="关联查询的字段"),
-            @ApiImplicitParam(name="orderBy",value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
-            @ApiImplicitParam(name="detailInfo.equals",value="详细描述"),
-            @ApiImplicitParam(name="detailViews.equals",value="详情浏览次数")
+            @ApiImplicitParam(name="associationNameList", paramType="path", value="关联查询的字段（smMeeting：会议）"),
+            @ApiImplicitParam(name="dictionaryNameList", paramType="path", value="关联查询的数据字典值"),
+            @ApiImplicitParam(name="orderBy", paramType="path", value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
+            @ApiImplicitParam(name="detailInfo.equals", paramType="path", value="详细描述"),
+            @ApiImplicitParam(name="detailViews.equals", paramType="path", value="详情浏览次数"),
+            @ApiImplicitParam(name="insertUserId.equals", paramType="path", value="创建者用户ID"),
+            @ApiImplicitParam(name="operateUserId.equals", paramType="path", value="操作者用户ID"),
+            @ApiImplicitParam(name="insertTime.equals", paramType="path", value="插入时间"),
+            @ApiImplicitParam(name="updateTime.equals", paramType="path", value="更新时间"),
+			@ApiImplicitParam(name="smMeeting.?.equals", paramType="path", value="关联的会议，其中 ? 对应于GET /api/sm-meeting的查询字段"),
     })
     @GetMapping("/sm-meeting-detail-all")
     public ResponseEntity<List<SmMeetingDetailDTO>> getAllSmMeetingDetails(SmMeetingDetailCriteria criteria) {
@@ -160,14 +193,20 @@ public class SmMeetingDetailController {
      */
     @ApiOperation(value="获取分页-会议详细")
     @ApiImplicitParams({
-            @ApiImplicitParam(name="associationNameList", value="关联查询的字段"),
-            @ApiImplicitParam(name="orderBy",value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
-            @ApiImplicitParam(name="current",value="分页：当前页"),
-            @ApiImplicitParam(name="size",value="分页：每页大小"),
-            @ApiImplicitParam(name="detailInfo.equals",value="详细描述"),
-            @ApiImplicitParam(name="detailViews.equals",value="详情浏览次数")
+            @ApiImplicitParam(name="associationNameList", paramType="path", value="关联查询的字段（smMeeting：会议）"),
+            @ApiImplicitParam(name="dictionaryNameList", paramType="path", value="关联查询的数据字典值"),
+            @ApiImplicitParam(name="orderBy", paramType="path", value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
+            @ApiImplicitParam(name="current", paramType="path", value="分页：当前页"),
+            @ApiImplicitParam(name="size", paramType="path", value="分页：每页大小"),
+            @ApiImplicitParam(name="detailInfo.equals", paramType="path", value="详细描述"),
+            @ApiImplicitParam(name="detailViews.equals", paramType="path", value="详情浏览次数"),
+            @ApiImplicitParam(name="insertUserId.equals", paramType="path", value="创建者用户ID"),
+            @ApiImplicitParam(name="operateUserId.equals", paramType="path", value="操作者用户ID"),
+            @ApiImplicitParam(name="insertTime.equals", paramType="path", value="插入时间"),
+            @ApiImplicitParam(name="updateTime.equals", paramType="path", value="更新时间"),
+			@ApiImplicitParam(name="smMeeting.?.equals", paramType="path", value="关联的会议，其中 ? 对应于GET /api/sm-meeting的查询字段"),
     })
-    @GetMapping("/sm-meeting-details")
+    @GetMapping("/sm-meeting-detail")
     public ResponseEntity<IPage<SmMeetingDetailDTO>> getPageSmMeetingDetails(SmMeetingDetailCriteria criteria, MbpPage pageable) {
         log.debug("Controller ==> 分页查询SmMeetingDetail : {}, {}", criteria, pageable);
         IPage<SmMeetingDetailDTO> page = smMeetingDetailService.findPage(criteria, pageable);
@@ -181,9 +220,14 @@ public class SmMeetingDetailController {
      */
     @ApiOperation(value="获取数量-会议详细")
     @ApiImplicitParams({
-            @ApiImplicitParam(name="orderBy",value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
-            @ApiImplicitParam(name="detailInfo.equals",value="详细描述"),
-            @ApiImplicitParam(name="detailViews.equals",value="详情浏览次数")
+            @ApiImplicitParam(name="orderBy", paramType="path", value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
+            @ApiImplicitParam(name="detailInfo.equals", paramType="path", value="详细描述"),
+            @ApiImplicitParam(name="detailViews.equals", paramType="path", value="详情浏览次数"),
+            @ApiImplicitParam(name="insertUserId.equals", paramType="path", value="创建者用户ID"),
+            @ApiImplicitParam(name="operateUserId.equals", paramType="path", value="操作者用户ID"),
+            @ApiImplicitParam(name="insertTime.equals", paramType="path", value="插入时间"),
+            @ApiImplicitParam(name="updateTime.equals", paramType="path", value="更新时间"),
+			@ApiImplicitParam(name="smMeeting.?.equals", paramType="path", value="关联的会议，其中 ? 对应于GET /api/sm-meeting的查询字段"),
     })
     @GetMapping("/sm-meeting-detail-count")
     public ResponseEntity<Integer> getSmMeetingDetailCount(SmMeetingDetailCriteria criteria) {

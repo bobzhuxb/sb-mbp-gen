@@ -1,7 +1,7 @@
 package ${packageName}.web.rest;
 
 import ${packageName}.dto.help.ReturnFileUploadDTO;
-import ${packageName}.service.FileService;
+import ${packageName}.service.CommonService;
 import ${packageName}.web.rest.errors.InternalServerErrorException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -16,15 +16,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-@Api(description="文件")
+@Api(description="共通接口")
 @RestController
 @RequestMapping("/api")
-public class FileResource {
+public class CommonResource {
 
-    private final Logger log = LoggerFactory.getLogger(FileResource.class);
+    private final Logger log = LoggerFactory.getLogger(CommonResource.class);
 
     @Autowired
-    private FileService fileService;
+    private CommonService commonService;
 
     /**
      * 上传文件
@@ -40,7 +40,7 @@ public class FileResource {
             @RequestParam(value = "file", required = false)MultipartFile file) {
         log.debug("REST request to upload file : {}", file.getOriginalFilename());
         try {
-            ReturnFileUploadDTO fileUploadDTO = fileService.uploadFile(file);
+            ReturnFileUploadDTO fileUploadDTO = commonService.uploadFile(file);
             return ResponseEntity.ok().headers(null).body(fileUploadDTO);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
