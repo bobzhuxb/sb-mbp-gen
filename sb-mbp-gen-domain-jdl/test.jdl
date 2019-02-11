@@ -121,13 +121,13 @@ relationship OneToMany {
     // 父数据字典{子数据字典}
 	BaseDictionary{child} to BaseDictionary{parent}
     // 组织者{会议}
-    //!CASCADE:NULL
+    //!CASCADE_DELETE:NULL
 	SmPerson{asmMeeting} to SmMeeting{organizer}
     // 联系人{会议}
-    //!CASCADE:NULL
+    //!CASCADE_DELETE:NULL
 	SmPerson{bsmMeeting} to SmMeeting{contractor}
     // 会议{会议日程}
-    //!CASCADE:FORBIDDEN
+    //!CASCADE_DELETE:FORBIDDEN
 	SmMeeting{smMeetingSchedule} to SmMeetingSchedule{smMeeting}
     // 会议{会议嘉宾}
 	SmMeeting{smMeetingGuest} to SmMeetingGuest{smMeeting}

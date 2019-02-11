@@ -39,7 +39,7 @@ public class JdlParseUtil {
         String currentDictionaryType = null;
         // 当前注解列表
         List<String> currentAnnotationList = null;
-        // 当前删除模式（允许值：DELETE、NULL。默认：DELETE）
+        // 当前删除模式（允许值：DELETE、NULL、FORBIDDEN。默认：DELETE）
         String currentDeleteType = null;
         // 当前entity名称
         String currentEntityName = null;
@@ -68,9 +68,9 @@ public class JdlParseUtil {
                         currentAnnotationList = new ArrayList<>();
                     }
                     currentAnnotationList.add(jdlLine.substring(2).trim());
-                } else if (jdlLine.startsWith("//!CASCADE:")) {
+                } else if (jdlLine.startsWith("//!CASCADE_DELETE:")) {
                     // 级联删除模式
-                    currentDeleteType = jdlLine.substring(11).trim();
+                    currentDeleteType = jdlLine.substring(18).trim();
                 } else {
                     // 普通注释行（包含两个斜杠和空格）
                     currentComment = jdlLine;
