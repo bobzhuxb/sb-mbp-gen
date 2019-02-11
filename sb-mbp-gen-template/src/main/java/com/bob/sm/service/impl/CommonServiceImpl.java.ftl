@@ -1,19 +1,30 @@
 package ${packageName}.service.impl;
 
 import ${packageName}.config.YmlConfig;
+import ${packageName}.dto.help.ExcelTitleDTO;
+import ${packageName}.dto.help.ReturnCommonDTO;
 import ${packageName}.dto.help.ReturnFileUploadDTO;
 import ${packageName}.service.CommonService;
 import ${packageName}.util.FileUtil;
+import ${packageName}.web.rest.errors.CommonException;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.streaming.SXSSFRow;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.lang.reflect.Field;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class CommonServiceImpl implements CommonService {
@@ -73,6 +84,99 @@ public class CommonServiceImpl implements CommonService {
             throw new Exception("文件上传失败：" + fileName + " -> " + e.getMessage());
         }
 
+    }
+
+    /**
+     * 导出Excel
+     * @param response HTTP Response
+     * @param fileName Excel文件名（不包含后缀）
+     * @param sheetName sheet名
+     * @param headTitle 总标题
+     * @param titleList 标题行
+     * @param dataList 数据
+     * @return 导出结果
+     * @throws Exception
+     */
+    public ReturnCommonDTO exportExcel(HttpServletResponse response, String fileName, String sheetName, String headTitle,
+                                       List<ExcelTitleDTO> titleList, List<Object> dataList) {
+        try {
+            // 创建poi导出数据对象
+            SXSSFWorkbook sxssfWorkbook = new SXSSFWorkbook();
+            // 设置头信息
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("application/vnd.ms-excel");
+            // 一定要设置成xlsx格式
+            response.setHeader("Content-Disposition", "attachment;filename="
+                    + URLEncoder.encode(fileName + ".xlsx", "UTF-8"));
+            // 输出流
+            ServletOutputStream outputStream = null;
+            try {
+                // 创建一个输出流
+                outputStream = response.getOutputStream();
+                // 创建sheet页
+                SXSSFSheet sheet = sxssfWorkbook.createSheet(sheetName);
+                // 当前操作的行
+                int currentRow = 0;
+                // 创建标题行
+                if (headTitle != null) {
+                    // 参数：起始行、终止行、起始列、终止列
+                    CellRangeAddress totalTitleRegion = new CellRangeAddress(0, 1, 0, titleList.size() - 1);
+                    sheet.addMergedRegion(totalTitleRegion);
+                    SXSSFRow headTitleRow = sheet.createRow(0);
+                    currentRow++;
+                    headTitleRow.createCell(0).setCellValue(headTitle);
+                }
+                // 创建表头
+                SXSSFRow headRow = sheet.createRow(currentRow);
+                currentRow++;
+                // 设置表头信息
+                Map<String, Integer> titleNameMap = new HashMap<>();
+                for (int column = 0; column < titleList.size(); column++) {
+                    ExcelTitleDTO titleDTO = titleList.get(column);
+                    titleNameMap.put(titleDTO.getTitleName(), column);
+                    headRow.createCell(column).setCellValue(titleDTO.getTitleContent());
+                }
+                // 填入表数据
+                for (int dataRowCount = 0; dataRowCount < dataList.size(); dataRowCount++) {
+                    SXSSFRow dataRow = sheet.createRow(currentRow);
+                    currentRow++;
+                    Object dataObject = dataList.get(dataRowCount);
+                    Object data = null;
+                    if (dataObject instanceof Map) {
+                        // Map获取数据
+                        for (int column = 0; column < titleList.size(); column++) {
+                            String titleName = titleList.get(column).getTitleName();
+                            data = ((Map) dataObject).get(titleName);
+                        }
+                    } else {
+                        // 反射获取对象属性
+                        for (int column = 0; column < titleList.size(); column++) {
+                            String titleName = titleList.get(column).getTitleName();
+                            // 获取属性（使用apache的包可以获取包括父类的属性）
+                            Field field = FieldUtils.getField(dataObject.getClass(), titleName, true);
+                            // 设置对象的访问权限，保证对private的属性的访问
+                            if (field != null) {
+                                field.setAccessible(true);
+                                data = field.get(dataObject);
+                            }
+                        }
+                    }
+                    dataRow.createCell(0).setCellValue(data == null ? "" : data.toString());
+                }
+                // 写入数据
+                sxssfWorkbook.write(outputStream);
+            } finally {
+                // 关闭
+                if (outputStream != null) {
+                    outputStream.close();
+                }
+                sxssfWorkbook.close();
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new CommonException("导出失败");
+        }
+        return new ReturnCommonDTO();
     }
 
 }
