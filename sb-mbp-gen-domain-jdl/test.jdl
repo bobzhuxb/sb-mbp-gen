@@ -69,11 +69,11 @@ entity SmMeetingDetail {
 entity SmMeetingSchedule {
     // 开始日期
 	//@NotBlank
-	//ValidDate
+	//@ValidDate
     startTime String
     // 结束日期
 	//@NotBlank
-	//ValidDate
+	//@ValidDate
     entTime String
 	//@NotBlank
 	//@Size(min = 1, max = 255)
