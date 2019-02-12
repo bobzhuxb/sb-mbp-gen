@@ -62,6 +62,9 @@ public class ${eentityName}DTO extends BaseDTO {
 	</#if>
 	</#list>
 
+    // ================self code:自定义属性start=====================
+    // ================self code:自定义属性end=====================
+
     public Long getId() {
         return id;
     }
@@ -132,6 +135,9 @@ public class ${eentityName}DTO extends BaseDTO {
     }
 	</#if>
 	</#list>
+
+    // ================self code:自定义属性的get/set方法start=====================
+    // ================self code:自定义属性的get/set方法end=====================
 
     @Override
     public boolean equals(Object o) {
