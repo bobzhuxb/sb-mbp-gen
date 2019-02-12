@@ -17,7 +17,7 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
 
     private LongFilter id;
     <#list fieldList as field>
-	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'operateUserId'>
+	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
 
     @ApiModelProperty(value = "${field.comment}")
     private <#if field.javaType == 'String'>StringFilter<#elseif field.javaType == 'Long'>LongFilter<#elseif field.javaType == 'Integer'>IntegerFilter<#elseif field.javaType == 'Double'>DoubleFilter<#else>Filter</#if> ${field.camelName};    // ${field.comment}
@@ -44,7 +44,7 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
         this.id = id;
     }
     <#list fieldList as field>
-	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'operateUserId'>
+	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
     
     public <#if field.javaType == 'String'>StringFilter<#elseif field.javaType == 'Long'>LongFilter<#elseif field.javaType == 'Integer'>IntegerFilter<#elseif field.javaType == 'Double'>DoubleFilter<#else>Filter</#if> get${field.ccamelName}() {
         return ${field.camelName};
@@ -88,7 +88,7 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
         return
             Objects.equals(id, that.id)
 			<#list fieldList as field>
-			<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'operateUserId'>
+			<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
             && Objects.equals(${field.camelName}, that.${field.camelName})
 			</#if>
 			</#list>
@@ -100,7 +100,7 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
         return Objects.hash(
         id
 		<#list fieldList as field>
-		<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'operateUserId'>
+		<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
         , ${field.camelName}
 		</#if>
 		</#list>
