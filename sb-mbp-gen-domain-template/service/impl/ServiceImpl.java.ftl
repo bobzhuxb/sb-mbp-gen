@@ -33,7 +33,8 @@ import java.util.stream.Collectors;
 @Service
 @EnableAspectJAutoProxy
 @Transactional
-public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper, ${eentityName}> implements ${eentityName}Service {
+public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper, ${eentityName}> implements ${eentityName}Service,
+        BaseService<${eentityName}> {
 
     private final Logger log = LoggerFactory.getLogger(${eentityName}ServiceImpl.class);
 	<#list fromToList as fromTo>
@@ -246,7 +247,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         // 表对应的序号Map
         Map<String, Integer> tableIndexMap = new HashMap<>();
         String dataQuerySql = getDataQuerySql(criteria, tableIndexMap);
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap);
+        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(wrapper, criteria);
         if (!dataFilterPass) {
@@ -270,7 +271,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         Map<String, Integer> tableIndexMap = new HashMap<>();
         String dataQuerySql = getDataQuerySql(criteria, tableIndexMap);
         String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap);
+        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(wrapper, criteria);
         if (!dataFilterPass) {
@@ -294,13 +295,27 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         // 表对应的序号Map
         Map<String, Integer> tableIndexMap = new HashMap<>();
         String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap);
+        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(wrapper, criteria);
         if (!dataFilterPass) {
             return 0;
         }
         return baseMapper.joinSelectCount(countQuerySql, wrapper);
+    }
+
+    /**
+     * 附加的条件查询增强方法
+     * @param wrapper 增强前的Wrapper条件
+     * @param tableAliasName 表名的别名
+     * @param paramName 参数名
+     * @param paramValue 参数值
+     * @return 增强后的Wrapper条件
+     */
+    public Wrapper<${eentityName}> wrapperEnhance(QueryWrapper<${eentityName}> wrapper, String tableAliasName,
+                                             String paramName, Object paramValue) {
+        // TODO: 增强的条件查询写在这里
+        return wrapper;
     }
 
     /**
@@ -312,7 +327,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     private Wrapper<${eentityName}> idEqualsPrepare(Long id, BaseCriteria criteria) {
         ${eentityName}Criteria ${entityName}Criteria = new ${eentityName}Criteria();
         MyBeanUtil.copyNonNullProperties(criteria, ${entityName}Criteria);
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, ${entityName}Criteria, ${eentityName}.class, null, null);
+        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, ${entityName}Criteria, ${eentityName}.class, null, null, this);
         ((QueryWrapper<${eentityName}>)wrapper).eq("id", id);
         return wrapper;
     }

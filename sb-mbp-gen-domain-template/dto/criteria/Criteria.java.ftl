@@ -33,6 +33,9 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
     private ${toFrom.toFromEntityType}Criteria ${toFrom.toFromEntityName};    // ${toFrom.toFromComment}
 	</#list>
 
+    // ================self code:增强的查询条件参数start=====================
+    // ================self code:增强的查询条件参数end=====================
+
     public ${eentityName}Criteria() {
     }
 
@@ -76,6 +79,9 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
     }
 	</#list>
 
+    // ================self code:增强的查询条件get/set方法start=====================
+    // ================self code:增强的查询条件get/set方法end=====================
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -112,7 +118,7 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
         return "${eentityName}Criteria{" +
                 (id != null ? "id=" + id + ", " : "") +
 				<#list fieldList as field>
-				<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'operateUserId'>
+				<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
                 (${field.camelName} != null ? "${field.camelName}=" + ${field.camelName} + ", " : "") +
 				</#if>
 				</#list>
