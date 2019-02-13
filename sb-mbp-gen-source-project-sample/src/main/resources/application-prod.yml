@@ -2,7 +2,6 @@ logging:
     level:
         ROOT: INFO
         com.bob.sm: INFO
-        com.ts.wxpay: INFO
 
 spring:
     datasource:

@@ -1,0 +1,311 @@
+// 用户
+entity SystemUser {
+    // 登录账号
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    login String
+    // 密码
+    //@RestFieldAllow(allowGet = false)
+    password String
+    // 姓名
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    name String
+    // 手机号
+	//@ValidCell
+    cell String
+    // 其他联系方式
+	//@Size(max = 255)
+    contractInfo String
+    // 身份证号
+	//@ValidCid
+    identifyNo String
+    // 邮箱
+	//@Size(max = 255)
+    email String
+    // 头像图片相对路径
+	//@Size(max = 255)
+    imgRelativePath String
+    // 备注
+	//@Size(max = 255)
+    memo String
+}
+
+// 角色
+entity SystemRole {
+    // 角色标识
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    name String
+    // 角色中文名称
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    chineseName String
+    // 角色描述
+	//@Size(max = 255)
+    description String
+}
+
+// 用户角色关系
+entity SystemUserRole {
+}
+
+// 操作许可
+entity SystemPermission {
+    // 操作许可名称
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    name String
+    // 操作许可描述
+	//@Size(max = 255)
+    description String
+	// 许可所属系统代码（只有在多系统联合配置权限时使用）
+	//@Size(max = 255)
+	systemCode String
+	// 操作许可类别（例如：GET/POST/PUT/DELETE等）
+	//@Size(max = 255)
+	httpType String
+	// 访问URL
+	//@Size(max = 255)
+	httpUrl String
+	// 功能归类
+	//@Size(max = 255)
+	functionCategroy String
+	// 名称是否已更改（1：未更改  2：已更改）
+	//@Min(1)
+	//@Max(2)
+	nameModified Integer
+	// 当前层级
+	//@Min(0)
+	currentLevel Integer
+	// 是否允许配置（1：是   2：否）
+    //@ValidEnum(target = Constants.yesNo.class)
+	allowConfig Integer
+}
+
+// 资源
+entity SystemResource {
+    // 资源类别（PERMISSION：权限   CLIENT_TYPE：客户端应用    SUB_SYSTEM：子系统）
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    resourceType String
+    // 资源名称
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    name String
+    // 资源描述
+	//@Size(max = 255)
+    description String
+	// 资源所属系统代码（只有在多系统联合配置权限时使用）
+	//@Size(max = 255)
+	systemCode String
+	// 资源特性标识（同一系统，同一类别内资源特性标识）
+	//@Size(max = 255)
+	identify String
+	// 当前层级
+	//@Min(0)
+	currentLevel Integer
+}
+
+// 资源许可关系
+entity SystemResourcePermission {
+}
+
+// 角色资源关系
+entity SystemRoleResource {
+}
+
+// 用户资源关系
+entity SystemUserResource {
+}
+
+// 组织机构
+entity SystemOrganization {
+    // 组织机构代码
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    organizationCode String
+    // 组织机构名称
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    name String
+    // 组织机构描述
+	//@Size(max = 255)
+    description String
+	// 当前层级
+	//@Min(0)
+	currentLevel Integer
+}
+
+// 操作日志
+entity SystemLog {
+    // 日志类型
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    organizationCode String
+    // 日志内容
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    name String
+}
+
+// 数据字典
+entity BaseDictionary {
+    // 数据字典类别编码
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    dicType String
+    // 数据字典代码
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    dicCode String
+    // 数据字典中文值
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    dicValue String
+    // 数据字典描述
+	//@Size(min = 1, max = 255)
+    dicDiscription String
+}
+
+// 工作人员
+entity SmPerson {
+    // 姓名
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    name String
+    // 手机号
+	//@NotBlank
+	//@ValidCell
+    cell String
+    // 民族代码
+	//#DIC_TYPE:NATION
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    nationCode String
+    // 国家代码
+	//#DIC_TYPE:COUNTRY
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    countryCode String
+}
+
+// 会议
+entity SmMeeting {
+    // 会议编号
+	//@RestFieldAllow(allowSet = false)
+    meetingNo String
+    // 会议名称
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    name String
+    // 所属科室代码
+	//#DIC_TYPE:KESHI
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    ksCode String
+}
+
+// 会议详细
+entity SmMeetingDetail {
+    // 详细描述
+	//@Size(min = 1, max = 255)
+    detailInfo String
+    // 详情浏览次数
+	//@RestFieldAllow(allowSet = false)
+    detailViews Integer
+}
+
+// 会议日程
+entity SmMeetingSchedule {
+    // 开始日期
+	//@NotBlank
+	//@ValidDate
+    startTime String
+    // 结束日期
+	//@NotBlank
+	//@ValidDate
+    entTime String
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    // 内容
+    content String
+}
+
+// 会议嘉宾
+entity SmMeetingGuest {
+    // 姓名
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    name String
+    // 描述
+	//@Size(min = 1, max = 255)
+    descr String
+}
+
+// 支付日志
+//@RestClassAllow(allowSet = false)
+entity SmPayLog {
+    // 接口类型
+    interType String
+    // 传入参数
+    param String
+    // 返回结果
+    result String
+}
+
+// 会议嘉宾照片
+entity SmMeetingGuestPhoto {
+    // 照片相对路径
+	//@NotBlank
+	//@Size(min = 1, max = 255)
+    relativePath String
+}
+
+relationship OneToOne {
+    // 会议{会议详情}
+	//@Min(0)
+	SmMeeting{smMeetingDetail} to SmMeetingDetail{smMeeting}
+}
+
+relationship OneToMany {
+	// 用户{角色}
+	SystemUser{systemUserRole} to SystemUserRole{systemUser}
+    // 角色{用户}
+	SystemRole{systemUserRole} to SystemUserRole{systemRole}
+    // 父操作许可{子操作许可}
+	SystemPermission{child} to SystemPermission{parent}
+	// 父资源{子资源}
+	SystemResource{child} to SystemResource{parent}
+    // 父组织机构{子组织机构}
+	SystemOrganization{child} to SystemOrganization{parent}
+    // 资源{许可}
+	SystemResource{systemResourcePermission} to SystemResourcePermission{systemResource}
+    // 许可{资源}
+	SystemPermission{systemResourcePermission} to SystemResourcePermission{systemPermission}
+    // 角色{资源}
+	SystemRole{systemRoleResource} to SystemRoleResource{systemRole}
+    // 资源{角色}
+	SystemResource{systemRoleResource} to SystemRoleResource{systemResource}
+    // 用户{资源}
+	SystemUser{systemUserResource} to SystemUserResource{systemUser}
+    // 资源{用户}
+	SystemResource{systemUserResource} to SystemUserResource{systemResource}
+    // 组织机构{用户}
+	SystemOrganization{systemUser} to SystemUser{systemOrganization}
+    // 父数据字典{子数据字典}
+	BaseDictionary{child} to BaseDictionary{parent}
+    // 组织者{会议}
+    //!CASCADE_DELETE:NULL
+	SmPerson{asmMeeting} to SmMeeting{organizer}
+    // 联系人{会议}
+    //!CASCADE_DELETE:NULL
+	SmPerson{bsmMeeting} to SmMeeting{contractor}
+    // 会议{会议日程}
+    //!CASCADE_DELETE:FORBIDDEN
+	SmMeeting{smMeetingSchedule} to SmMeetingSchedule{smMeeting}
+    // 会议{会议嘉宾}
+	SmMeeting{smMeetingGuest} to SmMeetingGuest{smMeeting}
+    // 会议嘉宾{嘉宾照片}
+	SmMeetingGuest{smMeetingGuestPhoto} to SmMeetingGuestPhoto{smMeetingGuest}
+}

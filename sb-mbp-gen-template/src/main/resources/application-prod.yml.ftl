@@ -2,7 +2,6 @@ logging:
     level:
         ROOT: INFO
         ${packageName}: INFO
-        com.ts.wxpay: INFO
 
 spring:
     datasource:

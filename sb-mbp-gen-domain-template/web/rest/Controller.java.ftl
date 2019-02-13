@@ -44,7 +44,7 @@ public class ${eentityName}Controller {
      */
     @ApiOperation(value="新增${entityComment}")
     @ApiResponses({
-            @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败\n" +
+            @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败<br/>" +
                     "errMsg - 错误消息")
     })
     @PostMapping("/${entityUrl}")
@@ -82,7 +82,7 @@ public class ${eentityName}Controller {
      */
     @ApiOperation(value="修改${entityComment}")
     @ApiResponses({
-            @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败\n" +
+            @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败<br/>" +
                     "errMsg - 错误消息")
     })
     @PutMapping("/${entityUrl}")
@@ -119,7 +119,7 @@ public class ${eentityName}Controller {
      */
     @ApiOperation(value="单个删除${entityComment}")
     @ApiResponses({
-            @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败\n" +
+            @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败<br/>" +
                     "errMsg - 错误消息")
     })
     @DeleteMapping("/${entityUrl}/{id}")
@@ -142,7 +142,7 @@ public class ${eentityName}Controller {
      */
     @ApiOperation(value="批量删除${entityComment}")
     @ApiResponses({
-            @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败\n" +
+            @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败<br/>" +
                     "errMsg - 错误消息")
     })
     @DeleteMapping("/${entityUrl}")
@@ -192,7 +192,7 @@ public class ${eentityName}Controller {
             @ApiImplicitParam(name="dictionaryNameList", paramType="path", value="关联查询的数据字典值${dictionaryNameList}"),
             @ApiImplicitParam(name="orderBy", paramType="path", value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
 			<#list fieldList as field>
-            @ApiImplicitParam(name="${field.camelName}.equals", paramType="path", value="${field.comment}"),
+            @ApiImplicitParam(name="${field.camelName}.equals", paramType="path",<#if field.javaType == 'Integer'> dataType="int",<#elseif field.javaType == 'Long'> dataType="long",<#elseif field.javaType == 'Double'> dataType="double",<#else></#if> value="${field.comment}"),
 			</#list>
 			<#list toFromList as toFrom>
 			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
@@ -216,10 +216,10 @@ public class ${eentityName}Controller {
             @ApiImplicitParam(name="associationNameList", paramType="path", value="关联查询的字段${associationNameComment}"),
             @ApiImplicitParam(name="dictionaryNameList", paramType="path", value="关联查询的数据字典值${dictionaryNameList}"),
             @ApiImplicitParam(name="orderBy", paramType="path", value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
-            @ApiImplicitParam(name="current", paramType="path", value="分页：当前页"),
-            @ApiImplicitParam(name="size", paramType="path", value="分页：每页大小"),
+            @ApiImplicitParam(name="current", paramType="path", dataType="long", value="分页：当前页"),
+            @ApiImplicitParam(name="size", paramType="path", dataType="long", value="分页：每页大小"),
             <#list fieldList as field>
-            @ApiImplicitParam(name="${field.camelName}.equals", paramType="path", value="${field.comment}"),
+            @ApiImplicitParam(name="${field.camelName}.equals", paramType="path",<#if field.javaType == 'Integer'> dataType="int",<#elseif field.javaType == 'Long'> dataType="long",<#elseif field.javaType == 'Double'> dataType="double",<#else></#if> value="${field.comment}"),
 			</#list>
 			<#list toFromList as toFrom>
 			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
@@ -241,7 +241,7 @@ public class ${eentityName}Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name="orderBy", paramType="path", value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
             <#list fieldList as field>
-            @ApiImplicitParam(name="${field.camelName}.equals", paramType="path", value="${field.comment}"),
+            @ApiImplicitParam(name="${field.camelName}.equals", paramType="path",<#if field.javaType == 'Integer'> dataType="int",<#elseif field.javaType == 'Long'> dataType="long",<#elseif field.javaType == 'Double'> dataType="double",<#else></#if> value="${field.comment}"),
 			</#list>
 			<#list toFromList as toFrom>
 			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
