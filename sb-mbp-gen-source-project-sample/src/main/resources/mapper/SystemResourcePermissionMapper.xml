@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bob.sm.mapper.SystemResourcePermissionMapper">
+
+    <select id="joinSelectList" resultType="com.bob.sm.domain.SystemResourcePermission">
+        ${queryMain} ${ew.customSqlSegment}
+    </select>
+
+    <select id="joinSelectPage" resultType="com.bob.sm.domain.SystemResourcePermission">
+        ${queryMain} ${ew.customSqlSegment}
+    </select>
+
+    <select id="joinSelectCount" resultType="int">
+        ${queryMain} ${ew.customSqlSegment}
+    </select>
+
+    <update id="systemResourceIdCascadeToNull">
+        UPDATE system_resource_permission SET system_resource_id = null WHERE system_resource_id = #{systemResourceId}
+    </update>
+
+    <update id="systemPermissionIdCascadeToNull">
+        UPDATE system_resource_permission SET system_permission_id = null WHERE system_permission_id = #{systemPermissionId}
+    </update>
+
+</mapper>

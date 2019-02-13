@@ -1,6 +1,5 @@
 package com.bob.sm.security.dynamic;
 
-import com.bob.sm.config.YmlConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.SecurityMetadataSource;
 import org.springframework.security.access.intercept.AbstractSecurityInterceptor;
@@ -23,15 +22,12 @@ public class DynamicSecurityInterceptor extends AbstractSecurityInterceptor impl
 
     private static final String[] interceptUrls = {"/api"};
 
-    private static final String[][] exceptUrls = {{null, "/api/authenticate"}, {null, "/baseapi"}};
+    private static final String[][] exceptUrls = {{null, "/api/authenticate"}, {"GET", "/api/account"}};
 
     private static final String[][] onlyAdminUrls = {{null, "/api/important-urls"}};
 
     @Autowired
     private FilterInvocationSecurityMetadataSource securityMetadataSource;
-
-    @Autowired
-    private YmlConfig ymlConfig;
 
     @Autowired
     public void setMyAccessDecisionManager(DynamicAccessDecisionManager dynamicAccessDecisionManager) {
@@ -80,17 +76,7 @@ public class DynamicSecurityInterceptor extends AbstractSecurityInterceptor impl
                 }
             }
         }
-        // 发送至权限系统的请求
-        if (requestUrl.startsWith("/baseapi")) {
-            String protocolPrefix = ymlConfig.getRemoteProtocolPrefix();
-            String authorizationIp = ymlConfig.getRemoteAuthorizationIp();
-            String authorizationPort = ymlConfig.getRemoteAuthorizationPort();
-            String redirectUrl = protocolPrefix + authorizationIp
-                    + (authorizationPort == null || "".equals(authorizationPort) || "80".equals(authorizationPort) ? "" : ":" + authorizationPort)
-                    + requestUrl;
-            response.sendRedirect(redirectUrl);
-            return;
-        }
+        // 其他的URL拦截
         for (String interceptUrl : interceptUrls) {
             // 需要拦截的URL
             if (requestUrl.startsWith(interceptUrl)) {

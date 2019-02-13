@@ -2,7 +2,7 @@ package com.bob.sm.util;
 
 import com.bob.sm.annotation.PermissionConfigAllow;
 import com.bob.sm.config.Constants;
-import com.bob.sm.dto.help.BasePermissionDTO;
+import com.bob.sm.dto.SystemPermissionDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +15,11 @@ import java.util.List;
 
 public class PermissionUtil {
 
-    public static List<BasePermissionDTO> getAllPermissions(List<String> packageNameList) {
+    public static List<SystemPermissionDTO> getAllPermissions(List<String> packageNameList) {
         List<String> classNames = getClassName(packageNameList);
-        List<BasePermissionDTO> allPermissionList = new ArrayList<>();
+        List<SystemPermissionDTO> allPermissionList = new ArrayList<>();
         for (String className : classNames) {
-            List<BasePermissionDTO> classPermissionList = getPermission(className);
+            List<SystemPermissionDTO> classPermissionList = getPermission(className);
             allPermissionList.addAll(classPermissionList);
         }
 
@@ -57,8 +57,8 @@ public class PermissionUtil {
         return myClassName;
     }
 
-    public static List<BasePermissionDTO> getPermission(String className) {
-        List<BasePermissionDTO> basePermissionList = new ArrayList<>();
+    public static List<SystemPermissionDTO> getPermission(String className) {
+        List<SystemPermissionDTO> systemPermissionList = new ArrayList<>();
         try {
             // 获取类及注解
             Class clazz = Class.forName(className);
@@ -76,17 +76,17 @@ public class PermissionUtil {
             }
             String description = classApiAnnotation == null ? "" : ((Api)classApiAnnotation).description();
             for (String prefixUrl : prefixUrls) {
-                BasePermissionDTO basePermissionDTOMore = new BasePermissionDTO();
-                basePermissionDTOMore.setName(description);
-                basePermissionDTOMore.setFunctionCategroy(className);
-                basePermissionDTOMore.setHttpUrl(prefixUrl);
-                basePermissionDTOMore.setCurrentLevel(1);
-                basePermissionList.add(basePermissionDTOMore);
+                SystemPermissionDTO systemPermissionDTO = new SystemPermissionDTO();
+                systemPermissionDTO.setName(description);
+                systemPermissionDTO.setFunctionCategroy(className);
+                systemPermissionDTO.setHttpUrl(prefixUrl);
+                systemPermissionDTO.setCurrentLevel(1);
+                systemPermissionList.add(systemPermissionDTO);
             }
             // 如果该类下的所有方法都不允许配置，则该类不允许配置
             boolean parentConfigPermissionAllow = false;
             // 获取方法及注解
-            List<BasePermissionDTO> methodPermissionList = new ArrayList<>();
+            List<SystemPermissionDTO> methodPermissionList = new ArrayList<>();
             Method[] methods = clazz.getDeclaredMethods();
             for (Method method : methods) {
                 Annotation methodApiOperationAnnotation = method.getDeclaredAnnotation(ApiOperation.class);
@@ -123,34 +123,34 @@ public class PermissionUtil {
                 }
                 String name = methodApiOperationAnnotation == null ? "" : ((ApiOperation)methodApiOperationAnnotation).value();
                 for (String httpUrl : httpUrls) {
-                    BasePermissionDTO basePermissionDTOMore = new BasePermissionDTO();
-                    basePermissionDTOMore.setName(name);
-                    basePermissionDTOMore.setHttpType(httpType);
-                    basePermissionDTOMore.setHttpUrl(httpUrl);
-                    basePermissionDTOMore.setCurrentLevel(2);
+                    SystemPermissionDTO systemPermissionDTO = new SystemPermissionDTO();
+                    systemPermissionDTO.setName(name);
+                    systemPermissionDTO.setHttpType(httpType);
+                    systemPermissionDTO.setHttpUrl(httpUrl);
+                    systemPermissionDTO.setCurrentLevel(2);
                     if (permissionConfigAllow) {
                         // 允许配置
-                        basePermissionDTOMore.setAllowConfig(Constants.permissionAllowConfig.YES.getValue());
+                        systemPermissionDTO.setAllowConfig(Constants.permissionAllowConfig.YES.getValue());
                         parentConfigPermissionAllow = true;
                     } else {
                         // 不允许配置
-                        basePermissionDTOMore.setAllowConfig(Constants.permissionAllowConfig.NO.getValue());
+                        systemPermissionDTO.setAllowConfig(Constants.permissionAllowConfig.NO.getValue());
                     }
-                    methodPermissionList.add(basePermissionDTOMore);
+                    methodPermissionList.add(systemPermissionDTO);
                 }
             }
             // 将类注解和方法注解组合
-            for (BasePermissionDTO basePermissionDTOMore : basePermissionList) {
-                basePermissionDTOMore.setAllowConfig(parentConfigPermissionAllow ?
+            for (SystemPermissionDTO systemPermission : systemPermissionList) {
+                systemPermission.setAllowConfig(parentConfigPermissionAllow ?
                     Constants.permissionAllowConfig.YES.getValue() : Constants.permissionAllowConfig.NO.getValue());
-                basePermissionDTOMore.setChildPermissionList(
-                    (ArrayList<BasePermissionDTO>)((ArrayList<BasePermissionDTO>) methodPermissionList).clone());
+                systemPermission.setChildList(
+                    (ArrayList<SystemPermissionDTO>)((ArrayList<SystemPermissionDTO>) methodPermissionList).clone());
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return basePermissionList;
+        return systemPermissionList;
     }
 
 }

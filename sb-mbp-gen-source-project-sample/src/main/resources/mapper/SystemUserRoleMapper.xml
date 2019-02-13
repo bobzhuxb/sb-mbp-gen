@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bob.sm.mapper.SystemUserRoleMapper">
+
+    <select id="joinSelectList" resultType="com.bob.sm.domain.SystemUserRole">
+        ${queryMain} ${ew.customSqlSegment}
+    </select>
+
+    <select id="joinSelectPage" resultType="com.bob.sm.domain.SystemUserRole">
+        ${queryMain} ${ew.customSqlSegment}
+    </select>
+
+    <select id="joinSelectCount" resultType="int">
+        ${queryMain} ${ew.customSqlSegment}
+    </select>
+
+    <update id="systemUserIdCascadeToNull">
+        UPDATE system_user_role SET system_user_id = null WHERE system_user_id = #{systemUserId}
+    </update>
+
+    <update id="systemRoleIdCascadeToNull">
+        UPDATE system_user_role SET system_role_id = null WHERE system_role_id = #{systemRoleId}
+    </update>
+
+</mapper>

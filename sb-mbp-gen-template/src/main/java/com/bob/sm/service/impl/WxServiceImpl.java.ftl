@@ -56,37 +56,7 @@ public class WxServiceImpl implements WxService {
         // 设置账号参数，查询密码
         String login = "$" + openId;
         if (wxResultDTO.getErrcode() == null) {
-            // 微信验证成功，远程新增或更新用户
-            String protocolPrefix = ymlConfig.getRemoteProtocolPrefix();
-            String authorizationIp = ymlConfig.getRemoteAuthorizationIp();
-            String authorizationPort = ymlConfig.getRemoteAuthorizationPort();
-            String addOrUpdateUserUrl = protocolPrefix + authorizationIp
-                    + (authorizationPort == null || "".equals(authorizationPort) || "80".equals(authorizationPort) ? "" : ":" + authorizationPort)
-                    + ymlConfig.getAddOrUpdateUserUrl();
-            RemoteAuthorizationDTO remoteAuthorizationDTO = new RemoteAuthorizationDTO();
-            remoteAuthorizationDTO.setLogin(login);
-            remoteAuthorizationDTO.setName(wxOpenIdParamDTO.getWxName());
-            remoteAuthorizationDTO.setAuthorities(Arrays.asList("ROLE_WX"));
-            String resultJson = HttpUtil.doPost(addOrUpdateUserUrl, JSON.toJSONString(remoteAuthorizationDTO), null);
-            if (resultJson != null) {
-                RemoteAuthorizationDTO remoteAuthorizationResult = JSON.parseObject(resultJson, RemoteAuthorizationDTO.class);
-                if (!"success".equals(remoteAuthorizationResult.getAuthorizationResult())) {
-                    // 用户远程新增或修改失败
-                    log.info("用户信息录入失败");
-                    WxLoginStatusDTO loginStatusDTO = new WxLoginStatusDTO();
-                    loginStatusDTO.setResultCode(Constants.wxLoginResultStatus.USER_SAVE_FAIL.getValue());
-                    loginStatusDTO.setErrMsg("用户信息录入失败");
-                    return loginStatusDTO;
-                }
-                token = remoteAuthorizationResult.getToken();
-            } else {
-                // 用户远程新增或修改失败
-                log.info("用户信息录入失败，空返回");
-                WxLoginStatusDTO loginStatusDTO = new WxLoginStatusDTO();
-                loginStatusDTO.setResultCode(Constants.wxLoginResultStatus.USER_SAVE_FAIL.getValue());
-                loginStatusDTO.setErrMsg("用户信息录入失败");
-                return loginStatusDTO;
-            }
+            // TODO: 微信验证成功，新增或更新用户
         } else {
             // 返回数据
             log.info("微信验证失败（code：" + wxResultDTO.getErrcode() + "，info：" + wxResultDTO.getErrmsg() + "）");

@@ -1,7 +1,7 @@
 package ${packageName}.config;
 
-import ${packageName}.dto.help.BasePermissionDTO;
-import ${packageName}.service.micro.BasePermissionService;
+import ${packageName}.dto.SystemPermissionDTO;
+import ${packageName}.service.AccountService;
 import ${packageName}.util.PermissionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +21,7 @@ public class ApplicationInit implements ApplicationRunner {
     private String permissionInit;
 
     @Autowired
-    private BasePermissionService basePermissionService;
+    private AccountService accountService;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -39,9 +39,9 @@ public class ApplicationInit implements ApplicationRunner {
      * 初始化权限表
      */
     private void initPermissionData() {
-        List<BasePermissionDTO> permissionList = PermissionUtil.getAllPermissions(
+        List<SystemPermissionDTO> permissionList = PermissionUtil.getAllPermissions(
             Arrays.asList("${packageName}.web.rest"));
-        basePermissionService.savePermissionsWithChildren(permissionList);
+        accountService.savePermissionsWithChildren(permissionList);
     }
 
 }

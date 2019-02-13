@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bob.sm.mapper.SystemUserMapper">
+
+    <select id="joinSelectList" resultType="com.bob.sm.domain.SystemUser">
+        ${queryMain} ${ew.customSqlSegment}
+    </select>
+
+    <select id="joinSelectPage" resultType="com.bob.sm.domain.SystemUser">
+        ${queryMain} ${ew.customSqlSegment}
+    </select>
+
+    <select id="joinSelectCount" resultType="int">
+        ${queryMain} ${ew.customSqlSegment}
+    </select>
+
+    <update id="systemOrganizationIdCascadeToNull">
+        UPDATE system_user SET system_organization_id = null WHERE system_organization_id = #{systemOrganizationId}
+    </update>
+
+</mapper>

@@ -58,10 +58,4 @@ jhipster:
             queue-size: 512
 
 permission:
-    do-init: false
-
-microservice:
-    remote-authorization: false
-    remote-protocol-prefix: http://
-    authorization-ip: localhost
-    authorization-port: 8088
+    do-init: true

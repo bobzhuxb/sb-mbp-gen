@@ -1,18 +1,17 @@
 package ${packageName}.security.dynamic;
 
-import ${packageName}.util.HttpUtil;
-import com.alibaba.fastjson.JSON;
 import ${packageName}.config.YmlConfig;
-import ${packageName}.dto.help.RemoteAuthorizationDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * 判定是否拥有权限
@@ -39,29 +38,20 @@ public class DynamicAccessDecisionManager implements AccessDecisionManager {
         } else if (principal instanceof String) {
             username = principal.toString();
         }
-        String remoteAuthorization = ymlConfig.getRemoteAuthorization();
-        if ("false".equals(remoteAuthorization)) {
-            // 关闭权限验证
-            return;
-        }
         if ("admin".equals(username)) {
             // admin账号默认拥有所有许可
             return;
         }
-        String protocolPrefix = ymlConfig.getRemoteProtocolPrefix();
-        String authorizationIp = ymlConfig.getRemoteAuthorizationIp();
-        String authorizationPort = ymlConfig.getRemoteAuthorizationPort();
-        String authorizationUrl = protocolPrefix + authorizationIp
-                + (authorizationPort == null || "".equals(authorizationPort) || "80".equals(authorizationPort) ? "" : ":" + authorizationPort)
-                + ymlConfig.getAuthorizationUrl();
-        RemoteAuthorizationDTO remoteAuthorizationDTO = new RemoteAuthorizationDTO();
-        remoteAuthorizationDTO.setLogin(username);
-        remoteAuthorizationDTO.setResourceType("PERMISSION");
-        String resultJson = HttpUtil.doPost(authorizationUrl, JSON.toJSONString(remoteAuthorizationDTO), null);
-        if (resultJson != null) {
-            RemoteAuthorizationDTO remoteAuthorizationResult = JSON.parseObject(resultJson, RemoteAuthorizationDTO.class);
-            if ("success".equals(remoteAuthorizationResult.getAuthorizationResult())) {
-                return;
+        ConfigAttribute c;
+        String needPermission;
+        for (Iterator<ConfigAttribute> iter = configAttributes.iterator(); iter.hasNext(); ) {
+            c = iter.next();
+            needPermission = c.getAttribute();
+            for (GrantedAuthority ga : authentication.getAuthorities()) {
+                if (needPermission.trim().equals(ga.getAuthority())) {
+                    // 其他账号只拥有被分配的许可
+                    return;
+                }
             }
         }
         throw new AccessDeniedException("没有权限");

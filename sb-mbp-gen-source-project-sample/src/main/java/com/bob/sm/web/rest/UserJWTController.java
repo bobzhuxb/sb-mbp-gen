@@ -1,5 +1,6 @@
 package com.bob.sm.web.rest;
 
+import com.bob.sm.security.jwt.TokenProvider;
 import com.bob.sm.util.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.bob.sm.config.YmlConfig;
@@ -12,7 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,28 +36,31 @@ public class UserJWTController {
     @Autowired
     private YmlConfig ymlConfig;
 
+    private final TokenProvider tokenProvider;
+
+    private final AuthenticationManager authenticationManager;
+
+    public UserJWTController(TokenProvider tokenProvider,
+                             AuthenticationManager authenticationManager) {
+        this.tokenProvider = tokenProvider;
+        this.authenticationManager = authenticationManager;
+    }
+
     @ApiOperation(value="用户登录")
     @PostMapping("/authenticate")
     @Timed
     public ResponseEntity<JWTToken> authorize(@Valid @RequestBody LoginVM loginVM) {
 
-        String protocolPrefix = ymlConfig.getRemoteProtocolPrefix();
-        String authorizationIp = ymlConfig.getRemoteAuthorizationIp();
-        String authorizationPort = ymlConfig.getRemoteAuthorizationPort();
-        String authenticateUrl = protocolPrefix + authorizationIp
-                + (authorizationPort == null || "".equals(authorizationPort) || "80".equals(authorizationPort) ? "" : ":" + authorizationPort)
-                + ymlConfig.getAuthenticateUrl();
-        String resultJson = HttpUtil.doPost(authenticateUrl, JSON.toJSONString(loginVM), null);
-        if (resultJson != null) {
-            JWTToken jwtToken = JSON.parseObject(resultJson, JWTToken.class);
-            String jwt = jwtToken.getId_token();
-            if (jwt != null) {
-                HttpHeaders httpHeaders = new HttpHeaders();
-                httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
-                return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
-            }
-        }
-        throw new BadCredentialsException("用户名或密码错误");
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(loginVM.getUsername(), loginVM.getPassword());
+
+        Authentication authentication = this.authenticationManager.authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        boolean rememberMe = (loginVM.isRememberMe() == null) ? false : loginVM.isRememberMe();
+        String jwt = tokenProvider.createToken(authentication, rememberMe);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
+        return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
     }
 
     /**

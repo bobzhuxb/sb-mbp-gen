@@ -5,19 +5,14 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.bob.sm.dto.SmMeetingGuestDTO;
 import com.bob.sm.dto.criteria.BaseCriteria;
 import com.bob.sm.dto.criteria.filter.*;
-import com.bob.sm.mapper.BaseCommonMapper;
 import com.bob.sm.service.BaseService;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class MbpUtil {
 

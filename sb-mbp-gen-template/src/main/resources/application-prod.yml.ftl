@@ -60,9 +60,3 @@ jhipster:
 
 permission:
     do-init: false
-
-microservice:
-    remote-authorization: false
-    remote-protocol-prefix: http://
-    authorization-ip: localhost
-    authorization-port: 8088

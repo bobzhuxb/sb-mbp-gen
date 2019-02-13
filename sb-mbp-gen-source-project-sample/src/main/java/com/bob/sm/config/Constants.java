@@ -83,6 +83,23 @@ public final class Constants {
         }
     }
 
+    // 操作许可名称是否已更改
+    public enum permissionNameModified implements EnumInter {
+        NO(1, "未更改"), YES(2, "已更改");
+        private int value;
+        private String name;
+        private permissionNameModified(int value, String name) {
+            this.value = value;
+            this.name = name;
+        }
+        public Integer getValue(){
+            return value;
+        }
+        public String getName(){
+            return name;
+        }
+    }
+
     // 操作许可是否允许被配置用于权限或用户
     public enum permissionAllowConfig implements EnumInter {
         YES(1, "允许配置"), NO(2, "不允许配置");
