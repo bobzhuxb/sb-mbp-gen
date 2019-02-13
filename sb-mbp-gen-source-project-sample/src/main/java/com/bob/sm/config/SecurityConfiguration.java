@@ -1,6 +1,5 @@
 package com.bob.sm.config;
 
-import com.bob.sm.security.dynamic.DynamicSecurityInterceptor;
 import com.bob.sm.security.jwt.JWTConfigurer;
 import com.bob.sm.security.jwt.TokenProvider;
 import org.springframework.beans.factory.BeanInitializationException;
@@ -19,7 +18,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.filter.CorsFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
@@ -42,20 +40,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final SecurityProblemSupport problemSupport;
 
-    private DynamicSecurityInterceptor dynamicSecurityInterceptor;
-
     public SecurityConfiguration(AuthenticationManagerBuilder authenticationManagerBuilder,
                                  UserDetailsService userDetailsService,
                                  TokenProvider tokenProvider,
                                  CorsFilter corsFilter,
-                                 SecurityProblemSupport problemSupport,
-                                 DynamicSecurityInterceptor dynamicSecurityInterceptor) {
+                                 SecurityProblemSupport problemSupport) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.userDetailsService = userDetailsService;
         this.tokenProvider = tokenProvider;
         this.corsFilter = corsFilter;
         this.problemSupport = problemSupport;
-        this.dynamicSecurityInterceptor = dynamicSecurityInterceptor;
     }
 
     @PostConstruct
@@ -83,14 +77,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring()
+            // 这里写放开权限的URL
             .antMatchers(HttpMethod.OPTIONS, "/**")
-            // 权限系统地址前缀
             .antMatchers("/static/**")
-            .antMatchers("/app/**/*.{js,html}")
-            .antMatchers("/i18n/**")
-            .antMatchers("/content/**")
-            .antMatchers("/swagger-ui/index.html")
-            .antMatchers("/test/**");
+            .antMatchers("/swagger-ui.html");
     }
 
     @Override
@@ -112,8 +102,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .authorizeRequests()
             // ==================需要关闭的Rest接口写在这里 start======================
-            .antMatchers("/api/register").permitAll()
-            .antMatchers("/api/activate").permitAll()
             .antMatchers(HttpMethod.POST, "/api/sample-urls").denyAll()
             // ==================需要关闭的Rest接口写在这里 end======================
 
@@ -133,8 +121,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // ==================系统健康检查 end======================
             .and()
             .apply(securityConfigurerAdapter());
-
-        http.addFilterBefore(dynamicSecurityInterceptor, FilterSecurityInterceptor.class);
 
     }
 

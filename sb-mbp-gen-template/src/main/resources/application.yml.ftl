@@ -50,26 +50,6 @@ jhipster:
         #max-age: 1800
     mail:
         from: base@localhost
-    swagger:
-        default-include-pattern: /api/.*
-        title: base API
-        description: API接口
-        version: 0.0.1
-        terms-of-service-url:
-        contact-name:
-        contact-url:
-        contact-email:
-        license:
-        license-url:
-
-microservice:
-    remote-authenticate-url: /baseapi/authenticate
-    remote-authorization-url: /baseapi/remote/authorization
-    remote-register-permission-url: /baseapi/remote/register-permission
-    remote-load-current-user-url: /baseapi/remote/load-current-user
-    remote-delete-user-url: /baseapi/remote/delete-user
-    remote-add-or-update-user-url: /baseapi/remote/add-or-update-user
-    remote-load-dictionary-url: /baseapi/remote/load-dictionary
 
 app:
     pic-compress-switch: close  # 启动或关闭图片压缩
