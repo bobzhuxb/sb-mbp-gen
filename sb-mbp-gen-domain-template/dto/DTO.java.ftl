@@ -2,6 +2,7 @@ package ${packageName}.dto;
 
 import ${packageName}.annotation.*;
 import ${packageName}.annotation.validation.*;
+import ${packageName}.annotation.validation.group.*;
 import ${packageName}.domain.*;
 import ${packageName}.config.Constants;
 import javax.validation.constraints.*;

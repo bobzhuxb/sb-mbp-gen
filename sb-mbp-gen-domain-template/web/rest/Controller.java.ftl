@@ -1,6 +1,7 @@
 package ${packageName}.web.rest;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import ${packageName}.annotation.validation.group.*;
 import ${packageName}.config.Constants;
 import ${packageName}.dto.*;
 import ${packageName}.dto.criteria.*;
@@ -15,9 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,7 +40,7 @@ public class ${eentityName}Controller {
     /**
      * 新增
      * @param ${entityName}DTO 待新增的实体
-	 * @param bindingResult 参数验证结果
+	 * @param bindingResult 参数验证结果（注意：不分配groups分组时，默认每次都需要验证）
      * @return 结果返回码和消息
      */
     @ApiOperation(value="新增${entityComment}")
@@ -54,7 +55,7 @@ public class ${eentityName}Controller {
 					"  \"${field.camelName}\": \"${field.comment}\",\n" +
 					</#list>
                     "}")
-        @RequestBody @Valid ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
+        @RequestBody @Validated(value = {ValidateCreateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
         log.debug("Controller ==> 新增${eentityName} : {}", ${entityName}DTO);
         if (${entityName}DTO.getId() != null) {
             throw new BadRequestAlertException("id必须为空", ENTITY_NAME, "idexists");
@@ -77,7 +78,7 @@ public class ${eentityName}Controller {
     /**
      * 修改
      * @param ${entityName}DTO 待修改的实体
-	 * @param bindingResult 参数验证结果
+	 * @param bindingResult 参数验证结果（注意：不分配groups分组时，默认每次都需要验证）
      * @return 结果返回码和消息
      */
     @ApiOperation(value="修改${entityComment}")
@@ -92,7 +93,7 @@ public class ${eentityName}Controller {
 					"  \"${field.camelName}\": \"${field.comment}\",\n" +
 					</#list>
                     "}")
-        @RequestBody @Valid ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
+        @RequestBody @Validated(value = {ValidateUpdateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
         log.debug("Controller ==> 修改${eentityName} : {}", ${entityName}DTO);
         if (${entityName}DTO.getId() == null) {
             throw new BadRequestAlertException("id不得为空", ENTITY_NAME, "idnotexists");
