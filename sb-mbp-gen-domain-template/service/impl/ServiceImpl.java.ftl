@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,6 +59,11 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     @Autowired
 	private ${useDictionary.eentityName}Mapper ${useDictionary.entityName}Mapper;
 	</#list>
+	</#if>
+	<#if eentityName == 'SystemUser'>
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 	</#if>
 
     /**
@@ -98,6 +104,12 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         if (${entityName}.getId() == null) {
             // 新增
             ${entityName}.setInsertUserId(${entityName}DTO.getOperateUserId());
+            <#if eentityName == 'SystemUser'>
+            if (${entityName}.getPassword() == null) {
+                ${entityName}.setPassword("123456");
+            }
+            ${entityName}.setPassword(passwordEncoder.encode(${entityName}.getPassword()));
+			</#if>
         }
         boolean result = saveOrUpdate(${entityName});
         long ${entityName}Id = ${entityName}.getId();
