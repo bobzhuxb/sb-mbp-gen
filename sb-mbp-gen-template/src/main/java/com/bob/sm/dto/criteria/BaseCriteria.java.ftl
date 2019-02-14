@@ -12,6 +12,10 @@ public class BaseCriteria {
 
     private LongFilter operateUserId;    // 操作者用户ID
 
+    private SystemUserCriteria insertUser;  // 创建者用户
+
+    private SystemUserCriteria operateUser; // 操作者用户
+
     private StringFilter insertTime;    // 插入时间
 
     private StringFilter updateTime;    // 更新时间
@@ -44,6 +48,22 @@ public class BaseCriteria {
 
     public void setOperateUserId(LongFilter operateUserId) {
         this.operateUserId = operateUserId;
+    }
+
+    public SystemUserCriteria getInsertUser() {
+        return insertUser;
+    }
+
+    public void setInsertUser(SystemUserCriteria insertUser) {
+        this.insertUser = insertUser;
+    }
+
+    public SystemUserCriteria getOperateUser() {
+        return operateUser;
+    }
+
+    public void setOperateUser(SystemUserCriteria operateUser) {
+        this.operateUser = operateUser;
     }
 
     public StringFilter getInsertTime() {

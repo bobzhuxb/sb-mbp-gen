@@ -18,6 +18,12 @@ public class BaseDTO implements Serializable {
     @RestFieldAllow(allowSet = false)
     private String updateTime;    // 更新时间
 
+    ///////////////////////// 附加关联属性 /////////////////////////
+
+    private SystemUserDTO insertUser;    // 创建者用户
+
+    private SystemUserDTO operateUser;    // 操作者用户
+
     public Long getInsertUserId() {
         return insertUserId;
     }
@@ -48,5 +54,21 @@ public class BaseDTO implements Serializable {
 
     public void setUpdateTime(String updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public SystemUserDTO getInsertUser() {
+        return insertUser;
+    }
+
+    public void setInsertUser(SystemUserDTO insertUser) {
+        this.insertUser = insertUser;
+    }
+
+    public SystemUserDTO getOperateUser() {
+        return operateUser;
+    }
+
+    public void setOperateUser(SystemUserDTO operateUser) {
+        this.operateUser = operateUser;
     }
 }

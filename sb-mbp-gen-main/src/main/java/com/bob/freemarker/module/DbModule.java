@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -94,6 +96,7 @@ public class DbModule {
         try {
             getConnection();
             createEntityTablesDirect(erdto);
+            initDbData();
         } finally {
             if (connection != null) {
                 connection.close();
@@ -272,6 +275,38 @@ public class DbModule {
                 }
                 log.info("表" + entityDTO.getTableName() + "修改完成。");
             }
+        }
+    }
+
+    /**
+     * 初始化用户表、角色表、用户角色关系表数据（只加入admin账号及ROLE_ADMIN角色）
+     * @throws Exception
+     */
+    private static void initDbData() throws Exception {
+        String nowTimeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss"));
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery("select count(0) from system_user");
+        while (resultSet.next()) {
+            int count = resultSet.getInt(1);
+            if (count == 0) {
+                // 数据表尚未初始化，开始初始化
+                statement.execute("truncate table system_user");
+                statement.execute("truncate table system_role");
+                statement.execute("truncate table system_user_role");
+                statement.execute("INSERT INTO system_user(id, login, password, name, cell, contract_info, " +
+                        "identify_no, email, img_relative_path, memo, insert_user_id, operate_user_id, insert_time, " +
+                        "update_time, system_organization_id) VALUES ('1', 'admin', " +
+                        "'$2a$10$PQkBezu.nvPOSenQXu/WxOMQtKj1j5ybjELKRfxr8uLeU8NCRBhDq', '超级管理员', '12345678901', " +
+                        "null, '123456789012345678', null, null, '仅供开发人员使用', null, null, " +
+                        "'" + nowTimeStr + "', null, null)");
+                statement.execute("INSERT INTO system_role(id, name, chinese_name, description, insert_user_id, " +
+                        "operate_user_id, insert_time, update_time) VALUES ('1', 'ROLE_ADMIN', '管理员', null, " +
+                        "'1', '1', '" + nowTimeStr + "', null)");
+                statement.execute("INSERT INTO system_user_role(id, insert_user_id, operate_user_id, insert_time, " +
+                        "update_time, system_user_id, system_role_id) VALUES ('1', '1', '1', '" + nowTimeStr +
+                        "', null, '1', '1')");
+            }
+            break;
         }
     }
 
