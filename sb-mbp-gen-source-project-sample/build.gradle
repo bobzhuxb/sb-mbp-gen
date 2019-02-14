@@ -87,8 +87,8 @@ dependencies {
 
 	// ===================================接口文档=====================================
 	// Swagger
-	compile "io.springfox:springfox-swagger2:2.9.2"
-	compile "io.springfox:springfox-swagger-ui:2.9.2"
+	compile "io.springfox:springfox-swagger2:2.5.0"
+	compile "io.springfox:springfox-swagger-ui:2.5.0"
 
 	// ===================================异常=====================================
 	// 错误处理

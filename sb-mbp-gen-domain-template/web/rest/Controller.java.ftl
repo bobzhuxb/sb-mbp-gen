@@ -45,17 +45,24 @@ public class ${eentityName}Controller {
      * @return 结果返回码和消息
      */
     @ApiOperation(value="新增${entityComment}")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name="${entityName}DTO", dataType = "string", value = "{\n" +
+                    <#list fieldList as field>
+					<#if field.camelName != 'insertTime' && field.camelName != 'insertUserId' && field.camelName != 'updateTime' && field.camelName != 'updateUserId'>
+					"  \"${field.camelName}\": \"${field.comment}\",\n" +
+					</#if>
+					</#list>
+                    <#list fromToList as fromTo>
+                    "  \"${fromTo.fromToEntityName}\": <#if fromTo.relationType == 'OneToOne'>{<#else>[</#if>${fromTo.fromToComment}<#if fromTo.relationType == 'OneToMany'>列表</#if>（级联类型：${fromTo.fromToEntityType}）<#if fromTo.relationType == 'OneToOne'>}<#else>]</#if>,\n" +
+			        </#list>
+                    "}"),
+    })
     @ApiResponses({
             @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败<br/>" +
                     "errMsg - 错误消息")
     })
     @PostMapping("/${entityUrl}")
     public ResponseEntity<ReturnCommonDTO> create${eentityName}(
-            @ApiParam("{\n" +
-					<#list fieldList as field>
-					"  \"${field.camelName}\": \"${field.comment}\",\n" +
-					</#list>
-                    "}")
         @RequestBody @Validated(value = {ValidateCreateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
         log.debug("Controller ==> 新增${eentityName} : {}", ${entityName}DTO);
         if (${entityName}DTO.getId() != null) {
@@ -83,17 +90,25 @@ public class ${eentityName}Controller {
      * @return 结果返回码和消息
      */
     @ApiOperation(value="修改${entityComment}")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name="${entityName}DTO", dataType = "string", value = "{\n" +
+					"  \"id\": \"主键ID\",\n" +
+                    <#list fieldList as field>
+					<#if field.camelName != 'insertTime' && field.camelName != 'insertUserId' && field.camelName != 'updateTime' && field.camelName != 'updateUserId'>
+					"  \"${field.camelName}\": \"${field.comment}\",\n" +
+					</#if>
+					</#list>
+                    <#list fromToList as fromTo>
+                    "  \"${fromTo.fromToEntityName}\": \"${fromTo.fromToComment}（级联类型：${fromTo.fromToEntityType}）\",\n" +
+			        </#list>
+                    "}"),
+    })
     @ApiResponses({
             @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败<br/>" +
                     "errMsg - 错误消息")
     })
     @PutMapping("/${entityUrl}")
     public ResponseEntity<ReturnCommonDTO> update${eentityName}(
-            @ApiParam("{\n" +
-                    <#list fieldList as field>
-					"  \"${field.camelName}\": \"${field.comment}\",\n" +
-					</#list>
-                    "}")
         @RequestBody @Validated(value = {ValidateUpdateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
         log.debug("Controller ==> 修改${eentityName} : {}", ${entityName}DTO);
         if (${entityName}DTO.getId() == null) {
@@ -175,6 +190,9 @@ public class ${eentityName}Controller {
             @ApiImplicitParam(name="associationNameList", paramType="path", value="关联查询的字段${associationNameComment}"),
             @ApiImplicitParam(name="dictionaryNameList", paramType="path", value="关联查询的数据字典值${dictionaryNameList}")
     })
+    @ApiResponses({
+            @ApiResponse(code=200, message="", response=Object.class)
+    })
     @GetMapping("/${entityUrl}/{id}")
     public ResponseEntity<${eentityName}DTO> get${eentityName}(@ApiParam(name="主键ID") @PathVariable Long id, @ApiIgnore BaseCriteria criteria) {
         log.debug("Controller ==> 根据ID查询${eentityName} : {}, {}", id, criteria);
@@ -199,6 +217,9 @@ public class ${eentityName}Controller {
 			<#list toFromList as toFrom>
 			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
 			</#list>
+    })
+    @ApiResponses({
+            @ApiResponse(code=200, message="", response=Object.class)
     })
     @GetMapping("/${entityUrl}-all")
     public ResponseEntity<List<${eentityName}DTO>> getAll${eentityName}s(@ApiIgnore ${eentityName}Criteria criteria) {
@@ -226,6 +247,9 @@ public class ${eentityName}Controller {
 			<#list toFromList as toFrom>
 			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
 			</#list>
+    })
+    @ApiResponses({
+            @ApiResponse(code=200, message="", response=Object.class)
     })
     @GetMapping("/${entityUrl}")
     public ResponseEntity<IPage<${eentityName}DTO>> getPage${eentityName}s(@ApiIgnore ${eentityName}Criteria criteria, @ApiIgnore MbpPage pageable) {
