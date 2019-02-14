@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
 import java.util.Optional;
@@ -175,7 +176,7 @@ public class ${eentityName}Controller {
             @ApiImplicitParam(name="dictionaryNameList", paramType="path", value="关联查询的数据字典值${dictionaryNameList}")
     })
     @GetMapping("/${entityUrl}/{id}")
-    public ResponseEntity<${eentityName}DTO> get${eentityName}(@ApiParam(name="主键ID") @PathVariable Long id, BaseCriteria criteria) {
+    public ResponseEntity<${eentityName}DTO> get${eentityName}(@ApiParam(name="主键ID") @PathVariable Long id, @ApiIgnore BaseCriteria criteria) {
         log.debug("Controller ==> 根据ID查询${eentityName} : {}, {}", id, criteria);
         Optional<${eentityName}DTO> data = ${entityName}Service.findOne(id, criteria);
         return data.map(response -> ResponseEntity.ok().headers(null).body(response))
@@ -200,7 +201,7 @@ public class ${eentityName}Controller {
 			</#list>
     })
     @GetMapping("/${entityUrl}-all")
-    public ResponseEntity<List<${eentityName}DTO>> getAll${eentityName}s(${eentityName}Criteria criteria) {
+    public ResponseEntity<List<${eentityName}DTO>> getAll${eentityName}s(@ApiIgnore ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询所有${eentityName} : {}", criteria);
         List<${eentityName}DTO> list = ${entityName}Service.findAll(criteria);
         return ResponseEntity.ok().headers(null).body(list);
@@ -227,7 +228,7 @@ public class ${eentityName}Controller {
 			</#list>
     })
     @GetMapping("/${entityUrl}")
-    public ResponseEntity<IPage<${eentityName}DTO>> getPage${eentityName}s(${eentityName}Criteria criteria, MbpPage pageable) {
+    public ResponseEntity<IPage<${eentityName}DTO>> getPage${eentityName}s(@ApiIgnore ${eentityName}Criteria criteria, @ApiIgnore MbpPage pageable) {
         log.debug("Controller ==> 分页查询${eentityName} : {}, {}", criteria, pageable);
         IPage<${eentityName}DTO> page = ${entityName}Service.findPage(criteria, pageable);
         return ResponseEntity.ok().headers(null).body(page);
@@ -249,7 +250,7 @@ public class ${eentityName}Controller {
 			</#list>
     })
     @GetMapping("/${entityUrl}-count")
-    public ResponseEntity<Integer> get${eentityName}Count(${eentityName}Criteria criteria) {
+    public ResponseEntity<Integer> get${eentityName}Count(@ApiIgnore ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询数量${eentityName} : {}", criteria);
         int count = ${entityName}Service.findCount(criteria);
         return ResponseEntity.ok().headers(null).body(count);
