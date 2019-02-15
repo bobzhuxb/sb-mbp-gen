@@ -432,6 +432,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 			</#list>
         }
 		<#list toFromList as toFrom>
+        // ${toFrom.toFromComment}级联查询
         if (criteria.get${toFrom.toFromEntityUName}() != null) {
             tableCount++;
             joinSubSql += " LEFT JOIN " + ${toFrom.toFromEntityType}.getTableName() + " AS " + ${toFrom.toFromEntityType}.getTableName() + "_" + tableCount + " ON "
@@ -447,6 +448,36 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 			        tableIndexMap);
         }
 		</#list>
+        // 创建者级联查询
+        if (criteria.getInsertUser() != null) {
+            tableCount++;
+            joinSubSql += " LEFT JOIN system_user AS system_user_" + tableCount + " ON "
+                    + "system_user_" + tableCount + ".id = " + ${eentityName}.getTableName() + "_" + fromTableCount
+                    + ".insert_user_id";
+            String tableKey = "insertUser";
+            if (lastFieldName != null) {
+                // 拼接key
+                tableKey = lastFieldName + "." + tableKey;
+            }
+            tableIndexMap.put(tableKey, tableCount);
+            joinSubSql += <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>getJoinSql(criteria.getInsertUser(), tableCount, tableCount, tableKey,
+                    tableIndexMap);
+        }
+        // 最后更新者级联查询
+        if (criteria.getOperateUser() != null) {
+            tableCount++;
+            joinSubSql += " LEFT JOIN system_user AS system_user_" + tableCount + " ON "
+                    + "system_user_" + tableCount + ".id = " + ${eentityName}.getTableName() + "_" + fromTableCount
+                    + ".operate_user_id";
+            String tableKey = "operateUser";
+            if (lastFieldName != null) {
+                // 拼接key
+                tableKey = lastFieldName + "." + tableKey;
+            }
+            tableIndexMap.put(tableKey, tableCount);
+            joinSubSql += <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>getJoinSql(criteria.getOperateUser(), tableCount, tableCount, tableKey,
+                    tableIndexMap);
+        }
         return joinSubSql;
     }
 
