@@ -17,7 +17,7 @@ import java.util.Map;
 public class MbpUtil {
 
     public static <M, T, C> Wrapper<T> getWrapper(QueryWrapper<T> wrapper, C criteria, Class clazz, String lastFieldName,
-                                               Map<String, Integer> tableIndexMap, BaseService<T> baseService) {
+                                                  Map<String, String> tableIndexMap, BaseService<T> baseService) {
         if (wrapper == null) {
             wrapper = new QueryWrapper<>();
         }
@@ -26,8 +26,9 @@ public class MbpUtil {
         // 获取SQL中修改后的表名字
         if (tableIndexMap != null) {
             if (lastFieldName != null) {
-                Integer tableIndex = tableIndexMap.get(lastFieldName);
-                if (tableIndex != null) {
+                String tableIndexAndName = tableIndexMap.get(lastFieldName);
+                if (tableIndexAndName != null) {
+                    String tableIndex = tableIndexAndName.split("_")[0];
                     tableName = tableName + "_" + tableIndex;
                 }
             } else {
@@ -44,18 +45,34 @@ public class MbpUtil {
             if (result instanceof String) {
                 String[] orderBys = ((String)result).trim().split("\\,");
                 for (String orderBy : orderBys) {
+                    String subTableName = tableName;
+                    if (tableIndexMap != null && orderBy.contains(".")) {
+                        String key = orderBy.substring(0, orderBy.lastIndexOf("."));
+                        String tableIndex = "0";
+                        String tableIndexAndName = tableIndexMap.get(key);
+                        if (tableIndexAndName != null) {
+                            tableIndex = tableIndexAndName.split("_")[0];
+                            String domainTypeName = tableIndexAndName.split("_")[1];
+                            Class entityClass = Class.forName("com.bob.sm.domain." + domainTypeName);
+                            subTableName = ((TableName)entityClass.getAnnotation(TableName.class)).value();
+                        }
+                        subTableName = subTableName + "_" + tableIndex;
+                    }
                     String[] orderByDetail = orderBy.trim().split("\\s");
                     String orderDirection = "";
                     if (orderByDetail.length > 1) {
                         orderDirection = orderByDetail[1];
                     }
                     String orderFieldName = orderByDetail[0];
+                    if (orderFieldName.contains(".")) {
+                        orderFieldName = orderFieldName.substring(orderFieldName.lastIndexOf(".") + 1);
+                    }
                     if (orderByDetail.length > 2 || "".equals(orderFieldName)
                             || (!"".equals(orderDirection) && !"asc".equalsIgnoreCase(orderDirection) && !"desc".equalsIgnoreCase(orderDirection))) {
                         continue;
                     }
                     boolean isAsc = !"desc".equalsIgnoreCase(orderDirection);
-                    String orderColumnName = tableName + "." + StringUtil.camelToUnderline(orderFieldName);
+                    String orderColumnName = subTableName + "." + StringUtil.camelToUnderline(orderFieldName);
                     wrapper.orderBy(true, isAsc, orderColumnName);
                 }
             }

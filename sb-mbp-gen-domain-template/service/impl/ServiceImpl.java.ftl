@@ -264,8 +264,8 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     @Transactional(readOnly = true)
     public List<${eentityName}DTO> findAll(${eentityName}Criteria criteria) {
         log.debug("Service ==> 查询所有${eentityName}DTO {}", criteria);
-        // 表对应的序号Map
-        Map<String, Integer> tableIndexMap = new HashMap<>();
+        // 表对应的序号和Domain名Map
+        Map<String, String> tableIndexMap = new HashMap<>();
         String dataQuerySql = getDataQuerySql(criteria, tableIndexMap);
         Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
         // 数据权限过滤
@@ -287,8 +287,8 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     public IPage<${eentityName}DTO> findPage(${eentityName}Criteria criteria, MbpPage pageable) {
         log.debug("Service ==> 分页查询${eentityName}DTO {}, {}", criteria, pageable);
         Page<${eentityName}> pageQuery = new Page<>(pageable.getCurrent(), pageable.getSize());
-        // 表对应的序号Map
-        Map<String, Integer> tableIndexMap = new HashMap<>();
+        // 表对应的序号和Domain名Map
+        Map<String, String> tableIndexMap = new HashMap<>();
         String dataQuerySql = getDataQuerySql(criteria, tableIndexMap);
         String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
         Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
@@ -312,8 +312,8 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     @Transactional(readOnly = true)
     public int findCount(${eentityName}Criteria criteria) {
         log.debug("Service ==> 查询个数${eentityName}DTO {}", criteria);
-        // 表对应的序号Map
-        Map<String, Integer> tableIndexMap = new HashMap<>();
+        // 表对应的序号和Domain名Map
+        Map<String, String> tableIndexMap = new HashMap<>();
         String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
         Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
         // 数据权限过滤
@@ -367,7 +367,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 获取查询数据的SQL
      * @return
      */
-    private String getDataQuerySql(${eentityName}Criteria criteria, Map<String, Integer> tableIndexMap) {
+    private String getDataQuerySql(${eentityName}Criteria criteria, Map<String, String> tableIndexMap) {
         int tableCount = 0;
         final int fromTableCount = tableCount;
         String joinDataSql = "SELECT " + ${eentityName}.getTableName() + "_" + tableCount + ".*";
@@ -391,7 +391,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 获取查询数量的SQL
      * @return
      */
-    private String getCountQuerySql(${eentityName}Criteria criteria, Map<String, Integer> tableIndexMap) {
+    private String getCountQuerySql(${eentityName}Criteria criteria, Map<String, String> tableIndexMap) {
         int tableCount = 0;
         final int fromTableCount = tableCount;
         String joinCountSql = "SELECT COUNT(0)" + getFromAndJoinSql(criteria, tableCount, fromTableCount, tableIndexMap);
@@ -403,7 +403,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @return
      */
     private String getFromAndJoinSql(${eentityName}Criteria criteria, int tableCount, int fromTableCount,
-                                     Map<String, Integer> tableIndexMap) {
+                                     Map<String, String> tableIndexMap) {
         String joinSubSql = " FROM " + ${eentityName}.getTableName() + " AS " + ${eentityName}.getTableName() + "_" + tableCount;
         joinSubSql += getJoinSql(criteria, tableCount, fromTableCount, null, tableIndexMap);
         return joinSubSql;
@@ -414,7 +414,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @return
      */
     public String getJoinSql(${eentityName}Criteria criteria, int tableCount, int fromTableCount, String lastFieldName,
-                             Map<String, Integer> tableIndexMap) {
+                             Map<String, String> tableIndexMap) {
         String joinSubSql = "";
         // 处理关联数据字典值
         List<String> dictionaryNameList = criteria.getDictionaryNameList();
@@ -443,7 +443,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                 // 拼接key
                 tableKey = lastFieldName + "." + tableKey;
             }
-            tableIndexMap.put(tableKey, tableCount);
+            tableIndexMap.put(tableKey, tableCount + "_${toFrom.toFromEntityType}");
             joinSubSql += ${toFrom.toFromEntityName}Service.getJoinSql(criteria.get${toFrom.toFromEntityUName}(), tableCount, tableCount, tableKey,
 			        tableIndexMap);
         }
@@ -459,7 +459,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                 // 拼接key
                 tableKey = lastFieldName + "." + tableKey;
             }
-            tableIndexMap.put(tableKey, tableCount);
+            tableIndexMap.put(tableKey, tableCount + "_SystemUser");
             joinSubSql += <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>getJoinSql(criteria.getInsertUser(), tableCount, tableCount, tableKey,
                     tableIndexMap);
         }
@@ -474,7 +474,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                 // 拼接key
                 tableKey = lastFieldName + "." + tableKey;
             }
-            tableIndexMap.put(tableKey, tableCount);
+            tableIndexMap.put(tableKey, tableCount + "_SystemUser");
             joinSubSql += <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>getJoinSql(criteria.getOperateUser(), tableCount, tableCount, tableKey,
                     tableIndexMap);
         }

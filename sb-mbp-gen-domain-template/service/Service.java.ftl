@@ -24,7 +24,7 @@ public interface ${eentityName}Service extends IService<${eentityName}> {
     int findCount(${eentityName}Criteria criteria);
 
     String getJoinSql(${eentityName}Criteria criteria, int tableCount, int fromTableCount, String lastFieldName,
-                      Map<String, Integer> tableIndexMap);
+                      Map<String, String> tableIndexMap);
     ${eentityName}DTO getAssociations(${eentityName}DTO ${entityName}DTO, BaseCriteria criteria);
 
 }
