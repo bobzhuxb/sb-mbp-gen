@@ -4,6 +4,7 @@ import com.bob.freemarker.dto.ERDTO;
 import com.bob.freemarker.dto.EntityDTO;
 import com.bob.freemarker.dto.EntityFieldDTO;
 import com.bob.freemarker.dto.RelationshipDTO;
+import com.bob.freemarker.util.FileUtil;
 import com.bob.freemarker.util.JdlParseUtil;
 import com.bob.freemarker.util.StringUtil;
 import freemarker.template.Configuration;
@@ -60,6 +61,8 @@ public class EntityModule {
             generateEntity(projectPath + projectName + "\\", packageName, entityComment, eentityName, fieldList,
                     relationshipListCurrent, useDictionaryList, entityTemplatePath, cfg);
         }
+        // 最后把生成实体用的jdl文件拷贝到项目目录下
+        FileUtil.copyFile(new File(umlFileName), new File(projectPath + projectName + "\\entity.jdl"));
         return erdto;
     }
 
