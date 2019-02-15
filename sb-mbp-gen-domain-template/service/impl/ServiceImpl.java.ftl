@@ -43,16 +43,24 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     @Autowired
     private ${fromTo.fromToEntityType}Mapper ${fromTo.fromToEntityName}Mapper;
 	</#list>
+	<#assign systemUserServiceName='' />
 	<#list toFromList as toFrom>
 
     @Autowired
     private ${toFrom.toFromEntityType}Service ${toFrom.toFromEntityName}Service;
+	<#if toFrom.toFromEntityType == 'SystemUser'><#assign systemUserServiceName='${toFrom.toFromEntityName}Service'/></#if>
 	</#list>
     <#list fromToList as fromTo>
 
     @Autowired
     private ${fromTo.fromToEntityType}Service ${fromTo.fromToEntityName}Service;
+	<#if fromTo.fromToEntityType == 'SystemUser'><#assign systemUserServiceName='${fromTo.fromToEntityName}Service' /></#if>
 	</#list>
+	<#if systemUserServiceName == '' && eentityName != 'SystemUser'>
+
+    @Autowired
+    private SystemUserService systemUserService;
+	</#if>
 	<#if eentityName == 'BaseDictionary' && (useDictionaryList)?? && (useDictionaryList?size > 0) >
 	<#list useDictionaryList as useDictionary>
 
@@ -546,6 +554,42 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                 ${entityName}DTO.set${toFrom.toFromEntityUName}(${toFrom.toFromEntityName}Optional.isPresent() ? ${toFrom.toFromEntityName}Optional.get() : null);
             }
 			</#list>
+            if (associationNameList.contains("insertUser")) {
+                // 获取创建者
+                Long insertUserId = ${entityName}DTO.getInsertUserId();
+                if (insertUserId == null) {
+                    return ${entityName}DTO;
+                }
+                List<String> associationName2List = new ArrayList<>();
+                for (String associationName : associationNameList) {
+                    if (associationName.startsWith("insertUser.")) {
+                        String associationName2 = associationName.substring("insertUser.".length());
+                        associationName2List.add(associationName2);
+                    }
+                }
+                BaseCriteria insertUserCriteria = new BaseCriteria();
+                insertUserCriteria.setAssociationNameList(associationName2List);
+                Optional<SystemUserDTO> insertUserOptional = <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>findOne(insertUserId, insertUserCriteria);
+                ${entityName}DTO.setInsertUser(insertUserOptional.isPresent() ? insertUserOptional.get() : null);
+            }
+            if (associationNameList.contains("operateUser")) {
+                // 获取最后更新者
+                Long operateUserId = ${entityName}DTO.getOperateUserId();
+                if (operateUserId == null) {
+                    return ${entityName}DTO;
+                }
+                List<String> associationName2List = new ArrayList<>();
+                for (String associationName : associationNameList) {
+                    if (associationName.startsWith("operateUser.")) {
+                        String associationName2 = associationName.substring("operateUser.".length());
+                        associationName2List.add(associationName2);
+                    }
+                }
+                BaseCriteria operateUserCriteria = new BaseCriteria();
+                operateUserCriteria.setAssociationNameList(associationName2List);
+                Optional<SystemUserDTO> operateUserOptional = <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>findOne(operateUserId, operateUserCriteria);
+                ${entityName}DTO.setOperateUser(operateUserOptional.isPresent() ? operateUserOptional.get() : null);
+            }
         }
         return ${entityName}DTO;
     }

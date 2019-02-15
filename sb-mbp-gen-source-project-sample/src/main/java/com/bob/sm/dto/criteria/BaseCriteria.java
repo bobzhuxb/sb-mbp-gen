@@ -22,6 +22,10 @@ public class BaseCriteria {
 
     private List<String> dictionaryNameList;    // 关联数据字典值获取（列出的属性都会关联查询）
 
+    private SystemUserCriteria insertUser;    // 创建者用户
+
+    private SystemUserCriteria operateUser;    // 操作者用户
+
     public NothingFilter getNothing() {
         return nothing;
     }
@@ -84,5 +88,21 @@ public class BaseCriteria {
 
     public void setDictionaryNameList(List<String> dictionaryNameList) {
         this.dictionaryNameList = dictionaryNameList;
+    }
+
+    public SystemUserCriteria getInsertUser() {
+        return insertUser;
+    }
+
+    public void setInsertUser(SystemUserCriteria insertUser) {
+        this.insertUser = insertUser;
+    }
+
+    public SystemUserCriteria getOperateUser() {
+        return operateUser;
+    }
+
+    public void setOperateUser(SystemUserCriteria operateUser) {
+        this.operateUser = operateUser;
     }
 }

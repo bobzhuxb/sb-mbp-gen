@@ -107,18 +107,20 @@ public class EntityModule {
         root.put("fromToList", fromToList);
         root.put("toFromList", toFromList);
         // 关联查询字段的说明
-        String associationNameComment = "";
+        String associationNameComment = "（";
         if (fromToList.size() > 0 || toFromList.size() > 0) {
-            associationNameComment += "（";
             for (RelationshipDTO fromTo : fromToList) {
-                associationNameComment += fromTo.getFromToEntityName() + "List：" + fromTo.getFromToComment() + "列表、";
+                associationNameComment += fromTo.getFromToEntityName() + "List：" + fromTo.getFromToComment()
+                        + "列表[类型：" + fromTo.getFromToEntityType() + "]、";
             }
             for (RelationshipDTO toFrom : toFromList) {
-                associationNameComment += toFrom.getToFromEntityName() + "：" + toFrom.getToFromComment() + "、";
+                associationNameComment += toFrom.getToFromEntityName() + "：" + toFrom.getToFromComment()
+                        + "[类型：" + toFrom.getToFromEntityType() + "]、";
             }
-            associationNameComment = associationNameComment.substring(0, associationNameComment.length() - 1);
-            associationNameComment += "）";
         }
+        associationNameComment += "insertUser：创建人[类型：SystemUser]、operateUser：最后更新人[类型：SystemUser]";
+        associationNameComment = associationNameComment.substring(0, associationNameComment.length() - 1);
+        associationNameComment += "）";
         root.put("associationNameComment", associationNameComment);
         // 关联的数据字典说明
         String dictionaryNameList = "";
