@@ -142,11 +142,11 @@ entity SystemLog {
     // 日志类型
 	//@NotBlank
 	//@Size(min = 1, max = 255)
-    organizationCode String
+    logType String
     // 日志内容
 	//@NotBlank
 	//@Size(min = 1, max = 255)
-    name String
+    content String
 }
 
 // 数据字典
