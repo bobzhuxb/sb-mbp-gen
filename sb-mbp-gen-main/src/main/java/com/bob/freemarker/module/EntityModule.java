@@ -140,8 +140,15 @@ public class EntityModule {
         String associationNameComment = "（";
         if (fromToList.size() > 0 || toFromList.size() > 0) {
             for (RelationshipDTO fromTo : fromToList) {
-                associationNameComment += fromTo.getFromToEntityName() + "List：" + fromTo.getFromToComment()
-                        + "列表[类型：" + fromTo.getFromToEntityType() + "]、";
+                associationNameComment += fromTo.getFromToEntityName();
+                if ("OneToMany".equals(fromTo.getRelationType())) {
+                    associationNameComment += "List";
+                }
+                associationNameComment += "：" + fromTo.getFromToComment();
+                if ("OneToMany".equals(fromTo.getRelationType())) {
+                    associationNameComment += "列表";
+                }
+                associationNameComment += "[类型：" + fromTo.getFromToEntityType() + "]、";
             }
             for (RelationshipDTO toFrom : toFromList) {
                 associationNameComment += toFrom.getToFromEntityName() + "：" + toFrom.getToFromComment()

@@ -48,12 +48,15 @@ public class ${eentityName}Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name="${entityName}DTO", dataType = "string", value = "{\n" +
                     <#list fieldList as field>
-					<#if field.camelName != 'insertTime' && field.camelName != 'insertUserId' && field.camelName != 'updateTime' && field.camelName != 'updateUserId'>
-					"  \"${field.camelName}\": \"${field.comment}\",\n" +
+					<#if field.camelName != 'insertTime' && field.camelName != 'insertUserId' && field.camelName != 'updateTime' && field.camelName != 'operateUserId'>
+                    "  \"${field.camelName}\": <#if field.javaType == 'String'>\"</#if>${field.comment}<#if field.javaType == 'String'>\"</#if>,\n" +
 					</#if>
 					</#list>
+                    <#list toFromList as toFrom>
+                    "  \"${toFrom.toFromEntityName}Id\": ${toFrom.toFromComment}ID,\n" +
+			        </#list>
                     <#list fromToList as fromTo>
-                    "  \"${fromTo.fromToEntityName}\": <#if fromTo.relationType == 'OneToOne'>{<#else>[</#if>${fromTo.fromToComment}<#if fromTo.relationType == 'OneToMany'>列表</#if>（级联类型：${fromTo.fromToEntityType}）<#if fromTo.relationType == 'OneToOne'>}<#else>]</#if>,\n" +
+                    "  \"${fromTo.fromToEntityName}<#if fromTo.relationType == 'OneToMany'>List</#if>\": <#if fromTo.relationType == 'OneToOne'>{<#else>[</#if>${fromTo.fromToComment}<#if fromTo.relationType == 'OneToMany'>列表</#if>（级联类型：${fromTo.fromToEntityType}）<#if fromTo.relationType == 'OneToOne'>}<#else>]</#if>,\n" +
 			        </#list>
                     "}"),
     })
@@ -92,14 +95,17 @@ public class ${eentityName}Controller {
     @ApiOperation(value="修改${entityComment}")
     @ApiImplicitParams({
             @ApiImplicitParam(name="${entityName}DTO", dataType = "string", value = "{\n" +
-					"  \"id\": \"主键ID\",\n" +
+                    "  \"id\": \"主键ID\",\n" +
                     <#list fieldList as field>
-					<#if field.camelName != 'insertTime' && field.camelName != 'insertUserId' && field.camelName != 'updateTime' && field.camelName != 'updateUserId'>
-					"  \"${field.camelName}\": \"${field.comment}\",\n" +
+					<#if field.camelName != 'insertTime' && field.camelName != 'insertUserId' && field.camelName != 'updateTime' && field.camelName != 'operateUserId'>
+                    "  \"${field.camelName}\": <#if field.javaType == 'String'>\"</#if>${field.comment}<#if field.javaType == 'String'>\"</#if>,\n" +
 					</#if>
 					</#list>
+                    <#list toFromList as toFrom>
+                    "  \"${toFrom.toFromEntityName}Id\": ${toFrom.toFromComment}ID,\n" +
+			        </#list>
                     <#list fromToList as fromTo>
-                    "  \"${fromTo.fromToEntityName}\": \"${fromTo.fromToComment}（级联类型：${fromTo.fromToEntityType}）\",\n" +
+                    "  \"${fromTo.fromToEntityName}<#if fromTo.relationType == 'OneToMany'>List</#if>\": <#if fromTo.relationType == 'OneToOne'>{<#else>[</#if>${fromTo.fromToComment}<#if fromTo.relationType == 'OneToMany'>列表</#if>（级联类型：${fromTo.fromToEntityType}）<#if fromTo.relationType == 'OneToOne'>}<#else>]</#if>,\n" +
 			        </#list>
                     "}"),
     })
@@ -215,6 +221,7 @@ public class ${eentityName}Controller {
             @ApiImplicitParam(name="${field.camelName}.equals", paramType="path",<#if field.javaType == 'Integer'> dataType="int",<#elseif field.javaType == 'Long'> dataType="long",<#elseif field.javaType == 'Double'> dataType="double",<#else> dataType="string",</#if> value="${field.comment}"),
 			</#list>
 			<#list toFromList as toFrom>
+			@ApiImplicitParam(name="${toFrom.toFromEntityName}Id.equals", paramType="path", value="关联的${toFrom.toFromComment}ID"),
 			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
 			</#list>
     })
@@ -245,6 +252,7 @@ public class ${eentityName}Controller {
             @ApiImplicitParam(name="${field.camelName}.equals", paramType="path",<#if field.javaType == 'Integer'> dataType="int",<#elseif field.javaType == 'Long'> dataType="long",<#elseif field.javaType == 'Double'> dataType="double",<#else> dataType="string",</#if> value="${field.comment}"),
 			</#list>
 			<#list toFromList as toFrom>
+			@ApiImplicitParam(name="${toFrom.toFromEntityName}Id.equals", paramType="path", value="关联的${toFrom.toFromComment}ID"),
 			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
 			</#list>
     })
@@ -270,6 +278,7 @@ public class ${eentityName}Controller {
             @ApiImplicitParam(name="${field.camelName}.equals", paramType="path",<#if field.javaType == 'Integer'> dataType="int",<#elseif field.javaType == 'Long'> dataType="long",<#elseif field.javaType == 'Double'> dataType="double",<#else> dataType="string",</#if> value="${field.comment}"),
 			</#list>
 			<#list toFromList as toFrom>
+			@ApiImplicitParam(name="${toFrom.toFromEntityName}Id.equals", paramType="path", value="关联的${toFrom.toFromComment}ID"),
 			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
 			</#list>
     })
