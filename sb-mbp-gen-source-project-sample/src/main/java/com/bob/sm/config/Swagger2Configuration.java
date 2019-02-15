@@ -1,31 +1,43 @@
 package com.bob.sm.config;
 
+import com.fasterxml.classmate.TypeResolver;
+import com.bob.sm.dto.*;
+import com.bob.sm.dto.criteria.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.schema.AlternateTypeRule;
 import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @Configuration
 @EnableSwagger2
-@Profile("test")
+@Profile("dev")
 public class Swagger2Configuration {
+
+    // 添加过滤规则，移除嵌套对象
+    TypeResolver typeResolver = new TypeResolver();
+    AlternateTypeRule[] typeRules = {
+            // ======================== add swagger param and return objects here start =========================
+////////////////////////////add-rules-here////////////////////////////
+            // ======================== add swagger param and return objects here end =========================
+    };
 
     // swagger2的配置文件，这里可以配置swagger2的一些基本的内容，比如扫描的包等等
     @Bean
     public Docket createRestApi() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())
+                .alternateTypeRules(typeRules)
                 .select()
                 // 为当前包路径
                 .apis(RequestHandlerSelectors.basePackage("com.bob.sm.web.rest"))
-                .paths(PathSelectors.any())
+                .paths(PathSelectors.ant("/api/*"))
                 .build();
     }
 
@@ -44,7 +56,7 @@ public class Swagger2Configuration {
                         "2、POST/PUT/DELETE方法的Http body均采用了json格式（共通接口的上传文件除外）。<br/>" +
                         "3、新增、修改方法均为级联操作，只需传入嵌套实体的json数据即可。<br/>" +
                         "4、OneToMany的级联修改操作，会先删除被级联的实体（Many一方）相应的数据，再批量插入；OneToOne的级联修改操作，" +
-                        "如果正确填写了被级联的实体的ID，则会根据ID更新该级联的实体。br/>" +
+                        "如果正确填写了被级联的实体的ID，则会根据ID更新该级联的实体。<br/>" +
                         "5、查询参数中Data Type类型分为基本类型、基本条件类型和扩展类型。<br/>" +
                         "&nbsp;&nbsp;1) 基本类型均为string类型，包括associationNameList、dictionaryNameList、orderBy、current、size。<br/>" +
                         "&nbsp;&nbsp;&nbsp;&nbsp;a、associationNameList表示级联查询，可显示多层级联的结果，用.分割各层级。<br/>" +

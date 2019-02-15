@@ -9,6 +9,7 @@ import com.bob.freemarker.util.JdlParseUtil;
 import com.bob.freemarker.util.StringUtil;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +62,32 @@ public class EntityModule {
             generateEntity(projectPath + projectName + "\\", packageName, entityComment, eentityName, fieldList,
                     relationshipListCurrent, useDictionaryList, entityTemplatePath, cfg);
         }
+        // 修改Swagger配置，移除嵌套对象，避免出现内存耗尽的情况
+        List<String> swaggerAddedRuleList = new ArrayList<>();
+        swaggerAddedRuleList.add("            new AlternateTypeRule(typeResolver.resolve(BaseDTO.class), typeResolver.resolve(Object.class)),");
+        swaggerAddedRuleList.add("            new AlternateTypeRule(typeResolver.resolve(BaseCriteria.class), typeResolver.resolve(Object.class)),");
+        for (EntityDTO entityDTO : entityDTOList) {
+            swaggerAddedRuleList.add("            new AlternateTypeRule(typeResolver.resolve("
+                    + entityDTO.getEentityName() + "DTO.class), typeResolver.resolve(Object.class)),");
+            swaggerAddedRuleList.add("            new AlternateTypeRule(typeResolver.resolve("
+                    + entityDTO.getEentityName() + "Criteria.class), typeResolver.resolve(Object.class)),");
+        }
+        String lastAddedRule = swaggerAddedRuleList.get(swaggerAddedRuleList.size() - 1);
+        lastAddedRule = lastAddedRule.substring(0, lastAddedRule.length() - 1);
+        swaggerAddedRuleList.set(swaggerAddedRuleList.size() - 1, lastAddedRule);
+        File swaggerConfigFile = new File(projectPath + projectName + "\\src\\main\\java\\"
+                + packageName.replace(".", "\\") + "\\config\\Swagger2Configuration.java");
+        List<String> linesNew = new ArrayList<>();
+        List<String> lines = FileUtil.readFileByLines(swaggerConfigFile, "UTF-8");
+        for (String line : lines) {
+            if (line.contains("////////////////////////////add-rules-here////////////////////////////")) {
+                linesNew.addAll(swaggerAddedRuleList);
+            } else {
+                linesNew.add(line);
+            }
+        }
+        // 将修改后的lines重写入文件
+        FileUtils.writeLines(swaggerConfigFile, "UTF-8", linesNew);
         // 最后把生成实体用的jdl文件拷贝到项目目录下
         FileUtil.copyFile(new File(umlFileName), new File(projectPath + projectName + "\\entity.jdl"));
         return erdto;

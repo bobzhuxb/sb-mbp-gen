@@ -1,6 +1,6 @@
 spring:
     application:
-        name: myproject
+        name: ${projectName}
     profiles:
         active: dev
     resources:
