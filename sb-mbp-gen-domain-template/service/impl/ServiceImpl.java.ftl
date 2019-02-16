@@ -88,10 +88,20 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 			<#list fromToList as fromTo>
 			<#if fromTo.relationType == "OneToMany">
 			if (${entityName}DTO.get${fromTo.fromToEntityUName}List() != null) {
-				// 清空${fromTo.fromToComment}列表
-				${fromTo.fromToEntityName}Service.deleteByMapCascade(new HashMap<String, Object>() {{
-					put("${fromTo.fromColumnName}", ${entityName}Id);
-				}});
+			    if (${entityName}DTO.get${fromTo.fromToEntityUName}List().size() > 0
+                        && ${entityName}DTO.get${fromTo.fromToEntityUName}List().get(0).getId() != null) {
+			        // 如果${fromTo.fromToComment}填写了ID，则认为是更新，不清空${fromTo.fromToComment}列表
+                    for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${entityName}DTO.get${fromTo.fromToEntityUName}List()) {
+                        if (${fromTo.fromToEntityName}DTO.getId() == null) {
+                            throw new CommonException("数据错误，部分${fromTo.fromToComment}填写了ID字段，部分没有填写");
+                        }
+                    }
+                } else {
+				    // 如果${fromTo.fromToComment}没有填写ID，则认为是全刷新，清空${fromTo.fromToComment}列表
+				    ${fromTo.fromToEntityName}Service.deleteByMapCascade(new HashMap<String, Object>() {{
+					    put("${fromTo.fromColumnName}", ${entityName}Id);
+				    }});
+                }
 			}
 			</#if>
 			<#if fromTo.relationType == "OneToOne">
@@ -127,16 +137,29 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 		<#list fromToList as fromTo>
 		<#if fromTo.relationType == "OneToMany">
         if (${entityName}DTO.get${fromTo.fromToEntityUName}List() != null) {
-            // 新增${fromTo.fromToComment}
-            for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${entityName}DTO.get${fromTo.fromToEntityUName}List()) {
-                ${fromTo.fromToEntityName}DTO.setId(null);
-                ${fromTo.fromToEntityName}DTO.set${fromTo.toFromEntityUName}Id(${entityName}Id);
-                ${fromTo.fromToEntityName}DTO.setInsertUserId(${entityName}DTO.getOperateUserId());
-                ${fromTo.fromToEntityName}DTO.setOperateUserId(${entityName}DTO.getOperateUserId());
-                ${fromTo.fromToEntityName}DTO.setInsertTime(${entityName}DTO.getInsertTime());
-                ${fromTo.fromToEntityName}DTO.setUpdateTime(${entityName}DTO.getUpdateTime());
-                ${fromTo.fromToEntityName}Service.save(${fromTo.fromToEntityName}DTO);
-			}
+            if (${entityName}DTO.get${fromTo.fromToEntityUName}List().size() > 0
+                    && ${entityName}DTO.get${fromTo.fromToEntityUName}List().get(0).getId() != null) {
+                // 如果${fromTo.fromToComment}填写了ID，则认为是更新，依次更新每一条${fromTo.fromToComment}数据
+                for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${entityName}DTO.get${fromTo.fromToEntityUName}List()) {
+                    ${fromTo.fromToEntityName}DTO.set${fromTo.toFromEntityUName}Id(${entityName}Id);
+                    ${fromTo.fromToEntityName}DTO.setOperateUserId(${entityName}DTO.getOperateUserId());
+                    ${fromTo.fromToEntityName}DTO.setUpdateTime(${entityName}DTO.getUpdateTime());
+                    // 更新数据
+                    ${fromTo.fromToEntityName}Service.save(${fromTo.fromToEntityName}DTO);
+                }
+            } else {
+                // 如果${fromTo.fromToComment}没有填写ID，则认为是全刷新，新增${fromTo.fromToComment}
+                for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${entityName}DTO.get${fromTo.fromToEntityUName}List()) {
+                    ${fromTo.fromToEntityName}DTO.setId(null);
+                    ${fromTo.fromToEntityName}DTO.set${fromTo.toFromEntityUName}Id(${entityName}Id);
+                    ${fromTo.fromToEntityName}DTO.setInsertUserId(${entityName}DTO.getOperateUserId());
+                    ${fromTo.fromToEntityName}DTO.setOperateUserId(${entityName}DTO.getOperateUserId());
+                    ${fromTo.fromToEntityName}DTO.setInsertTime(${entityName}DTO.getInsertTime());
+                    ${fromTo.fromToEntityName}DTO.setUpdateTime(${entityName}DTO.getUpdateTime());
+                    // 新增数据
+                    ${fromTo.fromToEntityName}Service.save(${fromTo.fromToEntityName}DTO);
+			    }
+            }
         }
 		</#if>
 		<#if fromTo.relationType == "OneToOne">

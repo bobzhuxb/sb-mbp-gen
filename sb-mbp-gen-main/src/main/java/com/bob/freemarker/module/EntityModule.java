@@ -156,7 +156,6 @@ public class EntityModule {
             }
         }
         associationNameComment += "insertUser：创建人[类型：SystemUser]、operateUser：最后更新人[类型：SystemUser]";
-        associationNameComment = associationNameComment.substring(0, associationNameComment.length() - 1);
         associationNameComment += "）";
         root.put("associationNameComment", associationNameComment);
         // 关联的数据字典说明
