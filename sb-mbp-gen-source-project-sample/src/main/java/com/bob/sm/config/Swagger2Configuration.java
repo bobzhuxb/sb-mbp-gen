@@ -24,7 +24,80 @@ public class Swagger2Configuration {
     TypeResolver typeResolver = new TypeResolver();
     AlternateTypeRule[] typeRules = {
             // ======================== add swagger param and return objects here start =========================
-////////////////////////////add-rules-here////////////////////////////
+            new AlternateTypeRule(typeResolver.resolve(BaseDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(BaseCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemUserDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemUserCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemRoleDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemRoleCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemUserRoleDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemUserRoleCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemPermissionDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemPermissionCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemResourceDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemResourceCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemResourcePermissionDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemResourcePermissionCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemRoleResourceDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemRoleResourceCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemUserResourceDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemUserResourceCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemOrganizationDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemOrganizationCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemLogDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SystemLogCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(BaseDictionaryDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(BaseDictionaryCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSupplierDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSupplierCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSupplierLicenseDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSupplierLicenseCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolCertificateDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolCertificateCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolTypeDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolTypeCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolSupplierDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolSupplierCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstMaterialDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstMaterialCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstMaterialPicDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstMaterialPicCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolMaterialAttrDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolMaterialAttrCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSupplierInboundOrderDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSupplierInboundOrderCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSupplierInboundBatchDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSupplierInboundBatchCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstTestRecordDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstTestRecordCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstTestRecordReportDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstTestRecordReportCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstTestRecordBatchDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstTestRecordBatchCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolBatchDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolBatchCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolMaterialStockRecordDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolMaterialStockRecordCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolOrderDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolOrderCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolOutboundRecordDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSchoolOutboundRecordCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstDishDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstDishCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstDishPicDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstDishPicCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstMenuDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstMenuCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSubMenuDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSubMenuCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSubMenuDishDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstSubMenuDishCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstCondimentShowDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstCondimentShowCriteria.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstFinancialBillDTO.class), typeResolver.resolve(Object.class)),
+            new AlternateTypeRule(typeResolver.resolve(SfstFinancialBillCriteria.class), typeResolver.resolve(Object.class))
             // ======================== add swagger param and return objects here end =========================
     };
 
@@ -66,10 +139,14 @@ public class Swagger2Configuration {
                         "&nbsp;&nbsp;&nbsp;&nbsp;e、current表示当前页（从1开始）。<br/>" +
                         "&nbsp;&nbsp;&nbsp;&nbsp;f、size表示每页的数量。<br/>" +
                         "&nbsp;&nbsp;2) 基本条件类型包括：string、int、long、double。<br>" +
-                        "&nbsp;&nbsp;&nbsp;&nbsp;a、基本类型均有equals、in属性，equals表示等于，in相当于SQL中的in。<br/>" +
-                        "&nbsp;&nbsp;&nbsp;&nbsp;b、string类型还有contains属性，相当于SQL中的like。<br/>" +
+                        "&nbsp;&nbsp;&nbsp;&nbsp;a、基本类型均有equals、notEquals、in、notIn、nullable属性。" +
+                        "equals表示等于；notEquals表示不等于；in表示在某个列表中，相当于SQL中的in；notIn相当于不在某个列表中，" +
+                        "相当于SQL中的not in；nullable为true时表示为空，nullable为false时表示不为空。<br/>" +
+                        "&nbsp;&nbsp;&nbsp;&nbsp;b、string类型还有contains、notContains、startWith、endWith属性。" +
+                        "contains相当于SQL中的like，notContains与contains相反，startWith表示以xx开头，endWith表示以xx结尾。<br/>" +
                         "&nbsp;&nbsp;&nbsp;&nbsp;c、int、long、double都属于数值类型，数值类型属性包括greaterThan、greaterOrEqualThan、lessThan、" +
-                        "lessOrEqualThan，分别表示大于、大于等于、小于、小于等于。<br/>" +
+                        "lessOrEqualThan，分别表示大于、大于等于、小于、小于等于。另外还有betweenFrom和betweenTo表示在这个范围内。" +
+                        "notBetweenFrom和notBetweenTo表示不在这个范围内。<br/>" +
                         "&nbsp;&nbsp;&nbsp;&nbsp;d、其它基本类型及基本类型的其它属性正在不断完善中。<br/>" +
                         "&nbsp;&nbsp;3) 扩展类型均显示为string类型，包括：级联查询、自定义查询。<br/>" +
                         "&nbsp;&nbsp;&nbsp;&nbsp;a、文档说明中带.?的查询条件就是级联查询，?表示级联的查询条件实体（不同于associationNameList，" +

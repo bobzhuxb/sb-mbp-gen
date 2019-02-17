@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import ${packageName}.dto.criteria.BaseCriteria;
 import ${packageName}.dto.criteria.filter.*;
 import ${packageName}.service.BaseService;
+import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -80,7 +81,7 @@ public class MbpUtil {
             e.printStackTrace();
         }
         // 其他条件
-        Field[] fields = criteriaClazz.getDeclaredFields();
+        Field[] fields = FieldUtils.getAllFields(criteriaClazz);    // 使用apache的工具类可以获取类及父类的所有属性
         for (Field field : fields) {
             try {
                 String fieldName = field.getName();
@@ -97,6 +98,15 @@ public class MbpUtil {
                 if (result instanceof StringFilter) {
                     if (((StringFilter)result).getContains() != null) {
                         wrapper.like(columnName, ((StringFilter) result).getContains());
+                    }
+                    if (((StringFilter)result).getNotContains() != null) {
+                        wrapper.notLike(columnName, ((StringFilter) result).getNotContains());
+                    }
+                    if (((StringFilter)result).getStartWith() != null) {
+                        wrapper.likeRight(columnName, ((StringFilter) result).getStartWith());
+                    }
+                    if (((StringFilter)result).getEndWith() != null) {
+                        wrapper.likeLeft(columnName, ((StringFilter) result).getEndWith());
                     }
                 }
                 if (result instanceof BooleanFilter) {
@@ -130,18 +140,7 @@ public class MbpUtil {
                     // do nothing
                 }
                 if (result instanceof RangeFilter) {
-                    if (((RangeFilter)result).getGreaterThan() != null) {
-                        wrapper.gt(columnName, ((RangeFilter)result).getGreaterThan());
-                    }
-                    if (((RangeFilter)result).getGreaterOrEqualThan() != null) {
-                        wrapper.ge(columnName, ((RangeFilter)result).getGreaterOrEqualThan());
-                    }
-                    if (((RangeFilter)result).getLessThan() != null) {
-                        wrapper.lt(columnName, ((RangeFilter)result).getLessThan());
-                    }
-                    if (((RangeFilter)result).getLessOrEqualThan() != null) {
-                        wrapper.le(columnName, ((RangeFilter)result).getLessOrEqualThan());
-                    }
+                    // do nothing
                 }
                 // 是否框架使用的Filter或Criteria类型
                 boolean filterOrCriteria = false;
@@ -150,8 +149,39 @@ public class MbpUtil {
                     if (((Filter)result).getEquals() != null) {
                         wrapper.eq(columnName, ((Filter)result).getEquals());
                     }
+                    if (((Filter)result).getNotEquals() != null) {
+                        wrapper.ne(columnName, ((Filter)result).getNotEquals());
+                    }
+                    if (((Filter)result).getNullable() != null) {
+                        if (((Filter)result).getNullable()) {
+                            wrapper.isNull(columnName);
+                        } else {
+                            wrapper.isNotNull(columnName);
+                        }
+                    }
                     if (((Filter)result).getIn() != null) {
                         wrapper.in(columnName, ((Filter)result).getIn());
+                    }
+                    if (((Filter)result).getNotIn() != null) {
+                        wrapper.notIn(columnName, ((Filter)result).getNotIn());
+                    }
+                    if (((Filter)result).getGreaterThan() != null) {
+                        wrapper.gt(columnName, ((Filter)result).getGreaterThan());
+                    }
+                    if (((Filter)result).getGreaterOrEqualThan() != null) {
+                        wrapper.ge(columnName, ((Filter)result).getGreaterOrEqualThan());
+                    }
+                    if (((Filter)result).getLessThan() != null) {
+                        wrapper.lt(columnName, ((Filter)result).getLessThan());
+                    }
+                    if (((Filter)result).getLessOrEqualThan() != null) {
+                        wrapper.le(columnName, ((Filter)result).getLessOrEqualThan());
+                    }
+                    if (((Filter)result).getBetweenFrom() != null && ((Filter)result).getBetweenTo() != null) {
+                        wrapper.between(columnName, ((Filter)result).getBetweenFrom(), ((Filter)result).getBetweenTo());
+                    }
+                    if (((Filter)result).getNotBetweenFrom() != null && ((Filter)result).getNotBetweenTo() != null) {
+                        wrapper.notBetween(columnName, ((Filter)result).getNotBetweenFrom(), ((Filter)result).getNotBetweenTo());
                     }
                 }
                 if (result instanceof BaseCriteria) {
