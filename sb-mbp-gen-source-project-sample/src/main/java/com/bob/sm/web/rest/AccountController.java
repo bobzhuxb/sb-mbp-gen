@@ -9,9 +9,10 @@ import com.bob.sm.security.SecurityUtils;
 import com.bob.sm.service.AccountService;
 import com.bob.sm.util.ParamValidatorUtil;
 import com.bob.sm.web.rest.errors.CommonException;
-import com.bob.sm.web.rest.errors.InvalidPasswordException;
 import io.micrometer.core.annotation.Timed;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +32,6 @@ import java.util.Optional;
 public class AccountController {
 
     private final Logger log = LoggerFactory.getLogger(AccountController.class);
-
-    private static final String ENTITY_NAME = "systemUser";
 
     @Autowired
     private AccountService accountService;
