@@ -8,17 +8,34 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.bob.sm.dto.criteria.BaseCriteria;
 import com.bob.sm.dto.criteria.filter.*;
 import com.bob.sm.service.BaseService;
+import com.bob.sm.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.poi.ss.formula.functions.T;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class MbpUtil {
 
-    public static <M, T, C> Wrapper<T> getWrapper(QueryWrapper<T> wrapper, C criteria, Class clazz, String lastFieldName,
-                                                  Map<String, String> tableIndexMap, BaseService<T> baseService) {
+    /**
+     * 将criteria转换为wrapper
+     * @param wrapper 转换前或转换后的wrapper
+     * @param criteria 转换前的条件
+     * @param clazz 查询结果的类
+     * @param lastFieldName 最后的field名
+     * @param tableIndexMap 表index的Map
+     * @param baseService 用于增强条件查询的功能
+     * @param <M>
+     * @param <T>
+     * @param <C>
+     * @return 转换后的wrapper
+     */
+    public static <M, T, C> Wrapper<T> getWrapper(QueryWrapper<T> wrapper, C criteria, Class clazz,
+            String lastFieldName, Map<String, String> tableIndexMap, BaseService<T> baseService) {
         if (wrapper == null) {
             wrapper = new QueryWrapper<>();
         }
@@ -48,16 +65,7 @@ public class MbpUtil {
                 for (String orderBy : orderBys) {
                     String subTableName = tableName;
                     if (tableIndexMap != null && orderBy.contains(".")) {
-                        String key = orderBy.substring(0, orderBy.lastIndexOf("."));
-                        String tableIndex = "0";
-                        String tableIndexAndName = tableIndexMap.get(key);
-                        if (tableIndexAndName != null) {
-                            tableIndex = tableIndexAndName.split("_")[0];
-                            String domainTypeName = tableIndexAndName.split("_")[1];
-                            Class entityClass = Class.forName("com.bob.sm.domain." + domainTypeName);
-                            subTableName = ((TableName)entityClass.getAnnotation(TableName.class)).value();
-                        }
-                        subTableName = subTableName + "_" + tableIndex;
+                        subTableName = getChangedTableName(orderBy, tableIndexMap);
                     }
                     String[] orderByDetail = orderBy.trim().split("\\s");
                     String orderDirection = "";
@@ -192,8 +200,8 @@ public class MbpUtil {
                     Class entityClass = Class.forName("com.bob.sm.domain." + domainTypeName);
                     // 级联的域名
                     String nowFieldName = lastFieldName == null ? fieldName : lastFieldName + "." + fieldName;
-                    wrapper = (QueryWrapper<T>)getWrapper(wrapper, result, entityClass, nowFieldName, tableIndexMap,
-                            baseService);
+                    wrapper = (QueryWrapper<T>)getWrapper(wrapper, result, entityClass, nowFieldName,
+                            tableIndexMap, baseService);
                 }
                 if (!filterOrCriteria) {
                     // 附加的其它类型的查询条件
@@ -201,9 +209,77 @@ public class MbpUtil {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                throw new CommonException(e.getMessage());
             }
         }
         return wrapper;
+    }
+
+    /**
+     * orderBy的字段自动先生成个空条件
+     * @return
+     */
+    public static void preOrderBy(Object criteria, Map<String, String> tableIndexMap) {
+        try {
+            // 无任何条件的过滤器，占位用
+            NothingFilter nothingFilter = new NothingFilter("none");
+            Object criteriaIter = criteria;
+            // 获取传入的查询条件的类和域
+            Class criteriaClazz = criteria.getClass();
+            PropertyDescriptor pd = new PropertyDescriptor("orderBy", criteriaClazz);
+            Method getMethod = pd.getReadMethod();
+            Object result = getMethod.invoke(criteria);
+            if (result instanceof String) {
+                String[] orderBys = ((String) result).trim().split("\\,");
+                for (String orderBy : orderBys) {
+                    if (tableIndexMap != null && orderBy.contains(".")) {
+                        String changedTableName = getChangedTableName(orderBy, tableIndexMap);
+                        if (changedTableName == null) {
+                            // 获取不到值说明没有关于这个orderBy的条件查询，需要追加一个空的条件查询
+                            String[] orderBySplit = orderBy.split("\\.");
+                            for (int i = 0; i < orderBySplit.length; i++) {
+                                Field orderByKeyField = criteriaIter.getClass().getDeclaredField(orderBySplit[i]);
+                                orderByKeyField.setAccessible(true);
+                                Object fieldValue = orderByKeyField.get(criteriaIter);
+                                // 前面的都是BaseCriteria的子类对象
+                                if (fieldValue == null) {
+                                    fieldValue = Class.forName(orderByKeyField.getType().getName()).newInstance();
+                                    orderByKeyField.set(criteriaIter, fieldValue);
+                                }
+                                if (i != orderBySplit.length - 1) {
+                                    // 继续往下循环迭代
+                                    criteriaIter = fieldValue;
+                                } else {
+                                    // 最后一个.后面就是具体字段名，是Filter的子类对象，追加nothingFilter
+                                    if (fieldValue == null) {
+                                        orderByKeyField.set(criteriaIter, nothingFilter);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new CommonException(e.getMessage());
+        }
+    }
+
+    public static String getChangedTableName(String cascadeEntityAndField, Map<String, String> tableIndexMap)
+            throws Exception {
+        String changedTableName = null;
+        String key = cascadeEntityAndField.substring(0, cascadeEntityAndField.lastIndexOf("."));
+        String tableIndexAndName = tableIndexMap.get(key);
+        if (tableIndexAndName != null) {
+            // 已经加入过tableIndexMap
+            String tableIndex = tableIndexAndName.split("_")[0];
+            String domainTypeName = tableIndexAndName.split("_")[1];
+            Class entityClass = Class.forName("com.bob.sm.domain." + domainTypeName);
+            changedTableName = ((TableName)entityClass.getAnnotation(TableName.class)).value();
+            changedTableName = changedTableName + "_" + tableIndex;
+        }
+        return changedTableName;
     }
 
     public static <T> IPage<T> selectPage(BaseMapper<T> baseMapper, IPage<T> pageQuery, Wrapper<T> wrapper) {

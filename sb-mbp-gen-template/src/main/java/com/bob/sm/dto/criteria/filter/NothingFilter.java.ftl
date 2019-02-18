@@ -5,11 +5,16 @@ import java.util.Objects;
 
 /**
  * 特殊Filter：无任何过滤的条件过滤器
- * @param <FIELD_TYPE>
  */
-public class NothingFilter<FIELD_TYPE> implements Serializable {
+public class NothingFilter implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    public NothingFilter() {}
+
+    public NothingFilter(String none) {
+        this.none = none;
+    }
 
     private String none;    // 什么条件都没有（占位用）
 
@@ -17,8 +22,9 @@ public class NothingFilter<FIELD_TYPE> implements Serializable {
         return none;
     }
 
-    public void setNone(String none) {
+    public NothingFilter setNone(String none) {
         this.none = none;
+        return this;
     }
 
     @Override
@@ -29,7 +35,7 @@ public class NothingFilter<FIELD_TYPE> implements Serializable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final NothingFilter<?> filter = (NothingFilter<?>) o;
+        final NothingFilter filter = (NothingFilter) o;
         return Objects.equals(none, filter.none);
     }
 

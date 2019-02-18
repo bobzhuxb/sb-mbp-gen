@@ -272,10 +272,11 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         // ID条件设定
         Wrapper<${eentityName}> wrapper = idEqualsPrepare(id, criteria);
         // 数据权限过滤
-        boolean dataFilterPass = dataAuthorityFilter(wrapper, criteria);
+        boolean dataFilterPass = dataAuthorityFilter(criteria);
         if (!dataFilterPass) {
             return Optional.empty();
         }
+        // 执行查询并返回结果
         return Optional.ofNullable(getOne(wrapper)).map(${entityName} -> doConvert(${entityName}, criteria));
     }
 
@@ -289,13 +290,18 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         log.debug("Service ==> 查询所有${eentityName}DTO {}", criteria);
         // 表对应的序号和Domain名Map
         Map<String, String> tableIndexMap = new HashMap<>();
-        String dataQuerySql = getDataQuerySql(criteria, tableIndexMap);
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
         // 数据权限过滤
-        boolean dataFilterPass = dataAuthorityFilter(wrapper, criteria);
+        boolean dataFilterPass = dataAuthorityFilter(criteria);
         if (!dataFilterPass) {
             return new ArrayList<>();
         }
+        // 预处理orderBy的内容
+        MbpUtil.preOrderBy(criteria, tableIndexMap);
+        // 获取查询SQL（select和join）
+        String dataQuerySql = getDataQuerySql(criteria, tableIndexMap);
+        // 处理where条件
+        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
+        // 执行查询并返回结果
         return baseMapper.joinSelectList(dataQuerySql, wrapper).stream()
                 .map(${entityName} -> doConvert(${entityName}, criteria)).collect(Collectors.toList());
     }
@@ -312,14 +318,19 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         Page<${eentityName}> pageQuery = new Page<>(pageable.getCurrent(), pageable.getSize());
         // 表对应的序号和Domain名Map
         Map<String, String> tableIndexMap = new HashMap<>();
-        String dataQuerySql = getDataQuerySql(criteria, tableIndexMap);
-        String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
         // 数据权限过滤
-        boolean dataFilterPass = dataAuthorityFilter(wrapper, criteria);
+        boolean dataFilterPass = dataAuthorityFilter(criteria);
         if (!dataFilterPass) {
             return MbpPage.empty();
         }
+        // 预处理orderBy的内容
+        MbpUtil.preOrderBy(criteria, tableIndexMap);
+        // 获取查询SQL（select和join）
+        String dataQuerySql = getDataQuerySql(criteria, tableIndexMap);
+        // 处理where条件
+        String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
+        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
+        // 执行查询并返回结果
         IPage<${eentityName}DTO> pageResult = baseMapper.joinSelectPage(pageQuery, dataQuerySql, wrapper)
                     .convert(${entityName} -> doConvert(${entityName}, criteria));
         int totalCount = baseMapper.joinSelectCount(countQuerySql, wrapper);
@@ -337,13 +348,18 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         log.debug("Service ==> 查询个数${eentityName}DTO {}", criteria);
         // 表对应的序号和Domain名Map
         Map<String, String> tableIndexMap = new HashMap<>();
-        String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
         // 数据权限过滤
-        boolean dataFilterPass = dataAuthorityFilter(wrapper, criteria);
+        boolean dataFilterPass = dataAuthorityFilter(criteria);
         if (!dataFilterPass) {
             return 0;
         }
+        // 预处理orderBy的内容
+        MbpUtil.preOrderBy(criteria, tableIndexMap);
+        // 获取查询SQL（select和join）
+        String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
+        // 处理where条件
+        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
+        // 执行查询并返回结果
         return baseMapper.joinSelectCount(countQuerySql, wrapper);
     }
 
@@ -377,11 +393,10 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 
     /**
      * 数据权限过滤器
-     * @param wrapper 查询通用Wrapper
      * @param criteria 附加条件
 	 * @return 是否有权限（true：有权限  false：无权限）
      */
-    private boolean dataAuthorityFilter(Wrapper<${eentityName}> wrapper, BaseCriteria criteria) {
+    private boolean dataAuthorityFilter(BaseCriteria criteria) {
         // TODO: 数据权限的过滤写在这里
 		return true;
     }
