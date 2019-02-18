@@ -267,17 +267,19 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @return 单条数据内容
      */
     @Transactional(readOnly = true)
-    public Optional<${eentityName}DTO> findOne(Long id, BaseCriteria criteria) {
+    public ReturnCommonDTO<${eentityName}DTO> findOne(Long id, BaseCriteria criteria) {
         log.debug("Service ==> 根据ID查询${eentityName}DTO {}, {}", id, criteria);
         // ID条件设定
         Wrapper<${eentityName}> wrapper = idEqualsPrepare(id, criteria);
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(criteria);
         if (!dataFilterPass) {
-            return Optional.empty();
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
         // 执行查询并返回结果
-        return Optional.ofNullable(getOne(wrapper)).map(${entityName} -> doConvert(${entityName}, criteria));
+        return Optional.ofNullable(getOne(wrapper)).map(${entityName} ->
+                new ReturnCommonDTO(doConvert(${entityName}, criteria)))
+                .orElse(new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "没有该数据"));
     }
 
     /**
@@ -286,14 +288,14 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @return 数据列表
      */
     @Transactional(readOnly = true)
-    public List<${eentityName}DTO> findAll(${eentityName}Criteria criteria) {
+    public ReturnCommonDTO<List<${eentityName}DTO>> findAll(${eentityName}Criteria criteria) {
         log.debug("Service ==> 查询所有${eentityName}DTO {}", criteria);
         // 表对应的序号和Domain名Map
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(criteria);
         if (!dataFilterPass) {
-            return new ArrayList<>();
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
         // 预处理orderBy的内容
         MbpUtil.preOrderBy(criteria, tableIndexMap);
@@ -302,8 +304,8 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         // 处理where条件
         Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
         // 执行查询并返回结果
-        return baseMapper.joinSelectList(dataQuerySql, wrapper).stream()
-                .map(${entityName} -> doConvert(${entityName}, criteria)).collect(Collectors.toList());
+        return new ReturnCommonDTO(baseMapper.joinSelectList(dataQuerySql, wrapper).stream()
+                .map(${entityName} -> doConvert(${entityName}, criteria)).collect(Collectors.toList()));
     }
 
     /**
@@ -313,7 +315,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @return 分页列表
      */
     @Transactional(readOnly = true)
-    public IPage<${eentityName}DTO> findPage(${eentityName}Criteria criteria, MbpPage pageable) {
+    public ReturnCommonDTO<IPage<${eentityName}DTO>> findPage(${eentityName}Criteria criteria, MbpPage pageable) {
         log.debug("Service ==> 分页查询${eentityName}DTO {}, {}", criteria, pageable);
         Page<${eentityName}> pageQuery = new Page<>(pageable.getCurrent(), pageable.getSize());
         // 表对应的序号和Domain名Map
@@ -321,7 +323,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(criteria);
         if (!dataFilterPass) {
-            return MbpPage.empty();
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
         // 预处理orderBy的内容
         MbpUtil.preOrderBy(criteria, tableIndexMap);
@@ -335,7 +337,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                     .convert(${entityName} -> doConvert(${entityName}, criteria));
         int totalCount = baseMapper.joinSelectCount(countQuerySql, wrapper);
         pageResult.setTotal((long)totalCount);
-        return pageResult;
+        return new ReturnCommonDTO(pageResult);
     }
 
     /**
@@ -344,14 +346,14 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @return 个数
      */
     @Transactional(readOnly = true)
-    public int findCount(${eentityName}Criteria criteria) {
+    public ReturnCommonDTO<Integer> findCount(${eentityName}Criteria criteria) {
         log.debug("Service ==> 查询个数${eentityName}DTO {}", criteria);
         // 表对应的序号和Domain名Map
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(criteria);
         if (!dataFilterPass) {
-            return 0;
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
         // 预处理orderBy的内容
         MbpUtil.preOrderBy(criteria, tableIndexMap);
@@ -360,7 +362,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         // 处理where条件
         Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
         // 执行查询并返回结果
-        return baseMapper.joinSelectCount(countQuerySql, wrapper);
+        return new ReturnCommonDTO(baseMapper.joinSelectCount(countQuerySql, wrapper));
     }
 
     /**
@@ -619,8 +621,8 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                 }
                 BaseCriteria ${toFrom.toFromEntityName}Criteria = new BaseCriteria();
                 ${toFrom.toFromEntityName}Criteria.setAssociationNameList(associationName2List);
-                Optional<${toFrom.toFromEntityType}DTO> ${toFrom.toFromEntityName}Optional = ${toFrom.toFromEntityName}Service.findOne(${toFrom.toFromEntityName}Id, ${toFrom.toFromEntityName}Criteria);
-                ${entityName}DTO.set${toFrom.toFromEntityUName}(${toFrom.toFromEntityName}Optional.isPresent() ? ${toFrom.toFromEntityName}Optional.get() : null);
+                ReturnCommonDTO<${toFrom.toFromEntityType}DTO> ${toFrom.toFromEntityName}Rtn = ${toFrom.toFromEntityName}Service.findOne(${toFrom.toFromEntityName}Id, ${toFrom.toFromEntityName}Criteria);
+                ${entityName}DTO.set${toFrom.toFromEntityUName}(${toFrom.toFromEntityName}Rtn.getData());
             }
 			</#list>
             if (associationNameList.contains("insertUser")) {
@@ -638,8 +640,8 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                 }
                 BaseCriteria insertUserCriteria = new BaseCriteria();
                 insertUserCriteria.setAssociationNameList(associationName2List);
-                Optional<SystemUserDTO> insertUserOptional = <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>findOne(insertUserId, insertUserCriteria);
-                ${entityName}DTO.setInsertUser(insertUserOptional.isPresent() ? insertUserOptional.get() : null);
+                ReturnCommonDTO<SystemUserDTO> insertUserRtn = <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>findOne(insertUserId, insertUserCriteria);
+                ${entityName}DTO.setInsertUser(insertUserRtn.getData());
             }
             if (associationNameList.contains("operateUser")) {
                 // 获取最后更新者
@@ -656,8 +658,8 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                 }
                 BaseCriteria operateUserCriteria = new BaseCriteria();
                 operateUserCriteria.setAssociationNameList(associationName2List);
-                Optional<SystemUserDTO> operateUserOptional = <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>findOne(operateUserId, operateUserCriteria);
-                ${entityName}DTO.setOperateUser(operateUserOptional.isPresent() ? operateUserOptional.get() : null);
+                ReturnCommonDTO<SystemUserDTO> operateUserRtn = <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>findOne(operateUserId, operateUserCriteria);
+                ${entityName}DTO.setOperateUser(operateUserRtn.getData());
             }
         }
         return ${entityName}DTO;

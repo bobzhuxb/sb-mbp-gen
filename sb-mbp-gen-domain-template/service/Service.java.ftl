@@ -10,7 +10,6 @@ import ${packageName}.dto.help.ReturnCommonDTO;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public interface ${eentityName}Service extends IService<${eentityName}> {
 
@@ -18,10 +17,10 @@ public interface ${eentityName}Service extends IService<${eentityName}> {
     ReturnCommonDTO deleteById(Long id);
     ReturnCommonDTO deleteByIdList(List<Long> idList);
     ReturnCommonDTO deleteByMapCascade(Map<String, Object> deleteMap);
-    Optional<${eentityName}DTO> findOne(Long id, BaseCriteria criteria);
-    List<${eentityName}DTO> findAll(${eentityName}Criteria criteria);
-    IPage<${eentityName}DTO> findPage(${eentityName}Criteria criteria, MbpPage pageable);
-    int findCount(${eentityName}Criteria criteria);
+    ReturnCommonDTO<${eentityName}DTO> findOne(Long id, BaseCriteria criteria);
+    ReturnCommonDTO<List<${eentityName}DTO>> findAll(${eentityName}Criteria criteria);
+    ReturnCommonDTO<IPage<${eentityName}DTO>> findPage(${eentityName}Criteria criteria, MbpPage pageable);
+    ReturnCommonDTO<Integer> findCount(${eentityName}Criteria criteria);
 
     String getJoinSql(${eentityName}Criteria criteria, int tableCount, int fromTableCount, String lastFieldName,
                       Map<String, String> tableIndexMap);

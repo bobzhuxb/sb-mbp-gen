@@ -13,7 +13,6 @@ import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * 注意规范：新增的方法以create开头，修改的方法以update开头，删除的方法以delete开头，查询的方法以get开头
@@ -197,14 +195,16 @@ public class ${eentityName}Controller {
             @ApiImplicitParam(name="dictionaryNameList", paramType="path", dataType="string", value="关联查询的数据字典值${dictionaryNameList}")
     })
     @ApiResponses({
-            @ApiResponse(code=200, message="", response=Object.class)
+            @ApiResponse(code=200, message="resultCode - 1：查询成功  2：查询失败<br/>" +
+                    "errMsg - 错误消息<br/>" +
+                    "data - 查询结果", response=Object.class)
     })
     @GetMapping("/${entityUrl}/{id}")
-    public ResponseEntity<${eentityName}DTO> get${eentityName}(@ApiParam(name="主键ID") @PathVariable Long id, @ApiIgnore BaseCriteria criteria) {
+    public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}(
+            @ApiParam(name="主键ID") @PathVariable Long id, @ApiIgnore BaseCriteria criteria) {
         log.debug("Controller ==> 根据ID查询${eentityName} : {}, {}", id, criteria);
-        Optional<${eentityName}DTO> data = ${entityName}Service.findOne(id, criteria);
-        return data.map(response -> ResponseEntity.ok().headers(null).body(response))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        ReturnCommonDTO<${eentityName}DTO> data = ${entityName}Service.findOne(id, criteria);
+        return ResponseEntity.ok().headers(null).body(data);
     }
 
     /**
@@ -226,13 +226,16 @@ public class ${eentityName}Controller {
 			</#list>
     })
     @ApiResponses({
-            @ApiResponse(code=200, message="", response=Object.class)
+            @ApiResponse(code=200, message="resultCode - 1：查询成功  2：查询失败<br/>" +
+                    "errMsg - 错误消息<br/>" +
+                    "data - 查询结果", response=Object.class)
     })
     @GetMapping("/${entityUrl}-all")
-    public ResponseEntity<List<${eentityName}DTO>> getAll${eentityName}s(@ApiIgnore ${eentityName}Criteria criteria) {
+    public ResponseEntity<ReturnCommonDTO<List<${eentityName}DTO>>> getAll${eentityName}s(
+            @ApiIgnore ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询所有${eentityName} : {}", criteria);
-        List<${eentityName}DTO> list = ${entityName}Service.findAll(criteria);
-        return ResponseEntity.ok().headers(null).body(list);
+        ReturnCommonDTO<List<${eentityName}DTO>> data = ${entityName}Service.findAll(criteria);
+        return ResponseEntity.ok().headers(null).body(data);
     }
 
     /**
@@ -257,13 +260,16 @@ public class ${eentityName}Controller {
 			</#list>
     })
     @ApiResponses({
-            @ApiResponse(code=200, message="", response=Object.class)
+            @ApiResponse(code=200, message="resultCode - 1：查询成功  2：查询失败<br/>" +
+                    "errMsg - 错误消息<br/>" +
+                    "data - 查询结果", response=Object.class)
     })
     @GetMapping("/${entityUrl}")
-    public ResponseEntity<IPage<${eentityName}DTO>> getPage${eentityName}s(@ApiIgnore ${eentityName}Criteria criteria, @ApiIgnore MbpPage pageable) {
+    public ResponseEntity<ReturnCommonDTO<IPage<${eentityName}DTO>>> getPage${eentityName}s(
+            @ApiIgnore ${eentityName}Criteria criteria, @ApiIgnore MbpPage pageable) {
         log.debug("Controller ==> 分页查询${eentityName} : {}, {}", criteria, pageable);
-        IPage<${eentityName}DTO> page = ${entityName}Service.findPage(criteria, pageable);
-        return ResponseEntity.ok().headers(null).body(page);
+        ReturnCommonDTO<IPage<${eentityName}DTO>> data = ${entityName}Service.findPage(criteria, pageable);
+        return ResponseEntity.ok().headers(null).body(data);
     }
 
     /**
@@ -282,11 +288,16 @@ public class ${eentityName}Controller {
 			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
 			</#list>
     })
+    @ApiResponses({
+            @ApiResponse(code=200, message="resultCode - 1：查询成功  2：查询失败<br/>" +
+                    "errMsg - 错误消息<br/>" +
+                    "data - 查询结果", response=Object.class)
+    })
     @GetMapping("/${entityUrl}-count")
-    public ResponseEntity<Integer> get${eentityName}Count(@ApiIgnore ${eentityName}Criteria criteria) {
+    public ResponseEntity<ReturnCommonDTO<Integer>> get${eentityName}Count(@ApiIgnore ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询数量${eentityName} : {}", criteria);
-        int count = ${entityName}Service.findCount(criteria);
-        return ResponseEntity.ok().headers(null).body(count);
+        ReturnCommonDTO<Integer> data = ${entityName}Service.findCount(criteria);
+        return ResponseEntity.ok().headers(null).body(data);
     }
 
 }

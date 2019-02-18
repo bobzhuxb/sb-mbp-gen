@@ -69,7 +69,7 @@ public class AccountServiceImpl implements AccountService {
         systemUserCriteria.setAssociationNameList(Arrays.asList("systemOrganization",
                 "systemUserRoleList",
                 "systemUserResourceList", "systemUserResourceList.systemResource"));
-        List<EnhanceUserDTO> userList = systemUserService.findAll(systemUserCriteria).stream().map(systemUserDTO -> {
+        List<EnhanceUserDTO> userList = systemUserService.findAll(systemUserCriteria).getData().stream().map(systemUserDTO -> {
             EnhanceUserDTO enhanceUserDTO = new EnhanceUserDTO();
             MyBeanUtil.copyNonNullProperties(systemUserDTO, enhanceUserDTO);
             List<SystemResourceDTO> userResourceList = new ArrayList<>();
@@ -85,7 +85,7 @@ public class AccountServiceImpl implements AccountService {
                         roleIdFilter.setEquals(systemUserRoleDTO.getSystemRoleId());
                         systemRoleResourceCriteria.setSystemRoleId(roleIdFilter);
                         systemRoleResourceCriteria.setAssociationNameList(Arrays.asList("systemResource"));
-                        return systemRoleResourceService.findAll(systemRoleResourceCriteria).stream()
+                        return systemRoleResourceService.findAll(systemRoleResourceCriteria).getData().stream()
                                 .map(systemRoleResourceDTO -> systemRoleResourceDTO.getSystemResource());
                     }).collect(Collectors.toList());
             // 角色的资源去重
