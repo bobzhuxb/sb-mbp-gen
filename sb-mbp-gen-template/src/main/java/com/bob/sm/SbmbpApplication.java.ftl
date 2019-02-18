@@ -23,7 +23,8 @@ public class SbmbpApplication {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
 				registry.addMapping("/**").allowedOrigins("*")
-						.allowedMethods("*").exposedHeaders(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS);
+						.allowedMethods("*").exposedHeaders(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS)
+						.maxAge(3600);
 				//.allowCredentials(false).maxAge(3600);
 			}
 		};
