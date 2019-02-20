@@ -16,7 +16,7 @@ public class MbpPage<T> extends Page<T> {
 
     private long page = 1;
 
-    private String orderBy;
+    private String sort;
 
     public MbpPage() {
         super(1, 10);
@@ -26,20 +26,20 @@ public class MbpPage<T> extends Page<T> {
         super(current, size);
     }
 
-    public Long getPage() {
+    public long getPage() {
         return page;
     }
 
-    public void setPage(Long page) {
+    public void setPage(long page) {
         this.page = page;
     }
 
-    public String getOrderBy() {
-        return orderBy;
+    public String getSort() {
+        return sort;
     }
 
-    public void setOrderBy(String orderBy) {
-        this.orderBy = orderBy;
+    public void setSort(String sort) {
+        this.sort = sort;
     }
 
     public <U> Page<U> map(Function<? super T, ? extends U> converter) {
