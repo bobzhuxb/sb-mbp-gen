@@ -5,8 +5,10 @@ import ${packageName}.annotation.CreateInitValue;
 import ${packageName}.annotation.CreateTime;
 import ${packageName}.annotation.UpdateTime;
 import ${packageName}.domain.SystemUser;
+import ${packageName}.dto.criteria.BaseCriteria;
 import ${packageName}.mapper.SystemUserMapper;
 import ${packageName}.security.SecurityUtils;
+import ${packageName}.service.aopdeal.BaseDataProcess;
 import ${packageName}.util.MyBeanUtil;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -16,7 +18,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
@@ -30,10 +36,9 @@ public class ControllerAspect {
     private final Logger log = LoggerFactory.getLogger(ControllerAspect.class);
 
     @Autowired
-    private HttpServletRequest httpServletRequest;
-
-    @Autowired
     private SystemUserMapper systemUserMapper;
+
+    private BaseDataProcess baseDataProcess;
 
 //    @Pointcut("execution(* ${packageName}.web.rest.*Controller.*(..))")
 //    public void pointCutAll(){}
@@ -50,16 +55,40 @@ public class ControllerAspect {
     @Around("pointCutGet()")
     public Object getAround(ProceedingJoinPoint pjp) throws Throwable {
         log.debug("AOP Aronud controller get before...");
+        // 获取request参数，拦截并解析成Criteria查询条件，解析不了的继续传下去
+        RequestAttributes ra = RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes sra = (ServletRequestAttributes) ra;
+        HttpServletRequest request = sra.getRequest();
         // 获取当前时间
         Date nowDate = new Date();
         String nowDateStr = new SimpleDateFormat("yyyy-MM-dd").format(nowDate);
         String nowTimeStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(nowDate);
+        // 调用方法所在的类
+        String classType = pjp.getTarget().getClass().getName();
+        Class<?> clazz = Class.forName(classType);
+        String clazzSimpleName = clazz.getSimpleName();
+        if (clazzSimpleName.endsWith("Controller")) {
+            String domainName = clazzSimpleName.substring(0, clazzSimpleName.length() - 10);
+            Class dpClass = Class.forName("${packageName}.service.aopdeal." + domainName + "DataProcess");
+            baseDataProcess = (BaseDataProcess) dpClass.getConstructor().newInstance();
+        }
         // 连接点方法返回值
         Object retVal = null;
         // 方法参数
         Object[] parameters = pjp.getArgs();
+        // 查询参数统一预处理
+        for (int i = 0; i < parameters.length; i++) {
+            if (parameters[i] instanceof BaseCriteria && baseDataProcess != null) {
+                parameters[i] = baseDataProcess.requestParamToCriteria(request, parameters[i]);
+                break;
+            }
+        }
         // 继续执行后续的操作
         retVal = pjp.proceed(parameters);
+        // 返回结果的统一处理
+        if (retVal instanceof ResponseEntity && baseDataProcess != null) {
+            retVal = baseDataProcess.processRetData((ResponseEntity)retVal);
+        }
         log.debug("AOP Aronud controller get after...");
 
         return retVal;

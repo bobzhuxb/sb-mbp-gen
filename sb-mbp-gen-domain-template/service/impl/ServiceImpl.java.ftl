@@ -661,6 +661,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                 ReturnCommonDTO<SystemUserDTO> operateUserRtn = <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>findOne(operateUserId, operateUserCriteria);
                 ${entityName}DTO.setOperateUser(operateUserRtn.getData());
             }
+            // TODO: 在这里写自定义的association属性
         }
         return ${entityName}DTO;
     }

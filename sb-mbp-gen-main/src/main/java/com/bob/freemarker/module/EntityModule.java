@@ -181,6 +181,7 @@ public class EntityModule {
         generateMapperXml(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateService(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateServiceImpl(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
+        generateServiceAopdeal(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateController(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
     }
 
@@ -290,10 +291,26 @@ public class EntityModule {
      * @param cfg
      * @throws Exception
      */
-    private static void generateServiceImpl(String projectDirectory, String packageName, String eentityName,
+    private static void generateServiceAopdeal(String projectDirectory, String packageName, String eentityName,
                                             String entityTemplatePath, Map root, Configuration cfg) throws Exception {
         generateJavaFile(projectDirectory, packageName, eentityName + "ServiceImpl", entityTemplatePath, root, cfg,
                 "service\\impl\\", "ServiceImpl.java.ftl");
+    }
+
+    /**
+     * 生成查询条件的预处理和返回结果的处理类
+     * @param projectDirectory
+     * @param packageName
+     * @param eentityName
+     * @param entityTemplatePath
+     * @param root
+     * @param cfg
+     * @throws Exception
+     */
+    private static void generateServiceImpl(String projectDirectory, String packageName, String eentityName,
+                                            String entityTemplatePath, Map root, Configuration cfg) throws Exception {
+        generateJavaFile(projectDirectory, packageName, eentityName + "DataProcess", entityTemplatePath, root, cfg,
+                "service\\aopdeal\\", "DataProcess.java.ftl");
     }
 
     /**
