@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode(callSuper = true)
 public class MbpPage<T> extends Page<T> {
 
+    private long page = 1;
+
     private String orderBy;
 
     public MbpPage() {
@@ -22,6 +24,14 @@ public class MbpPage<T> extends Page<T> {
 
     public MbpPage(long current, long size) {
         super(current, size);
+    }
+
+    public Long getPage() {
+        return page;
+    }
+
+    public void setPage(Long page) {
+        this.page = page;
     }
 
     public String getOrderBy() {

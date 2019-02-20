@@ -317,7 +317,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     @Transactional(readOnly = true)
     public ReturnCommonDTO<IPage<${eentityName}DTO>> findPage(${eentityName}Criteria criteria, MbpPage pageable) {
         log.debug("Service ==> 分页查询${eentityName}DTO {}, {}", criteria, pageable);
-        Page<${eentityName}> pageQuery = new Page<>(pageable.getCurrent(), pageable.getSize());
+        Page<${eentityName}> pageQuery = new Page<>(pageable.getPage(), pageable.getSize());
         // 表对应的序号和Domain名Map
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤

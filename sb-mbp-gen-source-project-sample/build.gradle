@@ -99,6 +99,8 @@ dependencies {
 	compile "org.apache.commons:commons-lang3"
 	// commons-io工具包
 	compile "commons-io:commons-io:2.6"
+	// commons-beanutils工具包
+	compile "commons-beanutils:commons-beanutils:1.9.3"
 	// 注解生成get/set方法
 	compile "org.projectlombok:lombok"
 	// apache的http客户端
