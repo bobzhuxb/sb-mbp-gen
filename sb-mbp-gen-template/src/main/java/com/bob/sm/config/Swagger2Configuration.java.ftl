@@ -62,8 +62,8 @@ public class Swagger2Configuration {
                         "&nbsp;&nbsp;&nbsp;&nbsp;a、associationNameList表示级联查询，可显示多层级联的结果，用.分割各层级。<br/>" +
                         "&nbsp;&nbsp;&nbsp;&nbsp;b、dictionaryNameList表示数据字典的级联查询（即根据Code查询Value）。<br/>" +
                         "&nbsp;&nbsp;&nbsp;&nbsp;c、注意：associationNameList和dictionaryNameList只能应用于最外层，例如不能有xxx.associationNameList。<br/>" +
-                        "&nbsp;&nbsp;&nbsp;&nbsp;d、orderBy表示排序的字段。<br/>" +
-                        "&nbsp;&nbsp;&nbsp;&nbsp;e、current表示当前页（从1开始）。<br/>" +
+                        "&nbsp;&nbsp;&nbsp;&nbsp;d、sort表示排序的字段。<br/>" +
+                        "&nbsp;&nbsp;&nbsp;&nbsp;e、page表示当前页（从1开始）。<br/>" +
                         "&nbsp;&nbsp;&nbsp;&nbsp;f、size表示每页的数量。<br/>" +
                         "&nbsp;&nbsp;2) 基本条件类型包括：string、int、long、double。<br>" +
                         "&nbsp;&nbsp;&nbsp;&nbsp;a、基本类型均有equals、notEquals、in、notIn、nullable属性。" +
