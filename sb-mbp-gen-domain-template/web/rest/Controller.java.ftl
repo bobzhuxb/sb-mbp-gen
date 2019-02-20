@@ -203,7 +203,7 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}(
             @ApiParam(name="主键ID") @PathVariable Long id, @ApiIgnore BaseCriteria criteria) {
         log.debug("Controller ==> 根据ID查询${eentityName} : {}, {}", id, criteria);
-        ReturnCommonDTO<${eentityName}DTO> data = ${entityName}Service.findOne(id, criteria);
+        ReturnCommonDTO<${eentityName}DTO> data = ${entityName}Service.findOne(id, criteria, null);
         return ResponseEntity.ok().headers(null).body(data);
     }
 
@@ -234,7 +234,7 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<List<${eentityName}DTO>>> getAll${eentityName}s(
             @ApiIgnore ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询所有${eentityName} : {}", criteria);
-        ReturnCommonDTO<List<${eentityName}DTO>> data = ${entityName}Service.findAll(criteria);
+        ReturnCommonDTO<List<${eentityName}DTO>> data = ${entityName}Service.findAll(criteria, null);
         return ResponseEntity.ok().headers(null).body(data);
     }
 
@@ -268,7 +268,7 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<IPage<${eentityName}DTO>>> getPage${eentityName}s(
             @ApiIgnore ${eentityName}Criteria criteria, @ApiIgnore MbpPage pageable) {
         log.debug("Controller ==> 分页查询${eentityName} : {}, {}", criteria, pageable);
-        ReturnCommonDTO<IPage<${eentityName}DTO>> data = ${entityName}Service.findPage(criteria, pageable);
+        ReturnCommonDTO<IPage<${eentityName}DTO>> data = ${entityName}Service.findPage(criteria, pageable, null);
         return ResponseEntity.ok().headers(null).body(data);
     }
 

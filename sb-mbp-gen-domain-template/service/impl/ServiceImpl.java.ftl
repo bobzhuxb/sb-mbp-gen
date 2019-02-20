@@ -264,10 +264,12 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 查询单条数据
 	 * @param id 主键ID
 	 * @param criteria 附加条件
+     * @param appendParamMap 附加参数
      * @return 单条数据内容
      */
     @Transactional(readOnly = true)
-    public ReturnCommonDTO<${eentityName}DTO> findOne(Long id, BaseCriteria criteria) {
+    public ReturnCommonDTO<${eentityName}DTO> findOne(Long id, BaseCriteria criteria,
+            Map<String, Object> appendParamMap) {
         log.debug("Service ==> 根据ID查询${eentityName}DTO {}, {}", id, criteria);
         // ID条件设定
         Wrapper<${eentityName}> wrapper = idEqualsPrepare(id, criteria);
@@ -278,17 +280,20 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         }
         // 执行查询并返回结果
         return Optional.ofNullable(getOne(wrapper)).map(${entityName} ->
-                new ReturnCommonDTO(doConvert(${entityName}, criteria, new HashMap<>())))
+                new ReturnCommonDTO(doConvert(${entityName}, criteria,
+                        appendParamMap == null ? new HashMap<>() : appendParamMap))))
                 .orElse(new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "没有该数据"));
     }
 
     /**
      * 查询所有
 	 * @param criteria 查询条件
+     * @param appendParamMap 附加参数
      * @return 数据列表
      */
     @Transactional(readOnly = true)
-    public ReturnCommonDTO<List<${eentityName}DTO>> findAll(${eentityName}Criteria criteria) {
+    public ReturnCommonDTO<List<${eentityName}DTO>> findAll(${eentityName}Criteria criteria,
+            Map<String, Object> appendParamMap) {
         log.debug("Service ==> 查询所有${eentityName}DTO {}", criteria);
         // 表对应的序号和Domain名Map
         Map<String, String> tableIndexMap = new HashMap<>();
@@ -305,17 +310,20 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
         // 执行查询并返回结果
         return new ReturnCommonDTO(baseMapper.joinSelectList(dataQuerySql, wrapper).stream()
-                .map(${entityName} -> doConvert(${entityName}, criteria, new HashMap<>())).collect(Collectors.toList()));
+                .map(${entityName} -> doConvert(${entityName}, criteria,
+                        appendParamMap == null ? new HashMap<>() : appendParamMap))).collect(Collectors.toList()));
     }
 
     /**
      * 分页查询
 	 * @param criteria 查询条件
 	 * @param pageable 分页条件
+     * @param appendParamMap 附加参数
      * @return 分页列表
      */
     @Transactional(readOnly = true)
-    public ReturnCommonDTO<IPage<${eentityName}DTO>> findPage(${eentityName}Criteria criteria, MbpPage pageable) {
+    public ReturnCommonDTO<IPage<${eentityName}DTO>> findPage(${eentityName}Criteria criteria, MbpPage pageable,
+            Map<String, Object> appendParamMap) {
         log.debug("Service ==> 分页查询${eentityName}DTO {}, {}", criteria, pageable);
         Page<${eentityName}> pageQuery = new Page<>(pageable.getPage(), pageable.getSize());
         // 表对应的序号和Domain名Map
@@ -334,7 +342,8 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
         // 执行查询并返回结果
         IPage<${eentityName}DTO> pageResult = baseMapper.joinSelectPage(pageQuery, dataQuerySql, wrapper)
-                    .convert(${entityName} -> doConvert(${entityName}, criteria, new HashMap<>()));
+                    .convert(${entityName} -> doConvert(${entityName}, criteria,
+                        appendParamMap == null ? new HashMap<>() : appendParamMap));
         int totalCount = baseMapper.joinSelectCount(countQuerySql, wrapper);
         pageResult.setTotal((long)totalCount);
         return new ReturnCommonDTO(pageResult);
@@ -625,7 +634,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                 }
                 BaseCriteria ${toFrom.toFromEntityName}Criteria = new BaseCriteria();
                 ${toFrom.toFromEntityName}Criteria.setAssociationNameList(associationName2List);
-                ReturnCommonDTO<${toFrom.toFromEntityType}DTO> ${toFrom.toFromEntityName}Rtn = ${toFrom.toFromEntityName}Service.findOne(${toFrom.toFromEntityName}Id, ${toFrom.toFromEntityName}Criteria);
+                ReturnCommonDTO<${toFrom.toFromEntityType}DTO> ${toFrom.toFromEntityName}Rtn = ${toFrom.toFromEntityName}Service.findOne(${toFrom.toFromEntityName}Id, ${toFrom.toFromEntityName}Criteria, appendParamMap);
                 ${entityName}DTO.set${toFrom.toFromEntityUName}(${toFrom.toFromEntityName}Rtn.getData());
             }
 			</#list>
@@ -644,7 +653,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                 }
                 BaseCriteria insertUserCriteria = new BaseCriteria();
                 insertUserCriteria.setAssociationNameList(associationName2List);
-                ReturnCommonDTO<SystemUserDTO> insertUserRtn = <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>findOne(insertUserId, insertUserCriteria);
+                ReturnCommonDTO<SystemUserDTO> insertUserRtn = <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>findOne(insertUserId, insertUserCriteria, appendParamMap);
                 ${entityName}DTO.setInsertUser(insertUserRtn.getData());
             }
             if (associationNameList.contains("operateUser")) {
@@ -662,7 +671,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                 }
                 BaseCriteria operateUserCriteria = new BaseCriteria();
                 operateUserCriteria.setAssociationNameList(associationName2List);
-                ReturnCommonDTO<SystemUserDTO> operateUserRtn = <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>findOne(operateUserId, operateUserCriteria);
+                ReturnCommonDTO<SystemUserDTO> operateUserRtn = <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>findOne(operateUserId, operateUserCriteria, appendParamMap);
                 ${entityName}DTO.setOperateUser(operateUserRtn.getData());
             }
             // TODO: 在这里写自定义的association属性

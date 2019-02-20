@@ -17,9 +17,12 @@ public interface ${eentityName}Service extends IService<${eentityName}> {
     ReturnCommonDTO deleteById(Long id);
     ReturnCommonDTO deleteByIdList(List<Long> idList);
     ReturnCommonDTO deleteByMapCascade(Map<String, Object> deleteMap);
-    ReturnCommonDTO<${eentityName}DTO> findOne(Long id, BaseCriteria criteria);
-    ReturnCommonDTO<List<${eentityName}DTO>> findAll(${eentityName}Criteria criteria);
-    ReturnCommonDTO<IPage<${eentityName}DTO>> findPage(${eentityName}Criteria criteria, MbpPage pageable);
+    ReturnCommonDTO<${eentityName}DTO> findOne(Long id, BaseCriteria criteria,
+            Map<String, Object> appendParamMap);
+    ReturnCommonDTO<List<${eentityName}DTO>> findAll(${eentityName}Criteria criteria,
+            Map<String, Object> appendParamMap);
+    ReturnCommonDTO<IPage<${eentityName}DTO>> findPage(${eentityName}Criteria criteria,
+            MbpPage pageable, Map<String, Object> appendParamMap);
     ReturnCommonDTO<Integer> findCount(${eentityName}Criteria criteria);
 
     String getJoinSql(${eentityName}Criteria criteria, int tableCount, int fromTableCount, String lastFieldName,
