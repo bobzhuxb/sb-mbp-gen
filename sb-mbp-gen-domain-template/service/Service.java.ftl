@@ -24,6 +24,7 @@ public interface ${eentityName}Service extends IService<${eentityName}> {
 
     String getJoinSql(${eentityName}Criteria criteria, int tableCount, int fromTableCount, String lastFieldName,
                       Map<String, String> tableIndexMap);
-    ${eentityName}DTO getAssociations(${eentityName}DTO ${entityName}DTO, BaseCriteria criteria);
+    ${eentityName}DTO getAssociations(${eentityName}DTO ${entityName}DTO, BaseCriteria criteria,
+                        Map<String, Object> appendParamMap);
 
 }

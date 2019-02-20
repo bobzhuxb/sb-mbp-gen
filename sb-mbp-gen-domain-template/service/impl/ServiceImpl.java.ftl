@@ -278,7 +278,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         }
         // 执行查询并返回结果
         return Optional.ofNullable(getOne(wrapper)).map(${entityName} ->
-                new ReturnCommonDTO(doConvert(${entityName}, criteria)))
+                new ReturnCommonDTO(doConvert(${entityName}, criteria, new HashMap<>())))
                 .orElse(new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "没有该数据"));
     }
 
@@ -305,7 +305,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
         // 执行查询并返回结果
         return new ReturnCommonDTO(baseMapper.joinSelectList(dataQuerySql, wrapper).stream()
-                .map(${entityName} -> doConvert(${entityName}, criteria)).collect(Collectors.toList()));
+                .map(${entityName} -> doConvert(${entityName}, criteria, new HashMap<>())).collect(Collectors.toList()));
     }
 
     /**
@@ -334,7 +334,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
         // 执行查询并返回结果
         IPage<${eentityName}DTO> pageResult = baseMapper.joinSelectPage(pageQuery, dataQuerySql, wrapper)
-                    .convert(${entityName} -> doConvert(${entityName}, criteria));
+                    .convert(${entityName} -> doConvert(${entityName}, criteria, new HashMap<>()));
         int totalCount = baseMapper.joinSelectCount(countQuerySql, wrapper);
         pageResult.setTotal((long)totalCount);
         return new ReturnCommonDTO(pageResult);
@@ -527,11 +527,12 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @param criteria 查询条件
      * @return 转换后的DTO
      */
-    private ${eentityName}DTO doConvert(${eentityName} ${entityName}, BaseCriteria criteria) {
+    private ${eentityName}DTO doConvert(${eentityName} ${entityName}, BaseCriteria criteria,
+                        Map<String, Object> appendParamMap) {
         ${eentityName}DTO ${entityName}DTO = new ${eentityName}DTO();
         // TODO:在此处对每条数据做些处理
         MyBeanUtil.copyNonNullProperties(${entityName}, ${entityName}DTO);
-        getAssociations(${entityName}DTO, criteria);
+        getAssociations(${entityName}DTO, criteria, appendParamMap);
         return ${entityName}DTO;
     }
 
@@ -542,7 +543,8 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @return 带关联属性的主实体
      */
     @Transactional(readOnly = true)
-    public ${eentityName}DTO getAssociations(${eentityName}DTO ${entityName}DTO, BaseCriteria criteria) {
+    public ${eentityName}DTO getAssociations(${eentityName}DTO ${entityName}DTO, BaseCriteria criteria,
+                        Map<String, Object> appendParamMap) {
         if (${entityName}DTO.getId() == null) {
             return ${entityName}DTO;
         }
@@ -596,11 +598,13 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                     ${fromTo.fromToEntityName}Criteria.setAssociationNameList(associationName2List);
 					<#if fromTo.relationType == "OneToMany">
                     for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${fromTo.fromToEntityName}List) {
-                        ${fromTo.fromToEntityName}Service.getAssociations(${fromTo.fromToEntityName}DTO, ${fromTo.fromToEntityName}Criteria);
+                        ${fromTo.fromToEntityName}Service.getAssociations(${fromTo.fromToEntityName}DTO, ${fromTo.fromToEntityName}Criteria,
+                                appendParamMap);
                     }
 					</#if>
 					<#if fromTo.relationType == "OneToOne">
-                    ${fromTo.fromToEntityName}Service.getAssociations(${fromTo.fromToEntityName}DTO, ${fromTo.fromToEntityName}Criteria);
+                    ${fromTo.fromToEntityName}Service.getAssociations(${fromTo.fromToEntityName}DTO, ${fromTo.fromToEntityName}Criteria,
+                                appendParamMap);
 					</#if>
                 }
             }
