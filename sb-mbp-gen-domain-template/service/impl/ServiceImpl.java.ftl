@@ -281,7 +281,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         // 执行查询并返回结果
         return Optional.ofNullable(getOne(wrapper)).map(${entityName} ->
                 new ReturnCommonDTO(doConvert(${entityName}, criteria,
-                        appendParamMap == null ? new HashMap<>() : appendParamMap))))
+                        appendParamMap == null ? new HashMap<>() : appendParamMap)))
                 .orElse(new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "没有该数据"));
     }
 
@@ -311,7 +311,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         // 执行查询并返回结果
         return new ReturnCommonDTO(baseMapper.joinSelectList(dataQuerySql, wrapper).stream()
                 .map(${entityName} -> doConvert(${entityName}, criteria,
-                        appendParamMap == null ? new HashMap<>() : appendParamMap))).collect(Collectors.toList()));
+                        appendParamMap == null ? new HashMap<>() : appendParamMap)).collect(Collectors.toList()));
     }
 
     /**

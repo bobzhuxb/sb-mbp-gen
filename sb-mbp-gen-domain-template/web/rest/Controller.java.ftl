@@ -217,9 +217,12 @@ public class ${eentityName}Controller {
             @ApiImplicitParam(name="associationNameList", paramType="path", dataType="string", value="关联查询的字段${associationNameComment}"),
             @ApiImplicitParam(name="dictionaryNameList", paramType="path", dataType="string", value="关联查询的数据字典值${dictionaryNameList}"),
             @ApiImplicitParam(name="sort", paramType="path", dataType="string", value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
+            @ApiImplicitParam(name="id.equals", paramType="path", dataType="long", value="主键ID"),
 			<#list fieldList as field>
             @ApiImplicitParam(name="${field.camelName}.equals", paramType="path",<#if field.javaType == 'Integer'> dataType="int",<#elseif field.javaType == 'Long'> dataType="long",<#elseif field.javaType == 'Double'> dataType="double",<#else> dataType="string",</#if> value="${field.comment}"),
 			</#list>
+			@ApiImplicitParam(name="insertUser.?.equals", paramType="path", value="创建者"),
+			@ApiImplicitParam(name="operateUser.?.equals", paramType="path", value="最后更新者"),
 			<#list toFromList as toFrom>
 			@ApiImplicitParam(name="${toFrom.toFromEntityName}Id.equals", paramType="path", value="关联的${toFrom.toFromComment}ID"),
 			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
@@ -251,9 +254,12 @@ public class ${eentityName}Controller {
             @ApiImplicitParam(name="sort", paramType="path", dataType="string", value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
             @ApiImplicitParam(name="page", paramType="path", dataType="long", value="分页：当前页"),
             @ApiImplicitParam(name="size", paramType="path", dataType="long", value="分页：每页大小"),
+            @ApiImplicitParam(name="id.equals", paramType="path", dataType="long", value="主键ID"),
             <#list fieldList as field>
             @ApiImplicitParam(name="${field.camelName}.equals", paramType="path",<#if field.javaType == 'Integer'> dataType="int",<#elseif field.javaType == 'Long'> dataType="long",<#elseif field.javaType == 'Double'> dataType="double",<#else> dataType="string",</#if> value="${field.comment}"),
 			</#list>
+			@ApiImplicitParam(name="insertUser.?.equals", paramType="path", value="创建者"),
+			@ApiImplicitParam(name="operateUser.?.equals", paramType="path", value="最后更新者"),
 			<#list toFromList as toFrom>
 			@ApiImplicitParam(name="${toFrom.toFromEntityName}Id.equals", paramType="path", value="关联的${toFrom.toFromComment}ID"),
 			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
@@ -279,9 +285,12 @@ public class ${eentityName}Controller {
      */
     @ApiOperation(value="获取数量-${entityComment}")
     @ApiImplicitParams({
+            @ApiImplicitParam(name="id.equals", paramType="path", dataType="long", value="主键ID"),
             <#list fieldList as field>
             @ApiImplicitParam(name="${field.camelName}.equals", paramType="path",<#if field.javaType == 'Integer'> dataType="int",<#elseif field.javaType == 'Long'> dataType="long",<#elseif field.javaType == 'Double'> dataType="double",<#else> dataType="string",</#if> value="${field.comment}"),
 			</#list>
+			@ApiImplicitParam(name="insertUser.?.equals", paramType="path", value="创建者"),
+			@ApiImplicitParam(name="operateUser.?.equals", paramType="path", value="最后更新者"),
 			<#list toFromList as toFrom>
 			@ApiImplicitParam(name="${toFrom.toFromEntityName}Id.equals", paramType="path", value="关联的${toFrom.toFromComment}ID"),
 			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
