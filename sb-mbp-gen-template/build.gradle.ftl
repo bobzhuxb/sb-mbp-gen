@@ -103,6 +103,9 @@ dependencies {
 	compile "commons-beanutils:commons-beanutils:1.9.3"
 	// 注解生成get/set方法
 	compile "org.projectlombok:lombok"
+	// CGLIB
+	compile "commons-beanutils:commons-beanutils:1.9.3"
+	compile "cglib:cglib-nodep:3.2.4"
 	// apache的http客户端
 	compile "org.apache.httpcomponents:httpclient"
 	// Alibaba的FastJson
