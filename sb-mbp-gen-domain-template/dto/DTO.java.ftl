@@ -23,7 +23,7 @@ public class ${eentityName}DTO extends BaseDTO {
 
     private Long id;
 	<#list fieldList as field>
-	<#if field.camelName != 'insertTime' && field.camelName != 'updateTime' && field.camelName != 'operateUserId'>
+	<#if field.camelName != 'insertTime' && field.camelName != 'updateTime' && field.camelName != 'insertUserId' && field.camelName != 'operateUserId'>
 
 	<#if (field.annotationList)??>
 	<#list field.annotationList as annotation>
@@ -75,7 +75,7 @@ public class ${eentityName}DTO extends BaseDTO {
         this.id = id;
     }
 	<#list fieldList as field>
-	<#if field.camelName != 'insertTime' && field.camelName != 'updateTime' && field.camelName != 'operateUserId'>
+	<#if field.camelName != 'insertTime' && field.camelName != 'updateTime' && field.camelName != 'insertUserId' && field.camelName != 'operateUserId'>
 	
     public ${field.javaType} get${field.ccamelName}() {
         return ${field.camelName};
