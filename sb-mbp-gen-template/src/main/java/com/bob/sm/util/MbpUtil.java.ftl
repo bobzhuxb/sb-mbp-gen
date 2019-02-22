@@ -226,18 +226,20 @@ public class MbpUtil {
             }
         }
         if (firstStackElement) {
-            // 根据表别名反向查条件名的Map
-            Map<String, String> revertTableIndexMap = new HashMap<>();
-            for (Map.Entry<String, String> entry : tableIndexMap.entrySet()) {
-                String criteriaStr = entry.getKey();
-                String tableIndexAndName = entry.getValue();
-                String tableIndex = tableIndexAndName.split("_")[0];
-                String tableNameTmp = tableIndexAndName.split("_")[1];
-                tableNameTmp = StringUtil.camelToUnderline(tableNameTmp) + "_" + tableIndex;
-                revertTableIndexMap.put(tableNameTmp, criteriaStr);
+            if (tableIndexMap != null) {
+                // 根据表别名反向查条件名的Map
+                Map<String, String> revertTableIndexMap = new HashMap<>();
+                for (Map.Entry<String, String> entry : tableIndexMap.entrySet()) {
+                    String criteriaStr = entry.getKey();
+                    String tableIndexAndName = entry.getValue();
+                    String tableIndex = tableIndexAndName.split("_")[0];
+                    String tableNameTmp = tableIndexAndName.split("_")[1];
+                    tableNameTmp = StringUtil.camelToUnderline(tableNameTmp) + "_" + tableIndex;
+                    revertTableIndexMap.put(tableNameTmp, criteriaStr);
+                }
+                // 在递归调用的首栈，增强条件查询
+                wrapper = (QueryWrapper<T>) baseService.wrapperEnhance(wrapper, normalCriteriaList, revertTableIndexMap);
             }
-            // 在递归调用的首栈，增强条件查询
-            wrapper = (QueryWrapper<T>) baseService.wrapperEnhance(wrapper, normalCriteriaList, revertTableIndexMap);
         }
         return wrapper;
     }

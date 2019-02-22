@@ -67,7 +67,7 @@ public class DomainUserDetailsService implements UserDetailsService {
     }
 
     private org.springframework.security.core.userdetails.User createSpringSecurityUser(String login, SystemUserDTO userDTO) {
-        List<SystemPermissionDTO> permissionList = getUserPermissions(login);
+        List<Long> permissionIdList = getPermissionIdsOfUser(login);
         List<SystemUserRoleDTO> userRoleList = userDTO.getSystemUserRoleList();
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
         if (userRoleList != null && userRoleList.size() > 0) {
@@ -77,8 +77,8 @@ public class DomainUserDetailsService implements UserDetailsService {
                     .collect(Collectors.toList());
             grantedAuthorities.addAll(grantedRoleNames);
         }
-        List<GrantedAuthority> grantedPermissionIds = permissionList.stream()
-                .map(permission -> new SimpleGrantedAuthority(String.valueOf(permission.getId())))
+        List<GrantedAuthority> grantedPermissionIds = permissionIdList.stream()
+                .map(permissionId -> new SimpleGrantedAuthority(String.valueOf(permissionId)))
                 .collect(Collectors.toList());
         grantedAuthorities.addAll(grantedPermissionIds);
 
@@ -88,7 +88,7 @@ public class DomainUserDetailsService implements UserDetailsService {
     }
 
     @Transactional(readOnly = true)
-    public List<SystemPermissionDTO> getUserPermissions(String login) {
+    public List<Long> getPermissionIdsOfUser(String login) {
         List<Long> resourceIdList = accountService.getFullUserInfoByLogin(login).getResources().stream()
                 .map(systemResourceDTO -> systemResourceDTO.getId()).collect(Collectors.toList());
         SystemResourcePermissionCriteria resourcePermissionCriteria = new SystemResourcePermissionCriteria();
@@ -96,10 +96,22 @@ public class DomainUserDetailsService implements UserDetailsService {
         resourceIdFilter.setIn(resourceIdList);
         resourcePermissionCriteria.setSystemResourceId(resourceIdFilter);
         resourcePermissionCriteria.setAssociationNameList(Arrays.asList("systemPermission"));
-        List<SystemPermissionDTO> permissionList = systemResourcePermissionService.findAll(resourcePermissionCriteria, null)
-                .getData().stream().map(systemResourcePermissionDTO -> systemResourcePermissionDTO.getSystemPermission())
-                .collect(Collectors.toList());
-        return permissionList;
+        List<SystemResourcePermissionDTO> systemResourcePermissionDTOList
+                = systemResourcePermissionService.findAll(resourcePermissionCriteria).getData();
+        // 去重
+        List<Long> permissionIdList = new ArrayList<>();
+        for (SystemResourcePermissionDTO systemResourcePermissionDTO : systemResourcePermissionDTOList) {
+            boolean exist = false;
+            for (long permissionId : permissionIdList) {
+                if (systemResourcePermissionDTO.getSystemPermissionId().equals(permissionId)) {
+                    exist = true;
+                }
+            }
+            if (!exist) {
+                permissionIdList.add(systemResourcePermissionDTO.getSystemPermissionId());
+            }
+        }
+        return permissionIdList;
     }
 
 }
