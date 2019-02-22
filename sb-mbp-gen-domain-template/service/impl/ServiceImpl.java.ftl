@@ -307,7 +307,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         // 获取查询SQL（select和join）
         String dataQuerySql = getDataQuerySql(criteria, tableIndexMap);
         // 处理where条件
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
+        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this, null);
         // 执行查询并返回结果
         return new ReturnCommonDTO(baseMapper.joinSelectList(dataQuerySql, wrapper).stream()
                 .map(${entityName} -> doConvert(${entityName}, criteria,
@@ -339,7 +339,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         String dataQuerySql = getDataQuerySql(criteria, tableIndexMap);
         // 处理where条件
         String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
+        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this, null);
         // 执行查询并返回结果
         IPage<${eentityName}DTO> pageResult = baseMapper.joinSelectPage(pageQuery, dataQuerySql, wrapper)
                     .convert(${entityName} -> doConvert(${entityName}, criteria,
@@ -369,23 +369,9 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         // 获取查询SQL（select和join）
         String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
         // 处理where条件
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this);
+        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this, null);
         // 执行查询并返回结果
         return new ReturnCommonDTO(baseMapper.joinSelectCount(countQuerySql, wrapper));
-    }
-
-    /**
-     * 附加的条件查询增强方法
-     * @param wrapper 增强前的Wrapper条件
-     * @param tableAliasName 表名的别名
-     * @param paramName 参数名
-     * @param paramValue 参数值
-     * @return 增强后的Wrapper条件
-     */
-    public Wrapper<${eentityName}> wrapperEnhance(QueryWrapper<${eentityName}> wrapper, String tableAliasName,
-                                             String paramName, Object paramValue) {
-        // TODO: 增强的条件查询写在这里
-        return wrapper;
     }
 
     /**
@@ -397,7 +383,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     private Wrapper<${eentityName}> idEqualsPrepare(Long id, BaseCriteria criteria) {
         ${eentityName}Criteria ${entityName}Criteria = new ${eentityName}Criteria();
         MyBeanUtil.copyNonNullProperties(criteria, ${entityName}Criteria);
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, ${entityName}Criteria, ${eentityName}.class, null, null, this);
+        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, ${entityName}Criteria, ${eentityName}.class, null, null, this, null);
         ((QueryWrapper<${eentityName}>)wrapper).eq("id", id);
         return wrapper;
     }

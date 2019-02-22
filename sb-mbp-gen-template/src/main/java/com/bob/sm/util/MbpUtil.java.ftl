@@ -7,15 +7,16 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import ${packageName}.dto.criteria.BaseCriteria;
 import ${packageName}.dto.criteria.filter.*;
+import ${packageName}.dto.help.NormalCriteriaDTO;
 import ${packageName}.service.BaseService;
 import ${packageName}.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.poi.ss.formula.functions.T;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,16 +29,22 @@ public class MbpUtil {
      * @param clazz 查询结果的类
      * @param lastFieldName 最后的field名
      * @param tableIndexMap 表index的Map
-     * @param baseService 用于增强条件查询的功能
+     * @param baseService 用于增强条件查询的Service
+     * @param normalCriteriaList 其他非框架的条件
      * @param <M>
      * @param <T>
      * @param <C>
      * @return 转换后的wrapper
      */
     public static <M, T, C> Wrapper<T> getWrapper(QueryWrapper<T> wrapper, C criteria, Class clazz,
-            String lastFieldName, Map<String, String> tableIndexMap, BaseService<T> baseService) {
+            String lastFieldName, Map<String, String> tableIndexMap, BaseService<T> baseService,
+            List<NormalCriteriaDTO> normalCriteriaList) {
+        // 是否调用的首栈（递归的第一次调用）
+        boolean firstStackElement = false;
         if (wrapper == null) {
+            firstStackElement = true;
             wrapper = new QueryWrapper<>();
+            normalCriteriaList = new ArrayList<>();
         }
         // 获取表名字
         String tableName = ((TableName)clazz.getAnnotation(TableName.class)).value();
@@ -194,6 +201,16 @@ public class MbpUtil {
                 }
                 if (result instanceof BaseCriteria) {
                     filterOrCriteria = true;
+                }
+                if (!filterOrCriteria) {
+                    // 附加的其它类型的查询条件
+                    NormalCriteriaDTO normalCriteriaDTO = new NormalCriteriaDTO();
+                    normalCriteriaDTO.setTableName(tableName);
+                    normalCriteriaDTO.setFieldName(fieldName);
+                    normalCriteriaDTO.setValue(result);
+                    normalCriteriaList.add(normalCriteriaDTO);
+                }
+                if (result instanceof BaseCriteria) {
                     // join的实体
                     String typeName = result.getClass().getName();
                     String domainTypeName = typeName.substring(typeName.lastIndexOf(".") + 1, typeName.lastIndexOf("Criteria"));
@@ -201,16 +218,26 @@ public class MbpUtil {
                     // 级联的域名
                     String nowFieldName = lastFieldName == null ? fieldName : lastFieldName + "." + fieldName;
                     wrapper = (QueryWrapper<T>)getWrapper(wrapper, result, entityClass, nowFieldName,
-                            tableIndexMap, baseService);
-                }
-                if (!filterOrCriteria) {
-                    // 附加的其它类型的查询条件
-                    wrapper = (QueryWrapper<T>) baseService.wrapperEnhance(wrapper, tableName, fieldName, result);
+                            tableIndexMap, baseService, normalCriteriaList);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new CommonException(e.getMessage());
             }
+        }
+        if (firstStackElement) {
+            // 根据表别名反向查条件名的Map
+            Map<String, String> revertTableIndexMap = new HashMap<>();
+            for (Map.Entry<String, String> entry : tableIndexMap.entrySet()) {
+                String criteriaStr = entry.getKey();
+                String tableIndexAndName = entry.getValue();
+                String tableIndex = tableIndexAndName.split("_")[0];
+                String tableNameTmp = tableIndexAndName.split("_")[1];
+                tableNameTmp = StringUtil.camelToUnderline(tableNameTmp) + "_" + tableIndex;
+                revertTableIndexMap.put(tableNameTmp, criteriaStr);
+            }
+            // 在递归调用的首栈，增强条件查询
+            wrapper = (QueryWrapper<T>) baseService.wrapperEnhance(wrapper, normalCriteriaList, revertTableIndexMap);
         }
         return wrapper;
     }
