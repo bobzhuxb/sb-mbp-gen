@@ -97,7 +97,7 @@ public class DomainUserDetailsService implements UserDetailsService {
         resourcePermissionCriteria.setSystemResourceId(resourceIdFilter);
         resourcePermissionCriteria.setAssociationNameList(Arrays.asList("systemPermission"));
         List<SystemResourcePermissionDTO> systemResourcePermissionDTOList
-                = systemResourcePermissionService.findAll(resourcePermissionCriteria).getData();
+                = systemResourcePermissionService.findAll(resourcePermissionCriteria, null).getData();
         // 去重
         List<Long> permissionIdList = new ArrayList<>();
         for (SystemResourcePermissionDTO systemResourcePermissionDTO : systemResourcePermissionDTOList) {

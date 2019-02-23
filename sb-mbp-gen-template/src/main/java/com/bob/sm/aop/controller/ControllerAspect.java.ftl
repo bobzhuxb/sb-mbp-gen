@@ -87,8 +87,8 @@ public class ControllerAspect {
         retVal = pjp.proceed(parameters);
         // 返回结果的统一处理
         if (retVal instanceof ResponseEntity && baseDataProcess != null) {
-            retVal = baseDataProcess.preProcessRetData((ResponseEntity)retVal);
-            retVal = baseDataProcess.processRetData((ResponseEntity)retVal);
+            retVal = baseDataProcess.preProcessRetData(request, (ResponseEntity)retVal);
+            retVal = baseDataProcess.processRetData(request, (ResponseEntity)retVal);
         }
         log.debug("AOP Aronud controller get after...");
 

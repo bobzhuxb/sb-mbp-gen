@@ -18,10 +18,11 @@ public class ${eentityName}DataProcess implements BaseDataProcess {
 
     /**
      * 处理最终返回的数据
+     * @param request Http请求
      * @param retVal 原返回数据
      * @return 处理后的返回数据
 	 */
-    public ResponseEntity processRetData(ResponseEntity retVal) {
+    public ResponseEntity processRetData(HttpServletRequest request, ResponseEntity retVal) {
         return retVal;
     }
 

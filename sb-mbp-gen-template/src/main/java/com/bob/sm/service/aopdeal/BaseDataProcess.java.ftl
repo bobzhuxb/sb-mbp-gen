@@ -1,9 +1,11 @@
 package ${packageName}.service.aopdeal;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import ${packageName}.config.Constants;
 import ${packageName}.dto.help.MbpPage;
 import ${packageName}.dto.help.ReturnCommonDTO;
 import ${packageName}.util.MyBeanUtil;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,24 +22,29 @@ public interface BaseDataProcess {
 
     /**
      * 处理最终返回的数据
+     * @param request Http请求
      * @param retVal 原返回数据
      * @return 处理后的返回数据
 	 */
-    ResponseEntity processRetData(ResponseEntity retVal);
+    ResponseEntity processRetData(HttpServletRequest request, ResponseEntity retVal);
 
     /**
      * 预处理返回数据
+     * @param request Http请求
      * @param retVal 原返回数据
      * @return 处理后的返回数据
 	 */
-    default ResponseEntity preProcessRetData(ResponseEntity retVal) {
-        Object body = retVal.getBody();
-        if (body instanceof ReturnCommonDTO) {
-            Object retData = ((ReturnCommonDTO)body).getData();
-            if (retData instanceof IPage) {
-                MbpPage mbpPage = new MbpPage();
-                MyBeanUtil.copyNonNullProperties(retData, mbpPage);
-                ((ReturnCommonDTO)body).setData(mbpPage);
+    default ResponseEntity preProcessRetData(HttpServletRequest request, ResponseEntity retVal) {
+        if (retVal.getStatusCode() == HttpStatus.OK) {
+            Object body = retVal.getBody();
+            if (body instanceof ReturnCommonDTO
+                    && Constants.commonReturnStatus.SUCCESS.getValue().equals(((ReturnCommonDTO) body).getResultCode())) {
+                Object retData = ((ReturnCommonDTO) body).getData();
+                if (retData instanceof IPage) {
+                    MbpPage mbpPage = new MbpPage();
+                    MyBeanUtil.copyNonNullProperties(retData, mbpPage);
+                    ((ReturnCommonDTO) body).setData(mbpPage);
+                }
             }
         }
         return retVal;
