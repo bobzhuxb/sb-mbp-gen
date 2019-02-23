@@ -37,7 +37,7 @@ public class MbpUtil {
      * @return 转换后的wrapper
      */
     public static <M, T, C> Wrapper<T> getWrapper(QueryWrapper<T> wrapper, C criteria, Class clazz,
-            String lastFieldName, Map<String, String> tableIndexMap, BaseService<T> baseService,
+            String lastFieldName, Map<String, String> tableIndexMap, BaseService<T, C> baseService,
             List<NormalCriteriaDTO> normalCriteriaList) {
         // 是否调用的首栈（递归的第一次调用）
         boolean firstStackElement = false;
@@ -204,11 +204,15 @@ public class MbpUtil {
                 }
                 if (!filterOrCriteria) {
                     // 附加的其它类型的查询条件
-                    NormalCriteriaDTO normalCriteriaDTO = new NormalCriteriaDTO();
-                    normalCriteriaDTO.setTableName(tableName);
-                    normalCriteriaDTO.setFieldName(fieldName);
-                    normalCriteriaDTO.setValue(result);
-                    normalCriteriaList.add(normalCriteriaDTO);
+                    if (!"associationNameList".equals(fieldName) && !"dictionaryNameList".equals(fieldName)
+                            && !"sort".equals(fieldName) && !"page".equals(fieldName) && !"size".equals(fieldName)) {
+                        // 除了系统框架的特殊属性外，其他都是普通属性
+                        NormalCriteriaDTO normalCriteriaDTO = new NormalCriteriaDTO();
+                        normalCriteriaDTO.setTableName(tableName);
+                        normalCriteriaDTO.setFieldName(fieldName);
+                        normalCriteriaDTO.setValue(result);
+                        normalCriteriaList.add(normalCriteriaDTO);
+                    }
                 }
                 if (result instanceof BaseCriteria) {
                     // join的实体
@@ -217,7 +221,7 @@ public class MbpUtil {
                     Class entityClass = Class.forName("com.bob.sm.domain." + domainTypeName);
                     // 级联的域名
                     String nowFieldName = lastFieldName == null ? fieldName : lastFieldName + "." + fieldName;
-                    wrapper = (QueryWrapper<T>)getWrapper(wrapper, result, entityClass, nowFieldName,
+                    wrapper = (QueryWrapper<T>)getWrapper(wrapper, (C)result, entityClass, nowFieldName,
                             tableIndexMap, baseService, normalCriteriaList);
                 }
             } catch (Exception e) {
@@ -226,6 +230,7 @@ public class MbpUtil {
             }
         }
         if (firstStackElement) {
+            // 查询的主表
             if (tableIndexMap != null) {
                 // 根据表别名反向查条件名的Map
                 Map<String, String> revertTableIndexMap = new HashMap<>();
@@ -237,8 +242,10 @@ public class MbpUtil {
                     tableNameTmp = StringUtil.camelToUnderline(tableNameTmp) + "_" + tableIndex;
                     revertTableIndexMap.put(tableNameTmp, criteriaStr);
                 }
+                revertTableIndexMap.put(tableName, "");
                 // 在递归调用的首栈，增强条件查询
-                wrapper = (QueryWrapper<T>) baseService.wrapperEnhance(wrapper, normalCriteriaList, revertTableIndexMap);
+                wrapper = (QueryWrapper<T>) baseService.wrapperEnhance(wrapper, criteria, normalCriteriaList,
+                        revertTableIndexMap);
             }
         }
         return wrapper;

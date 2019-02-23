@@ -11,7 +11,7 @@ import java.util.Map;
 
 public interface CommonService {
 
-    ReturnFileUploadDTO uploadFile(MultipartFile file) throws Exception;
+    ReturnCommonDTO<ReturnFileUploadDTO> uploadFile(MultipartFile file);
 
     ReturnCommonDTO exportExcel(HttpServletResponse response, String fileName, String sheetName, String headTitle,
                                 List<ExcelTitleDTO> titleList, List<Object> dataList);

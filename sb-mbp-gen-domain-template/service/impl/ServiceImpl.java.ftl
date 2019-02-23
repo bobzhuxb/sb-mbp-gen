@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @EnableAspectJAutoProxy
 @Transactional
 public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper, ${eentityName}> implements ${eentityName}Service,
-        BaseService<${eentityName}> {
+        BaseService<${eentityName}, ${eentityName}Criteria> {
 
     private final Logger log = LoggerFactory.getLogger(${eentityName}ServiceImpl.class);
 	<#list fromToList as fromTo>
@@ -295,7 +295,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     public ReturnCommonDTO<List<${eentityName}DTO>> findAll(${eentityName}Criteria criteria,
             Map<String, Object> appendParamMap) {
         log.debug("Service ==> 查询所有${eentityName}DTO {}", criteria);
-        // 表对应的序号和Domain名Map
+        // 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(criteria);
@@ -326,7 +326,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             Map<String, Object> appendParamMap) {
         log.debug("Service ==> 分页查询${eentityName}DTO {}, {}", criteria, pageable);
         Page<${eentityName}> pageQuery = new Page<>(pageable.getPage(), pageable.getSize());
-        // 表对应的序号和Domain名Map
+        // 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(criteria);
@@ -357,7 +357,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     @Transactional(readOnly = true)
     public ReturnCommonDTO<Integer> findCount(${eentityName}Criteria criteria) {
         log.debug("Service ==> 查询个数${eentityName}DTO {}", criteria);
-        // 表对应的序号和Domain名Map
+        // 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(criteria);
@@ -400,11 +400,13 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 	
     /**
      * 获取查询数据的SQL
+     * @param criteria 查询条件
+     * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
      * @return
      */
     private String getDataQuerySql(${eentityName}Criteria criteria, Map<String, String> tableIndexMap) {
         int tableCount = 0;
-        final int fromTableCount = tableCount;
+        int fromTableCount = tableCount;
         String joinDataSql = "SELECT " + ${eentityName}.getTableName() + "_" + tableCount + ".*";
         // 处理关联数据字典值
         List<String> dictionaryNameList = criteria.getDictionaryNameList();
@@ -424,17 +426,23 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 
     /**
      * 获取查询数量的SQL
+     * @param criteria 查询条件
+     * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
      * @return
      */
     private String getCountQuerySql(${eentityName}Criteria criteria, Map<String, String> tableIndexMap) {
         int tableCount = 0;
-        final int fromTableCount = tableCount;
+        int fromTableCount = tableCount;
         String joinCountSql = "SELECT COUNT(0)" + getFromAndJoinSql(criteria, tableCount, fromTableCount, tableIndexMap);
         return joinCountSql;
     }
 
     /**
      * 获取from和级联SQL
+     * @param criteria 查询条件
+     * @param tableCount 当前表序号
+     * @param fromTableCount 上一层的表序号
+     * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
      * @return
      */
     private String getFromAndJoinSql(${eentityName}Criteria criteria, int tableCount, int fromTableCount,
@@ -446,6 +454,11 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 
     /**
      * 获取级联SQL
+     * @param criteria 查询条件
+     * @param tableCount 当前表序号
+     * @param fromTableCount 上一层的表序号
+     * @param lastFieldName 上一级查询的最后字段名
+     * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
      * @return
      */
     public String getJoinSql(${eentityName}Criteria criteria, int tableCount, int fromTableCount, String lastFieldName,
@@ -480,6 +493,20 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             }
             tableIndexMap.put(tableKey, tableCount + "_${toFrom.toFromEntityType}");
             joinSubSql += ${toFrom.toFromEntityName}Service.getJoinSql(criteria.get${toFrom.toFromEntityUName}(), tableCount, tableCount, tableKey,
+			        tableIndexMap);
+        }
+		</#list>
+		<#list fromToList as fromTo>
+        // ${fromTo.fromToComment}级联（只设置tableIndexMap数据，不添加查询SQL）
+        if (criteria.get${fromTo.fromToEntityUName}List() != null) {
+            tableCount++;
+            String tableKey = "${fromTo.fromToEntityName}List";
+            if (lastFieldName != null) {
+                // 拼接key
+                tableKey = lastFieldName + "." + tableKey;
+            }
+            tableIndexMap.put(tableKey, tableCount + "_${fromTo.fromToEntityType}");
+            ${fromTo.fromToEntityName}Service.getJoinSql(criteria.get${fromTo.fromToEntityUName}List(), tableCount, tableCount, tableKey,
 			        tableIndexMap);
         }
 		</#list>
@@ -520,6 +547,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 处理Domain到DTO的转换
      * @param ${entityName} 原始Domain
      * @param criteria 查询条件
+     * @param appendParamMap 附加的查询参数条件
      * @return 转换后的DTO
      */
     private ${eentityName}DTO doConvert(${eentityName} ${entityName}, BaseCriteria criteria,
@@ -535,6 +563,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 获取关联属性
      * @param ${entityName}DTO 主实体
      * @param criteria 关联属性的条件
+     * @param appendParamMap 附加的查询参数条件
      * @return 带关联属性的主实体
      */
     @Transactional(readOnly = true)

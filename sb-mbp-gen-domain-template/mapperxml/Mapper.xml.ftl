@@ -20,4 +20,6 @@
     </update>
 	</#list>
 
+    <!-- 自定义SQL语句写在这里 -->
+
 </mapper>

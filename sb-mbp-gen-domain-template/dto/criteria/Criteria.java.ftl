@@ -32,6 +32,10 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
 
     private ${toFrom.toFromEntityType}Criteria ${toFrom.toFromEntityName};    // ${toFrom.toFromComment}
 	</#list>
+	<#list fromToList as fromTo>
+
+    private ${fromTo.fromToEntityType}Criteria ${fromTo.fromToEntityName}List;    // ${fromTo.fromToComment}
+	</#list>
 
     // ================self code:增强的查询条件参数start=====================
     // ================self code:增强的查询条件参数end=====================
@@ -76,6 +80,16 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
 
     public void set${toFrom.toFromEntityUName}(${toFrom.toFromEntityType}Criteria ${toFrom.toFromEntityName}) {
         this.${toFrom.toFromEntityName} = ${toFrom.toFromEntityName};
+    }
+	</#list>
+	<#list fromToList as fromTo>
+
+    public ${fromTo.fromToEntityType}Criteria get${fromTo.fromToEntityUName}List() {
+        return ${fromTo.fromToEntityName}List;
+    }
+
+    public void set${fromTo.fromToEntityUName}List(${fromTo.fromToEntityType}Criteria ${fromTo.fromToEntityName}List) {
+        this.${fromTo.fromToEntityName}List = ${fromTo.fromToEntityName}List;
     }
 	</#list>
 

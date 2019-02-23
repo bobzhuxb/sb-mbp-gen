@@ -38,9 +38,8 @@ public class CommonServiceImpl implements CommonService {
      * 上传文件到服务器
      * @param file 待上传的文件
      * @return 上传结果（路径、上传时间）
-     * @throws Exception 上传失败
      */
-    public ReturnFileUploadDTO uploadFile(MultipartFile file) throws Exception {
+    public ReturnCommonDTO<ReturnFileUploadDTO> uploadFile(MultipartFile file) {
         log.debug("上传文件 : {}", file.getOriginalFilename());
         Date nowDate = new Date();
         // 获取上传文件名
@@ -78,10 +77,10 @@ public class CommonServiceImpl implements CommonService {
             }
             fileUploadDTO.setRelativePath(relativePath + "/" + newFileName);
             fileUploadDTO.setUploadTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(nowDate));
-            return fileUploadDTO;
+            return new ReturnCommonDTO<>(fileUploadDTO);
         } catch (Exception e) {
             log.error("文件上传失败：" + fileName, e);
-            throw new Exception("文件上传失败：" + fileName + " -> " + e.getMessage());
+            throw new CommonException("文件上传失败：" + fileName + " -> " + e.getMessage());
         }
 
     }

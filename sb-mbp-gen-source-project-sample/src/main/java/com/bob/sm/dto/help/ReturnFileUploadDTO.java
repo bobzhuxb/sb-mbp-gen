@@ -3,7 +3,7 @@ package com.bob.sm.dto.help;
 /**
  * A DTO for the ReturnFileUploadDTO entity.
  */
-public class ReturnFileUploadDTO extends ReturnCommonDTO {
+public class ReturnFileUploadDTO {
 
     private String relativePath;                // 文件相对路径
 
