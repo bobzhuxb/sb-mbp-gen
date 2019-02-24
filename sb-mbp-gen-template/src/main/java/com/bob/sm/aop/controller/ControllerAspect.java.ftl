@@ -119,7 +119,6 @@ public class ControllerAspect {
             MyBeanUtil.setFieldValueByAnnotationName(CreateTime.class, nowTimeStr, parameter);
             MyBeanUtil.setFieldValueByFieldName("insertTime", nowTimeStr, parameter);
             MyBeanUtil.setFieldValueByFieldName("operateUserId", currentUserId, parameter);
-            MyBeanUtil.setFieldValueByFieldName("deleteFlag", 0, parameter);
             MyBeanUtil.setFieldValueByAnnotationNameAttr(CreateInitValue.class, "value", null, parameter);
             MyBeanUtil.setAllFieldValue("allowSet", null, parameter);
             MyBeanUtil.setFieldValueByRestFieldAllow("allowSet", null, parameter);

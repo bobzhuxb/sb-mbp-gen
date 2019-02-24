@@ -364,8 +364,6 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
-        // 预处理orderBy的内容
-        MbpUtil.preOrderBy(criteria, tableIndexMap);
         // 获取查询SQL（select和join）
         String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
         // 处理where条件
