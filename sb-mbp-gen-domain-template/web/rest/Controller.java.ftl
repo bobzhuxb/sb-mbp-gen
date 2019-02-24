@@ -60,7 +60,8 @@ public class ${eentityName}Controller {
     })
     @ApiResponses({
             @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败<br/>" +
-                    "errMsg - 错误消息")
+                    "errMsg - 错误消息" +
+                    "data - 新增成功时返回的主键ID")
     })
     @PostMapping("/${entityUrl}")
     public ResponseEntity<ReturnCommonDTO> create${eentityName}(
@@ -109,7 +110,8 @@ public class ${eentityName}Controller {
     })
     @ApiResponses({
             @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败<br/>" +
-                    "errMsg - 错误消息")
+                    "errMsg - 错误消息" +
+                    "data - 修改成功时返回的主键ID")
     })
     @PutMapping("/${entityUrl}")
     public ResponseEntity<ReturnCommonDTO> update${eentityName}(

@@ -117,7 +117,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // ==================系统健康检查 start======================
             .antMatchers("/management/health").permitAll()
             .antMatchers("/management/info").permitAll()
-            .antMatchers("/management/**").hasAuthority(Constants.ROLE_ADMIN)
+            .antMatchers("/management/**").hasAuthority(Constants.role.ROLE_ADMIN.getValue())
             // ==================系统健康检查 end======================
             .and()
             .apply(securityConfigurerAdapter());

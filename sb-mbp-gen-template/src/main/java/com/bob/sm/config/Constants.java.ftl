@@ -13,21 +13,6 @@ public final class Constants {
     // 缓存配置
     public static final String USERS_BY_LOGIN_CACHE = "usersByLogin";
 
-    // 角色标识
-    public static final String ROLE_ADMIN = "ROLE_ADMIN";
-    public static final String ROLE_USER = "ROLE_USER";
-    public static final String ROLE_ANONYMOUS = "ROLE_ANONYMOUS";
-
-    // Regex for acceptable logins
-    public static final String LOGIN_REGEX = "^[_.@A-Za-z0-9-]*$";
-
-    public static final String SYSTEM_ACCOUNT = "system";
-    public static final String ANONYMOUS_USER = "anonymoususer";
-    public static final String DEFAULT_LANGUAGE = "en";
-
-    public static final String CURRENT_LOGIN_STATUS_KEY = "currentLoginStatusKey"; // 当前登录Key
-    public static final String ROLE_REGEX = "^\\S+$";
-
     /************ ehcache 配置 *************/
     public static final String EHCACHE_USER_PERMISSION = "systemUserPermission";  // 用户权限
 
@@ -110,23 +95,6 @@ public final class Constants {
             this.name = name;
         }
         public Integer getValue(){
-            return value;
-        }
-        public String getName(){
-            return name;
-        }
-    }
-
-    // 远程获取授权结果
-    public enum remoteAuthorizationResult implements EnumInter {
-        PASS("success", "认证通过"), FAIL("fail", "认证失败");
-        private String value;
-        private String name;
-        private remoteAuthorizationResult(String value, String name) {
-            this.value = value;
-            this.name = name;
-        }
-        public String getValue(){
             return value;
         }
         public String getName(){

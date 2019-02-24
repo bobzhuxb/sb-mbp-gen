@@ -82,6 +82,8 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      */
     public ReturnCommonDTO save(${eentityName}DTO ${entityName}DTO) {
         log.debug("Service ==> 新增或修改${eentityName} {}", ${entityName}DTO);
+        // 新增修改验证
+        saveValidator(${entityName}DTO);
 		if (${entityName}DTO.getId() != null) {
 			// 修改
 			long ${entityName}Id = ${entityName}DTO.getId();
@@ -179,7 +181,17 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 		</#if>
 		</#list>
         ${entityName}DTO.setId(${entityName}Id);
-        return result ? new ReturnCommonDTO() : new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "保存失败");
+        return result ? new ReturnCommonDTO(${entityName}Id) : new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "保存失败");
+    }
+
+    /**
+     * 新增修改验证
+     * @param ${entityName}DTO 新增或修改的数据
+     * @return
+     * @throws CommonException 不能操作的异常
+     */
+    private void saveValidator(${eentityName}DTO ${entityName}DTO) {
+        // TODO: 新增修改验证写在这里
     }
 
     /**
