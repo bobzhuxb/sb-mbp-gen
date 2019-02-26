@@ -32,7 +32,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@EnableAspectJAutoProxy
+@EnableAspectJAutoProxy(exposeProxy = true)
 @Transactional
 public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper, ${eentityName}> implements ${eentityName}Service,
         BaseService<${eentityName}, ${eentityName}Criteria> {
