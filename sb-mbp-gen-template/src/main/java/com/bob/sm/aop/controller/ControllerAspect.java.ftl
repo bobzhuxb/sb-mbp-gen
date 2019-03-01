@@ -111,8 +111,11 @@ public class ControllerAspect {
         for (Object parameter : parameters) {
             MyBeanUtil.setFieldValueByAnnotationName(CreateTime.class, nowTimeStr, parameter);
             MyBeanUtil.setFieldValueByFieldName("insertTime", nowTimeStr, parameter);
+            MyBeanUtil.setFieldValueByFieldName("updateTime", nowTimeStr, parameter);
             MyBeanUtil.setFieldValueByFieldName("insertUserId", currentUserId, parameter);
             MyBeanUtil.setFieldValueByFieldName("insertUser", systemUserDTO, parameter);
+            MyBeanUtil.setFieldValueByFieldName("operateUserId", currentUserId, parameter);
+            MyBeanUtil.setFieldValueByFieldName("operateUser", systemUserDTO, parameter);
             MyBeanUtil.setFieldValueByAnnotationNameAttr(CreateInitValue.class, "value", null, parameter);
             MyBeanUtil.setAllFieldValue("allowSet", null, parameter);
             MyBeanUtil.setFieldValueByRestFieldAllow("allowSet", null, parameter);
