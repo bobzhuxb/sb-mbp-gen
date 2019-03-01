@@ -1,40 +1,44 @@
 package com.bob.sm.service.impl;
 
-import com.bob.sm.service.CommonService;
-import com.bob.sm.util.FileUtil;
-import com.bob.sm.util.HttpUtil;
-import com.alibaba.fastjson.JSON;
 import com.bob.sm.config.Constants;
 import com.bob.sm.config.YmlConfig;
-import com.bob.sm.dto.help.*;
-import com.bob.sm.service.WxService;
+import com.bob.sm.dto.help.ExcelTitleDTO;
+import com.bob.sm.dto.help.ReturnCommonDTO;
+import com.bob.sm.dto.help.ReturnFileUploadDTO;
+import com.bob.sm.dto.help.ReturnUploadCommonDTO;
+import com.bob.sm.service.CommonService;
+import com.bob.sm.util.FileUtil;
 import com.bob.sm.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFRow;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
-@EnableAspectJAutoProxy(exposeProxy = true)
-@Transactional
 public class CommonServiceImpl implements CommonService {
 
     private final Logger log = LoggerFactory.getLogger(CommonServiceImpl.class);
@@ -47,7 +51,7 @@ public class CommonServiceImpl implements CommonService {
      * @param file 待上传的文件
      * @return 上传结果（路径、上传时间）
      */
-    public ReturnCommonDTO<ReturnFileUploadDTO> uploadFile(MultipartFile file) {
+    public ReturnUploadCommonDTO<ReturnFileUploadDTO> uploadFile(MultipartFile file) {
         log.debug("上传文件 : {}", file.getOriginalFilename());
         Date nowDate = new Date();
         // 获取上传文件名
@@ -85,7 +89,7 @@ public class CommonServiceImpl implements CommonService {
             }
             fileUploadDTO.setRelativePath(relativePath + "/" + newFileName);
             fileUploadDTO.setUploadTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(nowDate));
-            return new ReturnCommonDTO<>(fileUploadDTO);
+            return new ReturnUploadCommonDTO<>(fileUploadDTO);
         } catch (Exception e) {
             log.error("文件上传失败：" + fileName, e);
             throw new CommonException("文件上传失败：" + fileName + " -> " + e.getMessage());
@@ -184,6 +188,139 @@ public class CommonServiceImpl implements CommonService {
             throw new CommonException("导出失败");
         }
         return new ReturnCommonDTO();
+    }
+
+    /**
+     * 通用解析Excel文件
+     * @param fullFileName 本地全路径的文件名
+     * @param columnCount 指定的列数
+     * @param columnNameList Excel列名列表
+     * @param columnKeyList Excel列的Key列表（与返回的数据中Map的key一致）
+     * @param regexList 数据的正则验证
+     * @param allowNullList 每一列是否允许为空
+     * @return 解析后的数据列表
+     */
+    public ReturnCommonDTO<List<Map<String, String>>> importParseExcel(String fullFileName, int columnCount,
+                List<String> columnNameList, List<String> columnKeyList, List<String> regexList, List<Boolean> allowNullList) {
+        if (fullFileName == null || "".equals(fullFileName)) {
+            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件名为空");
+        }
+        if (".xlsx".equals(fullFileName)) {
+            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件名后缀不正确，必须为.xlsx");
+        }
+        try {
+            List<Map<String, String>> dataList = new ArrayList<>();
+            InputStream is = new FileInputStream(fullFileName);
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet sheet = workbook.getSheetAt(0);
+            // 第一行（列名）
+            XSSFRow firstRow = sheet.getRow(0);
+            int firstMinCell = firstRow.getFirstCellNum();
+            int firstMaxCell = firstRow.getLastCellNum();
+            if (firstMaxCell != columnCount) {
+                return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第1行列数不是" + columnCount);
+            }
+            // 验证第一行是否正确
+            for (int j = 0; j < firstMaxCell; j++) {
+                String cellValue = getCellValueOfExcel(firstRow.getCell(j));
+                if (cellValue == null || !cellValue.trim().equals(columnNameList.get(j))) {
+                    return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第1行第" + (j + 1)
+                        + "列的列名不正确，请参照模板修改（注意列顺序不能错乱）");
+                }
+            }
+            // 数据验证的正则初始化
+            List<Pattern> patternList = new ArrayList<>();
+            for (int j = 0; j < firstMaxCell; j++) {
+                Pattern pattern = Pattern.compile(regexList.get(j));
+                patternList.add(pattern);
+            }
+            // 读取数据行的每一行内容进行解析
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                // 初始化该行的返回数据
+                Map<String, String> data = new HashMap<>();
+                // 获取这一行
+                XSSFRow dataRow = sheet.getRow(i);
+                int dataMinCell = dataRow.getFirstCellNum();
+                int dataMaxCell = dataRow.getLastCellNum();
+                if (dataMaxCell != columnCount) {
+                    return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
+                            "行列数不是" + columnCount);
+                }
+                // 遍历这一行的每一列
+                for (int j = 0; j < dataMaxCell; j++) {
+                    String cellValue = getCellValueOfExcel(dataRow.getCell(j));
+                    if (cellValue == null || "".equals(cellValue.trim())) {
+                        if (!allowNullList.get(j)) {
+                            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
+                                    "行第" + (j + 1) + "列数据为空");
+                        } else {
+                            // 空数据直接设置空字符串
+                            data.put(columnKeyList.get(j), "");
+                        }
+                    } else {
+                        if (regexList.get(j) != null) {
+                            // 有校验的列
+                            Matcher matcher = patternList.get(j).matcher(cellValue.trim());
+                            if (!matcher.matches()) {
+                                return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
+                                        "行第" + (j + 1) + "列数据格式不正确");
+                            }
+                            data.put(columnKeyList.get(j), cellValue.trim());
+                        } else {
+                            // 没有校验的列
+                            data.put(columnKeyList.get(j), cellValue.trim());
+                        }
+                    }
+                }
+                // 将解析出的这一行的数据添加到列表中
+                dataList.add(data);
+            }
+            // 返回解析后的全部数据
+            return new ReturnCommonDTO(dataList);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件解析失败");
+        }
+    }
+
+    /**
+     * 获取Excel的XSSFCell的值
+     * @param cell 传入的cell
+     * @return cell的值
+     */
+    public String getCellValueOfExcel(XSSFCell cell) {
+        if (cell != null) {
+//            if (xssfRow != null) {
+//                xssfRow.setCellType(xssfRow.CELL_TYPE_STRING);
+//            }
+            if (cell.getCellType() == cell.CELL_TYPE_BOOLEAN) {
+                return String.valueOf(cell.getBooleanCellValue());
+            } else if (cell.getCellType() == cell.CELL_TYPE_NUMERIC) {
+                String result = "";
+                if (cell.getCellStyle().getDataFormat() == 22) {
+                    // 处理自定义日期格式：m月d日(通过判断单元格的格式id解决，id的值是58)
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    double value = cell.getNumericCellValue();
+                    Date date = org.apache.poi.ss.usermodel.DateUtil.getJavaDate(value);
+                    result = sdf.format(date);
+                } else {
+                    double value = cell.getNumericCellValue();
+                    CellStyle style = cell.getCellStyle();
+                    DecimalFormat format = new DecimalFormat();
+                    String temp = style.getDataFormatString();
+                    // 单元格设置成常规
+                    if (temp.equals("General")) {
+                        format.applyPattern("#");
+                    }
+                    result = format.format(value);
+                }
+                return result;
+            } else {
+                return String.valueOf(cell.getStringCellValue());
+            }
+        } else {
+            return null;
+        }
     }
 
 }

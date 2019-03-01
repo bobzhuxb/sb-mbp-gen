@@ -28,7 +28,7 @@ import java.util.Optional;
  */
 @Api(description="当前用户")
 @RestController
-@RequestMapping("/api/account")
+@RequestMapping("/api")
 public class AccountController {
 
     private final Logger log = LoggerFactory.getLogger(AccountController.class);
