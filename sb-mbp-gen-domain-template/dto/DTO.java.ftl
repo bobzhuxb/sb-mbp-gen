@@ -63,6 +63,10 @@ public class ${eentityName}DTO extends BaseDTO {
     private ${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName};    // ${fromTo.fromToComment}
 	</#if>
 	</#list>
+	<#if eentityName == 'SystemUser'>
+
+    private List<SystemRoleDTO> systemRoleList;    // 具体角色列表
+	</#if>
 
     // ================self code:自定义属性start=====================
     // ================self code:自定义属性end=====================
@@ -137,6 +141,15 @@ public class ${eentityName}DTO extends BaseDTO {
     }
 	</#if>
 	</#list>
+	<#if eentityName == 'SystemUser'>
+    public List<SystemRoleDTO> getSystemRoleList() {
+        return systemRoleList;
+    }
+
+    public void setSystemRoleList(List<SystemRoleDTO> systemRoleList) {
+        this.systemRoleList = systemRoleList;
+    }
+	</#if>
 
     // ================self code:自定义属性的get/set方法start=====================
     // ================self code:自定义属性的get/set方法end=====================

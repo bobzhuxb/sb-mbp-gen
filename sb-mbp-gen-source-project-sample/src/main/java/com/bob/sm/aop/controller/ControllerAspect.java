@@ -1,13 +1,12 @@
 package com.bob.sm.aop.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.bob.sm.annotation.CreateInitValue;
 import com.bob.sm.annotation.CreateTime;
 import com.bob.sm.annotation.UpdateTime;
-import com.bob.sm.domain.SystemUser;
+import com.bob.sm.dto.SystemUserDTO;
 import com.bob.sm.dto.criteria.BaseCriteria;
-import com.bob.sm.mapper.SystemUserMapper;
-import com.bob.sm.security.SecurityUtils;
+import com.bob.sm.service.CommonUserService;
+import com.bob.sm.service.SystemUserService;
 import com.bob.sm.service.aopdeal.BaseDataProcess;
 import com.bob.sm.util.MyBeanUtil;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -36,7 +35,7 @@ public class ControllerAspect {
     private final Logger log = LoggerFactory.getLogger(ControllerAspect.class);
 
     @Autowired
-    private SystemUserMapper systemUserMapper;
+    private CommonUserService commonUserService;
 
     private BaseDataProcess baseDataProcess;
 
@@ -103,14 +102,8 @@ public class ControllerAspect {
         String nowDateStr = new SimpleDateFormat("yyyy-MM-dd").format(nowDate);
         String nowTimeStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(nowDate);
         // 获取当前操作用户
-        Long currentUserId = null;
-        String currentUserLogin = SecurityUtils.getCurrentUserLogin().orElse(null);
-        if (currentUserLogin != null) {
-            SystemUser systemUser = systemUserMapper.selectOne(new QueryWrapper<SystemUser>().eq("login", currentUserLogin));
-            if (systemUser != null) {
-                currentUserId = systemUser.getId();
-            }
-        }
+        SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
+        Long currentUserId = systemUserDTO == null ? null : systemUserDTO.getId();
         // 连接点方法返回值
         Object retVal = null;
         // 方法参数
@@ -118,7 +111,8 @@ public class ControllerAspect {
         for (Object parameter : parameters) {
             MyBeanUtil.setFieldValueByAnnotationName(CreateTime.class, nowTimeStr, parameter);
             MyBeanUtil.setFieldValueByFieldName("insertTime", nowTimeStr, parameter);
-            MyBeanUtil.setFieldValueByFieldName("operateUserId", currentUserId, parameter);
+            MyBeanUtil.setFieldValueByFieldName("insertUserId", currentUserId, parameter);
+            MyBeanUtil.setFieldValueByFieldName("insertUser", systemUserDTO, parameter);
             MyBeanUtil.setFieldValueByAnnotationNameAttr(CreateInitValue.class, "value", null, parameter);
             MyBeanUtil.setAllFieldValue("allowSet", null, parameter);
             MyBeanUtil.setFieldValueByRestFieldAllow("allowSet", null, parameter);
@@ -138,14 +132,8 @@ public class ControllerAspect {
         String nowDateStr = new SimpleDateFormat("yyyy-MM-dd").format(nowDate);
         String nowTimeStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(nowDate);
         // 获取当前操作用户
-        Long currentUserId = null;
-        String currentUserLogin = SecurityUtils.getCurrentUserLogin().orElse(null);
-        if (currentUserLogin != null) {
-            SystemUser systemUser = systemUserMapper.selectOne(new QueryWrapper<SystemUser>().eq("login", currentUserLogin));
-            if (systemUser != null) {
-                currentUserId = systemUser.getId();
-            }
-        }
+        SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
+        Long currentUserId = systemUserDTO == null ? null : systemUserDTO.getId();
         // 连接点方法返回值
         Object retVal = null;
         // 方法参数
@@ -154,6 +142,7 @@ public class ControllerAspect {
             MyBeanUtil.setFieldValueByAnnotationName(UpdateTime.class, nowTimeStr, parameter);
             MyBeanUtil.setFieldValueByFieldName("updateTime", nowTimeStr, parameter);
             MyBeanUtil.setFieldValueByFieldName("operateUserId", currentUserId, parameter);
+            MyBeanUtil.setFieldValueByFieldName("operateUser", systemUserDTO, parameter);
             MyBeanUtil.setFieldValueByRestFieldAllow("allowSet", null, parameter);
         }
         // 继续执行后续的操作
