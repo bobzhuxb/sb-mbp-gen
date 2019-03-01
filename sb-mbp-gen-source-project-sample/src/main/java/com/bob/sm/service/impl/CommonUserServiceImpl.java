@@ -92,7 +92,7 @@ public class CommonUserServiceImpl implements CommonUserService {
             if (withRole) {
                 systemUserDTO.setSystemRoleList(systemUserRoleMapper.selectList(
                         new QueryWrapper<SystemUserRole>().eq("system_user_id", systemUserDTO.getId()))
-                        .stream().map(systemUserRole -> systemRoleMapper.selectById(systemUserRole.getId()))
+                        .stream().map(systemUserRole -> systemRoleMapper.selectById(systemUserRole.getSystemRoleId()))
                         .map(systemRole -> {
                             SystemRoleDTO systemRoleDTO = new SystemRoleDTO();
                             MyBeanUtil.copyNonNullProperties(systemRole, systemRoleDTO);
