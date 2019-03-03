@@ -17,7 +17,7 @@ public class ${eentityName} extends BaseDomain {
 
     private Long id;
     <#list fieldList as field>
-	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'operateUserId'>
+	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
 
     private ${field.javaType} ${field.camelName};    // ${field.comment}
 	<#if (field.dictionaryType)??>
@@ -40,7 +40,7 @@ public class ${eentityName} extends BaseDomain {
         this.id = id;
     }
     <#list fieldList as field>
-	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'operateUserId'>
+	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
 
     public ${field.javaType} get${field.ccamelName}() {
         return ${field.camelName};

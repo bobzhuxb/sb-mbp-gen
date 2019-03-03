@@ -78,10 +78,12 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 新增或更新
      * @param ${entityName}DTO 新增或更新的内容
 	 * @return 结果返回码和消息
-	 * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
+	 * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事务的一致性
      */
     public ReturnCommonDTO save(${eentityName}DTO ${entityName}DTO) {
         log.debug("Service ==> 新增或修改${eentityName} {}", ${entityName}DTO);
+        String nowTime = ${entityName}DTO.getId() == null ? ${entityName}DTO.getInsertTime() : ${entityName}DTO.getUpdateTime();
+        Long nowUserId = ${entityName}DTO.getId() == null ? ${entityName}DTO.getInsertUserId() : ${entityName}DTO.getOperateUserId();
         // 新增修改验证
         saveValidator(${entityName}DTO);
 		if (${entityName}DTO.getId() != null) {
@@ -144,8 +146,8 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                 // 如果${fromTo.fromToComment}填写了ID，则认为是更新，依次更新每一条${fromTo.fromToComment}数据
                 for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${entityName}DTO.get${fromTo.fromToEntityUName}List()) {
                     ${fromTo.fromToEntityName}DTO.set${fromTo.toFromEntityUName}Id(${entityName}Id);
-                    ${fromTo.fromToEntityName}DTO.setOperateUserId(${entityName}DTO.getOperateUserId());
-                    ${fromTo.fromToEntityName}DTO.setUpdateTime(${entityName}DTO.getUpdateTime());
+                    ${fromTo.fromToEntityName}DTO.setOperateUserId(nowUserId);
+                    ${fromTo.fromToEntityName}DTO.setUpdateTime(nowTime);
                     // 更新数据
                     ${fromTo.fromToEntityName}Service.save(${fromTo.fromToEntityName}DTO);
                 }
@@ -154,10 +156,10 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                 for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${entityName}DTO.get${fromTo.fromToEntityUName}List()) {
                     ${fromTo.fromToEntityName}DTO.setId(null);
                     ${fromTo.fromToEntityName}DTO.set${fromTo.toFromEntityUName}Id(${entityName}Id);
-                    ${fromTo.fromToEntityName}DTO.setInsertUserId(${entityName}DTO.getOperateUserId());
-                    ${fromTo.fromToEntityName}DTO.setOperateUserId(${entityName}DTO.getOperateUserId());
-                    ${fromTo.fromToEntityName}DTO.setInsertTime(${entityName}DTO.getInsertTime());
-                    ${fromTo.fromToEntityName}DTO.setUpdateTime(${entityName}DTO.getUpdateTime());
+                    ${fromTo.fromToEntityName}DTO.setInsertUserId(nowUserId);
+                    ${fromTo.fromToEntityName}DTO.setOperateUserId(nowUserId);
+                    ${fromTo.fromToEntityName}DTO.setInsertTime(nowTime);
+                    ${fromTo.fromToEntityName}DTO.setUpdateTime(nowTime);
                     // 新增数据
                     ${fromTo.fromToEntityName}Service.save(${fromTo.fromToEntityName}DTO);
 			    }
@@ -171,11 +173,11 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             ${fromTo.fromToEntityName}DTO.set${fromTo.toFromEntityUName}Id(${entityName}Id);
             if (${fromTo.fromToEntityName}DTO.getId() == null) {
                 // 新增
-                ${fromTo.fromToEntityName}DTO.setInsertUserId(${entityName}DTO.getOperateUserId());
+                ${fromTo.fromToEntityName}DTO.setInsertUserId(nowUserId);
             }
-            ${fromTo.fromToEntityName}DTO.setOperateUserId(${entityName}DTO.getOperateUserId());
-            ${fromTo.fromToEntityName}DTO.setInsertTime(${entityName}DTO.getInsertTime());
-            ${fromTo.fromToEntityName}DTO.setUpdateTime(${entityName}DTO.getUpdateTime());
+            ${fromTo.fromToEntityName}DTO.setOperateUserId(nowUserId);
+            ${fromTo.fromToEntityName}DTO.setInsertTime(nowTime);
+            ${fromTo.fromToEntityName}DTO.setUpdateTime(nowTime);
 			${fromTo.fromToEntityName}Service.save(${fromTo.fromToEntityName}DTO);
         }
 		</#if>
@@ -198,7 +200,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 根据ID删除数据（同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
      * @param id 主键ID
      * @return 结果返回码和消息
-	 * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
+	 * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事务的一致性
      */
     public ReturnCommonDTO deleteById(Long id) {
         log.debug("Service ==> 根据ID删除${eentityName}DTO {}", id);
@@ -226,7 +228,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 根据指定条件删除数据（级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
      * @param columnMap 表字段map对象
      * @return 结果返回码和消息
-	 * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
+	 * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事务的一致性
      */
     public ReturnCommonDTO deleteByMapCascade(Map<String, Object> columnMap) {
         log.debug("Service ==> 根据指定Map删除${eentityName}DTO {}", columnMap);

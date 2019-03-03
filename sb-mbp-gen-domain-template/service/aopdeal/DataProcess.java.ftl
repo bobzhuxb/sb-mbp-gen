@@ -6,6 +6,8 @@ import javax.servlet.http.HttpServletRequest;
 
 public class ${eentityName}DataProcess implements BaseDataProcess {
 
+    private final Logger log = LoggerFactory.getLogger(${eentityName}DataProcess.class);
+
     /**
      * 将特殊条件处理成内部条件，简化前端调用方式
      * @param request Http请求
