@@ -23,13 +23,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
@@ -51,7 +51,7 @@ public class CommonServiceImpl implements CommonService {
      * @param file 待上传的文件
      * @return 上传结果（路径、上传时间）
      */
-    public ReturnUploadCommonDTO<ReturnFileUploadDTO> uploadFile(MultipartFile file) {
+    public ReturnCommonDTO<ReturnFileUploadDTO> uploadFile(MultipartFile file) {
         log.debug("上传文件 : {}", file.getOriginalFilename());
         Date nowDate = new Date();
         // 获取上传文件名
@@ -94,7 +94,78 @@ public class CommonServiceImpl implements CommonService {
             log.error("文件上传失败：" + fileName, e);
             throw new CommonException("文件上传失败：" + fileName + " -> " + e.getMessage());
         }
+    }
 
+    /**
+     * 从服务器端下载文件
+     * @param response
+     * @param fullFileName 包含全路径的文件名
+     * @param changeFileName 修改后的文件名（不包含路径）
+     * @return
+     * @throws UnsupportedEncodingException
+     */
+    public ReturnCommonDTO downloadFile(HttpServletResponse response, String fullFileName, String changeFileName) {
+        File file = new File(fullFileName);
+        return downloadFile(response, file, changeFileName);
+    }
+
+    /**
+     * 从服务器端下载文件
+     * @param response
+     * @param file 待下载的文件
+     * @param changeFileName 修改后的文件名（不包含路径）
+     * @return
+     * @throws UnsupportedEncodingException
+     */
+    public ReturnCommonDTO downloadFile(HttpServletResponse response, File file, String changeFileName) {
+        log.debug("下载文件 : {}", file.getAbsolutePath());
+        String fullFileName = file.getAbsolutePath();
+        try {
+            if (!file.exists()) {
+                return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "文件不存在");
+            }
+            // 配置文件下载
+            response.setHeader("content-type", "application/octet-stream");
+            response.setContentType("application/octet-stream");
+            // 下载文件能正常显示中文
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(changeFileName, "UTF-8"));
+            // 实现文件下载
+            byte[] buffer = new byte[1024];
+            FileInputStream fis = null;
+            BufferedInputStream bis = null;
+            try {
+                fis = new FileInputStream(file);
+                bis = new BufferedInputStream(fis);
+                OutputStream os = response.getOutputStream();
+                int i = bis.read(buffer);
+                while (i != -1) {
+                    os.write(buffer, 0, i);
+                    i = bis.read(buffer);
+                }
+            } catch (Exception e) {
+                log.error("文件下载失败：" + fullFileName, e);
+                return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "文件下载失败");
+            } finally {
+                if (bis != null) {
+                    try {
+                        bis.close();
+                    } catch (IOException e) {
+                        log.error("文件关闭失败：" + fullFileName, e);
+                    }
+                }
+                if (fis != null) {
+                    try {
+                        fis.close();
+                    } catch (IOException e) {
+                        log.error("文件关闭失败：" + fullFileName, e);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("文件下载失败：" + fullFileName, e);
+            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "文件下载失败");
+        }
+        return new ReturnCommonDTO();
     }
 
     /**
@@ -109,7 +180,7 @@ public class CommonServiceImpl implements CommonService {
      * @throws Exception
      */
     public ReturnCommonDTO exportExcel(HttpServletResponse response, String fileName, String sheetName, String headTitle,
-                                       List<ExcelTitleDTO> titleList, List<Object> dataList) {
+                                       List<ExcelTitleDTO> titleList, List<?> dataList) {
         try {
             // 创建poi导出数据对象
             SXSSFWorkbook sxssfWorkbook = new SXSSFWorkbook();
@@ -131,7 +202,7 @@ public class CommonServiceImpl implements CommonService {
                 // 创建标题行
                 if (headTitle != null) {
                     // 参数：起始行、终止行、起始列、终止列
-                    CellRangeAddress totalTitleRegion = new CellRangeAddress(0, 1, 0, titleList.size() - 1);
+                    CellRangeAddress totalTitleRegion = new CellRangeAddress(0, 0, 0, titleList.size() - 1);
                     sheet.addMergedRegion(totalTitleRegion);
                     SXSSFRow headTitleRow = sheet.createRow(0);
                     currentRow++;
@@ -152,12 +223,12 @@ public class CommonServiceImpl implements CommonService {
                     SXSSFRow dataRow = sheet.createRow(currentRow);
                     currentRow++;
                     Object dataObject = dataList.get(dataRowCount);
-                    Object data = null;
                     if (dataObject instanceof Map) {
                         // Map获取数据
                         for (int column = 0; column < titleList.size(); column++) {
                             String titleName = titleList.get(column).getTitleName();
-                            data = ((Map) dataObject).get(titleName);
+                            Object data = ((Map) dataObject).get(titleName);
+                            dataRow.createCell(column).setCellValue(data == null ? "" : data.toString());
                         }
                     } else {
                         // 反射获取对象属性
@@ -168,11 +239,11 @@ public class CommonServiceImpl implements CommonService {
                             // 设置对象的访问权限，保证对private的属性的访问
                             if (field != null) {
                                 field.setAccessible(true);
-                                data = field.get(dataObject);
+                                Object data = field.get(dataObject);
+                                dataRow.createCell(column).setCellValue(data == null ? "" : data.toString());
                             }
                         }
                     }
-                    dataRow.createCell(0).setCellValue(data == null ? "" : data.toString());
                 }
                 // 写入数据
                 sxssfWorkbook.write(outputStream);
@@ -203,10 +274,10 @@ public class CommonServiceImpl implements CommonService {
     public ReturnCommonDTO<List<Map<String, String>>> importParseExcel(String fullFileName, int columnCount,
                 List<String> columnNameList, List<String> columnKeyList, List<String> regexList, List<Boolean> allowNullList) {
         if (fullFileName == null || "".equals(fullFileName)) {
-            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件名为空");
+            return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件名为空");
         }
         if (".xlsx".equals(fullFileName)) {
-            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件名后缀不正确，必须为.xlsx");
+            return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件名后缀不正确，必须为.xlsx");
         }
         try {
             List<Map<String, String>> dataList = new ArrayList<>();
@@ -218,13 +289,13 @@ public class CommonServiceImpl implements CommonService {
             int firstMinCell = firstRow.getFirstCellNum();
             int firstMaxCell = firstRow.getLastCellNum();
             if (firstMaxCell != columnCount) {
-                return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第1行列数不是" + columnCount);
+                return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第1行列数不是" + columnCount);
             }
             // 验证第一行是否正确
             for (int j = 0; j < firstMaxCell; j++) {
                 String cellValue = getCellValueOfExcel(firstRow.getCell(j));
                 if (cellValue == null || !cellValue.trim().equals(columnNameList.get(j))) {
-                    return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第1行第" + (j + 1)
+                    return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第1行第" + (j + 1)
                         + "列的列名不正确，请参照模板修改（注意列顺序不能错乱）");
                 }
             }
@@ -243,7 +314,7 @@ public class CommonServiceImpl implements CommonService {
                 int dataMinCell = dataRow.getFirstCellNum();
                 int dataMaxCell = dataRow.getLastCellNum();
                 if (dataMaxCell != columnCount) {
-                    return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
+                    return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
                             "行列数不是" + columnCount);
                 }
                 // 遍历这一行的每一列
@@ -251,7 +322,7 @@ public class CommonServiceImpl implements CommonService {
                     String cellValue = getCellValueOfExcel(dataRow.getCell(j));
                     if (cellValue == null || "".equals(cellValue.trim())) {
                         if (!allowNullList.get(j)) {
-                            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
+                            return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
                                     "行第" + (j + 1) + "列数据为空");
                         } else {
                             // 空数据直接设置空字符串
@@ -262,7 +333,7 @@ public class CommonServiceImpl implements CommonService {
                             // 有校验的列
                             Matcher matcher = patternList.get(j).matcher(cellValue.trim());
                             if (!matcher.matches()) {
-                                return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
+                                return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
                                         "行第" + (j + 1) + "列数据格式不正确");
                             }
                             data.put(columnKeyList.get(j), cellValue.trim());
@@ -276,10 +347,10 @@ public class CommonServiceImpl implements CommonService {
                 dataList.add(data);
             }
             // 返回解析后的全部数据
-            return new ReturnCommonDTO(dataList);
+            return new ReturnUploadCommonDTO(dataList);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件解析失败");
+            return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件解析失败");
         }
     }
 
