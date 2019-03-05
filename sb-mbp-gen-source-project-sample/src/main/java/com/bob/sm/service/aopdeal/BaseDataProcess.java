@@ -18,7 +18,9 @@ public interface BaseDataProcess {
      * @param criteria 待合并的条件
      * @return 合并后的条件
 	 */
-    Object requestParamToCriteria(HttpServletRequest request, Object criteria);
+    default Object requestParamToCriteria(HttpServletRequest request, Object criteria) {
+        return criteria;
+    }
 
     /**
      * 处理最终返回的数据
@@ -26,7 +28,9 @@ public interface BaseDataProcess {
      * @param retVal 原返回数据
      * @return 处理后的返回数据
 	 */
-    ResponseEntity processRetData(HttpServletRequest request, ResponseEntity retVal);
+    default ResponseEntity processRetData(ResponseEntity retVal) {
+        return retVal;
+    }
 
     /**
      * 预处理返回数据

@@ -45,16 +45,20 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 	</#list>
 	<#assign systemUserServiceName='' />
 	<#list toFromList as toFrom>
+	<#if toFrom.toFromEntityType != eentityName>
 
     @Autowired
     private ${toFrom.toFromEntityType}Service ${toFrom.toFromEntityName}Service;
 	<#if toFrom.toFromEntityType == 'SystemUser'><#assign systemUserServiceName='${toFrom.toFromEntityName}Service'/></#if>
+	</#if>
 	</#list>
     <#list fromToList as fromTo>
+	<#if fromTo.fromToEntityType != eentityName>
 
     @Autowired
     private ${fromTo.fromToEntityType}Service ${fromTo.fromToEntityName}Service;
 	<#if fromTo.fromToEntityType == 'SystemUser'><#assign systemUserServiceName='${fromTo.fromToEntityName}Service' /></#if>
+	</#if>
 	</#list>
 	<#if systemUserServiceName == '' && eentityName != 'SystemUser'>
 
@@ -102,7 +106,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                     }
                 } else {
 				    // 如果${fromTo.fromToComment}没有填写ID，则认为是全刷新，清空${fromTo.fromToComment}列表
-				    ${fromTo.fromToEntityName}Service.deleteByMapCascade(new HashMap<String, Object>() {{
+				    <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>deleteByMapCascade(new HashMap<String, Object>() {{
 					    put("${fromTo.fromColumnName}", ${entityName}Id);
 				    }});
                 }
@@ -112,7 +116,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 			if (${entityName}DTO.get${fromTo.fromToEntityUName}() != null) {
 			    if (${entityName}DTO.get${fromTo.fromToEntityUName}().getId() == null) {
 				    // 删除${fromTo.fromToComment}
-				    ${fromTo.fromToEntityName}Service.deleteByMapCascade(new HashMap<String, Object>() {{
+				    <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>deleteByMapCascade(new HashMap<String, Object>() {{
 					    put("${fromTo.fromColumnName}", ${entityName}Id);
 				    }});
                 }
@@ -149,7 +153,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                     ${fromTo.fromToEntityName}DTO.setOperateUserId(nowUserId);
                     ${fromTo.fromToEntityName}DTO.setUpdateTime(nowTime);
                     // 更新数据
-                    ${fromTo.fromToEntityName}Service.save(${fromTo.fromToEntityName}DTO);
+                    <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>save(${fromTo.fromToEntityName}DTO);
                 }
             } else {
                 // 如果${fromTo.fromToComment}没有填写ID，则认为是全刷新，新增${fromTo.fromToComment}
@@ -161,7 +165,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                     ${fromTo.fromToEntityName}DTO.setInsertTime(nowTime);
                     ${fromTo.fromToEntityName}DTO.setUpdateTime(nowTime);
                     // 新增数据
-                    ${fromTo.fromToEntityName}Service.save(${fromTo.fromToEntityName}DTO);
+                    <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>save(${fromTo.fromToEntityName}DTO);
 			    }
             }
         }
@@ -178,7 +182,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             ${fromTo.fromToEntityName}DTO.setOperateUserId(nowUserId);
             ${fromTo.fromToEntityName}DTO.setInsertTime(nowTime);
             ${fromTo.fromToEntityName}DTO.setUpdateTime(nowTime);
-			${fromTo.fromToEntityName}Service.save(${fromTo.fromToEntityName}DTO);
+			<#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>save(${fromTo.fromToEntityName}DTO);
         }
 		</#if>
 		</#list>
@@ -252,7 +256,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 			<#list fromToList as fromTo>
 			<#if fromTo.fromToDeleteType == 'DELETE'>
             // 删除级联的${fromTo.fromToComment}
-            ${fromTo.fromToEntityName}Service.deleteByMapCascade(new HashMap<String, Object>() {{put("${fromTo.fromColumnName}", ${entityName}.getId());}});
+            <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>deleteByMapCascade(new HashMap<String, Object>() {{put("${fromTo.fromColumnName}", ${entityName}.getId());}});
 			</#if>
 			<#if fromTo.fromToDeleteType == 'NULL'>
             // ${fromTo.fromToComment}的${fromTo.fromColumnName}列级联置空
@@ -504,7 +508,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                 tableKey = lastFieldName + "." + tableKey;
             }
             tableIndexMap.put(tableKey, tableCount + "_${toFrom.toFromEntityType}");
-            joinSubSql += ${toFrom.toFromEntityName}Service.getJoinSql(criteria.get${toFrom.toFromEntityUName}(), tableCount, tableCount, tableKey,
+            joinSubSql += <#if toFrom.toFromEntityType != eentityName>${toFrom.toFromEntityName}Service.</#if>getJoinSql(criteria.get${toFrom.toFromEntityUName}(), tableCount, tableCount, tableKey,
 			        tableIndexMap);
         }
 		</#list>
@@ -518,7 +522,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                 tableKey = lastFieldName + "." + tableKey;
             }
             tableIndexMap.put(tableKey, tableCount + "_${fromTo.fromToEntityType}");
-            ${fromTo.fromToEntityName}Service.getJoinSql(criteria.get${fromTo.fromToEntityUName}List(), tableCount, tableCount, tableKey,
+            <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>getJoinSql(criteria.get${fromTo.fromToEntityUName}List(), tableCount, tableCount, tableKey,
 			        tableIndexMap);
         }
 		</#list>
@@ -635,12 +639,12 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                         ${fromTo.fromToEntityName}Criteria.setAssociationNameList(associationName2List);
 						<#if fromTo.relationType == "OneToMany">
                         for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${fromTo.fromToEntityName}List) {
-                            ${fromTo.fromToEntityName}Service.getAssociations(${fromTo.fromToEntityName}DTO, ${fromTo.fromToEntityName}Criteria,
+                            <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>getAssociations(${fromTo.fromToEntityName}DTO, ${fromTo.fromToEntityName}Criteria,
                                     appendParamMap);
                         }
 						</#if>
 						<#if fromTo.relationType == "OneToOne">
-                        ${fromTo.fromToEntityName}Service.getAssociations(${fromTo.fromToEntityName}DTO, ${fromTo.fromToEntityName}Criteria,
+                        <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>getAssociations(${fromTo.fromToEntityName}DTO, ${fromTo.fromToEntityName}Criteria,
                                     appendParamMap);
 						</#if>
                     }
@@ -663,7 +667,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                     }
                     BaseCriteria ${toFrom.toFromEntityName}Criteria = new BaseCriteria();
                     ${toFrom.toFromEntityName}Criteria.setAssociationNameList(associationName2List);
-                    ReturnCommonDTO<${toFrom.toFromEntityType}DTO> ${toFrom.toFromEntityName}Rtn = ${toFrom.toFromEntityName}Service.findOne(${toFrom.toFromEntityName}Id, ${toFrom.toFromEntityName}Criteria, appendParamMap);
+                    ReturnCommonDTO<${toFrom.toFromEntityType}DTO> ${toFrom.toFromEntityName}Rtn = <#if toFrom.toFromEntityType != eentityName>${toFrom.toFromEntityName}Service.</#if>findOne(${toFrom.toFromEntityName}Id, ${toFrom.toFromEntityName}Criteria, appendParamMap);
                     ${entityName}DTO.set${toFrom.toFromEntityUName}(${toFrom.toFromEntityName}Rtn.getData());
                     continue;
                 }

@@ -68,8 +68,12 @@ public class ControllerAspect {
         String clazzSimpleName = clazz.getSimpleName();
         if (clazzSimpleName.endsWith("Controller")) {
             String domainName = clazzSimpleName.substring(0, clazzSimpleName.length() - 10);
-            Class dpClass = Class.forName("${packageName}.service.aopdeal." + domainName + "DataProcess");
-            baseDataProcess = (BaseDataProcess) dpClass.getConstructor().newInstance();
+            try {
+                Class dpClass = Class.forName("${packageName}.service.aopdeal." + domainName + "DataProcess");
+                baseDataProcess = (BaseDataProcess) dpClass.getConstructor().newInstance();
+            } catch (Exception e) {
+                // 没有这个类，就不用处理，忽略异常
+            }
         }
         // 连接点方法返回值
         Object retVal = null;
