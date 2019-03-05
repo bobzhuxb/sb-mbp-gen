@@ -2,16 +2,15 @@ package ${packageName}.service.impl;
 
 import ${packageName}.config.Constants;
 import ${packageName}.config.YmlConfig;
-import ${packageName}.dto.help.ExcelTitleDTO;
-import ${packageName}.dto.help.ReturnCommonDTO;
-import ${packageName}.dto.help.ReturnFileUploadDTO;
-import ${packageName}.dto.help.ReturnUploadCommonDTO;
+import ${packageName}.dto.help.*;
 import ${packageName}.service.CommonService;
+import ${packageName}.util.ExcelUtil;
 import ${packageName}.util.FileUtil;
 import ${packageName}.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.streaming.SXSSFCell;
 import org.apache.poi.xssf.streaming.SXSSFRow;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -176,14 +175,15 @@ public class CommonServiceImpl implements CommonService {
      * @param headTitle 总标题
      * @param titleList 标题行
      * @param dataList 数据
+     * @param cellRangeList 要合并的单元格
      * @return 导出结果
      * @throws Exception
      */
     public ReturnCommonDTO exportExcel(HttpServletResponse response, String fileName, String sheetName, String headTitle,
-                                       List<ExcelTitleDTO> titleList, List<?> dataList) {
+                                       List<ExcelTitleDTO> titleList, List<?> dataList, List<ExcelCellRangeDTO> cellRangeList) {
         try {
             // 创建poi导出数据对象
-            SXSSFWorkbook sxssfWorkbook = new SXSSFWorkbook();
+            SXSSFWorkbook workbook = new SXSSFWorkbook();
             // 设置头信息
             response.setCharacterEncoding("UTF-8");
             response.setContentType("application/vnd.ms-excel");
@@ -192,18 +192,16 @@ public class CommonServiceImpl implements CommonService {
                     + URLEncoder.encode(fileName + ".xlsx", "UTF-8"));
             // 输出流
             ServletOutputStream outputStream = null;
+            workbook.createCellStyle();
             try {
                 // 创建一个输出流
                 outputStream = response.getOutputStream();
                 // 创建sheet页
-                SXSSFSheet sheet = sxssfWorkbook.createSheet(sheetName);
+                SXSSFSheet sheet = workbook.createSheet(sheetName);
                 // 当前操作的行
                 int currentRow = 0;
                 // 创建标题行
                 if (headTitle != null) {
-                    // 参数：起始行、终止行、起始列、终止列
-                    CellRangeAddress totalTitleRegion = new CellRangeAddress(0, 0, 0, titleList.size() - 1);
-                    sheet.addMergedRegion(totalTitleRegion);
                     SXSSFRow headTitleRow = sheet.createRow(0);
                     currentRow++;
                     headTitleRow.createCell(0).setCellValue(headTitle);
@@ -211,12 +209,23 @@ public class CommonServiceImpl implements CommonService {
                 // 创建表头
                 SXSSFRow headRow = sheet.createRow(currentRow);
                 currentRow++;
+                // 表头统一居中，背景为灰色，加边框
+                CellStyle titleNameStyle = workbook.createCellStyle();
+                ExcelUtil.setAlignment(titleNameStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+                ExcelUtil.setBackgroundColor(titleNameStyle, IndexedColors.GREY_25_PERCENT.getIndex());
+                ExcelUtil.setBorder(titleNameStyle, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN);
+                // 表数据统一居中，加边框
+                CellStyle dataStyle = workbook.createCellStyle();
+                ExcelUtil.setAlignment(dataStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+                ExcelUtil.setBorder(dataStyle, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN);
                 // 设置表头信息
                 Map<String, Integer> titleNameMap = new HashMap<>();
                 for (int column = 0; column < titleList.size(); column++) {
                     ExcelTitleDTO titleDTO = titleList.get(column);
                     titleNameMap.put(titleDTO.getTitleName(), column);
-                    headRow.createCell(column).setCellValue(titleDTO.getTitleContent());
+                    SXSSFCell cell = headRow.createCell(column);
+                    cell.setCellValue(titleDTO.getTitleContent());
+                    cell.setCellStyle(titleNameStyle);
                 }
                 // 填入表数据
                 for (int dataRowCount = 0; dataRowCount < dataList.size(); dataRowCount++) {
@@ -228,7 +237,9 @@ public class CommonServiceImpl implements CommonService {
                         for (int column = 0; column < titleList.size(); column++) {
                             String titleName = titleList.get(column).getTitleName();
                             Object data = ((Map) dataObject).get(titleName);
-                            dataRow.createCell(column).setCellValue(data == null ? "" : data.toString());
+                            SXSSFCell cell = dataRow.createCell(column);
+                            cell.setCellValue(data == null ? "" : data.toString());
+                            cell.setCellStyle(dataStyle);
                         }
                     } else {
                         // 反射获取对象属性
@@ -240,19 +251,39 @@ public class CommonServiceImpl implements CommonService {
                             if (field != null) {
                                 field.setAccessible(true);
                                 Object data = field.get(dataObject);
-                                dataRow.createCell(column).setCellValue(data == null ? "" : data.toString());
+                                SXSSFCell cell = dataRow.createCell(column);
+                                cell.setCellValue(data == null ? "" : data.toString());
+                                cell.setCellStyle(dataStyle);
                             }
                         }
                     }
                 }
+                // 合并单元格
+                if (cellRangeList != null) {
+                    for (ExcelCellRangeDTO cellRangeDTO : cellRangeList) {
+                        // 合并单元格参数：起始行、终止行、起始列、终止列
+                        CellRangeAddress totalTitleRegion = new CellRangeAddress(cellRangeDTO.getFromRow(),
+                                cellRangeDTO.getToRow(), cellRangeDTO.getFromColumn(), cellRangeDTO.getToColumn());
+                        sheet.addMergedRegion(totalTitleRegion);
+                    }
+                }
+                // 设置为根据内容自动调整列宽，必须在单元格设值以后进行
+                sheet.trackAllColumnsForAutoSizing();
+                for (int column = 0; column < titleList.size(); column++) {
+                    sheet.autoSizeColumn(column);
+                }
+                // 处理中文不能自动调整列宽的问题
+                ExcelUtil.setSizeColumn(sheet, titleList.size());
                 // 写入数据
-                sxssfWorkbook.write(outputStream);
+                workbook.write(outputStream);
+            } catch (Exception e) {
+                e.printStackTrace();
             } finally {
                 // 关闭
                 if (outputStream != null) {
                     outputStream.close();
                 }
-                sxssfWorkbook.close();
+                workbook.close();
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -293,7 +324,7 @@ public class CommonServiceImpl implements CommonService {
             }
             // 验证第一行是否正确
             for (int j = 0; j < firstMaxCell; j++) {
-                String cellValue = getCellValueOfExcel(firstRow.getCell(j));
+                String cellValue = ExcelUtil.getCellValueOfExcel(firstRow.getCell(j));
                 if (cellValue == null || !cellValue.trim().equals(columnNameList.get(j))) {
                     return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第1行第" + (j + 1)
                         + "列的列名不正确，请参照模板修改（注意列顺序不能错乱）");
@@ -319,7 +350,7 @@ public class CommonServiceImpl implements CommonService {
                 }
                 // 遍历这一行的每一列
                 for (int j = 0; j < dataMaxCell; j++) {
-                    String cellValue = getCellValueOfExcel(dataRow.getCell(j));
+                    String cellValue = ExcelUtil.getCellValueOfExcel(dataRow.getCell(j));
                     if (cellValue == null || "".equals(cellValue.trim())) {
                         if (!allowNullList.get(j)) {
                             return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
@@ -351,46 +382,6 @@ public class CommonServiceImpl implements CommonService {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件解析失败");
-        }
-    }
-
-    /**
-     * 获取Excel的XSSFCell的值
-     * @param cell 传入的cell
-     * @return cell的值
-     */
-    public String getCellValueOfExcel(XSSFCell cell) {
-        if (cell != null) {
-//            if (xssfRow != null) {
-//                xssfRow.setCellType(xssfRow.CELL_TYPE_STRING);
-//            }
-            if (cell.getCellType() == cell.CELL_TYPE_BOOLEAN) {
-                return String.valueOf(cell.getBooleanCellValue());
-            } else if (cell.getCellType() == cell.CELL_TYPE_NUMERIC) {
-                String result = "";
-                if (cell.getCellStyle().getDataFormat() == 22) {
-                    // 处理自定义日期格式：m月d日(通过判断单元格的格式id解决，id的值是58)
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    double value = cell.getNumericCellValue();
-                    Date date = org.apache.poi.ss.usermodel.DateUtil.getJavaDate(value);
-                    result = sdf.format(date);
-                } else {
-                    double value = cell.getNumericCellValue();
-                    CellStyle style = cell.getCellStyle();
-                    DecimalFormat format = new DecimalFormat();
-                    String temp = style.getDataFormatString();
-                    // 单元格设置成常规
-                    if (temp.equals("General")) {
-                        format.applyPattern("#");
-                    }
-                    result = format.format(value);
-                }
-                return result;
-            } else {
-                return String.valueOf(cell.getStringCellValue());
-            }
-        } else {
-            return null;
         }
     }
 
