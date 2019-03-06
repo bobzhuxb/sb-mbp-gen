@@ -28,7 +28,7 @@ public interface BaseDataProcess {
      * @param retVal 原返回数据
      * @return 处理后的返回数据
 	 */
-    default ResponseEntity processRetData(ResponseEntity retVal) {
+    default ResponseEntity processRetData(HttpServletRequest request, ResponseEntity retVal) {
         return retVal;
     }
 

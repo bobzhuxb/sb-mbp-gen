@@ -67,7 +67,6 @@ public class DomainUserDetailsService implements UserDetailsService {
     }
 
     private org.springframework.security.core.userdetails.User createSpringSecurityUser(String login, SystemUserDTO userDTO) {
-        List<Long> permissionIdList = getPermissionIdsOfUser(login);
         List<SystemUserRoleDTO> userRoleList = userDTO.getSystemUserRoleList();
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
         if (userRoleList != null && userRoleList.size() > 0) {
@@ -77,10 +76,12 @@ public class DomainUserDetailsService implements UserDetailsService {
                     .collect(Collectors.toList());
             grantedAuthorities.addAll(grantedRoleNames);
         }
-        List<GrantedAuthority> grantedPermissionIds = permissionIdList.stream()
-                .map(permissionId -> new SimpleGrantedAuthority(String.valueOf(permissionId)))
-                .collect(Collectors.toList());
-        grantedAuthorities.addAll(grantedPermissionIds);
+        // TODO: 暂时删除动态权限
+//        List<Long> permissionIdList = getPermissionIdsOfUser(login);
+//        List<GrantedAuthority> grantedPermissionIds = permissionIdList.stream()
+//                .map(permissionId -> new SimpleGrantedAuthority(String.valueOf(permissionId)))
+//                .collect(Collectors.toList());
+//        grantedAuthorities.addAll(grantedPermissionIds);
 
         return new org.springframework.security.core.userdetails.User(userDTO.getLogin(),
                 userDTO.getPassword(),
