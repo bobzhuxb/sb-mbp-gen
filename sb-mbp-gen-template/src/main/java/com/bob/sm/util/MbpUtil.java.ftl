@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class MbpUtil {
 
@@ -62,6 +63,8 @@ public class MbpUtil {
         }
         // 获取传入的查询条件的类和域
         Class criteriaClazz = criteria.getClass();
+        // 数字的判断
+        Pattern digitalPattern = Pattern.compile("^[-\\+]?[\\d]*$");
         // orderBy条件
         try {
             PropertyDescriptor pd = new PropertyDescriptor("orderBy", criteriaClazz);
@@ -75,20 +78,54 @@ public class MbpUtil {
                         subTableName = getChangedTableName(orderBy, tableIndexMap);
                     }
                     String[] orderByDetail = orderBy.trim().split("\\s");
-                    String orderDirection = "";
-                    if (orderByDetail.length > 1) {
-                        orderDirection = orderByDetail[1];
-                    }
+                    // 获取排序的实际字段名
                     String orderFieldName = orderByDetail[0];
                     if (orderFieldName.contains(".")) {
                         orderFieldName = orderFieldName.substring(orderFieldName.lastIndexOf(".") + 1);
                     }
-                    if (orderByDetail.length > 2 || "".equals(orderFieldName)
-                            || (!"".equals(orderDirection) && !"asc".equalsIgnoreCase(orderDirection) && !"desc".equalsIgnoreCase(orderDirection))) {
+                    if ("".equals(orderFieldName)) {
+                        // 排序的字段名不得为空
                         continue;
                     }
-                    boolean isAsc = !"desc".equalsIgnoreCase(orderDirection);
+                    // 获取排序的方向及顺序
+                    boolean isAsc = true;
+                    // 自定义排序的开始Index
+                    // 默认index=0表示字段，index=1表示asc或desc，自定义排序规则从index=2开始
+                    // 但是，如果参数传asc或desc，那么自定义排序规则从index=1开始
+                    int customOrderIndexStart = 2;
+                    // 排序方向字段（该字段数据也可能直接是自定义排序的第一项内容）
+                    String orderDirection = "";
+                    if (orderByDetail.length > 1) {
+                        orderDirection = orderByDetail[1];
+                        if ("".equals(orderDirection)) {
+                            // 按正常规则顺序排序
+                            isAsc = true;
+                        } else {
+                            if ("asc".equalsIgnoreCase(orderDirection) || "desc".equalsIgnoreCase(orderDirection)) {
+                                // 加了asc或desc的排序
+                                isAsc = "asc".equalsIgnoreCase(orderDirection);
+                            } else {
+                                // 没有加asc或desc的排序，默认asc排序，且orderDirection存放的内容变成了自定义排序的第一项
+                                isAsc = true;
+                                customOrderIndexStart = 1;
+                            }
+                        }
+                    }
+                    // 要排序的字段名（包括表名的别名）
                     String orderColumnName = subTableName + "." + StringUtil.camelToUnderline(orderFieldName);
+                    // 自定义排序规则处理
+                    if (orderByDetail.length > 2 || customOrderIndexStart == 1) {
+                        String customFieldValueStr = "";
+                        if (customOrderIndexStart == 1) {
+                            customFieldValueStr += "," + (digitalPattern.matcher(orderDirection).matches() ?
+                                    orderDirection : "'" + orderDirection + "'");
+                        }
+                        for (int i = 2; i < orderByDetail.length; i++) {
+                            customFieldValueStr += "," + (digitalPattern.matcher(orderByDetail[i]).matches() ?
+                                    orderByDetail[i] : "'" + orderByDetail[i] + "'");
+                        }
+                        orderColumnName = "field(" + orderColumnName + customFieldValueStr + ")";
+                    }
                     wrapper.orderBy(true, isAsc, orderColumnName);
                 }
             }

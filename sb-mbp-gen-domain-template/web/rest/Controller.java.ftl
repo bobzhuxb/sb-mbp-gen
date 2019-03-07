@@ -218,7 +218,7 @@ public class ${eentityName}Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name="associationNameList", paramType="path", dataType="string", value="关联查询的字段${associationNameComment}"),
             @ApiImplicitParam(name="dictionaryNameList", paramType="path", dataType="string", value="关联查询的数据字典值${dictionaryNameList}"),
-            @ApiImplicitParam(name="sort", paramType="path", dataType="string", value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
+            @ApiImplicitParam(name="sort", paramType="path", dataType="string", value="排序"),
             @ApiImplicitParam(name="id.equals", paramType="path", dataType="long", value="主键ID"),
 			<#list fieldList as field>
             @ApiImplicitParam(name="${field.camelName}.equals", paramType="path",<#if field.javaType == 'Integer'> dataType="int",<#elseif field.javaType == 'Long'> dataType="long",<#elseif field.javaType == 'Double'> dataType="double",<#else> dataType="string",</#if> value="${field.comment}"),
@@ -253,7 +253,7 @@ public class ${eentityName}Controller {
     @ApiImplicitParams({
             @ApiImplicitParam(name="associationNameList", paramType="path", dataType="string", value="关联查询的字段${associationNameComment}"),
             @ApiImplicitParam(name="dictionaryNameList", paramType="path", dataType="string", value="关联查询的数据字典值${dictionaryNameList}"),
-            @ApiImplicitParam(name="sort", paramType="path", dataType="string", value="排序（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）"),
+            @ApiImplicitParam(name="sort", paramType="path", dataType="string", value="排序"),
             @ApiImplicitParam(name="page", paramType="path", dataType="long", value="分页：当前页"),
             @ApiImplicitParam(name="size", paramType="path", dataType="long", value="分页：每页大小"),
             @ApiImplicitParam(name="id.equals", paramType="path", dataType="long", value="主键ID"),

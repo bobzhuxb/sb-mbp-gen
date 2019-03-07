@@ -151,7 +151,10 @@ public class Swagger2Configuration {
                         "&nbsp;&nbsp;3) 扩展类型均显示为string类型，包括：级联查询、自定义查询。<br/>" +
                         "&nbsp;&nbsp;&nbsp;&nbsp;a、文档说明中带.?的查询条件就是级联查询，?表示级联的查询条件实体（不同于associationNameList，" +
                         "associationNameList是级联的查询结果实体），可使用多层级联的查询，用.分割各层级。<br/>" +
-                        "&nbsp;&nbsp;&nbsp;&nbsp;b、其它的就是自定义查询条件（例如带or的条件），可自由发挥。")
+                        "&nbsp;&nbsp;&nbsp;&nbsp;b、其它的就是自定义查询条件（例如带or的条件），可自由发挥。<br/>" +
+                        "6、查询里面的orderBy是排序功能，用逗号隔开多字段排序，用空格隔开一个字段内部的排序。" +
+                        "一个字段内部可按默认规则排序（例如abc desc），也可自定义排序规则，在默认排序的条件后面加上自定义" +
+                        "的value顺序即可，各value之间用空格隔开（例如orderStatus desc CHECKED ORDERED SHIPPED）")
                 .build();
     }
 
