@@ -96,19 +96,18 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 			<#list fromToList as fromTo>
 			<#if fromTo.relationType == "OneToMany">
 			if (${entityName}DTO.get${fromTo.fromToEntityUName}List() != null) {
-			    if (${entityName}DTO.get${fromTo.fromToEntityUName}List().size() > 0
-                        && ${entityName}DTO.get${fromTo.fromToEntityUName}List().get(0).getId() != null) {
-			        // 如果${fromTo.fromToComment}填写了ID，则认为是更新，不清空${fromTo.fromToComment}列表
-                    for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${entityName}DTO.get${fromTo.fromToEntityUName}List()) {
-                        if (${fromTo.fromToEntityName}DTO.getId() == null) {
-                            throw new CommonException("数据错误，部分${fromTo.fromToComment}填写了ID字段，部分没有填写");
-                        }
-                    }
+                // 获取传入的${fromTo.fromToComment}ID列表（去掉null的）
+                List<Long> ${fromTo.fromToEntityName}IdList = ${entityName}DTO.get${fromTo.fromToEntityUName}List().stream()
+                        .filter(${fromTo.fromToEntityName}DTO -> ${entityName}DTO.getId() != null)
+                        .map(${fromTo.fromToEntityName}DTO -> ${entityName}DTO.getId()).collect(Collectors.toList());
+                if (${fromTo.fromToEntityName}IdList == null) {
+                    // 如果${fromTo.fromToComment}都没有填写ID，则认为是全刷新，清空${fromTo.fromToComment}列表
+                    <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>deleteByMapCascade(new HashMap<String, Object>() {{
+                        put("${fromTo.fromColumnName}", ${entityName}Id);
+                    }});
                 } else {
-				    // 如果${fromTo.fromToComment}没有填写ID，则认为是全刷新，清空${fromTo.fromToComment}列表
-				    <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>deleteByMapCascade(new HashMap<String, Object>() {{
-					    put("${fromTo.fromColumnName}", ${entityName}Id);
-				    }});
+                    // 如果${fromTo.fromToComment}部分填写了ID，则删除未填写ID的数据
+                    <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>deleteByIdList(${fromTo.fromToEntityName}IdList);
                 }
 			}
 			</#if>
@@ -145,29 +144,15 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 		<#list fromToList as fromTo>
 		<#if fromTo.relationType == "OneToMany">
         if (${entityName}DTO.get${fromTo.fromToEntityUName}List() != null) {
-            if (${entityName}DTO.get${fromTo.fromToEntityUName}List().size() > 0
-                    && ${entityName}DTO.get${fromTo.fromToEntityUName}List().get(0).getId() != null) {
-                // 如果${fromTo.fromToComment}填写了ID，则认为是更新，依次更新每一条${fromTo.fromToComment}数据
-                for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${entityName}DTO.get${fromTo.fromToEntityUName}List()) {
-                    ${fromTo.fromToEntityName}DTO.set${fromTo.toFromEntityUName}Id(${entityName}Id);
-                    ${fromTo.fromToEntityName}DTO.setOperateUserId(nowUserId);
-                    ${fromTo.fromToEntityName}DTO.setUpdateTime(nowTime);
-                    // 更新数据
-                    <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>save(${fromTo.fromToEntityName}DTO);
-                }
-            } else {
-                // 如果${fromTo.fromToComment}没有填写ID，则认为是全刷新，新增${fromTo.fromToComment}
-                for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${entityName}DTO.get${fromTo.fromToEntityUName}List()) {
-                    ${fromTo.fromToEntityName}DTO.setId(null);
-                    ${fromTo.fromToEntityName}DTO.set${fromTo.toFromEntityUName}Id(${entityName}Id);
-                    ${fromTo.fromToEntityName}DTO.setInsertUserId(nowUserId);
-                    ${fromTo.fromToEntityName}DTO.setOperateUserId(nowUserId);
-                    ${fromTo.fromToEntityName}DTO.setInsertTime(nowTime);
-                    ${fromTo.fromToEntityName}DTO.setUpdateTime(nowTime);
-                    // 新增数据
-                    <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>save(${fromTo.fromToEntityName}DTO);
-			    }
-            }
+			// 新增或更新${fromTo.fromToComment}
+			for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${entityName}DTO.get${fromTo.fromToEntityUName}List()) {
+				${fromTo.fromToEntityName}DTO.set${fromTo.toFromEntityUName}Id(${entityName}Id);
+				${fromTo.fromToEntityName}DTO.setInsertUserId(nowUserId);
+				${fromTo.fromToEntityName}DTO.setOperateUserId(nowUserId);
+				${fromTo.fromToEntityName}DTO.setInsertTime(nowTime);
+				${fromTo.fromToEntityName}DTO.setUpdateTime(nowTime);
+				<#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>save(${fromTo.fromToEntityName}DTO);
+			}
         }
 		</#if>
 		<#if fromTo.relationType == "OneToOne">
@@ -219,12 +204,30 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      */
     public ReturnCommonDTO deleteByIdList(List<Long> idList) {
         log.debug("Service ==> 根据ID列表删除${eentityName}DTO {}", idList);
-        for (long id : idList) {
-		    ReturnCommonDTO returnCommonDTO = deleteByMapCascade(new HashMap<String, Object>() {{put("id", id);}});
+        idList.forEach(id -> {
+            ReturnCommonDTO returnCommonDTO = deleteByMapCascade(new HashMap<String, Object>() {{put("id", id);}});
             if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
                 throw new CommonException(returnCommonDTO.getErrMsg());
             }
-        }
+        });
+        return new ReturnCommonDTO();
+    }
+
+    /**
+     * 删除不在ID列表中的数据（同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
+     * @param idList 主键ID列表
+     * @return 结果返回码和消息
+     * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
+     */
+    public ReturnCommonDTO deleteByIdListNot(List<Long> idList) {
+        log.debug("Service ==> 删除不在ID列表中的${eentityName}DTO {}", idList);
+        Optional.ofNullable(baseMapper.selectList(new QueryWrapper<${eentityName}>().select("id").notIn("id", idList)))
+                .get().stream().forEach(${entityName} -> {
+            ReturnCommonDTO returnCommonDTO = deleteByMapCascade(new HashMap<String, Object>() {{put("id", ${entityName}.getId());}});
+            if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
+                throw new CommonException(returnCommonDTO.getErrMsg());
+            }
+        });
         return new ReturnCommonDTO();
     }
 

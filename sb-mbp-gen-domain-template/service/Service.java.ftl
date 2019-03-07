@@ -16,6 +16,7 @@ public interface ${eentityName}Service extends IService<${eentityName}> {
     ReturnCommonDTO save(${eentityName}DTO ${entityName}DTO);
     ReturnCommonDTO deleteById(Long id);
     ReturnCommonDTO deleteByIdList(List<Long> idList);
+    ReturnCommonDTO deleteByIdListNot(List<Long> idList);
     ReturnCommonDTO deleteByMapCascade(Map<String, Object> deleteMap);
     ReturnCommonDTO<${eentityName}DTO> findOne(Long id, BaseCriteria criteria,
             Map<String, Object> appendParamMap);
