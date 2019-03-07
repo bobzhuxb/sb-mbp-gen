@@ -426,7 +426,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     private String getDataQuerySql(${eentityName}Criteria criteria, Map<String, String> tableIndexMap) {
         int tableCount = 0;
         int fromTableCount = tableCount;
-        String joinDataSql = "SELECT " + ${eentityName}.getTableName() + "_" + tableCount + ".*";
+        String joinDataSql = "SELECT " + ${eentityName}._TableName + "_" + tableCount + ".*";
         // 处理关联数据字典值
         List<String> dictionaryNameList = criteria.getDictionaryNameList();
         if (dictionaryNameList != null) {
@@ -466,7 +466,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      */
     private String getFromAndJoinSql(${eentityName}Criteria criteria, int tableCount, int fromTableCount,
                                      Map<String, String> tableIndexMap) {
-        String joinSubSql = " FROM " + ${eentityName}.getTableName() + " AS " + ${eentityName}.getTableName() + "_" + tableCount;
+        String joinSubSql = " FROM " + ${eentityName}._TableName + " AS " + ${eentityName}._TableName + "_" + tableCount;
         joinSubSql += getJoinSql(criteria, tableCount, fromTableCount, null, tableIndexMap);
         return joinSubSql;
     }
@@ -492,7 +492,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             if (dictionaryNameList.contains("${field.camelNameDic}")) {
                 joinSubSql += " LEFT JOIN base_dictionary AS base_dictionary_${field.camelNameUnderline}_" + tableCount + " ON "
                         + "base_dictionary_${field.camelNameUnderline}_" + tableCount + ".dic_type = '${field.dictionaryType}' AND "
-                        + "base_dictionary_${field.camelNameUnderline}_" + tableCount + ".dic_code = " + ${eentityName}.getTableName() + "_" + fromTableCount
+                        + "base_dictionary_${field.camelNameUnderline}_" + tableCount + ".dic_code = " + ${eentityName}._TableName + "_" + fromTableCount
                         + ".${field.camelNameUnderline}";
             }
 			</#if>
@@ -502,8 +502,8 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         // ${toFrom.toFromComment}级联查询
         if (criteria.get${toFrom.toFromEntityUName}() != null) {
             tableCount++;
-            joinSubSql += " LEFT JOIN " + ${toFrom.toFromEntityType}.getTableName() + " AS " + ${toFrom.toFromEntityType}.getTableName() + "_" + tableCount + " ON "
-                    + ${toFrom.toFromEntityType}.getTableName() + "_" + tableCount + ".id = " + ${eentityName}.getTableName() + "_" + fromTableCount
+            joinSubSql += " LEFT JOIN " + ${toFrom.toFromEntityType}._TableName + " AS " + ${toFrom.toFromEntityType}._TableName + "_" + tableCount + " ON "
+                    + ${toFrom.toFromEntityType}._TableName + "_" + tableCount + ".id = " + ${eentityName}._TableName + "_" + fromTableCount
                     + ".${toFrom.fromColumnName}";
             String tableKey = "${toFrom.toFromEntityName}";
             if (lastFieldName != null) {
@@ -533,7 +533,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         if (criteria.getInsertUser() != null) {
             tableCount++;
             joinSubSql += " LEFT JOIN system_user AS system_user_" + tableCount + " ON "
-                    + "system_user_" + tableCount + ".id = " + ${eentityName}.getTableName() + "_" + fromTableCount
+                    + "system_user_" + tableCount + ".id = " + ${eentityName}._TableName + "_" + fromTableCount
                     + ".insert_user_id";
             String tableKey = "insertUser";
             if (lastFieldName != null) {
@@ -548,7 +548,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         if (criteria.getOperateUser() != null) {
             tableCount++;
             joinSubSql += " LEFT JOIN system_user AS system_user_" + tableCount + " ON "
-                    + "system_user_" + tableCount + ".id = " + ${eentityName}.getTableName() + "_" + fromTableCount
+                    + "system_user_" + tableCount + ".id = " + ${eentityName}._TableName + "_" + fromTableCount
                     + ".operate_user_id";
             String tableKey = "operateUser";
             if (lastFieldName != null) {

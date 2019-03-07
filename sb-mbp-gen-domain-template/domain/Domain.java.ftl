@@ -10,7 +10,6 @@ import java.util.Objects;
  * ${entityComment}
  */
 @Data
-@TableName(value = "${tableName}")
 public class ${eentityName} extends BaseDomain {
 
     private static final long serialVersionUID = 1L;
@@ -71,13 +70,6 @@ public class ${eentityName} extends BaseDomain {
         this.${toFrom.toFromEntityName}Id = ${toFrom.toFromEntityName}Id;
     }
 	</#list>
-	
-    /**
-     * 获取表名字
-     */
-    public static String getTableName() {
-        return (${eentityName}.class.getAnnotation(TableName.class)).value();
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -111,4 +103,19 @@ public class ${eentityName} extends BaseDomain {
 			</#list>
             "}";
     }
+
+    // 数据表名和列名
+    public static final String _TableName = "${tableName}";
+    <#list fieldList as field>
+	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
+    public static final String _${field.camelName} = "${field.camelNameUnderline}";    // ${field.comment}
+	<#if (field.dictionaryType)??>
+    public static final String _${field.camelNameDic} = "${field.ccamelNameDicUnderline}";    // ${field.commentDic}（数据字典）
+	</#if>
+	</#if>
+	</#list>
+	<#list toFromList as toFrom>
+    public static final String _${toFrom.toFromEntityName}Id = "${toFrom.fromColumnName}";    // ${toFrom.toFromComment}ID
+	</#list>
+
 }
