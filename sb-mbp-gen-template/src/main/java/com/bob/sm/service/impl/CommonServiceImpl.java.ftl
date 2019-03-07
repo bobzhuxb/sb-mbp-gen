@@ -172,17 +172,22 @@ public class CommonServiceImpl implements CommonService {
      * @param response HTTP Response
      * @param fileName Excel文件名（不包含后缀）
      * @param sheetName sheet名
-     * @param headTitle 总标题
+     * @param maxColumn 最大列数（用于自适应列宽）
+     * @param tableStartRow 实际表格（包括标题行）的开始行
+     * @param beforeDataCellList 在实际表格前面部分的单元格
+     * @param afterDataCellList 在实际表格后面部分的单元格
      * @param titleList 标题行
      * @param dataList 数据
      * @param cellRangeList 要合并的单元格
      * @return 导出结果
      * @throws Exception
      */
-    public ReturnCommonDTO exportExcel(HttpServletResponse response, String fileName, String sheetName, String headTitle,
-                                       List<ExcelTitleDTO> titleList, List<?> dataList, List<ExcelCellRangeDTO> cellRangeList) {
+    public ReturnCommonDTO exportExcel(HttpServletResponse response, String fileName, String sheetName,
+                                       int maxColumn, int tableStartRow, List<ExcelCellDTO> beforeDataCellList,
+                                       List<ExcelCellDTO> afterDataCellList, List<ExcelTitleDTO> titleList,
+                                       List<?> dataList, List<ExcelCellRangeDTO> cellRangeList) {
         try {
-            // 创建poi导出数据对象
+            // 创建Excel工作簿
             SXSSFWorkbook workbook = new SXSSFWorkbook();
             // 设置头信息
             response.setCharacterEncoding("UTF-8");
@@ -198,26 +203,18 @@ public class CommonServiceImpl implements CommonService {
                 outputStream = response.getOutputStream();
                 // 创建sheet页
                 SXSSFSheet sheet = workbook.createSheet(sheetName);
-                // 当前操作的行
-                int currentRow = 0;
-                // 创建标题行
-                if (headTitle != null) {
-                    SXSSFRow headTitleRow = sheet.createRow(0);
-                    currentRow++;
-                    headTitleRow.createCell(0).setCellValue(headTitle);
+                // 在实际表格上方的单元格
+                if (beforeDataCellList != null) {
+                    // key：relativeRow相对行数，value：该行的单元格数据
+                    ExcelUtil.addDataToExcel(beforeDataCellList, 0, workbook, sheet);
                 }
                 // 创建表头
-                SXSSFRow headRow = sheet.createRow(currentRow);
-                currentRow++;
+                SXSSFRow headRow = sheet.createRow(tableStartRow);
                 // 表头统一居中，背景为灰色，加边框
                 CellStyle titleNameStyle = workbook.createCellStyle();
                 ExcelUtil.setAlignment(titleNameStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
                 ExcelUtil.setBackgroundColor(titleNameStyle, IndexedColors.GREY_25_PERCENT.getIndex());
                 ExcelUtil.setBorder(titleNameStyle, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN);
-                // 表数据统一居中，加边框
-                CellStyle dataStyle = workbook.createCellStyle();
-                ExcelUtil.setAlignment(dataStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-                ExcelUtil.setBorder(dataStyle, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN);
                 // 设置表头信息
                 Map<String, Integer> titleNameMap = new HashMap<>();
                 for (int column = 0; column < titleList.size(); column++) {
@@ -227,10 +224,13 @@ public class CommonServiceImpl implements CommonService {
                     cell.setCellValue(titleDTO.getTitleContent());
                     cell.setCellStyle(titleNameStyle);
                 }
+                // 表数据统一居中，加边框
+                CellStyle dataStyle = workbook.createCellStyle();
+                ExcelUtil.setAlignment(dataStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+                ExcelUtil.setBorder(dataStyle, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN);
                 // 填入表数据
                 for (int dataRowCount = 0; dataRowCount < dataList.size(); dataRowCount++) {
-                    SXSSFRow dataRow = sheet.createRow(currentRow);
-                    currentRow++;
+                    SXSSFRow dataRow = sheet.createRow(tableStartRow + dataRowCount + 1);
                     Object dataObject = dataList.get(dataRowCount);
                     if (dataObject instanceof Map) {
                         // Map获取数据
@@ -258,6 +258,11 @@ public class CommonServiceImpl implements CommonService {
                         }
                     }
                 }
+                // 在实际表格下方的单元格
+                if (afterDataCellList != null) {
+                    // key：relativeRow相对行数，value：该行的单元格数据
+                    ExcelUtil.addDataToExcel(afterDataCellList, tableStartRow + dataList.size() + 1, workbook, sheet);
+                }
                 // 合并单元格
                 if (cellRangeList != null) {
                     for (ExcelCellRangeDTO cellRangeDTO : cellRangeList) {
@@ -269,11 +274,11 @@ public class CommonServiceImpl implements CommonService {
                 }
                 // 设置为根据内容自动调整列宽，必须在单元格设值以后进行
                 sheet.trackAllColumnsForAutoSizing();
-                for (int column = 0; column < titleList.size(); column++) {
+                for (int column = 0; column < maxColumn; column++) {
                     sheet.autoSizeColumn(column);
                 }
                 // 处理中文不能自动调整列宽的问题
-                ExcelUtil.setSizeColumn(sheet, titleList.size());
+                ExcelUtil.setSizeColumn(sheet, maxColumn);
                 // 写入数据
                 workbook.write(outputStream);
             } catch (Exception e) {

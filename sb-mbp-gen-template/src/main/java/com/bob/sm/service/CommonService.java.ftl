@@ -1,6 +1,7 @@
 package ${packageName}.service;
 
 import ${packageName}.dto.help.*;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,8 +18,10 @@ public interface CommonService {
 
     ReturnCommonDTO downloadFile(HttpServletResponse response, String fullFileName, String changeFileName);
 
-    ReturnCommonDTO exportExcel(HttpServletResponse response, String fileName, String sheetName, String headTitle,
-                                List<ExcelTitleDTO> titleList, List<?> dataList, List<ExcelCellRangeDTO> cellRangeList);
+    ReturnCommonDTO exportExcel(HttpServletResponse response, String fileName, String sheetName,
+                                int maxColumn, int tableStartRow, List<ExcelCellDTO> beforeDataCellList,
+                                List<ExcelCellDTO> afterDataCellList, List<ExcelTitleDTO> titleList, List<?> dataList,
+                                List<ExcelCellRangeDTO> cellRangeList);
 
     ReturnCommonDTO<List<Map<String, String>>> importParseExcel(String fullFileName, int columnCount,
                                 List<String> columnNameList, List<String> columnKeyList, List<String> regexList,
