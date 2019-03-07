@@ -10,6 +10,7 @@ import java.util.Objects;
  * ${entityComment}
  */
 @Data
+@TableName("${tableName}")
 public class ${eentityName} extends BaseDomain {
 
     private static final long serialVersionUID = 1L;
