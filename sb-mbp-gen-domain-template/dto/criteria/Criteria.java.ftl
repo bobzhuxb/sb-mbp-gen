@@ -105,25 +105,23 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
             return false;
         }
         final ${eentityName}Criteria that = (${eentityName}Criteria) o;
-        return
-            Objects.equals(id, that.id)
-			<#list fieldList as field>
-			<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
-            && Objects.equals(${field.camelName}, that.${field.camelName})
-			</#if>
-			</#list>
-            ;
+        return Objects.equals(id, that.id)
+				<#list fieldList as field>
+				<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
+                && Objects.equals(${field.camelName}, that.${field.camelName})
+				</#if>
+				</#list>
+                ;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(
-        id
-		<#list fieldList as field>
-		<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
-        , ${field.camelName}
-		</#if>
-		</#list>
+        return Objects.hash(id
+				<#list fieldList as field>
+				<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
+                , ${field.camelName}
+				</#if>
+				</#list>
         );
     }
 

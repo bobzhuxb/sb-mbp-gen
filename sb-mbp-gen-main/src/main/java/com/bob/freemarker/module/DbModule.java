@@ -250,7 +250,7 @@ public class DbModule {
                         if (!toDeleteColumnNameList.contains(relationColumnName)) {
                             // 列不存在，新增列
                             statement.executeUpdate("alter table `" + tableName + "` add `" + relationColumnName
-                                    + "` bigint(20) comment '" + relationComment + "ID'");
+                                    + "` bigint(20) comment '" + relationComment + "'");
                         } else {
                             // 列已经存在，更新列类型或注释
                             for (DbColumnDTO dbColumnExist : dbTableExist.getColumnList()) {

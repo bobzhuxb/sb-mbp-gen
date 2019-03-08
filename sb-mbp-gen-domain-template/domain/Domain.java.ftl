@@ -95,14 +95,14 @@ public class ${eentityName} extends BaseDomain {
     @Override
     public String toString() {
         return "${eentityName}{" +
-            "id=" + getId() +
-            <#list fieldList as field>
-            ", ${field.camelName}=<#if field.javaType == 'String'>'</#if>" + get${field.ccamelName}()<#if field.javaType == 'String'> + "'"</#if> +
-            </#list>
-			<#list toFromList as toFrom>
-            ", ${toFrom.toFromEntityName}Id=" + get${toFrom.toFromEntityUName}Id() +
-			</#list>
-            "}";
+                "id=" + getId() +
+                <#list fieldList as field>
+                ", ${field.camelName}=<#if field.javaType == 'String'>'</#if>" + get${field.ccamelName}()<#if field.javaType == 'String'> + "'"</#if> +
+                </#list>
+				<#list toFromList as toFrom>
+                ", ${toFrom.toFromEntityName}Id=" + get${toFrom.toFromEntityUName}Id() +
+				</#list>
+                "}";
     }
 
     // 数据表名和列名
