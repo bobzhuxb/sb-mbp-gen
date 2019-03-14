@@ -56,7 +56,7 @@ public class CommonUserServiceImpl implements CommonUserService {
      * @return
      */
     public Long getCurrentUserId() {
-        return SecurityUtils.getCurrentUserLogin().map(login -> findUserIdByLogin(login)).get();
+        return SecurityUtils.getCurrentUserLogin().map(login -> findUserIdByLogin(login)).orElse(null);
     }
 
     /**
@@ -73,7 +73,7 @@ public class CommonUserServiceImpl implements CommonUserService {
      * @return
      */
     public SystemUserDTO getCurrentUser() {
-        return SecurityUtils.getCurrentUserLogin().map(login -> findUserByLogin(login, true)).get();
+        return SecurityUtils.getCurrentUserLogin().map(login -> findUserByLogin(login, true)).orElse(null);
     }
 
     /**
