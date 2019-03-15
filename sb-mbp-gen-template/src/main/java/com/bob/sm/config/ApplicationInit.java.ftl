@@ -2,6 +2,7 @@ package ${packageName}.config;
 
 import ${packageName}.dto.SystemPermissionDTO;
 import ${packageName}.service.AccountService;
+import ${packageName}.service.ApiAdapterService;
 import ${packageName}.util.PermissionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,9 @@ public class ApplicationInit implements ApplicationRunner {
     @Autowired
     private AccountService accountService;
 
+    @Autowired
+    private ApiAdapterService apiAdapterService;
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
         if ("true".equals(permissionInit)) {
@@ -33,6 +37,7 @@ public class ApplicationInit implements ApplicationRunner {
                 e.printStackTrace();
             }
         }
+        initApiAdapter();
     }
 
     /**
@@ -42,6 +47,13 @@ public class ApplicationInit implements ApplicationRunner {
         List<SystemPermissionDTO> permissionList = PermissionUtil.getAllPermissions(
             Arrays.asList("${packageName}.web.rest"));
         accountService.savePermissionsWithChildren(permissionList);
+    }
+
+    /**
+     * 初始化前端接口适配器
+     */
+    private void initApiAdapter() {
+        apiAdapterService.initApiAdapter();
     }
 
 }

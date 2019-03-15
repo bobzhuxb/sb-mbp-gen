@@ -181,7 +181,8 @@ public class EntityModule {
         generateMapperXml(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateService(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateServiceImpl(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
-        generateServiceAopdeal(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
+        // 转为配置文件处理，此处暂时不需要aopdeal目录
+//        generateServiceAopdeal(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateController(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
     }
 
@@ -291,7 +292,7 @@ public class EntityModule {
      * @param cfg
      * @throws Exception
      */
-    private static void generateServiceAopdeal(String projectDirectory, String packageName, String eentityName,
+    private static void generateServiceImpl(String projectDirectory, String packageName, String eentityName,
                                             String entityTemplatePath, Map root, Configuration cfg) throws Exception {
         generateJavaFile(projectDirectory, packageName, eentityName + "ServiceImpl", entityTemplatePath, root, cfg,
                 "service\\impl\\", "ServiceImpl.java.ftl");
@@ -307,7 +308,7 @@ public class EntityModule {
      * @param cfg
      * @throws Exception
      */
-    private static void generateServiceImpl(String projectDirectory, String packageName, String eentityName,
+    private static void generateServiceAopdeal(String projectDirectory, String packageName, String eentityName,
                                             String entityTemplatePath, Map root, Configuration cfg) throws Exception {
         generateJavaFile(projectDirectory, packageName, eentityName + "DataProcess", entityTemplatePath, root, cfg,
                 "service\\aopdeal\\", "DataProcess.java.ftl");
