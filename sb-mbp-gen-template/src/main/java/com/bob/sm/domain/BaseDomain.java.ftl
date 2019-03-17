@@ -48,4 +48,8 @@ public class BaseDomain implements Serializable {
     public void setUpdateTime(String updateTime) {
         this.updateTime = updateTime;
     }
+
+    // 数据库列名
+    public static final String _insertUserId = "insert_user_id";    // 创建者用户ID
+    public static final String _operateUserId = "operate_user_id";    // 最后更新者用户ID
 }
