@@ -3,6 +3,7 @@ package com.bob.sm.config;
 import com.bob.sm.dto.SystemPermissionDTO;
 import com.bob.sm.service.AccountService;
 import com.bob.sm.service.ApiAdapterService;
+import com.bob.sm.service.BaseEntityConfigService;
 import com.bob.sm.util.PermissionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,9 @@ public class ApplicationInit implements ApplicationRunner {
     @Autowired
     private ApiAdapterService apiAdapterService;
 
+    @Autowired
+    private BaseEntityConfigService baseEntityConfigService;
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
         if ("true".equals(permissionInit)) {
@@ -38,6 +42,7 @@ public class ApplicationInit implements ApplicationRunner {
             }
         }
         initApiAdapter();
+        initEntityConfig();
     }
 
     /**
@@ -54,6 +59,13 @@ public class ApplicationInit implements ApplicationRunner {
      */
     private void initApiAdapter() {
         apiAdapterService.initApiAdapter();
+    }
+
+    /**
+     * 初始化实体相关配置（用于共用Service方法）
+     */
+    private void initEntityConfig() {
+        baseEntityConfigService.initEntitiesConfig();
     }
 
 }

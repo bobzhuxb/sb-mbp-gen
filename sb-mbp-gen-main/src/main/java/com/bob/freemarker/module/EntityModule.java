@@ -62,6 +62,24 @@ public class EntityModule {
             generateEntity(projectPath + projectName + "\\", packageName, entityComment, eentityName, fieldList,
                     relationshipListCurrent, useDictionaryList, entityTemplatePath, cfg);
         }
+        // Swagger2Configuration.java文件的特别修改
+        swagger2ConfigurationSpecial(entityDTOList, projectPath, projectName, packageName);
+        // GlobalCache.java文件的特别修改
+        globalCacheSpecial(entityDTOList, projectPath, projectName, packageName);
+        // 最后把生成实体用的jdl文件拷贝到项目目录下
+        FileUtil.copyFile(new File(umlFileName), new File(projectPath + projectName + "\\entity.jdl"));
+        return erdto;
+    }
+
+    /**
+     * Swagger2Configuration.java文件的特别修改
+     * @param entityDTOList
+     * @param projectPath
+     * @param projectName
+     * @param packageName
+     */
+    private static void swagger2ConfigurationSpecial(List<EntityDTO> entityDTOList, String projectPath, String projectName,
+                                                     String packageName) throws Exception {
         // 修改Swagger配置，移除嵌套对象，避免出现内存耗尽的情况
         List<String> swaggerAddedRuleList = new ArrayList<>();
         swaggerAddedRuleList.add("            new AlternateTypeRule(typeResolver.resolve(BaseDTO.class), typeResolver.resolve(Object.class)),");
@@ -88,9 +106,90 @@ public class EntityModule {
         }
         // 将修改后的lines重写入文件
         FileUtils.writeLines(swaggerConfigFile, "UTF-8", linesNew);
-        // 最后把生成实体用的jdl文件拷贝到项目目录下
-        FileUtil.copyFile(new File(umlFileName), new File(projectPath + projectName + "\\entity.jdl"));
-        return erdto;
+    }
+
+    /**
+     * GlobalCache.java文件的特别修改
+     * @param entityDTOList
+     * @param projectPath
+     * @param projectName
+     * @param packageName
+     */
+    private static void globalCacheSpecial(List<EntityDTO> entityDTOList, String projectPath, String projectName,
+                                           String packageName) throws Exception {
+        // 修改GlobalCache.java文件，追加配置
+        List<String> dynamicLineList = new ArrayList<>();
+        // 写构造函数，初始化Service实例
+        dynamicLineList.add("    @Autowired");
+        dynamicLineList.add("    public GlobalCache(");
+        for (int i = 0; i < entityDTOList.size(); i++) {
+            EntityDTO entityDTO = entityDTOList.get(i);
+            String eentityName = entityDTO.getEentityName();
+            entityDTO.setEntityName(eentityName.substring(0, 1).toLowerCase() + eentityName.substring(1));
+            String line = "            " + entityDTO.getEentityName() + "Service " + entityDTO.getEntityName() + "Service";
+            if (i != entityDTOList.size() - 1) {
+                line += ",";
+            }
+            dynamicLineList.add(line);
+        }
+        dynamicLineList.add("    ) {");
+        dynamicLineList.add("        serviceMap = new HashMap<String, BaseService>() {{");
+        for (EntityDTO entityDTO : entityDTOList) {
+            dynamicLineList.add("            put(\"" + entityDTO.getEentityName() + "\", " + entityDTO.getEntityName() + "Service);");
+        }
+        dynamicLineList.add("        }};");
+        dynamicLineList.add("    }");
+        dynamicLineList.add("");
+        // 初始化entityNames，entityName作为Key
+        dynamicLineList.add("    private static List<String> entityNames = Arrays.asList(");
+        for (int i = 0; i < entityDTOList.size(); i++) {
+            EntityDTO entityDTO = entityDTOList.get(i);
+            String line = "            \"" + entityDTO.getEentityName() + "\"";
+            if (i != entityDTOList.size() - 1) {
+                line += ",";
+            }
+            dynamicLineList.add(line);
+        }
+        dynamicLineList.add("    );");
+        dynamicLineList.add("");
+        // 初始化数据字典相关内容
+        dynamicLineList.add("    private static Map<String, List<BaseEntityConfigDicDTO>> entityDicNameMap = new HashMap<String, List<BaseEntityConfigDicDTO>>() {{");
+        for (EntityDTO entityDTO : entityDTOList) {
+            List<String> dicLineList = new ArrayList<>();
+            for (EntityFieldDTO entityFieldDTO : entityDTO.getFieldList()) {
+                if (entityFieldDTO.getDictionaryType() != null) {
+                    dicLineList.add("                new BaseEntityConfigDicDTO(\"" + entityFieldDTO.getCamelName()
+                            + "\", \"" + entityFieldDTO.getCamelNameDic() + "\", \"" + entityFieldDTO.getCamelNameUnderline()
+                            + "\", \"" + entityFieldDTO.getCcamelNameDicUnderline() + "\", \"" + entityFieldDTO.getDictionaryType() + "\")");
+                }
+            }
+            if (dicLineList.size() > 0) {
+                dynamicLineList.add("        put(\"" + entityDTO.getEentityName() + "\", Arrays.asList(");
+                for (int i = 0; i < dicLineList.size(); i++) {
+                    String line = dicLineList.get(i);
+                    if (i != dicLineList.size() - 1) {
+                        line += ",";
+                    }
+                    dynamicLineList.add(line);
+                }
+                dynamicLineList.add("        ));");
+            }
+        }
+        dynamicLineList.add("    }};");
+        // 读取文件并修改
+        File swaggerConfigFile = new File(projectPath + projectName + "\\src\\main\\java\\"
+                + packageName.replace(".", "\\") + "\\config\\GlobalCache.java");
+        List<String> linesNew = new ArrayList<>();
+        List<String> lines = FileUtil.readFileByLines(swaggerConfigFile, "UTF-8");
+        for (String line : lines) {
+            if (line.contains("////////////////////////////add-entity-config-here////////////////////////////")) {
+                linesNew.addAll(dynamicLineList);
+            } else {
+                linesNew.add(line);
+            }
+        }
+        // 将修改后的lines重写入文件
+        FileUtils.writeLines(swaggerConfigFile, "UTF-8", linesNew);
     }
 
     /**

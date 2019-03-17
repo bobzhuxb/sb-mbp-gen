@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import ${packageName}.domain.BaseDomain;
 import ${packageName}.dto.criteria.BaseCriteria;
 import ${packageName}.dto.criteria.filter.*;
 import ${packageName}.dto.help.NormalCriteriaDTO;
@@ -37,9 +38,9 @@ public class MbpUtil {
      * @param <C>
      * @return 转换后的wrapper
      */
-    public static <M, T, C> Wrapper<T> getWrapper(QueryWrapper<T> wrapper, C criteria, Class clazz,
-            String lastFieldName, Map<String, String> tableIndexMap, BaseService<T, C> baseService,
-            List<NormalCriteriaDTO> normalCriteriaList) {
+    public static <M, T extends BaseDomain, C extends BaseCriteria> Wrapper<T> getWrapper(
+            QueryWrapper<T> wrapper, C criteria, Class clazz, String lastFieldName, Map<String, String> tableIndexMap,
+            BaseService<T, C> baseService, List<NormalCriteriaDTO> normalCriteriaList) {
         // 是否调用的首栈（递归的第一次调用）
         boolean firstStackElement = false;
         if (wrapper == null) {
