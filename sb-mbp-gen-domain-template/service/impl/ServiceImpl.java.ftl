@@ -394,20 +394,6 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     }
 
     /**
-     * 根据ID查询的条件准备
-     * @param id 主键ID
-     * @param criteria 附加条件
-     * @return 查询通用Wrapper
-     */
-    private Wrapper<${eentityName}> idEqualsPrepare(Long id, BaseCriteria criteria) {
-        ${eentityName}Criteria ${entityName}Criteria = new ${eentityName}Criteria();
-        MyBeanUtil.copyNonNullProperties(criteria, ${entityName}Criteria);
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, ${entityName}Criteria, ${eentityName}.class, null, null, this, null);
-        ((QueryWrapper<${eentityName}>)wrapper).eq("id", id);
-        return wrapper;
-    }
-
-    /**
      * 数据权限过滤器
      * @param criteria 附加条件
 	 * @return 是否有权限（true：有权限  false：无权限）

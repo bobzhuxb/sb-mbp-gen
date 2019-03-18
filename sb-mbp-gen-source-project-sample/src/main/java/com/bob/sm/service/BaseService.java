@@ -10,6 +10,8 @@ import com.bob.sm.dto.help.BaseEntityConfigDTO;
 import com.bob.sm.dto.help.BaseEntityConfigDicDTO;
 import com.bob.sm.dto.help.NormalCriteriaDTO;
 import com.bob.sm.util.GenericsUtil;
+import com.bob.sm.util.MbpUtil;
+import com.bob.sm.util.MyBeanUtil;
 import com.bob.sm.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
@@ -29,6 +31,28 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria> exten
      */
     default <C> Wrapper<T> wrapperEnhance(QueryWrapper<T> wrapper, C criteria, List<NormalCriteriaDTO> normalCriteriaList,
                                           Map<String, String> revertTableIndexMap) {
+        return wrapper;
+    }
+
+    /**
+     * 根据ID查询的条件准备
+     * @param id 主键ID
+     * @param baseCriteria 附加条件
+     * @return 查询通用Wrapper
+     */
+    default Wrapper<T> idEqualsPrepare(Long id, BaseCriteria baseCriteria) {
+        Class<T> domainClass = GenericsUtil.getSuperClassGenricType(this.getClass(), 1);
+        C criteria = null;
+        try {
+            // 根据泛型创建对象
+            Class criteriaClass = Class.forName("com.bob.sm.dto.criteria." + domainClass.getSimpleName() + "Criteria");
+            criteria = (C)criteriaClass.newInstance();
+        } catch (Exception e) {
+            throw new CommonException(e.getMessage());
+        }
+        MyBeanUtil.copyNonNullProperties(baseCriteria, criteria);
+        Wrapper<T> wrapper = MbpUtil.getWrapper(null, criteria, domainClass, null, null, this, null);
+        ((QueryWrapper<T>)wrapper).eq("id", id);
         return wrapper;
     }
 
