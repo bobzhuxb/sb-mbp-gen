@@ -132,12 +132,20 @@ public class EntityModule {
             }
             dynamicLineList.add(line);
         }
-        dynamicLineList.add("    ) {");
+        dynamicLineList.add("    ) throws Exception {");
         dynamicLineList.add("        serviceMap = new HashMap<String, BaseService>() {{");
         for (EntityDTO entityDTO : entityDTOList) {
             dynamicLineList.add("            put(\"" + entityDTO.getEentityName() + "\", " + entityDTO.getEntityName() + "Service);");
         }
         dynamicLineList.add("        }};");
+        dynamicLineList.add("        for (String entityName : entityNames) {");
+        dynamicLineList.add("            Class domainClass = Class.forName(\"" + packageName + ".domain.\" + entityName);");
+        dynamicLineList.add("            domainClassMap.put(entityName, domainClass);");
+        dynamicLineList.add("            Class criteriaClass = Class.forName(\"" + packageName + ".dto.criteria.\" + entityName + \"Criteria\");");
+        dynamicLineList.add("            criteriaClassMap.put(entityName, criteriaClass);");
+        dynamicLineList.add("            Class dtoClass = Class.forName(\"" + packageName + ".dto.\" + entityName + \"DTO\");");
+        dynamicLineList.add("            dtoClassMap.put(entityName, dtoClass);");
+        dynamicLineList.add("        }");
         dynamicLineList.add("    }");
         dynamicLineList.add("");
         // 初始化entityNames，entityName作为Key

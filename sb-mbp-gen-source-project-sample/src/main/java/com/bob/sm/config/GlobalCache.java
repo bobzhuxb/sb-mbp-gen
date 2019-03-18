@@ -1,5 +1,8 @@
 package com.bob.sm.config;
 
+import com.bob.sm.domain.BaseDomain;
+import com.bob.sm.dto.BaseDTO;
+import com.bob.sm.dto.criteria.BaseCriteria;
 import com.bob.sm.dto.help.BaseEntityConfigDTO;
 import com.bob.sm.dto.help.BaseEntityConfigDicDTO;
 import com.bob.sm.service.*;
@@ -13,6 +16,17 @@ import java.util.Map;
 
 @Service
 public class GlobalCache {
+
+    // 只在启动的时候初始化一次
+    private static Map<String, BaseEntityConfigDTO> entityConfigMap = new HashMap<>();
+
+    private static Map<String, BaseService> serviceMap = new HashMap<>();
+
+    private static Map<String, Class<? extends BaseDomain>> domainClassMap = new HashMap<>();
+
+    private static Map<String, Class<? extends BaseCriteria>> criteriaClassMap = new HashMap<>();
+
+    private static Map<String, Class<? extends BaseDTO>> dtoClassMap = new HashMap<>();
 
     @Autowired
     public GlobalCache(BaseDictionaryService baseDictionaryService,
@@ -56,47 +70,57 @@ public class GlobalCache {
                        SystemUserService systemUserService,
                        SystemUserResourceService systemUserResourceService,
                        SystemUserRoleService systemUserRoleService) {
-        serviceMap.put("BaseDictionary", baseDictionaryService);
-        serviceMap.put("SfstCondimentShow", sfstCondimentShowService);
-        serviceMap.put("SfstDish", sfstDishService);
-        serviceMap.put("SfstDishMaterial", sfstDishMaterialService);
-        serviceMap.put("SfstDishPic", sfstDishPicService);
-        serviceMap.put("SfstExcelImportHis", sfstExcelImportHisService);
-        serviceMap.put("SfstFinancialBill", sfstFinancialBillService);
-        serviceMap.put("SfstMaterial", sfstMaterialService);
-        serviceMap.put("SfstMaterialPic", sfstMaterialPicService);
-        serviceMap.put("SfstMaterialPrice", sfstMaterialPriceService);
-        serviceMap.put("SfstMenu", sfstMenuService);
-        serviceMap.put("SfstOrderBill", sfstOrderBillService);
-        serviceMap.put("SfstSchool", sfstSchoolService);
-        serviceMap.put("SfstSchoolBatch", sfstSchoolBatchService);
-        serviceMap.put("SfstSchoolCertificate", sfstSchoolCertificateService);
-        serviceMap.put("SfstSchoolMaterialAttr", sfstSchoolMaterialAttrService);
-        serviceMap.put("SfstSchoolMaterialStockRecord", sfstSchoolMaterialStockRecordService);
-        serviceMap.put("SfstSchoolOrder", sfstSchoolOrderService);
-        serviceMap.put("SfstSchoolOutboundRecord", sfstSchoolOutboundRecordService);
-        serviceMap.put("SfstSchoolSupplier", sfstSchoolSupplierService);
-        serviceMap.put("SfstSchoolType", sfstSchoolTypeService);
-        serviceMap.put("SfstSubMenu", sfstSubMenuService);
-        serviceMap.put("SfstSubMenuDish", sfstSubMenuDishService);
-        serviceMap.put("SfstSubMenuDishSchoolBatch", sfstSubMenuDishSchoolBatchService);
-        serviceMap.put("SfstSupplier", sfstSupplierService);
-        serviceMap.put("SfstSupplierInboundBatch", sfstSupplierInboundBatchService);
-        serviceMap.put("SfstSupplierInboundOrder", sfstSupplierInboundOrderService);
-        serviceMap.put("SfstSupplierLicense", sfstSupplierLicenseService);
-        serviceMap.put("SfstTestRecord", sfstTestRecordService);
-        serviceMap.put("SfstTestRecordBatch", sfstTestRecordBatchService);
-        serviceMap.put("SfstTestRecordReport", sfstTestRecordReportService);
-        serviceMap.put("SystemLog", systemLogService);
-        serviceMap.put("SystemOrganization", systemOrganizationService);
-        serviceMap.put("SystemPermission", systemPermissionService);
-        serviceMap.put("SystemResource", systemResourceService);
-        serviceMap.put("SystemResourcePermission", systemResourcePermissionService);
-        serviceMap.put("SystemRole", systemRoleService);
-        serviceMap.put("SystemRoleResource", systemRoleResourceService);
-        serviceMap.put("SystemUser", systemUserService);
-        serviceMap.put("SystemUserResource", systemUserResourceService);
-        serviceMap.put("SystemUserRole", systemUserRoleService);
+        serviceMap = new HashMap<String, BaseService>() {{
+			put("BaseDictionary", baseDictionaryService);
+			put("SfstCondimentShow", sfstCondimentShowService);
+			put("SfstDish", sfstDishService);
+			put("SfstDishMaterial", sfstDishMaterialService);
+			put("SfstDishPic", sfstDishPicService);
+			put("SfstExcelImportHis", sfstExcelImportHisService);
+			put("SfstFinancialBill", sfstFinancialBillService);
+			put("SfstMaterial", sfstMaterialService);
+			put("SfstMaterialPic", sfstMaterialPicService);
+			put("SfstMaterialPrice", sfstMaterialPriceService);
+			put("SfstMenu", sfstMenuService);
+			put("SfstOrderBill", sfstOrderBillService);
+			put("SfstSchool", sfstSchoolService);
+			put("SfstSchoolBatch", sfstSchoolBatchService);
+			put("SfstSchoolCertificate", sfstSchoolCertificateService);
+			put("SfstSchoolMaterialAttr", sfstSchoolMaterialAttrService);
+			put("SfstSchoolMaterialStockRecord", sfstSchoolMaterialStockRecordService);
+			put("SfstSchoolOrder", sfstSchoolOrderService);
+			put("SfstSchoolOutboundRecord", sfstSchoolOutboundRecordService);
+			put("SfstSchoolSupplier", sfstSchoolSupplierService);
+			put("SfstSchoolType", sfstSchoolTypeService);
+			put("SfstSubMenu", sfstSubMenuService);
+			put("SfstSubMenuDish", sfstSubMenuDishService);
+			put("SfstSubMenuDishSchoolBatch", sfstSubMenuDishSchoolBatchService);
+			put("SfstSupplier", sfstSupplierService);
+			put("SfstSupplierInboundBatch", sfstSupplierInboundBatchService);
+			put("SfstSupplierInboundOrder", sfstSupplierInboundOrderService);
+			put("SfstSupplierLicense", sfstSupplierLicenseService);
+			put("SfstTestRecord", sfstTestRecordService);
+			put("SfstTestRecordBatch", sfstTestRecordBatchService);
+			put("SfstTestRecordReport", sfstTestRecordReportService);
+			put("SystemLog", systemLogService);
+			put("SystemOrganization", systemOrganizationService);
+			put("SystemPermission", systemPermissionService);
+			put("SystemResource", systemResourceService);
+			put("SystemResourcePermission", systemResourcePermissionService);
+			put("SystemRole", systemRoleService);
+			put("SystemRoleResource", systemRoleResourceService);
+			put("SystemUser", systemUserService);
+			put("SystemUserResource", systemUserResourceService);
+			put("SystemUserRole", systemUserRoleService);
+        }};
+        for (String entityName : entityNames) {
+            Class domainClass = Class.forName("com.bob.sm.domain." + entityName);
+            domainClassMap.put(entityName, domainClass);
+            Class criteriaClass = Class.forName("com.bob.sm.dto.criteria." + entityName + "Criteria");
+            criteriaClassMap.put(entityName, criteriaClass);
+            Class dtoClass = Class.forName("com.bob.sm.dto." + entityName + "DTO");
+            dtoClassMap.put(entityName, dtoClass);
+        }
     }
 
     private static List<String> entityNames = Arrays.asList("BaseDictionary", "SfstCondimentShow", "SfstDish", "SfstDishMaterial",
@@ -121,11 +145,6 @@ public class GlobalCache {
         ));
     }};
 
-    private static Map<String, BaseService> serviceMap = new HashMap<>();
-
-    // 只在启动的时候初始化一次
-    private static Map<String, BaseEntityConfigDTO> entityConfigMap = new HashMap<>();
-
     public static List<String> getEntityNames() {
         return entityNames;
     }
@@ -140,5 +159,17 @@ public class GlobalCache {
 
     public static Map<String, BaseService> getServiceMap() {
         return serviceMap;
+    }
+
+    public static Map<String, Class<? extends BaseDomain>> getDomainClassMap() {
+        return domainClassMap;
+    }
+
+    public static Map<String, Class<? extends BaseCriteria>> getCriteriaClassMap() {
+        return criteriaClassMap;
+    }
+
+    public static Map<String, Class<? extends BaseDTO>> getDtoClassMap() {
+        return dtoClassMap;
     }
 }

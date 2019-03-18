@@ -16,7 +16,6 @@ import ${packageName}.dto.help.ReturnCommonDTO;
 import ${packageName}.mapper.*;
 import ${packageName}.security.SecurityUtils;
 import ${packageName}.service.*;
-import ${packageName}.util.MbpUtil;
 import ${packageName}.util.MyBeanUtil;
 import ${packageName}.web.rest.errors.CommonException;
 import org.slf4j.Logger;
@@ -38,6 +37,8 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         implements ${eentityName}Service {
 
     private final Logger log = LoggerFactory.getLogger(${eentityName}ServiceImpl.class);
+
+    private final String DOMAIN_NAME = "${eentityName}";
 	<#list fromToList as fromTo>
 
     @Autowired
@@ -293,7 +294,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             Map<String, Object> appendParamMap) {
         log.debug("Service ==> 根据ID查询${eentityName}DTO {}, {}", id, criteria);
         // ID条件设定
-        Wrapper<${eentityName}> wrapper = idEqualsPrepare(id, criteria);
+        Wrapper<${eentityName}> wrapper = idEqualsPrepare(DOMAIN_NAME, id, criteria);
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(criteria);
         if (!dataFilterPass) {
@@ -324,11 +325,11 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
         // 预处理orderBy的内容
-        MbpUtil.preOrderBy(criteria, tableIndexMap);
+        preOrderBy(criteria, tableIndexMap);
         // 获取查询SQL（select和join）
-        String dataQuerySql = getDataQuerySql(criteria, tableIndexMap);
+        String dataQuerySql = getDataQuerySql(DOMAIN_NAME, criteria, tableIndexMap);
         // 处理where条件
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this, null);
+        Wrapper<${eentityName}> wrapper = getWrapper(DOMAIN_NAME, null, criteria, null, tableIndexMap, null);
         // 执行查询并返回结果
         return new ReturnCommonDTO(baseMapper.joinSelectList(dataQuerySql, wrapper).stream()
                 .map(${entityName} -> doConvert(${entityName}, criteria,
@@ -355,12 +356,12 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
         // 预处理orderBy的内容
-        MbpUtil.preOrderBy(criteria, tableIndexMap);
+        preOrderBy(criteria, tableIndexMap);
         // 获取查询SQL（select和join）
-        String dataQuerySql = getDataQuerySql(criteria, tableIndexMap);
+        String dataQuerySql = getDataQuerySql(DOMAIN_NAME, criteria, tableIndexMap);
         // 处理where条件
-        String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this, null);
+        String countQuerySql = getCountQuerySql(DOMAIN_NAME, criteria, tableIndexMap);
+        Wrapper<${eentityName}> wrapper = getWrapper(DOMAIN_NAME, null, criteria, null, tableIndexMap, null);
         // 执行查询并返回结果
         IPage<${eentityName}DTO> pageResult = baseMapper.joinSelectPage(pageQuery, dataQuerySql, wrapper)
                     .convert(${entityName} -> doConvert(${entityName}, criteria,
@@ -386,9 +387,9 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
         // 获取查询SQL（select和join）
-        String countQuerySql = getCountQuerySql(criteria, tableIndexMap);
+        String countQuerySql = getCountQuerySql(DOMAIN_NAME, criteria, tableIndexMap);
         // 处理where条件
-        Wrapper<${eentityName}> wrapper = MbpUtil.getWrapper(null, criteria, ${eentityName}.class, null, tableIndexMap, this, null);
+        Wrapper<${eentityName}> wrapper = getWrapper(DOMAIN_NAME, null, criteria, null, tableIndexMap, null);
         // 执行查询并返回结果
         return new ReturnCommonDTO(baseMapper.joinSelectCount(countQuerySql, wrapper));
     }

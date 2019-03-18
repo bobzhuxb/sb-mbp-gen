@@ -1,5 +1,8 @@
 package ${packageName}.config;
 
+import ${packageName}.domain.BaseDomain;
+import ${packageName}.dto.BaseDTO;
+import ${packageName}.dto.criteria.BaseCriteria;
 import ${packageName}.dto.help.BaseEntityConfigDTO;
 import ${packageName}.dto.help.BaseEntityConfigDicDTO;
 import ${packageName}.service.*;
@@ -19,6 +22,12 @@ public class GlobalCache {
 
     private static Map<String, BaseService> serviceMap = new HashMap<>();
 
+    private static Map<String, Class<? extends BaseDomain>> domainClassMap = new HashMap<>();
+
+    private static Map<String, Class<? extends BaseCriteria>> criteriaClassMap = new HashMap<>();
+
+    private static Map<String, Class<? extends BaseDTO>> dtoClassMap = new HashMap<>();
+
 ////////////////////////////add-entity-config-here////////////////////////////
 
     public static List<String> getEntityNames() {
@@ -35,5 +44,17 @@ public class GlobalCache {
 
     public static Map<String, BaseService> getServiceMap() {
         return serviceMap;
+    }
+
+    public static Map<String, Class<? extends BaseDomain>> getDomainClassMap() {
+        return domainClassMap;
+    }
+
+    public static Map<String, Class<? extends BaseCriteria>> getCriteriaClassMap() {
+        return criteriaClassMap;
+    }
+
+    public static Map<String, Class<? extends BaseDTO>> getDtoClassMap() {
+        return dtoClassMap;
     }
 }
