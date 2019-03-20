@@ -2,14 +2,14 @@ package com.bob.sm.service;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.bob.sm.config.GlobalCache;
 import com.bob.sm.domain.BaseDomain;
+import com.bob.sm.dto.BaseDTO;
 import com.bob.sm.dto.criteria.BaseCriteria;
 import com.bob.sm.dto.criteria.filter.*;
-import com.bob.sm.dto.help.BaseEntityConfigDTO;
-import com.bob.sm.dto.help.BaseEntityConfigDicDTO;
-import com.bob.sm.dto.help.NormalCriteriaDTO;
+import com.bob.sm.dto.help.*;
 import com.bob.sm.util.GenericsUtil;
 import com.bob.sm.util.MyBeanUtil;
 import com.bob.sm.util.StringUtil;
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public interface BaseService<T extends BaseDomain, C extends BaseCriteria> extends IService<T> {
+public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O extends BaseDTO> extends IService<T> {
 
     /**
      * 附加的条件查询增强方法，实现类可覆盖该方法，写自己的条件查询增强方法
@@ -555,6 +555,147 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria> exten
             changedTableName = changedTableName + "_" + tableIndex;
         }
         return changedTableName;
+    }
+
+    /**
+     * 获取关联属性
+     * @param entityTypeName 实体类型名
+     * @param dto 主实体
+     * @param criteria 关联属性的条件
+     * @param appendParamMap 附加的查询参数条件
+     * @return 带关联属性的主实体
+     */
+    default O getAssociations(String entityTypeName, O dto, BaseCriteria criteria, Map<String, Object> appendParamMap) {
+        if (dto.getId() == null) {
+            return dto;
+        }
+        // 处理关联属性
+        List<String> associationNameList = criteria.getAssociationNameList();
+        if (associationNameList == null || associationNameList.size() == 0) {
+            return dto;
+        }
+        List<BaseEntityConfigRelationDTO> relationList = GlobalCache.getEntityRelationsMap().get(entityTypeName);
+        if (relationList == null || relationList.size() == 0) {
+            return dto;
+        }
+        // 获取级联的参数请求
+        for (String associationName : associationNameList) {
+            for (BaseEntityConfigRelationDTO relationDTO : relationList) {
+                try {
+                    if ("from".equals(relationDTO.getFromOrTo())) {
+                        // 级联获取List（下级）的内容
+                        String associationFromDTO = "OneToOne".equals(relationDTO.getRelationType()) ?
+                                relationDTO.getFromName() : relationDTO.getFromName() + "List";
+                        if (!associationFromDTO.equals(associationName)) {
+                            // 级联查询名称不符合，跳过
+                            continue;
+                        }
+                        // 级联查询名称符合
+                        // 继续设置下级的级联查询
+                        List<String> subAssociationNameList = new ArrayList<>();
+                        for (String associationNameIter : associationNameList) {
+                            if (associationNameIter.startsWith(associationName + ".")) {
+                                String subAssociationName = associationNameIter.substring((associationName + ".").length());
+                                subAssociationNameList.add(subAssociationName);
+                            }
+                        }
+                        // 设置级联查询的查询条件
+                        Class subCriteriaClass = Class.forName("com.bob.sm.dto.criteria." + relationDTO.getToType() + "Criteria");
+                        BaseCriteria subCriteria = (BaseCriteria) subCriteriaClass.newInstance();
+                        LongFilter relatedIdFilter = new LongFilter();
+                        relatedIdFilter.setEquals(dto.getId());
+                        Field relatedIdField = FieldUtils.getField(subCriteriaClass, relationDTO.getToName() + "Id", true);
+                        relatedIdField.setAccessible(true);
+                        relatedIdField.set(subCriteria, relatedIdFilter);
+                        subCriteria.setAssociationNameList(subAssociationNameList);
+                        // 调用级联的Service的方法进行查询
+                        Object subDTOList = GlobalCache.getServiceMap().get(relationDTO.getToType())
+                                .findAll(subCriteria, appendParamMap).getData();
+                        // 最终设置到主体dto的成员变量中
+                        if ("OneToOne".equals(relationDTO.getRelationType())) {
+                            // 一对一
+                            Field dtoField = FieldUtils.getField(dto.getClass(), relationDTO.getFromName(), true);
+                            dtoField.set(dto, (subDTOList == null || ((List) subDTOList).size() == 0) ? null : ((List) subDTOList).get(0));
+                        } else {
+                            // 一对多
+                            Field dtoField = FieldUtils.getField(dto.getClass(), relationDTO.getFromName() + "List", true);
+                            dtoField.set(dto, subDTOList == null ? null : (List) subDTOList);
+                        }
+                        break;
+                    } else {
+                        // 级联获取上级的内容
+                        String associationFromDTO = relationDTO.getToName();
+                        if (!associationFromDTO.equals(associationName)) {
+                            continue;
+                        }
+                        // 级联查询名称符合
+                        // 继续设置上级的级联查询
+                        Field relatedIdField = FieldUtils.getField(dto.getClass(), relationDTO.getToName() + "Id", true);
+                        Object relatedId = relatedIdField.get(dto);
+                        if (relatedId == null) {
+                            break;
+                        }
+                        List<String> subAssociationNameList = new ArrayList<>();
+                        for (String associationNameIter : associationNameList) {
+                            if (associationNameIter.startsWith(associationName + ".")) {
+                                String subAssociationName = associationNameIter.substring((associationName + ".").length());
+                                subAssociationNameList.add(subAssociationName);
+                            }
+                        }
+                        // 设置级联查询的查询条件
+                        Class subCriteriaClass = Class.forName("com.bob.sm.dto.criteria." + relationDTO.getFromType() + "Criteria");
+                        BaseCriteria subCriteria = (BaseCriteria) subCriteriaClass.newInstance();
+                        subCriteria.setAssociationNameList(subAssociationNameList);
+                        // 调用级联的Service的方法进行查询
+                        Object subDTO = GlobalCache.getServiceMap().get(relationDTO.getFromType()).findOne(
+                                (long)relatedId, subCriteria, appendParamMap).getData();
+                        // 最终设置到主体dto的成员变量中
+                        Field dtoField = FieldUtils.getField(dto.getClass(), relationDTO.getToName(), true);
+                        dtoField.set(dto, subDTO);
+                        break;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return dto;
+    }
+
+    default ReturnCommonDTO save(O dto) {
+        return new ReturnCommonDTO<>();
+    }
+
+    default ReturnCommonDTO deleteById(Long id) {
+        return new ReturnCommonDTO<>();
+    }
+
+    default ReturnCommonDTO deleteByIdList(List<Long> idList) {
+        return new ReturnCommonDTO<>();
+    }
+
+    default ReturnCommonDTO deleteByIdListNot(List<Long> idList) {
+        return new ReturnCommonDTO<>();
+    }
+
+    default ReturnCommonDTO deleteByMapCascade(Map<String, Object> deleteMap) {
+        return new ReturnCommonDTO<>();
+    }
+
+    default ReturnCommonDTO<O> findOne(Long id, BaseCriteria criteria, Map<String, Object> appendParamMap) {
+        return new ReturnCommonDTO<>();
+    }
+
+    default ReturnCommonDTO<List<O>> findAll(C criteria, Map<String, Object> appendParamMap) {
+        return new ReturnCommonDTO<>();
+    }
+
+    default ReturnCommonDTO<IPage<O>> findPage(C criteria, MbpPage pageable, Map<String, Object> appendParamMap) {
+        return new ReturnCommonDTO<>();
+    }
+
+    default ReturnCommonDTO<Integer> findCount(C criteria) {
+        return new ReturnCommonDTO<>();
     }
 
 }

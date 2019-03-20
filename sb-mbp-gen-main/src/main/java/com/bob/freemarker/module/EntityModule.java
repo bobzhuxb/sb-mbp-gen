@@ -63,9 +63,9 @@ public class EntityModule {
                     relationshipListCurrent, useDictionaryList, entityTemplatePath, cfg);
         }
         // Swagger2Configuration.java文件的特别修改
-        swagger2ConfigurationSpecial(entityDTOList, projectPath, projectName, packageName);
+        swagger2ConfigurationSpecial(entityDTOList, relationshipList, projectPath, projectName, packageName);
         // GlobalCache.java文件的特别修改
-        globalCacheSpecial(entityDTOList, projectPath, projectName, packageName);
+        globalCacheSpecial(entityDTOList, relationshipList, projectPath, projectName, packageName);
         // 最后把生成实体用的jdl文件拷贝到项目目录下
         FileUtil.copyFile(new File(umlFileName), new File(projectPath + projectName + "\\entity.jdl"));
         return erdto;
@@ -74,12 +74,13 @@ public class EntityModule {
     /**
      * Swagger2Configuration.java文件的特别修改
      * @param entityDTOList
+     * @param relationshipList
      * @param projectPath
      * @param projectName
      * @param packageName
      */
-    private static void swagger2ConfigurationSpecial(List<EntityDTO> entityDTOList, String projectPath, String projectName,
-                                                     String packageName) throws Exception {
+    private static void swagger2ConfigurationSpecial(List<EntityDTO> entityDTOList, List<RelationshipDTO> relationshipList,
+                                                     String projectPath, String projectName, String packageName) throws Exception {
         // 修改Swagger配置，移除嵌套对象，避免出现内存耗尽的情况
         List<String> swaggerAddedRuleList = new ArrayList<>();
         swaggerAddedRuleList.add("            new AlternateTypeRule(typeResolver.resolve(BaseDTO.class), typeResolver.resolve(Object.class)),");
@@ -111,12 +112,13 @@ public class EntityModule {
     /**
      * GlobalCache.java文件的特别修改
      * @param entityDTOList
+     * @param relationshipList
      * @param projectPath
      * @param projectName
      * @param packageName
      */
-    private static void globalCacheSpecial(List<EntityDTO> entityDTOList, String projectPath, String projectName,
-                                           String packageName) throws Exception {
+    private static void globalCacheSpecial(List<EntityDTO> entityDTOList, List<RelationshipDTO> relationshipList,
+                                           String projectPath, String projectName, String packageName) throws Exception {
         // 修改GlobalCache.java文件，追加配置
         List<String> dynamicLineList = new ArrayList<>();
         // 写构造函数，初始化Service实例
@@ -161,7 +163,8 @@ public class EntityModule {
         dynamicLineList.add("    );");
         dynamicLineList.add("");
         // 初始化数据字典相关内容
-        dynamicLineList.add("    private static Map<String, List<BaseEntityConfigDicDTO>> entityDicNameMap = new HashMap<String, List<BaseEntityConfigDicDTO>>() {{");
+        dynamicLineList.add("    private static Map<String, List<BaseEntityConfigDicDTO>> entityDicNameMap " +
+                "= new HashMap<String, List<BaseEntityConfigDicDTO>>() {{");
         for (EntityDTO entityDTO : entityDTOList) {
             List<String> dicLineList = new ArrayList<>();
             for (EntityFieldDTO entityFieldDTO : entityDTO.getFieldList()) {
@@ -184,6 +187,41 @@ public class EntityModule {
             }
         }
         dynamicLineList.add("    }};");
+        dynamicLineList.add("");
+        // 初始化实体关系相关内容
+        dynamicLineList.add("    private static Map<String, List<BaseEntityConfigRelationDTO>> entityRelationsMap " +
+                "= new HashMap<String, List<BaseEntityConfigRelationDTO>>() {{");
+        for (EntityDTO entityDTO : entityDTOList) {
+            // 与本实体相关的relationship
+            List<RelationshipDTO> relationshipFromList = new ArrayList<>();
+            List<RelationshipDTO> relationshipToList = new ArrayList<>();
+            String eentityName = entityDTO.getEentityName();
+            for (RelationshipDTO relationshipDTO : relationshipList) {
+                if (relationshipDTO.getToFromEntityType().equals(eentityName)) {
+                    relationshipFromList.add(relationshipDTO);
+                }
+                if (relationshipDTO.getFromToEntityType().equals(eentityName)) {
+                    relationshipToList.add(relationshipDTO);
+                }
+            }
+            if (relationshipFromList.size() > 0 || relationshipToList.size() > 0) {
+                dynamicLineList.add("        put(\"" + entityDTO.getEentityName() + "\", Arrays.asList(");
+                for (RelationshipDTO fromTo : relationshipFromList) {
+                    dynamicLineList.add("                new BaseEntityConfigRelationDTO(\"" + fromTo.getRelationType()
+                            + "\", \"from\", \"" + fromTo.getToFromEntityType() + "\", \"" + fromTo.getFromToEntityName()
+                            + "\", \"" + fromTo.getFromToEntityType() + "\", \"" + fromTo.getToFromEntityName() + "\"),");
+                }
+                for (RelationshipDTO toFrom : relationshipToList) {
+                    dynamicLineList.add("                new BaseEntityConfigRelationDTO(\"" + toFrom.getRelationType()
+                            + "\", \"to\", \"" + toFrom.getToFromEntityType() + "\", \"" + toFrom.getFromToEntityName()
+                            + "\", \"" + toFrom.getFromToEntityType() + "\", \"" + toFrom.getToFromEntityName() + "\"),");
+                }
+                String listLastStr = dynamicLineList.get(dynamicLineList.size() - 1);
+                dynamicLineList.set(dynamicLineList.size() - 1, listLastStr.substring(0, listLastStr.length() - 1));
+                dynamicLineList.add("        ));");
+            }
+        }
+        dynamicLineList.add("     }};");
         // 读取文件并修改
         File swaggerConfigFile = new File(projectPath + projectName + "\\src\\main\\java\\"
                 + packageName.replace(".", "\\") + "\\config\\GlobalCache.java");

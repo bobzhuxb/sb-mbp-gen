@@ -4,10 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.bob.sm.config.Constants;
 import com.bob.sm.domain.SystemPermission;
 import com.bob.sm.domain.SystemUser;
-import com.bob.sm.dto.EnhanceUserDTO;
-import com.bob.sm.dto.SystemPermissionDTO;
-import com.bob.sm.dto.SystemResourceDTO;
-import com.bob.sm.dto.SystemUserResourceDTO;
+import com.bob.sm.dto.*;
 import com.bob.sm.dto.criteria.SystemRoleResourceCriteria;
 import com.bob.sm.dto.criteria.SystemUserCriteria;
 import com.bob.sm.dto.criteria.filter.LongFilter;
@@ -17,6 +14,7 @@ import com.bob.sm.mapper.SystemPermissionMapper;
 import com.bob.sm.mapper.SystemUserMapper;
 import com.bob.sm.security.SecurityUtils;
 import com.bob.sm.service.AccountService;
+import com.bob.sm.service.CommonUserService;
 import com.bob.sm.service.SystemRoleResourceService;
 import com.bob.sm.service.SystemUserService;
 import com.bob.sm.util.MyBeanUtil;
@@ -24,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +43,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private SystemRoleResourceService systemRoleResourceService;
+
+    @Autowired
+    private CommonUserService commonUserService;
 
     @Autowired
     private SystemPermissionMapper systemPermissionMapper;
@@ -115,21 +117,19 @@ public class AccountServiceImpl implements AccountService {
      */
     public ReturnCommonDTO changePassword(String currentClearTextPassword, String newPassword) {
         log.debug("Service ==> 用户自己修改密码");
-        Optional<SystemUser> userOptional = SecurityUtils.getCurrentUserLogin()
-                .map(login -> systemUserMapper.selectById(1L));
-        if (!userOptional.isPresent()) {
+        SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
+        if (systemUserDTO == null) {
             return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "用户不存在");
         }
-        SystemUser user = userOptional.get();
-        String currentEncryptedPassword = user.getPassword();
-        if (!passwordEncoder.matches(currentClearTextPassword, currentEncryptedPassword)) {
+        String currentEncryptedPassword = systemUserDTO.getPassword();
+        if (!new BCryptPasswordEncoder().matches(currentClearTextPassword, currentEncryptedPassword)) {
             return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "原密码错误");
         }
-        String encryptedPassword = passwordEncoder.encode(newPassword);
+        String encryptedPassword = new BCryptPasswordEncoder().encode(newPassword);
         SystemUser userUpdate = new SystemUser();
-        userUpdate.setId(user.getId());
+        userUpdate.setId(systemUserDTO.getId());
         userUpdate.setPassword(encryptedPassword);
-        user.setPassword(encryptedPassword);
+        systemUserMapper.updateById(userUpdate);
         return new ReturnCommonDTO();
     }
 
@@ -148,7 +148,7 @@ public class AccountServiceImpl implements AccountService {
         SystemUser userUpdate = new SystemUser();
         userUpdate.setId(user.getId());
         userUpdate.setPassword(encryptedPassword);
-        user.setPassword(encryptedPassword);
+        systemUserMapper.updateById(userUpdate);
         return new ReturnCommonDTO();
     }
 

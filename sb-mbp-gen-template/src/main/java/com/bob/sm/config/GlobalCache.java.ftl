@@ -5,6 +5,7 @@ import ${packageName}.dto.BaseDTO;
 import ${packageName}.dto.criteria.BaseCriteria;
 import ${packageName}.dto.help.BaseEntityConfigDTO;
 import ${packageName}.dto.help.BaseEntityConfigDicDTO;
+import ${packageName}.dto.help.BaseEntityConfigRelationDTO;
 import ${packageName}.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,5 +57,9 @@ public class GlobalCache {
 
     public static Map<String, Class<? extends BaseDTO>> getDtoClassMap() {
         return dtoClassMap;
+    }
+
+    public static Map<String, List<BaseEntityConfigRelationDTO>> getEntityRelationsMap() {
+        return entityRelationsMap;
     }
 }

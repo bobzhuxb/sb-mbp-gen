@@ -5,6 +5,7 @@ import com.bob.sm.dto.BaseDTO;
 import com.bob.sm.dto.criteria.BaseCriteria;
 import com.bob.sm.dto.help.BaseEntityConfigDTO;
 import com.bob.sm.dto.help.BaseEntityConfigDicDTO;
+import com.bob.sm.dto.help.BaseEntityConfigRelationDTO;
 import com.bob.sm.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -145,6 +146,15 @@ public class GlobalCache {
         ));
     }};
 
+    private static Map<String, List<BaseEntityConfigRelationDTO>> entityRelationsMap = new HashMap<String, List<BaseEntityConfigRelationDTO>>() {{
+        put("SfstSchoolOrder", Arrays.asList(
+                new BaseEntityConfigRelationDTO("OneToOne", "from", "SfstSchoolOrder", "originalOrder", "SfstSchoolOrder", "newestOrder"),
+                new BaseEntityConfigRelationDTO("OneToMany", "from", "SfstSchoolOrder", "sfstSchoolBatch", "SfstSchoolBatch", "sfstSchoolOrder"),
+                new BaseEntityConfigRelationDTO("OneToOne", "to", "SfstSchoolOrder", "newestOrder", "SfstSchoolOrder", "originalOrder"),
+                new BaseEntityConfigRelationDTO("OneToMany", "to", "SfstSupplier", "sfstSchoolOrder", "SfstSchoolOrder", "sfstSupplier")
+        ));
+    }};
+
     public static List<String> getEntityNames() {
         return entityNames;
     }
@@ -171,5 +181,9 @@ public class GlobalCache {
 
     public static Map<String, Class<? extends BaseDTO>> getDtoClassMap() {
         return dtoClassMap;
+    }
+
+    public static Map<String, List<BaseEntityConfigRelationDTO>> getEntityRelationsMap() {
+        return entityRelationsMap;
     }
 }

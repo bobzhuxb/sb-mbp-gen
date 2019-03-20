@@ -416,7 +416,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         ${eentityName}DTO ${entityName}DTO = new ${eentityName}DTO();
         // TODO:在此处对每条数据做些处理
         MyBeanUtil.copyNonNullProperties(${entityName}, ${entityName}DTO);
-        getAssociations(${entityName}DTO, criteria, appendParamMap);
+        getAssociationsAll(${entityName}DTO, criteria, appendParamMap);
         return ${entityName}DTO;
     }
 
@@ -428,136 +428,15 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @return 带关联属性的主实体
      */
     @Transactional(readOnly = true)
-    public ${eentityName}DTO getAssociations(${eentityName}DTO ${entityName}DTO, BaseCriteria criteria,
+    public ${eentityName}DTO getAssociationsAll(${eentityName}DTO ${entityName}DTO, BaseCriteria criteria,
                         Map<String, Object> appendParamMap) {
         if (${entityName}DTO.getId() == null) {
             return ${entityName}DTO;
         }
-        // 处理关联属性
-        List<String> associationNameList = criteria.getAssociationNameList();
-        if (associationNameList != null) {
-            for (String associationNameNow : associationNameList) {
-				<#list fromToList as fromTo>
-				<#if fromTo.relationType == "OneToMany">
-                if (associationNameNow.equals("${fromTo.fromToEntityName}List")) {
-                    // 获取${fromTo.fromToComment}列表
-                    List<${fromTo.fromToEntityType}DTO> ${fromTo.fromToEntityName}List = ${fromTo.fromToEntityName}Mapper.selectList(
-                            new QueryWrapper<${fromTo.fromToEntityType}>().eq("${fromTo.fromColumnName}", ${entityName}DTO.getId())
-                    ).stream().map(${fromTo.fromToEntityName} -> {
-                        ${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO = new ${fromTo.fromToEntityType}DTO();
-                        MyBeanUtil.copyNonNullProperties(${fromTo.fromToEntityName}, ${fromTo.fromToEntityName}DTO);
-                        return ${fromTo.fromToEntityName}DTO;
-                    }).collect(Collectors.toList());
-                    ${entityName}DTO.set${fromTo.fromToEntityUName}List(${fromTo.fromToEntityName}List);
-                    // 继续追查
-                    if (${fromTo.fromToEntityName}List != null && ${fromTo.fromToEntityName}List.size() > 0) {
-				</#if>
-				<#if fromTo.relationType == "OneToOne">
-                if (associationNameNow.equals("${fromTo.fromToEntityName}")) {
-                    // 获取${fromTo.fromToComment}
-                    ${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO = null;
-                    ${fromTo.fromToEntityType} ${fromTo.fromToEntityName} = ${fromTo.fromToEntityName}Mapper.selectOne(
-                            new QueryWrapper<${fromTo.fromToEntityType}>().eq("${fromTo.fromColumnName}", ${entityName}DTO.getId())
-                    );
-                    if (${fromTo.fromToEntityName} != null) {
-                        ${fromTo.fromToEntityName}DTO = new ${fromTo.fromToEntityType}DTO();
-                        MyBeanUtil.copyNonNullProperties(${fromTo.fromToEntityName}, ${fromTo.fromToEntityName}DTO);
-                    }
-                    ${entityName}DTO.set${fromTo.fromToEntityUName}(${fromTo.fromToEntityName}DTO);
-                    // 继续追查
-                    if (${fromTo.fromToEntityName}DTO != null) {
-				</#if>
-                        List<String> associationName2List = new ArrayList<>();
-                        for (String associationName : associationNameList) {
-							<#if fromTo.relationType == "OneToMany">
-                            if (associationName.startsWith("${fromTo.fromToEntityName}List.")) {
-                                String associationName2 = associationName.substring("${fromTo.fromToEntityName}List.".length());
-							</#if>
-							<#if fromTo.relationType == "OneToOne">
-                            if (associationName.startsWith("${fromTo.fromToEntityName}.")) {
-                                String associationName2 = associationName.substring("${fromTo.fromToEntityName}.".length());
-							</#if>
-                                associationName2List.add(associationName2);
-                            }
-                        }
-                        BaseCriteria ${fromTo.fromToEntityName}Criteria = new BaseCriteria();
-                        ${fromTo.fromToEntityName}Criteria.setAssociationNameList(associationName2List);
-						<#if fromTo.relationType == "OneToMany">
-                        for (${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName}DTO : ${fromTo.fromToEntityName}List) {
-                            <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>getAssociations(${fromTo.fromToEntityName}DTO, ${fromTo.fromToEntityName}Criteria,
-                                    appendParamMap);
-                        }
-						</#if>
-						<#if fromTo.relationType == "OneToOne">
-                        <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>getAssociations(${fromTo.fromToEntityName}DTO, ${fromTo.fromToEntityName}Criteria,
-                                    appendParamMap);
-						</#if>
-                    }
-                    continue;
-                }
-				</#list>
-				<#list toFromList as toFrom>
-                if (associationNameNow.equals("${toFrom.toFromEntityName}")) {
-                    // 获取${toFrom.toFromComment}
-                    Long ${toFrom.toFromEntityName}Id = ${entityName}DTO.get${toFrom.toFromEntityUName}Id();
-                    if (${toFrom.toFromEntityName}Id == null) {
-                        return ${entityName}DTO;
-                    }
-                    List<String> associationName2List = new ArrayList<>();
-                    for (String associationName : associationNameList) {
-                        if (associationName.startsWith("${toFrom.toFromEntityName}.")) {
-                            String associationName2 = associationName.substring("${toFrom.toFromEntityName}.".length());
-                            associationName2List.add(associationName2);
-                        }
-                    }
-                    BaseCriteria ${toFrom.toFromEntityName}Criteria = new BaseCriteria();
-                    ${toFrom.toFromEntityName}Criteria.setAssociationNameList(associationName2List);
-                    ReturnCommonDTO<${toFrom.toFromEntityType}DTO> ${toFrom.toFromEntityName}Rtn = <#if toFrom.toFromEntityType != eentityName>${toFrom.toFromEntityName}Service.</#if>findOne(${toFrom.toFromEntityName}Id, ${toFrom.toFromEntityName}Criteria, appendParamMap);
-                    ${entityName}DTO.set${toFrom.toFromEntityUName}(${toFrom.toFromEntityName}Rtn.getData());
-                    continue;
-                }
-				</#list>
-                if (associationNameNow.equals("insertUser")) {
-                    // 获取创建者
-                    Long insertUserId = ${entityName}DTO.getInsertUserId();
-                    if (insertUserId == null) {
-                        return ${entityName}DTO;
-                    }
-                    List<String> associationName2List = new ArrayList<>();
-                    for (String associationName : associationNameList) {
-                        if (associationName.startsWith("insertUser.")) {
-                            String associationName2 = associationName.substring("insertUser.".length());
-                            associationName2List.add(associationName2);
-                        }
-                    }
-                    BaseCriteria insertUserCriteria = new BaseCriteria();
-                    insertUserCriteria.setAssociationNameList(associationName2List);
-                    ReturnCommonDTO<SystemUserDTO> insertUserRtn = <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>findOne(insertUserId, insertUserCriteria, appendParamMap);
-                    ${entityName}DTO.setInsertUser(insertUserRtn.getData());
-                    continue;
-                }
-                if (associationNameNow.equals("operateUser")) {
-                    // 获取最后更新者
-                    Long operateUserId = ${entityName}DTO.getOperateUserId();
-                    if (operateUserId == null) {
-                        return ${entityName}DTO;
-                    }
-                    List<String> associationName2List = new ArrayList<>();
-                    for (String associationName : associationNameList) {
-                        if (associationName.startsWith("operateUser.")) {
-                            String associationName2 = associationName.substring("operateUser.".length());
-                            associationName2List.add(associationName2);
-                        }
-                    }
-                    BaseCriteria operateUserCriteria = new BaseCriteria();
-                    operateUserCriteria.setAssociationNameList(associationName2List);
-                    ReturnCommonDTO<SystemUserDTO> operateUserRtn = <#if eentityName != 'SystemUser'><#if systemUserServiceName == ''>systemUserService.<#else>${systemUserServiceName}.</#if></#if>findOne(operateUserId, operateUserCriteria, appendParamMap);
-                    ${entityName}DTO.setOperateUser(operateUserRtn.getData());
-                    continue;
-                }
-                // TODO: 在这里写自定义的association属性
-            }
-        }
+        // 处理关联属性（共通）
+		getAssociations(DOMAIN_NAME, ${entityName}DTO, criteria, appendParamMap);
+        // TODO: 处理关联属性（自定义）
+        
         return ${entityName}DTO;
     }
 
