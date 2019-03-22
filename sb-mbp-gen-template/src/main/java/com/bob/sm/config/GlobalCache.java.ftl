@@ -23,6 +23,8 @@ public class GlobalCache {
 
     private static Map<String, BaseService> serviceMap = new HashMap<>();
 
+    private static CommonUserService commonUserService;
+
     private static Map<String, Class<? extends BaseDomain>> domainClassMap = new HashMap<>();
 
     private static Map<String, Class<? extends BaseCriteria>> criteriaClassMap = new HashMap<>();
@@ -45,6 +47,10 @@ public class GlobalCache {
 
     public static Map<String, BaseService> getServiceMap() {
         return serviceMap;
+    }
+
+    public static CommonUserService getCommonUserService() {
+        return commonUserService;
     }
 
     public static Map<String, Class<? extends BaseDomain>> getDomainClassMap() {

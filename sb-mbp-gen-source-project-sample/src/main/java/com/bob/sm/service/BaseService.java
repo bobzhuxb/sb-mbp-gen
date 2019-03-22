@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.bob.sm.config.Constants;
 import com.bob.sm.config.GlobalCache;
 import com.bob.sm.domain.BaseDomain;
 import com.bob.sm.dto.BaseDTO;
@@ -12,6 +13,7 @@ import com.bob.sm.dto.criteria.filter.*;
 import com.bob.sm.dto.help.*;
 import com.bob.sm.util.GenericsUtil;
 import com.bob.sm.util.MyBeanUtil;
+import com.bob.sm.util.MyStringUtil;
 import com.bob.sm.util.StringUtil;
 import com.bob.sm.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -19,13 +21,24 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O extends BaseDTO> extends IService<T> {
+
+    /**
+     * 新增修改验证（具体子类实现）
+     * @param dto 主实体
+     */
+    default void baseSaveValidator(O dto) {
+
+    }
 
     /**
      * 附加的条件查询增强方法，实现类可覆盖该方法，写自己的条件查询增强方法
@@ -662,8 +675,100 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         return dto;
     }
 
-    default ReturnCommonDTO baseSave(O dto) {
-        return new ReturnCommonDTO<>();
+    /**
+     * 新增或修改
+     * @param entityTypeName 实体类型名
+     * @param dto 主实体
+     * @return
+     */
+    default ReturnCommonDTO baseSave(String entityTypeName, O dto) {
+        // 获取主键ID，根据ID存在与否判断是新增还是修改
+        Long dtoIdUpdate = dto.getId();
+        // 设置当前用户和时间
+        String nowTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        Long nowUserId = GlobalCache.getCommonUserService().getCurrentUserId();
+        dto.setInsertTime(dto.getId() == null ? nowTime : null);
+        dto.setInsertUserId(dto.getId() == null ? nowUserId : null);
+        dto.setUpdateTime(nowTime);
+        dto.setOperateUserId(nowUserId);
+        // 新增修改验证
+        baseSaveValidator(dto);
+        // 获取实体配置
+        Class<? extends BaseDomain> entityClass = GlobalCache.getDomainClassMap().get(entityTypeName);
+        T entity = null;
+        try {
+            entity = (T)entityClass.newInstance();
+        } catch (Exception e) {
+            throw new CommonException(e.getMessage());
+        }
+        MyBeanUtil.copyNonNullProperties(dto, entity);
+        // 新增或更新当前实体
+        boolean result = saveOrUpdate(entity);
+        // 新增或修改后的主键ID
+        long dtoId = entity.getId();
+        // 级联新增或修改
+        List<BaseEntityConfigRelationDTO> relationList = GlobalCache.getEntityRelationsMap().get(entityTypeName);
+        if (relationList == null || relationList.size() == 0) {
+            return new ReturnCommonDTO();
+        }
+        for (BaseEntityConfigRelationDTO relationDTO : relationList) {
+            if (!"from".equals(relationDTO.getFromOrTo())
+                    || !"OneToMay".equals(relationDTO.getRelationType())) {
+                // 只级联保存OneToMany类型的List（下级）的内容
+                continue;
+            }
+            try {
+                // 获取一对多的子关联属性（List）
+                Field subListField = FieldUtils.getField(dto.getClass(), relationDTO.getFromName() + "List", true);
+                Object subListObj = subListField.get(dto);
+                if (subListObj == null) {
+                    // 如果属性值为空，则跳过，不处理
+                    continue;
+                }
+                List<? extends BaseDTO> subList = (List<? extends BaseDTO>) subListObj;
+                if (dtoIdUpdate != null) {
+                    // 如果是修改：获取传入的子属性的ID列表（去掉null的）
+                    List<Long> subDtoIdList = subList.stream()
+                            .filter(subDTO -> subDTO.getId() != null)
+                            .map(subDTO -> subDTO.getId()).collect(Collectors.toList());
+                    if (subDtoIdList == null) {
+                        // 如果子属性列表的所有都没有填写ID，则认为是全刷新，清空子属性列表
+                        GlobalCache.getServiceMap().get(relationDTO.getToType()).baseDeleteByMapCascade(
+                            new HashMap<String, Object>() {{
+                                // 注意：这里先限制为不能随意修改关联字段的数据库字段名，留待以后优化
+                                put(MyStringUtil.camelToUnderline(relationDTO.getToName()) + "_id", dtoIdUpdate);
+                        }});
+                    } else {
+                        // 如果子属性列表的部分填写了ID，则删除未填写ID的数据
+                        GlobalCache.getServiceMap().get(relationDTO.getToType()).baseDeleteByIdListNot(subDtoIdList);
+                    }
+                }
+                // 然后，新增或修改子属性（需要级联保存的属性）
+                subList.forEach(subDTO -> {
+                    Field relationIdField = FieldUtils.getField(subDTO.getClass(), relationDTO.getToName() + "Id", true);
+                    try {
+                        relationIdField.set(subDTO, dtoId);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        throw new CommonException(e.getMessage());
+                    }
+                    if (subDTO.getId() == null) {
+                        // 新增：设置创建人和创建时间
+                        subDTO.setInsertUserId(nowUserId);
+                        subDTO.setInsertTime(nowTime);
+                    }
+                    // 新增或修改：设置最新修改人和最新修改时间
+                    subDTO.setOperateUserId(nowUserId);
+                    subDTO.setUpdateTime(nowTime);
+                    GlobalCache.getServiceMap().get(relationDTO.getToType()).save(subDTO);
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new CommonException(e.getMessage());
+            }
+        }
+        dto.setId(dtoId);
+        return result ? new ReturnCommonDTO(dtoId) : new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "保存失败");
     }
 
     default ReturnCommonDTO baseDeleteById(Long id) {

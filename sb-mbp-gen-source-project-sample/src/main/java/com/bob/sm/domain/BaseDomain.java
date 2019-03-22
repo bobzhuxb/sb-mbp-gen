@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 
 public class BaseDomain implements Serializable {
 
+    private Long id;
+
     @ApiModelProperty(value = "创建者用户ID")
     private Long insertUserId;    // 创建者用户ID
 
@@ -16,6 +18,14 @@ public class BaseDomain implements Serializable {
 
     @ApiModelProperty(value = "更新时间")
     private String updateTime;    // 更新时间
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public Long getInsertUserId() {
         return insertUserId;
@@ -52,4 +62,6 @@ public class BaseDomain implements Serializable {
     // 数据库列名
     public static final String _insertUserId = "insert_user_id";    // 创建者用户ID
     public static final String _operateUserId = "operate_user_id";    // 最后更新者用户ID
+    public static final String _insertTime = "insertTime";    // 创建时间
+    public static final String _updateTime = "updateTime";    // 最后更新时间
 }

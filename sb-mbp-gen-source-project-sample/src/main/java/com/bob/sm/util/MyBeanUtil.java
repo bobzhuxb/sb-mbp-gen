@@ -2,7 +2,6 @@ package com.bob.sm.util;
 
 import com.bob.sm.annotation.RestClassAllow;
 import com.bob.sm.annotation.RestFieldAllow;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -66,68 +65,6 @@ public class MyBeanUtil {
         }
         String[] result = new String[emptyNames.size()];
         return emptyNames.toArray(result);
-    }
-
-    /**
-     * 根据属性名获取属性值
-     * @param fieldName
-     * @param object
-     * @return
-     */
-    public static Object getFieldValueByFieldName(String fieldName, Object object) {
-        try {
-            Field field = object.getClass().getDeclaredField(fieldName);
-            // 设置对象的访问权限，保证对private的属性的访问
-            field.setAccessible(true);
-            return field.get(object);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    /**
-     * 根据属性名设置属性值
-     * @param fieldName
-     * @param value
-     * @param object
-     * @return
-     */
-    public static void setFieldValueByFieldName(String fieldName, Object value, Object object) {
-        try {
-            // 获取属性（使用apache的包可以获取包括父类的属性）
-            Field field = FieldUtils.getField(object.getClass(), fieldName, true);
-            // 设置对象的访问权限，保证对private的属性的访问
-            if (field != null) {
-                field.setAccessible(true);
-                field.set(object, value);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 根据注解名设置属性值
-     * @param annotationClass
-     * @param value
-     * @param object
-     * @return
-     */
-    public static<T extends Annotation> Object setFieldValueByAnnotationName(Class<T> annotationClass, Object value, Object object) {
-        try {
-            Field[] fields = object.getClass().getDeclaredFields();
-            for (Field field : fields) {
-                T annotation = field.getAnnotation(annotationClass);
-                if (annotation != null) {
-                    // 设置对象的访问权限，保证对private的属性的访问
-                    field.setAccessible(true);
-                    field.set(object, value);
-                }
-            }
-            return object;
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     /**

@@ -33,6 +33,8 @@ public class ${eentityName}Controller {
 
     private static final String ENTITY_NAME = "${entityName}";
 
+    private static final String DOMAIN_NAME = "${eentityName}";
+
     @Autowired
     private ${eentityName}Service ${entityName}Service;
 
@@ -77,7 +79,7 @@ public class ${eentityName}Controller {
         }
         ReturnCommonDTO resultDTO = null;
         try {
-            resultDTO = ${entityName}Service.baseSave(${entityName}DTO);
+            resultDTO = ${entityName}Service.baseSave(DOMAIN_NAME, ${entityName}DTO);
         } catch (CommonException e) {
             log.error(e.getMessage(), e);
             resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
@@ -127,7 +129,7 @@ public class ${eentityName}Controller {
         }
         ReturnCommonDTO resultDTO = null;
         try {
-            resultDTO = ${entityName}Service.baseSave(${entityName}DTO);
+            resultDTO = ${entityName}Service.baseSave(DOMAIN_NAME, ${entityName}DTO);
         } catch (CommonException e) {
             log.error(e.getMessage(), e);
             resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());

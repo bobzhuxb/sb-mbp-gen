@@ -1,11 +1,7 @@
 package ${packageName}.aop.controller;
 
 import ${packageName}.annotation.CreateInitValue;
-import ${packageName}.annotation.CreateTime;
-import ${packageName}.annotation.UpdateTime;
-import ${packageName}.dto.SystemUserDTO;
 import ${packageName}.service.ApiAdapterService;
-import ${packageName}.service.CommonUserService;
 import ${packageName}.util.MyBeanUtil;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -21,8 +17,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 @Component
 @Aspect
@@ -30,9 +24,6 @@ import java.util.Date;
 public class ControllerAspect {
 
     private final Logger log = LoggerFactory.getLogger(ControllerAspect.class);
-
-    @Autowired
-    private CommonUserService commonUserService;
 
     @Autowired
     private ApiAdapterService apiAdapterService;
@@ -56,18 +47,12 @@ public class ControllerAspect {
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
         HttpServletRequest request = sra.getRequest();
-        // 获取当前时间
-        Date nowDate = new Date();
-        String nowDateStr = new SimpleDateFormat("yyyy-MM-dd").format(nowDate);
-        String nowTimeStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(nowDate);
-        // 连接点方法返回值
-        Object retVal = null;
         // 方法参数
         Object[] parameters = pjp.getArgs();
         // 处理查询条件
         apiAdapterService.processQueryParam(request, parameters);
         // 继续执行后续的操作
-        retVal = pjp.proceed(parameters);
+        Object retVal = pjp.proceed(parameters);
         // 处理返回结果
         apiAdapterService.processReturn(request, parameters, retVal);
         
@@ -83,31 +68,15 @@ public class ControllerAspect {
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
         HttpServletRequest request = sra.getRequest();
-        // 获取当前时间
-        Date nowDate = new Date();
-        String nowDateStr = new SimpleDateFormat("yyyy-MM-dd").format(nowDate);
-        String nowTimeStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(nowDate);
-        // 获取当前操作用户
-        SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
-        Long currentUserId = systemUserDTO == null ? null : systemUserDTO.getId();
-        // 连接点方法返回值
-        Object retVal = null;
         // 方法参数
         Object[] parameters = pjp.getArgs();
         for (Object parameter : parameters) {
-            MyBeanUtil.setFieldValueByAnnotationName(CreateTime.class, nowTimeStr, parameter);
-            MyBeanUtil.setFieldValueByFieldName("insertTime", nowTimeStr, parameter);
-            MyBeanUtil.setFieldValueByFieldName("updateTime", nowTimeStr, parameter);
-            MyBeanUtil.setFieldValueByFieldName("insertUserId", currentUserId, parameter);
-            MyBeanUtil.setFieldValueByFieldName("insertUser", systemUserDTO, parameter);
-            MyBeanUtil.setFieldValueByFieldName("operateUserId", currentUserId, parameter);
-            MyBeanUtil.setFieldValueByFieldName("operateUser", systemUserDTO, parameter);
             MyBeanUtil.setFieldValueByAnnotationNameAttr(CreateInitValue.class, "value", null, parameter);
             MyBeanUtil.setAllFieldValue("allowSet", null, parameter);
             MyBeanUtil.setFieldValueByRestFieldAllow("allowSet", null, parameter);
         }
         // 继续执行后续的操作
-        retVal = pjp.proceed(parameters);
+        Object retVal = pjp.proceed(parameters);
         // 处理返回结果
         apiAdapterService.processReturn(request, parameters, retVal);
         
@@ -123,26 +92,13 @@ public class ControllerAspect {
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
         HttpServletRequest request = sra.getRequest();
-        // 获取当前时间
-        Date nowDate = new Date();
-        String nowDateStr = new SimpleDateFormat("yyyy-MM-dd").format(nowDate);
-        String nowTimeStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(nowDate);
-        // 获取当前操作用户
-        SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
-        Long currentUserId = systemUserDTO == null ? null : systemUserDTO.getId();
-        // 连接点方法返回值
-        Object retVal = null;
         // 方法参数
         Object[] parameters = pjp.getArgs();
         for (Object parameter : parameters) {
-            MyBeanUtil.setFieldValueByAnnotationName(UpdateTime.class, nowTimeStr, parameter);
-            MyBeanUtil.setFieldValueByFieldName("updateTime", nowTimeStr, parameter);
-            MyBeanUtil.setFieldValueByFieldName("operateUserId", currentUserId, parameter);
-            MyBeanUtil.setFieldValueByFieldName("operateUser", systemUserDTO, parameter);
             MyBeanUtil.setFieldValueByRestFieldAllow("allowSet", null, parameter);
         }
         // 继续执行后续的操作
-        retVal = pjp.proceed(parameters);
+        Object retVal = pjp.proceed(parameters);
         // 处理返回结果
         apiAdapterService.processReturn(request, parameters, retVal);
         

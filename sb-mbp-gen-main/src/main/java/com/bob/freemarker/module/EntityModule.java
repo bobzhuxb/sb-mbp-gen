@@ -128,18 +128,17 @@ public class EntityModule {
             EntityDTO entityDTO = entityDTOList.get(i);
             String eentityName = entityDTO.getEentityName();
             entityDTO.setEntityName(eentityName.substring(0, 1).toLowerCase() + eentityName.substring(1));
-            String line = "            " + entityDTO.getEentityName() + "Service " + entityDTO.getEntityName() + "Service";
-            if (i != entityDTOList.size() - 1) {
-                line += ",";
-            }
+            String line = "            " + entityDTO.getEentityName() + "Service " + entityDTO.getEntityName() + "Service,";
             dynamicLineList.add(line);
         }
+        dynamicLineList.add("            CommonUserService commonUserService");
         dynamicLineList.add("    ) throws Exception {");
         dynamicLineList.add("        serviceMap = new HashMap<String, BaseService>() {{");
         for (EntityDTO entityDTO : entityDTOList) {
             dynamicLineList.add("            put(\"" + entityDTO.getEentityName() + "\", " + entityDTO.getEntityName() + "Service);");
         }
         dynamicLineList.add("        }};");
+        dynamicLineList.add("        GlobalCache.commonUserService = commonUserService;");
         dynamicLineList.add("        for (String entityName : entityNames) {");
         dynamicLineList.add("            Class domainClass = Class.forName(\"" + packageName + ".domain.\" + entityName);");
         dynamicLineList.add("            domainClassMap.put(entityName, domainClass);");
