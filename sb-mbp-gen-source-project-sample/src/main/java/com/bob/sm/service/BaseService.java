@@ -35,8 +35,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param revertTableIndexMap 根据表别名反向查条件名的Map
      * @return 增强后的Wrapper条件
      */
-    default <C> Wrapper<T> wrapperEnhance(QueryWrapper<T> wrapper, C criteria, List<NormalCriteriaDTO> normalCriteriaList,
-                                          Map<String, String> revertTableIndexMap) {
+    default <C> Wrapper<T> baseWrapperEnhance(QueryWrapper<T> wrapper, C criteria, List<NormalCriteriaDTO> normalCriteriaList,
+                                              Map<String, String> revertTableIndexMap) {
         return wrapper;
     }
 
@@ -47,7 +47,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param baseCriteria 附加条件
      * @return 查询通用Wrapper
      */
-    default Wrapper<T> idEqualsPrepare(String entityTypeName, Long id, BaseCriteria baseCriteria) {
+    default Wrapper<T> baseIdEqualsPrepare(String entityTypeName, Long id, BaseCriteria baseCriteria) {
         // 获取实体配置
         Class criteriaClass = GlobalCache.getCriteriaClassMap().get(entityTypeName);
         C criteria = null;
@@ -57,7 +57,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             throw new CommonException(e.getMessage());
         }
         MyBeanUtil.copyNonNullProperties(baseCriteria, criteria);
-        Wrapper<T> wrapper = getWrapper(entityTypeName, null, criteria, null, null, null);
+        Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, null, null, null);
         ((QueryWrapper<T>)wrapper).eq("id", id);
         return wrapper;
     }
@@ -69,7 +69,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
      * @return
      */
-    default String getDataQuerySql(String entityTypeName, C criteria, Map<String, String> tableIndexMap) {
+    default String baseGetDataQuerySql(String entityTypeName, C criteria, Map<String, String> tableIndexMap) {
         // 获取实体配置
         BaseEntityConfigDTO entityConfig = GlobalCache.getEntityConfigMap().get(entityTypeName);
         int tableCount = 0;
@@ -89,7 +89,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 }
             }
         }
-        joinDataSql += getFromAndJoinSql(entityTypeName, criteria, tableCount, fromTableCount, tableIndexMap);
+        joinDataSql += baseGetFromAndJoinSql(entityTypeName, criteria, tableCount, fromTableCount, tableIndexMap);
         return joinDataSql;
     }
 
@@ -100,10 +100,10 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
      * @return
      */
-    default String getCountQuerySql(String entityTypeName, C criteria, Map<String, String> tableIndexMap) {
+    default String baseGetCountQuerySql(String entityTypeName, C criteria, Map<String, String> tableIndexMap) {
         int tableCount = 0;
         int fromTableCount = tableCount;
-        String joinCountSql = "SELECT COUNT(0)" + getFromAndJoinSql(entityTypeName, criteria, tableCount, fromTableCount, tableIndexMap);
+        String joinCountSql = "SELECT COUNT(0)" + baseGetFromAndJoinSql(entityTypeName, criteria, tableCount, fromTableCount, tableIndexMap);
         return joinCountSql;
     }
 
@@ -116,12 +116,12 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
      * @return
      */
-    default String getFromAndJoinSql(String entityTypeName, C criteria, int tableCount, int fromTableCount,
-                                     Map<String, String> tableIndexMap) {
+    default String baseGetFromAndJoinSql(String entityTypeName, C criteria, int tableCount, int fromTableCount,
+                                         Map<String, String> tableIndexMap) {
         // 获取实体配置
         BaseEntityConfigDTO entityConfig = GlobalCache.getEntityConfigMap().get(entityTypeName);
         String joinSubSql = " FROM " + entityConfig.getTableName() + " AS " + entityConfig.getTableName() + "_" + tableCount;
-        joinSubSql += getJoinSql(entityTypeName, criteria, tableCount, fromTableCount, null, tableIndexMap);
+        joinSubSql += baseGetJoinSql(entityTypeName, criteria, tableCount, fromTableCount, null, tableIndexMap);
         return joinSubSql;
     }
 
@@ -135,8 +135,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
      * @return
      */
-    default String getJoinSql(String entityTypeName, C criteria, int tableCount, int fromTableCount, String lastFieldName,
-                              Map<String, String> tableIndexMap) {
+    default String baseGetJoinSql(String entityTypeName, C criteria, int tableCount, int fromTableCount, String lastFieldName,
+                                  Map<String, String> tableIndexMap) {
         String joinSubSql = "";
         // 获取实体配置
         BaseEntityConfigDTO entityConfig = GlobalCache.getEntityConfigMap().get(entityTypeName);
@@ -210,7 +210,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     tableKey = lastFieldName + "." + tableKey;
                 }
                 tableIndexMap.put(tableKey, tableCount + "_" + fieldDomainName);
-                String nextJoinSql = GlobalCache.getServiceMap().get(fieldDomainName).getJoinSql(fieldDomainName,
+                String nextJoinSql = GlobalCache.getServiceMap().get(fieldDomainName).baseGetJoinSql(fieldDomainName,
                         (BaseCriteria)criteriaFieldObj, tableCount, tableCount, tableKey, tableIndexMap);
                 if (!fieldName.endsWith("List")) {
                     // 上级级联
@@ -231,8 +231,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param normalCriteriaList 其他非框架的条件
      * @return 转换后的wrapper
      */
-    default Wrapper<T> getWrapper(String entityTypeName, QueryWrapper<T> wrapper, C criteria, String lastFieldName,
-                                  Map<String, String> tableIndexMap, List<NormalCriteriaDTO> normalCriteriaList) {
+    default Wrapper<T> baseGetWrapper(String entityTypeName, QueryWrapper<T> wrapper, C criteria, String lastFieldName,
+                                      Map<String, String> tableIndexMap, List<NormalCriteriaDTO> normalCriteriaList) {
         // 获取实体配置
         BaseEntityConfigDTO entityConfig = GlobalCache.getEntityConfigMap().get(entityTypeName);
         // 是否调用的首栈（递归的第一次调用）
@@ -270,7 +270,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 for (String orderBy : orderBys) {
                     String subTableName = tableName;
                     if (tableIndexMap != null && orderBy.contains(".")) {
-                        subTableName = getChangedTableName(orderBy, tableIndexMap);
+                        subTableName = baseGetChangedTableName(orderBy, tableIndexMap);
                     }
                     String[] orderByDetail = orderBy.trim().split("\\s");
                     // 获取排序的实际字段名
@@ -452,7 +452,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     String domainTypeName = typeName.substring(typeName.lastIndexOf(".") + 1, typeName.lastIndexOf("Criteria"));
                     // 级联的域名
                     String nowFieldName = lastFieldName == null ? fieldName : lastFieldName + "." + fieldName;
-                    wrapper = (QueryWrapper<T>)GlobalCache.getServiceMap().get(domainTypeName).getWrapper(
+                    wrapper = (QueryWrapper<T>)GlobalCache.getServiceMap().get(domainTypeName).baseGetWrapper(
                             domainTypeName, wrapper, (C)result, nowFieldName, tableIndexMap, normalCriteriaList);
                 }
             } catch (Exception e) {
@@ -475,7 +475,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 }
                 revertTableIndexMap.put(tableName, "");
                 // 在递归调用的首栈，增强条件查询
-                wrapper = (QueryWrapper<T>) this.wrapperEnhance(wrapper, criteria, normalCriteriaList,
+                wrapper = (QueryWrapper<T>) this.baseWrapperEnhance(wrapper, criteria, normalCriteriaList,
                         revertTableIndexMap);
             }
         }
@@ -488,7 +488,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param tableIndexMap 表index的Map
      * @return
      */
-    default void preOrderBy(Object criteria, Map<String, String> tableIndexMap) {
+    default void basePreOrderBy(Object criteria, Map<String, String> tableIndexMap) {
         try {
             // 无任何条件的过滤器，占位用
             NothingFilter nothingFilter = new NothingFilter("none");
@@ -502,7 +502,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 String[] orderBys = ((String) result).trim().split("\\,");
                 for (String orderBy : orderBys) {
                     if (tableIndexMap != null && orderBy.contains(".")) {
-                        String changedTableName = getChangedTableName(orderBy, tableIndexMap);
+                        String changedTableName = baseGetChangedTableName(orderBy, tableIndexMap);
                         if (changedTableName == null) {
                             // 获取不到值说明没有关于这个orderBy的条件查询，需要追加一个空的条件查询
                             String[] orderBySplit = orderBy.split("\\.");
@@ -541,7 +541,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param tableIndexMap 表index的Map
      * @return
      */
-    default String getChangedTableName(String cascadeEntityAndField, Map<String, String> tableIndexMap) {
+    default String baseGetChangedTableName(String cascadeEntityAndField, Map<String, String> tableIndexMap) {
         String changedTableName = null;
         String key = cascadeEntityAndField.substring(0, cascadeEntityAndField.lastIndexOf("."));
         String tableIndexAndName = tableIndexMap.get(key);
@@ -565,7 +565,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param appendParamMap 附加的查询参数条件
      * @return 带关联属性的主实体
      */
-    default O getAssociations(String entityTypeName, O dto, BaseCriteria criteria, Map<String, Object> appendParamMap) {
+    default O baseGetAssociations(String entityTypeName, O dto, BaseCriteria criteria, Map<String, Object> appendParamMap) {
         if (dto.getId() == null) {
             return dto;
         }
@@ -610,7 +610,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         subCriteria.setAssociationNameList(subAssociationNameList);
                         // 调用级联的Service的方法进行查询
                         Object subDTOList = GlobalCache.getServiceMap().get(relationDTO.getToType())
-                                .findAll(subCriteria, appendParamMap).getData();
+                                .baseFindAll(subCriteria, appendParamMap).getData();
                         // 最终设置到主体dto的成员变量中
                         if ("OneToOne".equals(relationDTO.getRelationType())) {
                             // 一对一
@@ -647,7 +647,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         BaseCriteria subCriteria = (BaseCriteria) subCriteriaClass.newInstance();
                         subCriteria.setAssociationNameList(subAssociationNameList);
                         // 调用级联的Service的方法进行查询
-                        Object subDTO = GlobalCache.getServiceMap().get(relationDTO.getFromType()).findOne(
+                        Object subDTO = GlobalCache.getServiceMap().get(relationDTO.getFromType()).baseFindOne(
                                 (long)relatedId, subCriteria, appendParamMap).getData();
                         // 最终设置到主体dto的成员变量中
                         Field dtoField = FieldUtils.getField(dto.getClass(), relationDTO.getToName(), true);
@@ -662,39 +662,39 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         return dto;
     }
 
-    default ReturnCommonDTO save(O dto) {
+    default ReturnCommonDTO baseSave(O dto) {
         return new ReturnCommonDTO<>();
     }
 
-    default ReturnCommonDTO deleteById(Long id) {
+    default ReturnCommonDTO baseDeleteById(Long id) {
         return new ReturnCommonDTO<>();
     }
 
-    default ReturnCommonDTO deleteByIdList(List<Long> idList) {
+    default ReturnCommonDTO baseDeleteByIdList(List<Long> idList) {
         return new ReturnCommonDTO<>();
     }
 
-    default ReturnCommonDTO deleteByIdListNot(List<Long> idList) {
+    default ReturnCommonDTO baseDeleteByIdListNot(List<Long> idList) {
         return new ReturnCommonDTO<>();
     }
 
-    default ReturnCommonDTO deleteByMapCascade(Map<String, Object> deleteMap) {
+    default ReturnCommonDTO baseDeleteByMapCascade(Map<String, Object> deleteMap) {
         return new ReturnCommonDTO<>();
     }
 
-    default ReturnCommonDTO<O> findOne(Long id, BaseCriteria criteria, Map<String, Object> appendParamMap) {
+    default ReturnCommonDTO<O> baseFindOne(Long id, BaseCriteria criteria, Map<String, Object> appendParamMap) {
         return new ReturnCommonDTO<>();
     }
 
-    default ReturnCommonDTO<List<O>> findAll(C criteria, Map<String, Object> appendParamMap) {
+    default ReturnCommonDTO<List<O>> baseFindAll(C criteria, Map<String, Object> appendParamMap) {
         return new ReturnCommonDTO<>();
     }
 
-    default ReturnCommonDTO<IPage<O>> findPage(C criteria, MbpPage pageable, Map<String, Object> appendParamMap) {
+    default ReturnCommonDTO<IPage<O>> baseFindPage(C criteria, MbpPage pageable, Map<String, Object> appendParamMap) {
         return new ReturnCommonDTO<>();
     }
 
-    default ReturnCommonDTO<Integer> findCount(C criteria) {
+    default ReturnCommonDTO<Integer> baseFindCount(C criteria) {
         return new ReturnCommonDTO<>();
     }
 

@@ -85,7 +85,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 	 * @return 结果返回码和消息
 	 * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事务的一致性
      */
-    public ReturnCommonDTO save(${eentityName}DTO ${entityName}DTO) {
+    public ReturnCommonDTO baseSave(${eentityName}DTO ${entityName}DTO) {
         log.debug("Service ==> 新增或修改${eentityName} {}", ${entityName}DTO);
         String nowTime = ${entityName}DTO.getId() == null ? ${entityName}DTO.getInsertTime() : ${entityName}DTO.getUpdateTime();
         Long nowUserId = ${entityName}DTO.getId() == null ? ${entityName}DTO.getInsertUserId() : ${entityName}DTO.getOperateUserId();
@@ -103,12 +103,12 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
                         .map(${fromTo.fromToEntityName}DTO -> ${entityName}DTO.getId()).collect(Collectors.toList());
                 if (${fromTo.fromToEntityName}IdList == null) {
                     // 如果${fromTo.fromToComment}都没有填写ID，则认为是全刷新，清空${fromTo.fromToComment}列表
-                    <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>deleteByMapCascade(new HashMap<String, Object>() {{
+                    <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>baseDeleteByMapCascade(new HashMap<String, Object>() {{
                         put("${fromTo.fromColumnName}", ${entityName}Id);
                     }});
                 } else {
                     // 如果${fromTo.fromToComment}部分填写了ID，则删除未填写ID的数据
-                    <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>deleteByIdList(${fromTo.fromToEntityName}IdList);
+                    <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>baseDeleteByIdList(${fromTo.fromToEntityName}IdList);
                 }
 			}
 			</#if>
@@ -116,7 +116,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 			if (${entityName}DTO.get${fromTo.fromToEntityUName}() != null) {
 			    if (${entityName}DTO.get${fromTo.fromToEntityUName}().getId() == null) {
 				    // 删除${fromTo.fromToComment}
-				    <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>deleteByMapCascade(new HashMap<String, Object>() {{
+				    <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>baseDeleteByMapCascade(new HashMap<String, Object>() {{
 					    put("${fromTo.fromColumnName}", ${entityName}Id);
 				    }});
                 }
@@ -152,7 +152,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 				${fromTo.fromToEntityName}DTO.setOperateUserId(nowUserId);
 				${fromTo.fromToEntityName}DTO.setInsertTime(nowTime);
 				${fromTo.fromToEntityName}DTO.setUpdateTime(nowTime);
-				<#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>save(${fromTo.fromToEntityName}DTO);
+				<#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>baseSave(${fromTo.fromToEntityName}DTO);
 			}
         }
 		</#if>
@@ -168,7 +168,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             ${fromTo.fromToEntityName}DTO.setOperateUserId(nowUserId);
             ${fromTo.fromToEntityName}DTO.setInsertTime(nowTime);
             ${fromTo.fromToEntityName}DTO.setUpdateTime(nowTime);
-			<#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>save(${fromTo.fromToEntityName}DTO);
+			<#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>baseSave(${fromTo.fromToEntityName}DTO);
         }
 		</#if>
 		</#list>
@@ -192,9 +192,9 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @return 结果返回码和消息
 	 * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事务的一致性
      */
-    public ReturnCommonDTO deleteById(Long id) {
+    public ReturnCommonDTO baseDeleteById(Long id) {
         log.debug("Service ==> 根据ID删除${eentityName}DTO {}", id);
-		return deleteByMapCascade(new HashMap<String, Object>() {{put("id", id);}});
+		return baseDeleteByMapCascade(new HashMap<String, Object>() {{put("id", id);}});
     }
 
     /**
@@ -203,10 +203,10 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @return 结果返回码和消息
 	 * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
      */
-    public ReturnCommonDTO deleteByIdList(List<Long> idList) {
+    public ReturnCommonDTO baseDeleteByIdList(List<Long> idList) {
         log.debug("Service ==> 根据ID列表删除${eentityName}DTO {}", idList);
         idList.forEach(id -> {
-            ReturnCommonDTO returnCommonDTO = deleteByMapCascade(new HashMap<String, Object>() {{put("id", id);}});
+            ReturnCommonDTO returnCommonDTO = baseDeleteByMapCascade(new HashMap<String, Object>() {{put("id", id);}});
             if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
                 throw new CommonException(returnCommonDTO.getErrMsg());
             }
@@ -220,11 +220,11 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @return 结果返回码和消息
      * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
      */
-    public ReturnCommonDTO deleteByIdListNot(List<Long> idList) {
+    public ReturnCommonDTO baseDeleteByIdListNot(List<Long> idList) {
         log.debug("Service ==> 删除不在ID列表中的${eentityName}DTO {}", idList);
         Optional.ofNullable(baseMapper.selectList(new QueryWrapper<${eentityName}>().select("id").notIn("id", idList)))
                 .get().stream().forEach(${entityName} -> {
-            ReturnCommonDTO returnCommonDTO = deleteByMapCascade(new HashMap<String, Object>() {{put("id", ${entityName}.getId());}});
+            ReturnCommonDTO returnCommonDTO = baseDeleteByMapCascade(new HashMap<String, Object>() {{put("id", ${entityName}.getId());}});
             if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
                 throw new CommonException(returnCommonDTO.getErrMsg());
             }
@@ -238,7 +238,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @return 结果返回码和消息
 	 * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事务的一致性
      */
-    public ReturnCommonDTO deleteByMapCascade(Map<String, Object> columnMap) {
+    public ReturnCommonDTO baseDeleteByMapCascade(Map<String, Object> columnMap) {
         log.debug("Service ==> 根据指定Map删除${eentityName}DTO {}", columnMap);
 		<#if (fromToList)?? && (fromToList?size > 0) >
         // 删除级联实体或置空关联字段
@@ -260,7 +260,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
 			<#list fromToList as fromTo>
 			<#if fromTo.fromToDeleteType == 'DELETE'>
             // 删除级联的${fromTo.fromToComment}
-            <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>deleteByMapCascade(new HashMap<String, Object>() {{put("${fromTo.fromColumnName}", ${entityName}.getId());}});
+            <#if fromTo.fromToEntityType != eentityName>${fromTo.fromToEntityName}Service.</#if>baseDeleteByMapCascade(new HashMap<String, Object>() {{put("${fromTo.fromColumnName}", ${entityName}.getId());}});
 			</#if>
 			<#if fromTo.fromToDeleteType == 'NULL'>
             // ${fromTo.fromToComment}的${fromTo.fromColumnName}列级联置空
@@ -290,11 +290,11 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @return 单条数据内容
      */
     @Transactional(readOnly = true)
-    public ReturnCommonDTO<${eentityName}DTO> findOne(Long id, BaseCriteria criteria,
+    public ReturnCommonDTO<${eentityName}DTO> baseFindOne(Long id, BaseCriteria criteria,
             Map<String, Object> appendParamMap) {
         log.debug("Service ==> 根据ID查询${eentityName}DTO {}, {}", id, criteria);
         // ID条件设定
-        Wrapper<${eentityName}> wrapper = idEqualsPrepare(DOMAIN_NAME, id, criteria);
+        Wrapper<${eentityName}> wrapper = baseIdEqualsPrepare(DOMAIN_NAME, id, criteria);
         // 数据权限过滤
         boolean dataFilterPass = dataAuthorityFilter(criteria);
         if (!dataFilterPass) {
@@ -314,7 +314,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @return 数据列表
      */
     @Transactional(readOnly = true)
-    public ReturnCommonDTO<List<${eentityName}DTO>> findAll(${eentityName}Criteria criteria,
+    public ReturnCommonDTO<List<${eentityName}DTO>> baseFindAll(${eentityName}Criteria criteria,
             Map<String, Object> appendParamMap) {
         log.debug("Service ==> 查询所有${eentityName}DTO {}", criteria);
         // 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
@@ -325,11 +325,11 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
         // 预处理orderBy的内容
-        preOrderBy(criteria, tableIndexMap);
+        basePreOrderBy(criteria, tableIndexMap);
         // 获取查询SQL（select和join）
-        String dataQuerySql = getDataQuerySql(DOMAIN_NAME, criteria, tableIndexMap);
+        String dataQuerySql = baseGetDataQuerySql(DOMAIN_NAME, criteria, tableIndexMap);
         // 处理where条件
-        Wrapper<${eentityName}> wrapper = getWrapper(DOMAIN_NAME, null, criteria, null, tableIndexMap, null);
+        Wrapper<${eentityName}> wrapper = baseGetWrapper(DOMAIN_NAME, null, criteria, null, tableIndexMap, null);
         // 执行查询并返回结果
         return new ReturnCommonDTO(baseMapper.joinSelectList(dataQuerySql, wrapper).stream()
                 .map(${entityName} -> doConvert(${entityName}, criteria,
@@ -344,7 +344,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @return 分页列表
      */
     @Transactional(readOnly = true)
-    public ReturnCommonDTO<IPage<${eentityName}DTO>> findPage(${eentityName}Criteria criteria, MbpPage pageable,
+    public ReturnCommonDTO<IPage<${eentityName}DTO>> baseFindPage(${eentityName}Criteria criteria, MbpPage pageable,
             Map<String, Object> appendParamMap) {
         log.debug("Service ==> 分页查询${eentityName}DTO {}, {}", criteria, pageable);
         Page<${eentityName}> pageQuery = new Page<>(pageable.getPage(), pageable.getSize());
@@ -356,12 +356,12 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
         // 预处理orderBy的内容
-        preOrderBy(criteria, tableIndexMap);
+        basePreOrderBy(criteria, tableIndexMap);
         // 获取查询SQL（select和join）
-        String dataQuerySql = getDataQuerySql(DOMAIN_NAME, criteria, tableIndexMap);
+        String dataQuerySql = baseGetDataQuerySql(DOMAIN_NAME, criteria, tableIndexMap);
         // 处理where条件
-        String countQuerySql = getCountQuerySql(DOMAIN_NAME, criteria, tableIndexMap);
-        Wrapper<${eentityName}> wrapper = getWrapper(DOMAIN_NAME, null, criteria, null, tableIndexMap, null);
+        String countQuerySql = baseGetCountQuerySql(DOMAIN_NAME, criteria, tableIndexMap);
+        Wrapper<${eentityName}> wrapper = baseGetWrapper(DOMAIN_NAME, null, criteria, null, tableIndexMap, null);
         // 执行查询并返回结果
         IPage<${eentityName}DTO> pageResult = baseMapper.joinSelectPage(pageQuery, dataQuerySql, wrapper)
                     .convert(${entityName} -> doConvert(${entityName}, criteria,
@@ -377,7 +377,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @return 个数
      */
     @Transactional(readOnly = true)
-    public ReturnCommonDTO<Integer> findCount(${eentityName}Criteria criteria) {
+    public ReturnCommonDTO<Integer> baseFindCount(${eentityName}Criteria criteria) {
         log.debug("Service ==> 查询个数${eentityName}DTO {}", criteria);
         // 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
         Map<String, String> tableIndexMap = new HashMap<>();
@@ -387,9 +387,9 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
         // 获取查询SQL（select和join）
-        String countQuerySql = getCountQuerySql(DOMAIN_NAME, criteria, tableIndexMap);
+        String countQuerySql = baseGetCountQuerySql(DOMAIN_NAME, criteria, tableIndexMap);
         // 处理where条件
-        Wrapper<${eentityName}> wrapper = getWrapper(DOMAIN_NAME, null, criteria, null, tableIndexMap, null);
+        Wrapper<${eentityName}> wrapper = baseGetWrapper(DOMAIN_NAME, null, criteria, null, tableIndexMap, null);
         // 执行查询并返回结果
         return new ReturnCommonDTO(baseMapper.joinSelectCount(countQuerySql, wrapper));
     }
@@ -434,7 +434,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
             return ${entityName}DTO;
         }
         // 处理关联属性（共通）
-		getAssociations(DOMAIN_NAME, ${entityName}DTO, criteria, appendParamMap);
+		baseGetAssociations(DOMAIN_NAME, ${entityName}DTO, criteria, appendParamMap);
         // TODO: 处理关联属性（自定义）
         
         return ${entityName}DTO;

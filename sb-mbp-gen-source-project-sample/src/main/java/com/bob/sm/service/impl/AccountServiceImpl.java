@@ -12,7 +12,6 @@ import com.bob.sm.dto.criteria.filter.StringFilter;
 import com.bob.sm.dto.help.ReturnCommonDTO;
 import com.bob.sm.mapper.SystemPermissionMapper;
 import com.bob.sm.mapper.SystemUserMapper;
-import com.bob.sm.security.SecurityUtils;
 import com.bob.sm.service.AccountService;
 import com.bob.sm.service.CommonUserService;
 import com.bob.sm.service.SystemRoleResourceService;
@@ -71,7 +70,7 @@ public class AccountServiceImpl implements AccountService {
         systemUserCriteria.setAssociationNameList(Arrays.asList("systemOrganization",
                 "systemUserRoleList",
                 "systemUserResourceList", "systemUserResourceList.systemResource"));
-        List<EnhanceUserDTO> userList = systemUserService.findAll(systemUserCriteria, null).getData().stream().map(systemUserDTO -> {
+        List<EnhanceUserDTO> userList = systemUserService.baseFindAll(systemUserCriteria, null).getData().stream().map(systemUserDTO -> {
             EnhanceUserDTO enhanceUserDTO = new EnhanceUserDTO();
             MyBeanUtil.copyNonNullProperties(systemUserDTO, enhanceUserDTO);
             List<SystemResourceDTO> userResourceList = new ArrayList<>();
@@ -87,7 +86,7 @@ public class AccountServiceImpl implements AccountService {
                         roleIdFilter.setEquals(systemUserRoleDTO.getSystemRoleId());
                         systemRoleResourceCriteria.setSystemRoleId(roleIdFilter);
                         systemRoleResourceCriteria.setAssociationNameList(Arrays.asList("systemResource"));
-                        return systemRoleResourceService.findAll(systemRoleResourceCriteria, null).getData().stream()
+                        return systemRoleResourceService.baseFindAll(systemRoleResourceCriteria, null).getData().stream()
                                 .map(systemRoleResourceDTO -> systemRoleResourceDTO.getSystemResource());
                     }).collect(Collectors.toList());
             // 角色的资源去重

@@ -1,20 +1,13 @@
 package com.bob.sm.security;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.bob.sm.domain.SystemResource;
-import com.bob.sm.domain.SystemResourcePermission;
-import com.bob.sm.domain.SystemUser;
 import com.bob.sm.dto.*;
-import com.bob.sm.dto.criteria.SystemPermissionCriteria;
 import com.bob.sm.dto.criteria.SystemResourcePermissionCriteria;
 import com.bob.sm.dto.criteria.SystemUserCriteria;
 import com.bob.sm.dto.criteria.filter.LongFilter;
 import com.bob.sm.dto.criteria.filter.StringFilter;
-import com.bob.sm.mapper.SystemUserMapper;
 import com.bob.sm.service.AccountService;
 import com.bob.sm.service.SystemResourcePermissionService;
 import com.bob.sm.service.SystemUserService;
-import com.bob.sm.util.MyBeanUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +52,7 @@ public class DomainUserDetailsService implements UserDetailsService {
         loginFilter.setEquals(login);
         systemUserCriteria.setLogin(loginFilter);
         systemUserCriteria.setAssociationNameList(Arrays.asList("systemUserRoleList", "systemUserRoleList.systemRole"));
-        List<SystemUserDTO> userList = systemUserService.findAll(systemUserCriteria, null).getData();
+        List<SystemUserDTO> userList = systemUserService.baseFindAll(systemUserCriteria, null).getData();
         if (userList == null || userList.size() == 0) {
             throw new UsernameNotFoundException("用户" + login + "找不到");
         }
@@ -98,7 +91,7 @@ public class DomainUserDetailsService implements UserDetailsService {
         resourcePermissionCriteria.setSystemResourceId(resourceIdFilter);
         resourcePermissionCriteria.setAssociationNameList(Arrays.asList("systemPermission"));
         List<SystemResourcePermissionDTO> systemResourcePermissionDTOList
-                = systemResourcePermissionService.findAll(resourcePermissionCriteria, null).getData();
+                = systemResourcePermissionService.baseFindAll(resourcePermissionCriteria, null).getData();
         // 去重
         List<Long> permissionIdList = new ArrayList<>();
         for (SystemResourcePermissionDTO systemResourcePermissionDTO : systemResourcePermissionDTOList) {

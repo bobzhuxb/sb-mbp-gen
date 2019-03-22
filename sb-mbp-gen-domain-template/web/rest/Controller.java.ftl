@@ -77,7 +77,7 @@ public class ${eentityName}Controller {
         }
         ReturnCommonDTO resultDTO = null;
         try {
-            resultDTO = ${entityName}Service.save(${entityName}DTO);
+            resultDTO = ${entityName}Service.baseSave(${entityName}DTO);
         } catch (CommonException e) {
             log.error(e.getMessage(), e);
             resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
@@ -127,7 +127,7 @@ public class ${eentityName}Controller {
         }
         ReturnCommonDTO resultDTO = null;
         try {
-            resultDTO = ${entityName}Service.save(${entityName}DTO);
+            resultDTO = ${entityName}Service.baseSave(${entityName}DTO);
         } catch (CommonException e) {
             log.error(e.getMessage(), e);
             resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
@@ -150,7 +150,7 @@ public class ${eentityName}Controller {
         log.debug("Controller ==> 根据ID删除${eentityName} : {}", id);
         ReturnCommonDTO resultDTO = null;
         try {
-            resultDTO = ${entityName}Service.deleteById(id);
+            resultDTO = ${entityName}Service.baseDeleteById(id);
         } catch (CommonException e) {
             log.error(e.getMessage(), e);
             resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
@@ -177,7 +177,7 @@ public class ${eentityName}Controller {
         log.debug("Controller ==> 批量删除${eentityName} : {}", idList);
         ReturnCommonDTO resultDTO = null;
         try {
-            resultDTO = ${entityName}Service.deleteByIdList(idList);
+            resultDTO = ${entityName}Service.baseDeleteByIdList(idList);
         } catch (CommonException e) {
             log.error(e.getMessage(), e);
             resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
@@ -205,7 +205,7 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}(
             @ApiParam(name="主键ID") @PathVariable Long id, @ApiIgnore BaseCriteria criteria) {
         log.debug("Controller ==> 根据ID查询${eentityName} : {}, {}", id, criteria);
-        ReturnCommonDTO<${eentityName}DTO> data = ${entityName}Service.findOne(id, criteria, null);
+        ReturnCommonDTO<${eentityName}DTO> data = ${entityName}Service.baseFindOne(id, criteria, null);
         return ResponseEntity.ok().headers(null).body(data);
     }
 
@@ -239,7 +239,7 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<List<${eentityName}DTO>>> getAll${eentityName}s(
             @ApiIgnore ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询所有${eentityName} : {}", criteria);
-        ReturnCommonDTO<List<${eentityName}DTO>> data = ${entityName}Service.findAll(criteria, null);
+        ReturnCommonDTO<List<${eentityName}DTO>> data = ${entityName}Service.baseFindAll(criteria, null);
         return ResponseEntity.ok().headers(null).body(data);
     }
 
@@ -276,7 +276,7 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<IPage<${eentityName}DTO>>> getPage${eentityName}s(
             @ApiIgnore ${eentityName}Criteria criteria, @ApiIgnore MbpPage pageable) {
         log.debug("Controller ==> 分页查询${eentityName} : {}, {}", criteria, pageable);
-        ReturnCommonDTO<IPage<${eentityName}DTO>> data = ${entityName}Service.findPage(criteria, pageable, null);
+        ReturnCommonDTO<IPage<${eentityName}DTO>> data = ${entityName}Service.baseFindPage(criteria, pageable, null);
         return ResponseEntity.ok().headers(null).body(data);
     }
 
@@ -306,7 +306,7 @@ public class ${eentityName}Controller {
     @GetMapping("/${entityUrl}-count")
     public ResponseEntity<ReturnCommonDTO<Integer>> get${eentityName}Count(@ApiIgnore ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询数量${eentityName} : {}", criteria);
-        ReturnCommonDTO<Integer> data = ${entityName}Service.findCount(criteria);
+        ReturnCommonDTO<Integer> data = ${entityName}Service.baseFindCount(criteria);
         return ResponseEntity.ok().headers(null).body(data);
     }
 
