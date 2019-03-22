@@ -312,7 +312,7 @@ public class CommonServiceImpl implements CommonService {
         if (fullFileName == null || "".equals(fullFileName)) {
             return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件名为空");
         }
-        if (".xlsx".equals(fullFileName)) {
+        if (!fullFileName.endsWith(".xlsx")) {
             return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件名后缀不正确，必须为.xlsx");
         }
         try {
