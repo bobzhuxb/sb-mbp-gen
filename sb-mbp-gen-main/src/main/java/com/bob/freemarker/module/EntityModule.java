@@ -131,11 +131,23 @@ public class EntityModule {
             String line = "            " + entityDTO.getEentityName() + "Service " + entityDTO.getEntityName() + "Service,";
             dynamicLineList.add(line);
         }
+        for (int i = 0; i < entityDTOList.size(); i++) {
+            EntityDTO entityDTO = entityDTOList.get(i);
+            String eentityName = entityDTO.getEentityName();
+            entityDTO.setEntityName(eentityName.substring(0, 1).toLowerCase() + eentityName.substring(1));
+            String line = "            " + entityDTO.getEentityName() + "Mapper " + entityDTO.getEntityName() + "Mapper,";
+            dynamicLineList.add(line);
+        }
         dynamicLineList.add("            CommonUserService commonUserService");
         dynamicLineList.add("    ) throws Exception {");
         dynamicLineList.add("        serviceMap = new HashMap<String, BaseService>() {{");
         for (EntityDTO entityDTO : entityDTOList) {
             dynamicLineList.add("            put(\"" + entityDTO.getEentityName() + "\", " + entityDTO.getEntityName() + "Service);");
+        }
+        dynamicLineList.add("        }};");
+        dynamicLineList.add("        mapperMap = new HashMap<String, BaseMapper>() {{");
+        for (EntityDTO entityDTO : entityDTOList) {
+            dynamicLineList.add("            put(\"" + entityDTO.getEentityName() + "\", " + entityDTO.getEntityName() + "Mapper);");
         }
         dynamicLineList.add("        }};");
         dynamicLineList.add("        GlobalCache.commonUserService = commonUserService;");

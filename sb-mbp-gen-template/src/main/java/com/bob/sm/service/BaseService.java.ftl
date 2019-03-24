@@ -17,19 +17,20 @@ import ${packageName}.util.MyStringUtil;
 import ${packageName}.util.StringUtil;
 import ${packageName}.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
+import javax.transaction.Transactional;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@EnableAspectJAutoProxy(exposeProxy = true)
+@Transactional
 public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O extends BaseDTO> extends IService<T> {
 
     /**
@@ -51,6 +52,30 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     default <C> Wrapper<T> baseWrapperEnhance(QueryWrapper<T> wrapper, C criteria, List<NormalCriteriaDTO> normalCriteriaList,
                                               Map<String, String> revertTableIndexMap) {
         return wrapper;
+    }
+
+    /**
+     * 删除某关联ID条件下，且不在本实体主键ID列表中的数据（同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
+     * @param entityTypeName 实体类型简称
+     * @param relatedColumnName 关联的字段名称
+     * @param relatedId 关联的ID
+     * @param idList 主键ID列表
+     * @return 结果返回码和消息
+     * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
+     */
+    default ReturnCommonDTO baseDeleteByRelationIdWithoutIdList(String entityTypeName, String relatedColumnName,
+                                                                long relatedId, List<Long> idList) {
+        Optional.ofNullable(GlobalCache.getMapperMap().get(entityTypeName).selectList(
+                new QueryWrapper<T>().select("id").eq(relatedColumnName, relatedId).notIn("id", idList))
+        ).get().stream().forEach(domain -> {
+            ReturnCommonDTO returnCommonDTO = baseDeleteByMapCascade(new HashMap<String, Object>() {{
+                put("id", ((BaseDomain) domain).getId());
+            }});
+            if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
+                throw new CommonException(returnCommonDTO.getErrMsg());
+            }
+        });
+        return new ReturnCommonDTO();
     }
 
     /**
@@ -713,7 +738,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         }
         for (BaseEntityConfigRelationDTO relationDTO : relationList) {
             if (!"from".equals(relationDTO.getFromOrTo())
-                    || !"OneToMay".equals(relationDTO.getRelationType())) {
+                    || !"OneToMany".equals(relationDTO.getRelationType())) {
                 // 只级联保存OneToMany类型的List（下级）的内容
                 continue;
             }
@@ -731,16 +756,18 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     List<Long> subDtoIdList = subList.stream()
                             .filter(subDTO -> subDTO.getId() != null)
                             .map(subDTO -> subDTO.getId()).collect(Collectors.toList());
+                    // 数据库表的关联列字段名。注意：这里先限制为不能随意修改关联字段的数据库字段名，留待以后优化
+                    String relatedColumnName = MyStringUtil.camelToUnderline(relationDTO.getToName()) + "_id";
                     if (subDtoIdList == null) {
                         // 如果子属性列表的所有都没有填写ID，则认为是全刷新，清空子属性列表
                         GlobalCache.getServiceMap().get(relationDTO.getToType()).baseDeleteByMapCascade(
                             new HashMap<String, Object>() {{
-                                // 注意：这里先限制为不能随意修改关联字段的数据库字段名，留待以后优化
-                                put(MyStringUtil.camelToUnderline(relationDTO.getToName()) + "_id", dtoIdUpdate);
+                                put(relatedColumnName, dtoIdUpdate);
                         }});
                     } else {
-                        // 如果子属性列表的部分填写了ID，则删除未填写ID的数据
-                        GlobalCache.getServiceMap().get(relationDTO.getToType()).baseDeleteByIdListNot(subDtoIdList);
+                        // 如果子属性列表的部分或全部填写了ID，则删除当前条件（指定了关联字段的值）下的其它数据
+                        GlobalCache.getServiceMap().get(relationDTO.getToType()).baseDeleteByRelationIdWithoutIdList(
+                                relationDTO.getToType(), relatedColumnName, dtoIdUpdate, subDtoIdList);
                     }
                 }
                 // 然后，新增或修改子属性（需要级联保存的属性）
@@ -760,7 +787,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     // 新增或修改：设置最新修改人和最新修改时间
                     subDTO.setOperateUserId(nowUserId);
                     subDTO.setUpdateTime(nowTime);
-                    GlobalCache.getServiceMap().get(relationDTO.getToType()).save(subDTO);
+                    GlobalCache.getServiceMap().get(relationDTO.getToType()).baseSave(relationDTO.getToType(), subDTO);
                 });
             } catch (Exception e) {
                 e.printStackTrace();
@@ -776,10 +803,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     }
 
     default ReturnCommonDTO baseDeleteByIdList(List<Long> idList) {
-        return new ReturnCommonDTO<>();
-    }
-
-    default ReturnCommonDTO baseDeleteByIdListNot(List<Long> idList) {
         return new ReturnCommonDTO<>();
     }
 

@@ -1,5 +1,6 @@
 package com.bob.sm.config;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.bob.sm.domain.BaseDomain;
 import com.bob.sm.dto.BaseDTO;
 import com.bob.sm.dto.criteria.BaseCriteria;
@@ -7,6 +8,7 @@ import com.bob.sm.dto.help.BaseEntityConfigDTO;
 import com.bob.sm.dto.help.BaseEntityConfigDicDTO;
 import com.bob.sm.dto.help.BaseEntityConfigRelationDTO;
 import com.bob.sm.service.*;
+import com.bob.sm.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,10 @@ public class GlobalCache {
     private static Map<String, BaseEntityConfigDTO> entityConfigMap = new HashMap<>();
 
     private static Map<String, BaseService> serviceMap = new HashMap<>();
+
+    private static Map<String, BaseMapper> mapperMap = new HashMap<>();
+
+    private static CommonUserService commonUserService;
 
     private static Map<String, Class<? extends BaseDomain>> domainClassMap = new HashMap<>();
 
@@ -402,6 +408,10 @@ public class GlobalCache {
 
     public static Map<String, BaseService> getServiceMap() {
         return serviceMap;
+    }
+
+    public static Map<String, BaseMapper> getMapperMap() {
+        return mapperMap;
     }
 
     public static CommonUserService getCommonUserService() {
