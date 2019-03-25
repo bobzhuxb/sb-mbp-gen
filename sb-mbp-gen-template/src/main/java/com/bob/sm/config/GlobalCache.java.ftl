@@ -7,6 +7,7 @@ import ${packageName}.dto.help.BaseEntityConfigDTO;
 import ${packageName}.dto.help.BaseEntityConfigDicDTO;
 import ${packageName}.dto.help.BaseEntityConfigRelationDTO;
 import ${packageName}.service.*;
+import ${packageName}.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,8 @@ public class GlobalCache {
     private static Map<String, BaseEntityConfigDTO> entityConfigMap = new HashMap<>();
 
     private static Map<String, BaseService> serviceMap = new HashMap<>();
+
+    private static Map<String, BaseCommonMapper> mapperMap = new HashMap<>();
 
     private static CommonUserService commonUserService;
 
@@ -47,6 +50,10 @@ public class GlobalCache {
 
     public static Map<String, BaseService> getServiceMap() {
         return serviceMap;
+    }
+
+    public static Map<String, BaseCommonMapper> getMapperMap() {
+        return mapperMap;
     }
 
     public static CommonUserService getCommonUserService() {

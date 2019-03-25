@@ -10,18 +10,20 @@ public class BaseEntityConfigDicDTO {
     private String columnName;      // 数据表中的列名
     private String columnValueName; // 值的列名
     private String dicType;         // 数据字典中的Type标识
+    private String dicTypeName;     // 数据字典类别名称
 
     public BaseEntityConfigDicDTO() {
 
     }
 
     public BaseEntityConfigDicDTO(String fieldName, String fieldValueName, String columnName, String columnValueName,
-                                  String dicType) {
+                                  String dicType, String dicTypeName) {
         this.fieldName = fieldName;
         this.fieldValueName = fieldValueName;
         this.columnName = columnName;
         this.columnValueName = columnValueName;
         this.dicType = dicType;
+        this.dicTypeName = dicTypeName;
     }
 
     public String getFieldName() {
@@ -62,5 +64,13 @@ public class BaseEntityConfigDicDTO {
 
     public void setDicType(String dicType) {
         this.dicType = dicType;
+    }
+
+    public String getDicTypeName() {
+        return dicTypeName;
+    }
+
+    public void setDicTypeName(String dicTypeName) {
+        this.dicTypeName = dicTypeName;
     }
 }

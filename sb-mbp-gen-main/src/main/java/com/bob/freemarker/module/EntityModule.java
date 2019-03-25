@@ -131,11 +131,23 @@ public class EntityModule {
             String line = "            " + entityDTO.getEentityName() + "Service " + entityDTO.getEntityName() + "Service,";
             dynamicLineList.add(line);
         }
+        for (int i = 0; i < entityDTOList.size(); i++) {
+            EntityDTO entityDTO = entityDTOList.get(i);
+            String eentityName = entityDTO.getEentityName();
+            entityDTO.setEntityName(eentityName.substring(0, 1).toLowerCase() + eentityName.substring(1));
+            String line = "            " + entityDTO.getEentityName() + "Mapper " + entityDTO.getEntityName() + "Mapper,";
+            dynamicLineList.add(line);
+        }
         dynamicLineList.add("            CommonUserService commonUserService");
         dynamicLineList.add("    ) throws Exception {");
         dynamicLineList.add("        serviceMap = new HashMap<String, BaseService>() {{");
         for (EntityDTO entityDTO : entityDTOList) {
             dynamicLineList.add("            put(\"" + entityDTO.getEentityName() + "\", " + entityDTO.getEntityName() + "Service);");
+        }
+        dynamicLineList.add("        }};");
+        dynamicLineList.add("        mapperMap = new HashMap<String, BaseCommonMapper>() {{");
+        for (EntityDTO entityDTO : entityDTOList) {
+            dynamicLineList.add("            put(\"" + entityDTO.getEentityName() + "\", " + entityDTO.getEntityName() + "Mapper);");
         }
         dynamicLineList.add("        }};");
         dynamicLineList.add("        GlobalCache.commonUserService = commonUserService;");
@@ -170,7 +182,8 @@ public class EntityModule {
                 if (entityFieldDTO.getDictionaryType() != null) {
                     dicLineList.add("                new BaseEntityConfigDicDTO(\"" + entityFieldDTO.getCamelName()
                             + "\", \"" + entityFieldDTO.getCamelNameDic() + "\", \"" + entityFieldDTO.getCamelNameUnderline()
-                            + "\", \"" + entityFieldDTO.getCcamelNameDicUnderline() + "\", \"" + entityFieldDTO.getDictionaryType() + "\")");
+                            + "\", \"" + entityFieldDTO.getCcamelNameDicUnderline() + "\", \"" + entityFieldDTO.getDictionaryType()
+                            + "\", \"" + entityFieldDTO.getComment() + "\")");
                 }
             }
             if (dicLineList.size() > 0) {
@@ -208,12 +221,18 @@ public class EntityModule {
                 for (RelationshipDTO fromTo : relationshipFromList) {
                     dynamicLineList.add("                new BaseEntityConfigRelationDTO(\"" + fromTo.getRelationType()
                             + "\", \"from\", \"" + fromTo.getToFromEntityType() + "\", \"" + fromTo.getFromToEntityName()
-                            + "\", \"" + fromTo.getFromToEntityType() + "\", \"" + fromTo.getToFromEntityName() + "\"),");
+                            + "\", \"" + fromTo.getFromToEntityType() + "\", \"" + fromTo.getToFromEntityName() + "\",");
+                    dynamicLineList.add("                        \"" + fromTo.getFromToComment() + "\", \""
+                            + fromTo.getToFromComment() + "\", Constants.cascadeDeleteType." + fromTo.getFromToDeleteType()
+                            + ".getValue()),");
                 }
                 for (RelationshipDTO toFrom : relationshipToList) {
                     dynamicLineList.add("                new BaseEntityConfigRelationDTO(\"" + toFrom.getRelationType()
                             + "\", \"to\", \"" + toFrom.getToFromEntityType() + "\", \"" + toFrom.getFromToEntityName()
-                            + "\", \"" + toFrom.getFromToEntityType() + "\", \"" + toFrom.getToFromEntityName() + "\"),");
+                            + "\", \"" + toFrom.getFromToEntityType() + "\", \"" + toFrom.getToFromEntityName() + "\",");
+                    dynamicLineList.add("                        \"" + toFrom.getFromToComment() + "\", \""
+                            + toFrom.getToFromComment() + "\", Constants.cascadeDeleteType." + toFrom.getFromToDeleteType()
+                            + ".getValue()),");
                 }
                 String listLastStr = dynamicLineList.get(dynamicLineList.size() - 1);
                 dynamicLineList.set(dynamicLineList.size() - 1, listLastStr.substring(0, listLastStr.length() - 1));

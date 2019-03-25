@@ -137,6 +137,23 @@ public final class Constants {
         }
     }
 
+    // 级联删除类型
+    public enum cascadeDeleteType implements EnumInter {
+        DELETE("DELETE", "级联删除"), FORBIDDEN("FORBIDDEN", "禁止删除"), NULL("NULL", "级联置空");
+        private String value;
+        private String name;
+        private cascadeDeleteType(String value, String name) {
+            this.value = value;
+            this.name = name;
+        }
+        public String getValue(){
+            return value;
+        }
+        public String getName(){
+            return name;
+        }
+    }
+
     private Constants() {
     }
 }
