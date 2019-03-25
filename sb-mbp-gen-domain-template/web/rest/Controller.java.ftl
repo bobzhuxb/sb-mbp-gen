@@ -33,6 +33,7 @@ public class ${eentityName}Controller {
 
     private static final String ENTITY_NAME = "${entityName}";
 
+    // 注意：这个常量值不要修改
     private static final String DOMAIN_NAME = "${eentityName}";
 
     @Autowired
