@@ -205,9 +205,9 @@ public class ${eentityName}Controller {
     })
     @GetMapping("/${entityUrl}/{id}")
     public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}(
-            @ApiParam(name="主键ID") @PathVariable Long id, @ApiIgnore BaseCriteria criteria) {
+            @ApiParam(name="主键ID") @PathVariable Long id, @ApiIgnore ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 根据ID查询${eentityName} : {}, {}", id, criteria);
-        ReturnCommonDTO<${eentityName}DTO> data = ${entityName}Service.baseFindOne(id, criteria, null);
+        ReturnCommonDTO<${eentityName}DTO> data = ${entityName}Service.baseFindOne(DOMAIN_NAME, id, criteria, null);
         return ResponseEntity.ok().headers(null).body(data);
     }
 
@@ -241,7 +241,7 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<List<${eentityName}DTO>>> getAll${eentityName}s(
             @ApiIgnore ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询所有${eentityName} : {}", criteria);
-        ReturnCommonDTO<List<${eentityName}DTO>> data = ${entityName}Service.baseFindAll(criteria, null);
+        ReturnCommonDTO<List<${eentityName}DTO>> data = ${entityName}Service.baseFindAll(DOMAIN_NAME, criteria, null);
         return ResponseEntity.ok().headers(null).body(data);
     }
 
@@ -278,7 +278,7 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<IPage<${eentityName}DTO>>> getPage${eentityName}s(
             @ApiIgnore ${eentityName}Criteria criteria, @ApiIgnore MbpPage pageable) {
         log.debug("Controller ==> 分页查询${eentityName} : {}, {}", criteria, pageable);
-        ReturnCommonDTO<IPage<${eentityName}DTO>> data = ${entityName}Service.baseFindPage(criteria, pageable, null);
+        ReturnCommonDTO<IPage<${eentityName}DTO>> data = ${entityName}Service.baseFindPage(DOMAIN_NAME, criteria, pageable, null);
         return ResponseEntity.ok().headers(null).body(data);
     }
 
@@ -308,7 +308,7 @@ public class ${eentityName}Controller {
     @GetMapping("/${entityUrl}-count")
     public ResponseEntity<ReturnCommonDTO<Integer>> get${eentityName}Count(@ApiIgnore ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询数量${eentityName} : {}", criteria);
-        ReturnCommonDTO<Integer> data = ${entityName}Service.baseFindCount(criteria);
+        ReturnCommonDTO<Integer> data = ${entityName}Service.baseFindCount(DOMAIN_NAME, criteria, null);
         return ResponseEntity.ok().headers(null).body(data);
     }
 
