@@ -808,7 +808,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         return baseDeleteByMapCascade(entityTypeName, new HashMap<String, Object>() {{put("id", id);}});
     }
 
-<<<<<<< HEAD
     /**
      * 根据ID列表删除数据（同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
      * @param entityTypeName 实体类型名
