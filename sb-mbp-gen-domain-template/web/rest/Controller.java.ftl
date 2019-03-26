@@ -3,6 +3,7 @@ package ${packageName}.web.rest;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import ${packageName}.annotation.validation.group.*;
 import ${packageName}.config.Constants;
+import ${packageName}.domain.*;
 import ${packageName}.dto.*;
 import ${packageName}.dto.criteria.*;
 import ${packageName}.dto.help.*;
@@ -31,10 +32,8 @@ public class ${eentityName}Controller {
 
     private final Logger log = LoggerFactory.getLogger(${eentityName}Controller.class);
 
-    private static final String ENTITY_NAME = "${entityName}";
-
     // 注意：这个常量值不要修改
-    private static final String DOMAIN_NAME = "${eentityName}";
+    private final static String DOMAIN_NAME = ${eentityName}.class.getSimpleName();
 
     @Autowired
     private ${eentityName}Service ${entityName}Service;
@@ -71,7 +70,7 @@ public class ${eentityName}Controller {
         @RequestBody @Validated(value = {ValidateCreateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
         log.debug("Controller ==> 新增${eentityName} : {}", ${entityName}DTO);
         if (${entityName}DTO.getId() != null) {
-            throw new BadRequestAlertException("id必须为空", ENTITY_NAME, "idexists");
+            throw new BadRequestAlertException("id必须为空", null, "idexists");
         }
         // 参数验证
         ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields(bindingResult);
@@ -121,7 +120,7 @@ public class ${eentityName}Controller {
         @RequestBody @Validated(value = {ValidateUpdateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
         log.debug("Controller ==> 修改${eentityName} : {}", ${entityName}DTO);
         if (${entityName}DTO.getId() == null) {
-            throw new BadRequestAlertException("id不得为空", ENTITY_NAME, "idnotexists");
+            throw new BadRequestAlertException("id不得为空", null, "idnotexists");
         }
         // 参数验证
         ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields(bindingResult);
