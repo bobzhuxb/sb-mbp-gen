@@ -108,24 +108,6 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     }
 
     /**
-     * 删除不在ID列表中的数据（同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
-     * @param idList 主键ID列表
-     * @return 结果返回码和消息
-     * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
-     */
-    public ReturnCommonDTO baseDeleteByIdListNot(List<Long> idList) {
-        log.debug("Service ==> 删除不在ID列表中的${eentityName}DTO {}", idList);
-        Optional.ofNullable(baseMapper.selectList(new QueryWrapper<${eentityName}>().select("id").notIn("id", idList)))
-                .get().stream().forEach(${entityName} -> {
-            ReturnCommonDTO returnCommonDTO = baseDeleteByMapCascade(new HashMap<String, Object>() {{put("id", ${entityName}.getId());}});
-            if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
-                throw new CommonException(returnCommonDTO.getErrMsg());
-            }
-        });
-        return new ReturnCommonDTO();
-    }
-
-    /**
      * 根据指定条件删除数据（级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
      * @param columnMap 表字段map对象
      * @return 结果返回码和消息

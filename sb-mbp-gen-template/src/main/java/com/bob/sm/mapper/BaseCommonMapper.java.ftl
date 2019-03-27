@@ -11,6 +11,8 @@ import java.util.List;
 
 public interface BaseCommonMapper<T> extends BaseMapper<T> {
 
+    void cascadeToNull(@Param("relationColumnName")String relationColumnName, @Param("relationId")long relationId);
+
     List<T> joinSelectList(@Param("queryMain") String queryMain, @Param(Constants.WRAPPER) Wrapper<T> wrapper);
 
     IPage<T> joinSelectPage(Page<T> page, @Param("queryMain") String queryMain, @Param(Constants.WRAPPER) Wrapper<T> wrapper);

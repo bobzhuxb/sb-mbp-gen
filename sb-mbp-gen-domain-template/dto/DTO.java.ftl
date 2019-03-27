@@ -5,10 +5,9 @@ import ${packageName}.annotation.validation.*;
 import ${packageName}.annotation.validation.group.*;
 import ${packageName}.domain.*;
 import ${packageName}.config.Constants;
+import javax.validation.Valid;
 import javax.validation.constraints.*;
-<#if fromToList?? && (fromToList?size > 0) >
 import java.util.List;
-</#if>
 import java.util.Objects;
 
 /**
@@ -56,10 +55,12 @@ public class ${eentityName}DTO extends BaseDTO {
 	</#list>
 	<#list fromToList as fromTo>
 
+    @Valid
 	<#if fromTo.relationType == "OneToMany">
     private List<${fromTo.fromToEntityType}DTO> ${fromTo.fromToEntityName}List;    // ${fromTo.fromToComment}列表
 	</#if>
 	<#if fromTo.relationType == "OneToOne">
+    @Valid
     private ${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName};    // ${fromTo.fromToComment}
 	</#if>
 	</#list>

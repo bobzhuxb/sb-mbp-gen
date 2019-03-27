@@ -68,7 +68,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         Optional.ofNullable(GlobalCache.getMapperMap().get(entityTypeName).selectList(
                 new QueryWrapper<T>().select("id").eq(relatedColumnName, relatedId).notIn("id", idList))
         ).get().stream().forEach(domain -> {
-            ReturnCommonDTO returnCommonDTO = baseDeleteByMapCascade(new HashMap<String, Object>() {{
+            ReturnCommonDTO returnCommonDTO = baseDeleteByMapCascade(entityTypeName, new HashMap<String, Object>() {{
                 put("id", ((BaseDomain) domain).getId());
             }});
             if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
@@ -761,9 +761,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     if (subDtoIdList == null) {
                         // 如果子属性列表的所有都没有填写ID，则认为是全刷新，清空子属性列表
                         GlobalCache.getServiceMap().get(relationDTO.getToType()).baseDeleteByMapCascade(
-                            new HashMap<String, Object>() {{
-                                put(relatedColumnName, dtoIdUpdate);
-                        }});
+                                relationDTO.getToType(), new HashMap<String, Object>() {{put(relatedColumnName, dtoIdUpdate);}});
                     } else {
                         // 如果子属性列表的部分或全部填写了ID，则删除当前条件（指定了关联字段的值）下的其它数据
                         GlobalCache.getServiceMap().get(relationDTO.getToType()).baseDeleteByRelationIdWithoutIdList(
@@ -798,16 +796,67 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         return result ? new ReturnCommonDTO(dtoId) : new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "保存失败");
     }
 
-    default ReturnCommonDTO baseDeleteById(Long id) {
-        return new ReturnCommonDTO<>();
+    /**
+     * 根据ID删除数据（同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
+     * @param entityTypeName 实体类型名
+     * @param id 主键ID
+     * @return 结果返回码和消息
+     * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事务的一致性
+     */
+    default ReturnCommonDTO baseDeleteById(String entityTypeName, Long id) {
+        return baseDeleteByMapCascade(entityTypeName, new HashMap<String, Object>() {{put("id", id);}});
     }
 
-    default ReturnCommonDTO baseDeleteByIdList(List<Long> idList) {
-        return new ReturnCommonDTO<>();
+    /**
+     * 根据ID列表删除数据（同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
+     * @param entityTypeName 实体类型名
+     * @param idList 主键ID列表
+     * @return 结果返回码和消息
+     * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
+     */
+    default ReturnCommonDTO baseDeleteByIdList(String entityTypeName, List<Long> idList) {
+        idList.forEach(id -> {
+            ReturnCommonDTO returnCommonDTO = baseDeleteByMapCascade(entityTypeName, new HashMap<String, Object>() {{put("id", id);}});
+            if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
+                throw new CommonException(returnCommonDTO.getErrMsg());
+            }
+        });
+        return new ReturnCommonDTO();
     }
 
-    default ReturnCommonDTO baseDeleteByMapCascade(Map<String, Object> deleteMap) {
-        return new ReturnCommonDTO<>();
+    /**
+     * 根据指定条件删除数据（级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
+     * @param entityTypeName 实体类型名
+     * @param columnMap 表字段map对象
+     * @return 结果返回码和消息
+     * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事务的一致性
+     */
+    default ReturnCommonDTO baseDeleteByMapCascade(String entityTypeName, Map<String, Object> columnMap) {
+        // 删除级联实体或置空关联字段或禁止删除
+        listByMap(columnMap).forEach(domain -> {
+            Optional.ofNullable(GlobalCache.getEntityRelationsMap().get(entityTypeName)).get().forEach(relationDTO -> {
+                // 数据库表的关联列字段名。注意：这里先限制为不能随意修改关联字段的数据库字段名，留待以后优化
+                String relatedColumnName = MyStringUtil.camelToUnderline(relationDTO.getToName()) + "_id";
+                if (Constants.cascadeDeleteType.FORBIDDEN.getValue().equals(relationDTO.getCascadeDelete())) {
+                    // 级联禁止删除
+                    int subCount = GlobalCache.getMapperMap().get(relationDTO.getToType()).selectCount(
+                            new QueryWrapper<>().eq(relatedColumnName, domain.getId()));
+                    if (subCount > 0) {
+                        throw new CommonException("有存在的" + relationDTO.getToFromComment() + "，无法删除。");
+                    }
+                } else if (Constants.cascadeDeleteType.NULL.getValue().equals(relationDTO.getCascadeDelete())) {
+                    // 级联置空
+                    GlobalCache.getMapperMap().get(relationDTO.getToType()).cascadeToNull(relatedColumnName, domain.getId());
+                } else {
+                    // 默认：级联删除
+                    GlobalCache.getServiceMap().get(relationDTO.getToType()).baseDeleteByMapCascade(
+                            relationDTO.getToType(), new HashMap<String, Object>() {{put(relatedColumnName, domain.getId());}});
+                }
+            });
+        });
+        // 根据指定条件删除当前实体的数据
+        removeByMap(columnMap);
+        return new ReturnCommonDTO();
     }
 
     default ReturnCommonDTO<O> baseFindOne(Long id, BaseCriteria criteria, Map<String, Object> appendParamMap) {

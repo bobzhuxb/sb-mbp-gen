@@ -1,14 +1,13 @@
 package com.bob.sm.config;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.bob.sm.domain.BaseDomain;
 import com.bob.sm.dto.BaseDTO;
 import com.bob.sm.dto.criteria.BaseCriteria;
 import com.bob.sm.dto.help.BaseEntityConfigDTO;
 import com.bob.sm.dto.help.BaseEntityConfigDicDTO;
 import com.bob.sm.dto.help.BaseEntityConfigRelationDTO;
-import com.bob.sm.service.*;
 import com.bob.sm.mapper.*;
+import com.bob.sm.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +24,7 @@ public class GlobalCache {
 
     private static Map<String, BaseService> serviceMap = new HashMap<>();
 
-    private static Map<String, BaseMapper> mapperMap = new HashMap<>();
+    private static Map<String, BaseCommonMapper> mapperMap = new HashMap<>();
 
     private static CommonUserService commonUserService;
 
@@ -34,8 +33,6 @@ public class GlobalCache {
     private static Map<String, Class<? extends BaseCriteria>> criteriaClassMap = new HashMap<>();
 
     private static Map<String, Class<? extends BaseDTO>> dtoClassMap = new HashMap<>();
-
-    private static CommonUserService commonUserService;
 
     @Autowired
     public GlobalCache(
@@ -80,6 +77,47 @@ public class GlobalCache {
             SfstFinancialBillService sfstFinancialBillService,
             SfstOrderBillService sfstOrderBillService,
             SfstExcelImportHisService sfstExcelImportHisService,
+            SystemUserMapper systemUserMapper,
+            SystemRoleMapper systemRoleMapper,
+            SystemUserRoleMapper systemUserRoleMapper,
+            SystemPermissionMapper systemPermissionMapper,
+            SystemResourceMapper systemResourceMapper,
+            SystemResourcePermissionMapper systemResourcePermissionMapper,
+            SystemRoleResourceMapper systemRoleResourceMapper,
+            SystemUserResourceMapper systemUserResourceMapper,
+            SystemOrganizationMapper systemOrganizationMapper,
+            SystemLogMapper systemLogMapper,
+            BaseDictionaryMapper baseDictionaryMapper,
+            SfstSupplierMapper sfstSupplierMapper,
+            SfstSupplierLicenseMapper sfstSupplierLicenseMapper,
+            SfstSchoolMapper sfstSchoolMapper,
+            SfstSchoolCertificateMapper sfstSchoolCertificateMapper,
+            SfstSchoolTypeMapper sfstSchoolTypeMapper,
+            SfstSchoolSupplierMapper sfstSchoolSupplierMapper,
+            SfstMaterialMapper sfstMaterialMapper,
+            SfstMaterialPicMapper sfstMaterialPicMapper,
+            SfstMaterialPriceMapper sfstMaterialPriceMapper,
+            SfstSchoolMaterialAttrMapper sfstSchoolMaterialAttrMapper,
+            SfstSupplierInboundOrderMapper sfstSupplierInboundOrderMapper,
+            SfstSupplierInboundBatchMapper sfstSupplierInboundBatchMapper,
+            SfstTestRecordMapper sfstTestRecordMapper,
+            SfstTestRecordReportMapper sfstTestRecordReportMapper,
+            SfstTestRecordBatchMapper sfstTestRecordBatchMapper,
+            SfstSchoolBatchMapper sfstSchoolBatchMapper,
+            SfstSchoolMaterialStockRecordMapper sfstSchoolMaterialStockRecordMapper,
+            SfstSchoolOrderMapper sfstSchoolOrderMapper,
+            SfstSchoolOutboundRecordMapper sfstSchoolOutboundRecordMapper,
+            SfstDishMapper sfstDishMapper,
+            SfstDishPicMapper sfstDishPicMapper,
+            SfstDishMaterialMapper sfstDishMaterialMapper,
+            SfstMenuMapper sfstMenuMapper,
+            SfstSubMenuMapper sfstSubMenuMapper,
+            SfstSubMenuDishMapper sfstSubMenuDishMapper,
+            SfstSubMenuDishSchoolBatchMapper sfstSubMenuDishSchoolBatchMapper,
+            SfstCondimentShowMapper sfstCondimentShowMapper,
+            SfstFinancialBillMapper sfstFinancialBillMapper,
+            SfstOrderBillMapper sfstOrderBillMapper,
+            SfstExcelImportHisMapper sfstExcelImportHisMapper,
             CommonUserService commonUserService
     ) throws Exception {
         serviceMap = new HashMap<String, BaseService>() {{
@@ -125,7 +163,50 @@ public class GlobalCache {
             put("SfstOrderBill", sfstOrderBillService);
             put("SfstExcelImportHis", sfstExcelImportHisService);
         }};
-        this.commonUserService = commonUserService;
+        mapperMap = new HashMap<String, BaseCommonMapper>() {{
+            put("SystemUser", systemUserMapper);
+            put("SystemRole", systemRoleMapper);
+            put("SystemUserRole", systemUserRoleMapper);
+            put("SystemPermission", systemPermissionMapper);
+            put("SystemResource", systemResourceMapper);
+            put("SystemResourcePermission", systemResourcePermissionMapper);
+            put("SystemRoleResource", systemRoleResourceMapper);
+            put("SystemUserResource", systemUserResourceMapper);
+            put("SystemOrganization", systemOrganizationMapper);
+            put("SystemLog", systemLogMapper);
+            put("BaseDictionary", baseDictionaryMapper);
+            put("SfstSupplier", sfstSupplierMapper);
+            put("SfstSupplierLicense", sfstSupplierLicenseMapper);
+            put("SfstSchool", sfstSchoolMapper);
+            put("SfstSchoolCertificate", sfstSchoolCertificateMapper);
+            put("SfstSchoolType", sfstSchoolTypeMapper);
+            put("SfstSchoolSupplier", sfstSchoolSupplierMapper);
+            put("SfstMaterial", sfstMaterialMapper);
+            put("SfstMaterialPic", sfstMaterialPicMapper);
+            put("SfstMaterialPrice", sfstMaterialPriceMapper);
+            put("SfstSchoolMaterialAttr", sfstSchoolMaterialAttrMapper);
+            put("SfstSupplierInboundOrder", sfstSupplierInboundOrderMapper);
+            put("SfstSupplierInboundBatch", sfstSupplierInboundBatchMapper);
+            put("SfstTestRecord", sfstTestRecordMapper);
+            put("SfstTestRecordReport", sfstTestRecordReportMapper);
+            put("SfstTestRecordBatch", sfstTestRecordBatchMapper);
+            put("SfstSchoolBatch", sfstSchoolBatchMapper);
+            put("SfstSchoolMaterialStockRecord", sfstSchoolMaterialStockRecordMapper);
+            put("SfstSchoolOrder", sfstSchoolOrderMapper);
+            put("SfstSchoolOutboundRecord", sfstSchoolOutboundRecordMapper);
+            put("SfstDish", sfstDishMapper);
+            put("SfstDishPic", sfstDishPicMapper);
+            put("SfstDishMaterial", sfstDishMaterialMapper);
+            put("SfstMenu", sfstMenuMapper);
+            put("SfstSubMenu", sfstSubMenuMapper);
+            put("SfstSubMenuDish", sfstSubMenuDishMapper);
+            put("SfstSubMenuDishSchoolBatch", sfstSubMenuDishSchoolBatchMapper);
+            put("SfstCondimentShow", sfstCondimentShowMapper);
+            put("SfstFinancialBill", sfstFinancialBillMapper);
+            put("SfstOrderBill", sfstOrderBillMapper);
+            put("SfstExcelImportHis", sfstExcelImportHisMapper);
+        }};
+        GlobalCache.commonUserService = commonUserService;
         for (String entityName : entityNames) {
             Class domainClass = Class.forName("com.bob.sm.domain." + entityName);
             domainClassMap.put(entityName, domainClass);
@@ -195,7 +276,8 @@ public class GlobalCache {
 
     private static Map<String, List<BaseEntityConfigRelationDTO>> entityRelationsMap = new HashMap<String, List<BaseEntityConfigRelationDTO>>() {{
         put("SystemUser", Arrays.asList(
-                new BaseEntityConfigRelationDTO("OneToMany", "from", "SystemUser", "systemUserRole", "SystemUserRole", "systemUser"),
+                new BaseEntityConfigRelationDTO("OneToMany", "from", "SystemUser", "systemUserRole", "SystemUserRole", "systemUser",
+                        "用户", "角色", Constants.cascadeDeleteType.DELETE.getValue()),
                 new BaseEntityConfigRelationDTO("OneToMany", "from", "SystemUser", "systemUserResource", "SystemUserResource", "systemUser"),
                 new BaseEntityConfigRelationDTO("OneToMany", "from", "SystemUser", "schoolOrderAsShipPerson", "SfstSchoolOrder", "shipPerson"),
                 new BaseEntityConfigRelationDTO("OneToMany", "from", "SystemUser", "schoolOrderAsReceiptPerson", "SfstSchoolOrder", "receiptPerson"),
@@ -410,7 +492,7 @@ public class GlobalCache {
         return serviceMap;
     }
 
-    public static Map<String, BaseMapper> getMapperMap() {
+    public static Map<String, BaseCommonMapper> getMapperMap() {
         return mapperMap;
     }
 

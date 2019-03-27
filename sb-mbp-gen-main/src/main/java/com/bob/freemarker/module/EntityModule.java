@@ -145,7 +145,7 @@ public class EntityModule {
             dynamicLineList.add("            put(\"" + entityDTO.getEentityName() + "\", " + entityDTO.getEntityName() + "Service);");
         }
         dynamicLineList.add("        }};");
-        dynamicLineList.add("        mapperMap = new HashMap<String, BaseMapper>() {{");
+        dynamicLineList.add("        mapperMap = new HashMap<String, BaseCommonMapper>() {{");
         for (EntityDTO entityDTO : entityDTOList) {
             dynamicLineList.add("            put(\"" + entityDTO.getEentityName() + "\", " + entityDTO.getEntityName() + "Mapper);");
         }
@@ -220,12 +220,18 @@ public class EntityModule {
                 for (RelationshipDTO fromTo : relationshipFromList) {
                     dynamicLineList.add("                new BaseEntityConfigRelationDTO(\"" + fromTo.getRelationType()
                             + "\", \"from\", \"" + fromTo.getToFromEntityType() + "\", \"" + fromTo.getFromToEntityName()
-                            + "\", \"" + fromTo.getFromToEntityType() + "\", \"" + fromTo.getToFromEntityName() + "\"),");
+                            + "\", \"" + fromTo.getFromToEntityType() + "\", \"" + fromTo.getToFromEntityName() + "\",");
+                    dynamicLineList.add("                        \"" + fromTo.getFromToComment() + "\", \""
+                            + fromTo.getToFromComment() + "\", Constants.cascadeDeleteType." + fromTo.getFromToDeleteType()
+                            + ".getValue()),");
                 }
                 for (RelationshipDTO toFrom : relationshipToList) {
                     dynamicLineList.add("                new BaseEntityConfigRelationDTO(\"" + toFrom.getRelationType()
                             + "\", \"to\", \"" + toFrom.getToFromEntityType() + "\", \"" + toFrom.getFromToEntityName()
-                            + "\", \"" + toFrom.getFromToEntityType() + "\", \"" + toFrom.getToFromEntityName() + "\"),");
+                            + "\", \"" + toFrom.getFromToEntityType() + "\", \"" + toFrom.getToFromEntityName() + "\",");
+                    dynamicLineList.add("                        \"" + toFrom.getFromToComment() + "\", \""
+                            + toFrom.getToFromComment() + "\", Constants.cascadeDeleteType." + toFrom.getFromToDeleteType()
+                            + ".getValue()),");
                 }
                 String listLastStr = dynamicLineList.get(dynamicLineList.size() - 1);
                 dynamicLineList.set(dynamicLineList.size() - 1, listLastStr.substring(0, listLastStr.length() - 1));

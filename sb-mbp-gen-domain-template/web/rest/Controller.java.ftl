@@ -152,7 +152,7 @@ public class ${eentityName}Controller {
         log.debug("Controller ==> 根据ID删除${eentityName} : {}", id);
         ReturnCommonDTO resultDTO = null;
         try {
-            resultDTO = ${entityName}Service.baseDeleteById(id);
+            resultDTO = ${entityName}Service.baseDeleteById(DOMAIN_NAME, id);
         } catch (CommonException e) {
             log.error(e.getMessage(), e);
             resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
@@ -179,7 +179,7 @@ public class ${eentityName}Controller {
         log.debug("Controller ==> 批量删除${eentityName} : {}", idList);
         ReturnCommonDTO resultDTO = null;
         try {
-            resultDTO = ${entityName}Service.baseDeleteByIdList(idList);
+            resultDTO = ${entityName}Service.baseDeleteByIdList(DOMAIN_NAME, idList);
         } catch (CommonException e) {
             log.error(e.getMessage(), e);
             resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());

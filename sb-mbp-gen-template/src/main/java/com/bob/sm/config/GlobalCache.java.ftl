@@ -1,6 +1,5 @@
 package ${packageName}.config;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import ${packageName}.domain.BaseDomain;
 import ${packageName}.dto.BaseDTO;
 import ${packageName}.dto.criteria.BaseCriteria;
@@ -25,7 +24,7 @@ public class GlobalCache {
 
     private static Map<String, BaseService> serviceMap = new HashMap<>();
 
-    private static Map<String, BaseMapper> mapperMap = new HashMap<>();
+    private static Map<String, BaseCommonMapper> mapperMap = new HashMap<>();
 
     private static CommonUserService commonUserService;
 
@@ -53,7 +52,7 @@ public class GlobalCache {
         return serviceMap;
     }
 
-    public static Map<String, BaseMapper> getMapperMap() {
+    public static Map<String, BaseCommonMapper> getMapperMap() {
         return mapperMap;
     }
 
