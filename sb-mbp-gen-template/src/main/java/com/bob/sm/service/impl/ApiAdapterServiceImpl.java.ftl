@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPCell;
@@ -149,14 +150,14 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
         pdfPTableParam.addCell(pdfPCellParamTitle);
         // 设置表内容
         Optional.ofNullable(configDTO.getParam() == null ? null : configDTO.getParam().getCriteriaList())
-                .get().forEach(apiAdapterCriteriaDTO -> {
+                .ifPresent(criteriaList -> criteriaList.forEach(apiAdapterCriteriaDTO -> {
             PdfPCell pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getFromParam(), pdfFont));
             pdfPCellParam.setFixedHeight(fixedHeight);
             pdfPTableParam.addCell(pdfPCellParam);
             pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getDescr(), pdfFont));
             pdfPCellParam.setFixedHeight(fixedHeight);
             pdfPTableParam.addCell(pdfPCellParam);
-        });
+        }));
         pdfDocument.add(pdfPTableParam);
         // 设置返回说明
         pdfDocument.add(new Paragraph("接口返回：", pdfFont));
@@ -392,6 +393,21 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                     formNewReturnData(fieldConfigTreeList, nextNewData, 0, singleRetData, indexList);
                     ((JSONArray) newRetData).add(nextNewData);
                 }
+            } else if (retData instanceof IPage) {
+                newRetData = new JSONObject();
+                JSONArray pageListArray = new JSONArray();
+                ((JSONObject) newRetData).put("total", ((IPage) retData).getTotal());
+                ((JSONObject) newRetData).put("size", ((IPage) retData).getSize());
+                ((JSONObject) newRetData).put("current", ((IPage) retData).getCurrent());
+                ((JSONObject) newRetData).put("pages", ((IPage) retData).getPages());
+                for (int i = 0; i < (((IPage) retData).getRecords()).size(); i++) {
+                    Object pageSingleData = (((IPage) retData).getRecords()).get(i);
+                    // List的下一层必然是Object
+                    JSONObject nextNewData = new JSONObject();
+                    formNewReturnData(fieldConfigTreeList, nextNewData, 0, pageSingleData, indexList);
+                    pageListArray.add(nextNewData);
+                }
+                ((JSONObject) newRetData).put("records", pageListArray);
             } else {
                 newRetData = new JSONObject();
                 formNewReturnData(fieldConfigTreeList, newRetData, 0, retData, indexList);

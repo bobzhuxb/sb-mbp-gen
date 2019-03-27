@@ -189,7 +189,7 @@ public class ${eentityName}Controller {
 
     /**
      * 查询单条
-	 * @param id 主键ID
+	 * @param primaryId 主键ID
 	 * @param criteria 附带查询条件
      * @return 使用ResponseEntity封装的单条${entityComment}数据
      */
@@ -203,11 +203,11 @@ public class ${eentityName}Controller {
                     "errMsg - 错误消息<br/>" +
                     "data - 查询结果", response=Object.class)
     })
-    @GetMapping("/${entityUrl}/{id}")
+    @GetMapping("/${entityUrl}/{primaryId}")
     public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}(
-            @ApiParam(name="主键ID") @PathVariable Long id, @ApiIgnore ${eentityName}Criteria criteria) {
-        log.debug("Controller ==> 根据ID查询${eentityName} : {}, {}", id, criteria);
-        ReturnCommonDTO<${eentityName}DTO> data = ${entityName}Service.baseFindOne(DOMAIN_NAME, id, criteria, null);
+            @ApiParam(name="主键ID") @PathVariable Long primaryId, @ApiIgnore ${eentityName}Criteria criteria) {
+        log.debug("Controller ==> 根据ID查询${eentityName} : {}, {}", primaryId, criteria);
+        ReturnCommonDTO<${eentityName}DTO> data = ${entityName}Service.baseFindOne(DOMAIN_NAME, primaryId, criteria, null);
         return ResponseEntity.ok().headers(null).body(data);
     }
 
