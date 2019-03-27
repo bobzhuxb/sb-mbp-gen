@@ -182,7 +182,8 @@ public class EntityModule {
                 if (entityFieldDTO.getDictionaryType() != null) {
                     dicLineList.add("                new BaseEntityConfigDicDTO(\"" + entityFieldDTO.getCamelName()
                             + "\", \"" + entityFieldDTO.getCamelNameDic() + "\", \"" + entityFieldDTO.getCamelNameUnderline()
-                            + "\", \"" + entityFieldDTO.getCcamelNameDicUnderline() + "\", \"" + entityFieldDTO.getDictionaryType() + "\")");
+                            + "\", \"" + entityFieldDTO.getCcamelNameDicUnderline() + "\", \"" + entityFieldDTO.getDictionaryType()
+                            + "\", \"" + entityFieldDTO.getComment() + "\")");
                 }
             }
             if (dicLineList.size() > 0) {

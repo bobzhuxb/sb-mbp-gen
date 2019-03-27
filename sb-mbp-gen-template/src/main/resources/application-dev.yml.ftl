@@ -11,7 +11,7 @@ spring:
         password: ${dbPassword}
     http:
         multipart:
-            location: D:/localFile/sbmbp
+            location: D:/localFile/${projectName}
 
 server:
     port: 8080
@@ -59,3 +59,5 @@ jhipster:
 
 permission:
     do-init: true
+api-pdf:
+    generate: true

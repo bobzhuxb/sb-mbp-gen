@@ -18,6 +18,12 @@ public class YmlConfig {
     private String location;
 
     /**
+     * 是否生成PDF格式的API文档
+     */
+    @Value("${api-pdf.generate}")
+    private String apiPdfGenerate;
+
+    /**
      * 启动或关闭图片压缩
      */
     @Value("${app.pic-compress-switch}")
@@ -53,6 +59,14 @@ public class YmlConfig {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public String getApiPdfGenerate() {
+        return apiPdfGenerate;
+    }
+
+    public void setApiPdfGenerate(String apiPdfGenerate) {
+        this.apiPdfGenerate = apiPdfGenerate;
     }
 
     public String getPicCompressSwitch() {

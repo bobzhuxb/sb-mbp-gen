@@ -1,11 +1,8 @@
 package ${packageName}.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import ${packageName}.domain.*;
-import ${packageName}.dto.*;
-import ${packageName}.dto.criteria.*;
-import ${packageName}.dto.help.MbpPage;
-import ${packageName}.dto.help.ReturnCommonDTO;
+import ${packageName}.domain.${eentityName};
+import ${packageName}.dto.${eentityName}DTO;
+import ${packageName}.dto.criteria.${eentityName}Criteria;
 
 import java.util.List;
 import java.util.Map;

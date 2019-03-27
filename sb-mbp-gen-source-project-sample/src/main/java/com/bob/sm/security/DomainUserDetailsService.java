@@ -52,7 +52,7 @@ public class DomainUserDetailsService implements UserDetailsService {
         loginFilter.setEquals(login);
         systemUserCriteria.setLogin(loginFilter);
         systemUserCriteria.setAssociationNameList(Arrays.asList("systemUserRoleList", "systemUserRoleList.systemRole"));
-        List<SystemUserDTO> userList = systemUserService.baseFindAll(systemUserCriteria, null).getData();
+        List<SystemUserDTO> userList = systemUserService.baseFindAll("SystemUser", systemUserCriteria, null).getData();
         if (userList == null || userList.size() == 0) {
             throw new UsernameNotFoundException("用户" + login + "找不到");
         }
@@ -91,7 +91,8 @@ public class DomainUserDetailsService implements UserDetailsService {
         resourcePermissionCriteria.setSystemResourceId(resourceIdFilter);
         resourcePermissionCriteria.setAssociationNameList(Arrays.asList("systemPermission"));
         List<SystemResourcePermissionDTO> systemResourcePermissionDTOList
-                = systemResourcePermissionService.baseFindAll(resourcePermissionCriteria, null).getData();
+                = systemResourcePermissionService.baseFindAll(
+                        "SystemResourcePermission", resourcePermissionCriteria, null).getData();
         // 去重
         List<Long> permissionIdList = new ArrayList<>();
         for (SystemResourcePermissionDTO systemResourcePermissionDTO : systemResourcePermissionDTOList) {

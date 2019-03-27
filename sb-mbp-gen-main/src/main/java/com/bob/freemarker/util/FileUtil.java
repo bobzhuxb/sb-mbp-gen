@@ -138,10 +138,11 @@ public class FileUtil {
      * @param toPaths 生成的项目的包的三层路径
      * @param cfg 模板配置
      * @param root 模板填充内容
+     * @param ProjectName 首字母大写的项目名称
      */
     public static void generateSrcFiles(final String templateBasePath, final String sourceCodeBasePath,
                                         String templateRelativePath, String projectRelativePath, String[] toPaths,
-                                        Configuration cfg, Map<String, String> root) throws Exception {
+                                        Configuration cfg, Map<String, String> root, String ProjectName) throws Exception {
         // 当前模板的相对路径（例如src）
         File templatePath = new File(templateBasePath + templateRelativePath);
         if (templatePath.exists()) {
@@ -170,15 +171,24 @@ public class FileUtil {
                             nextProjectRelativePath = projectRelativePath + subFolderName + "\\";
                         }
                         generateSrcFiles(templateBasePath, sourceCodeBasePath, nextTemplateRelativePath,
-                                nextProjectRelativePath, toPaths, cfg, root);
+                                nextProjectRelativePath, toPaths, cfg, root, ProjectName);
                     } else {
                         // 有子文件，文件目录是file2.getAbsolutePath()
                         // 根据模板文件生成代码文件
                         String templateFileName = templateSubFile.getName();      // 模板文件名（不包含路径）
-                        String sourceFileName = templateFileName.substring(0, templateFileName.lastIndexOf("."));   // 代码文件名（不包含路径）
-                        File objFile = new File(sourceCodeBasePath + projectRelativePath + sourceFileName);    // 代码文件
-                        File templateDirectory = new File(templateBasePath + templateRelativePath);
-                        generateFileWithTemplate(objFile, templateDirectory, templateFileName, cfg, root);
+                        if (!templateFileName.endsWith(".ftl")) {
+                            // 固定文件（非模板）
+                            copyFile(new File(templateSubFile.getPath()), new File(sourceCodeBasePath + projectRelativePath + templateFileName));
+                        } else {
+                            // 根据模板生成文件
+                            String sourceFileName = templateFileName.substring(0, templateFileName.lastIndexOf("."));   // 代码文件名（不包含路径）
+                            if (templateFileName.equals("Application.java.ftl")) {
+                                sourceFileName = ProjectName + sourceFileName;
+                            }
+                            File objFile = new File(sourceCodeBasePath + projectRelativePath + sourceFileName);    // 代码文件
+                            File templateDirectory = new File(templateBasePath + templateRelativePath);
+                            generateFileWithTemplate(objFile, templateDirectory, templateFileName, cfg, root);
+                        }
                     }
                 }
             }

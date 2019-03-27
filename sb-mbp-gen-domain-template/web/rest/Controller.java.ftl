@@ -3,6 +3,7 @@ package ${packageName}.web.rest;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import ${packageName}.annotation.validation.group.*;
 import ${packageName}.config.Constants;
+import ${packageName}.domain.*;
 import ${packageName}.dto.*;
 import ${packageName}.dto.criteria.*;
 import ${packageName}.dto.help.*;
@@ -31,9 +32,8 @@ public class ${eentityName}Controller {
 
     private final Logger log = LoggerFactory.getLogger(${eentityName}Controller.class);
 
-    private static final String ENTITY_NAME = "${entityName}";
-
-    private static final String DOMAIN_NAME = "${eentityName}";
+    // 注意：这个常量值不要修改
+    private final static String DOMAIN_NAME = ${eentityName}.class.getSimpleName();
 
     @Autowired
     private ${eentityName}Service ${entityName}Service;
@@ -70,7 +70,7 @@ public class ${eentityName}Controller {
         @RequestBody @Validated(value = {ValidateCreateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
         log.debug("Controller ==> 新增${eentityName} : {}", ${entityName}DTO);
         if (${entityName}DTO.getId() != null) {
-            throw new BadRequestAlertException("id必须为空", ENTITY_NAME, "idexists");
+            throw new BadRequestAlertException("id必须为空", null, "idexists");
         }
         // 参数验证
         ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields(bindingResult);
@@ -120,7 +120,7 @@ public class ${eentityName}Controller {
         @RequestBody @Validated(value = {ValidateUpdateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
         log.debug("Controller ==> 修改${eentityName} : {}", ${entityName}DTO);
         if (${entityName}DTO.getId() == null) {
-            throw new BadRequestAlertException("id不得为空", ENTITY_NAME, "idnotexists");
+            throw new BadRequestAlertException("id不得为空", null, "idnotexists");
         }
         // 参数验证
         ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields(bindingResult);
@@ -205,9 +205,9 @@ public class ${eentityName}Controller {
     })
     @GetMapping("/${entityUrl}/{id}")
     public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}(
-            @ApiParam(name="主键ID") @PathVariable Long id, @ApiIgnore BaseCriteria criteria) {
+            @ApiParam(name="主键ID") @PathVariable Long id, @ApiIgnore ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 根据ID查询${eentityName} : {}, {}", id, criteria);
-        ReturnCommonDTO<${eentityName}DTO> data = ${entityName}Service.baseFindOne(id, criteria, null);
+        ReturnCommonDTO<${eentityName}DTO> data = ${entityName}Service.baseFindOne(DOMAIN_NAME, id, criteria, null);
         return ResponseEntity.ok().headers(null).body(data);
     }
 
@@ -241,7 +241,7 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<List<${eentityName}DTO>>> getAll${eentityName}s(
             @ApiIgnore ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询所有${eentityName} : {}", criteria);
-        ReturnCommonDTO<List<${eentityName}DTO>> data = ${entityName}Service.baseFindAll(criteria, null);
+        ReturnCommonDTO<List<${eentityName}DTO>> data = ${entityName}Service.baseFindAll(DOMAIN_NAME, criteria, null);
         return ResponseEntity.ok().headers(null).body(data);
     }
 
@@ -278,7 +278,7 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<IPage<${eentityName}DTO>>> getPage${eentityName}s(
             @ApiIgnore ${eentityName}Criteria criteria, @ApiIgnore MbpPage pageable) {
         log.debug("Controller ==> 分页查询${eentityName} : {}, {}", criteria, pageable);
-        ReturnCommonDTO<IPage<${eentityName}DTO>> data = ${entityName}Service.baseFindPage(criteria, pageable, null);
+        ReturnCommonDTO<IPage<${eentityName}DTO>> data = ${entityName}Service.baseFindPage(DOMAIN_NAME, criteria, pageable, null);
         return ResponseEntity.ok().headers(null).body(data);
     }
 
@@ -308,7 +308,7 @@ public class ${eentityName}Controller {
     @GetMapping("/${entityUrl}-count")
     public ResponseEntity<ReturnCommonDTO<Integer>> get${eentityName}Count(@ApiIgnore ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询数量${eentityName} : {}", criteria);
-        ReturnCommonDTO<Integer> data = ${entityName}Service.baseFindCount(criteria);
+        ReturnCommonDTO<Integer> data = ${entityName}Service.baseFindCount(DOMAIN_NAME, criteria, null);
         return ResponseEntity.ok().headers(null).body(data);
     }
 
