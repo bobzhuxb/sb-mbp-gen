@@ -60,7 +60,6 @@ public class ${eentityName}DTO extends BaseDTO {
     private List<${fromTo.fromToEntityType}DTO> ${fromTo.fromToEntityName}List;    // ${fromTo.fromToComment}列表
 	</#if>
 	<#if fromTo.relationType == "OneToOne">
-    @Valid
     private ${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName};    // ${fromTo.fromToComment}
 	</#if>
 	</#list>
