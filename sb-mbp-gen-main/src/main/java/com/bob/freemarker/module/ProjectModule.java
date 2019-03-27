@@ -50,7 +50,7 @@ public class ProjectModule {
                     FileUtil.copyFolder(level1File_t, projectFile_o);
                 } else if ("src".equals(level1File_t.getName())) {
                     // src目录操作（主要工作）
-                    FileUtil.generateSrcFiles(templateAllDirectory, projectDirectory, "src\\", "src\\", toPaths, cfg, root);
+                    FileUtil.generateSrcFiles(templateAllDirectory, projectDirectory, "src\\", "src\\", toPaths, cfg, root, ProjectName);
                 }
             } else {
                 // 其它项目文件操作
@@ -71,11 +71,12 @@ public class ProjectModule {
         // 修改Spring Boot启动文件的文件名
         String bootPath = toPackagePath;
         for (int i = 0; i < toPaths.length; i++) {
-            bootPath += toPaths + "\\";
+            bootPath += toPaths[i] + "\\";
         }
-        File templateBootFile = new File(bootPath + TemplateName + "Application.java");
+        File templateBootFile = new File(bootPath + "Application.java");
         File toBootFile = new File(bootPath + ProjectName + "Application.java");
-        templateBootFile.renameTo(toBootFile);
+        boolean aaa = templateBootFile.renameTo(toBootFile);
+        System.out.println(aaa);
     }
 
 }

@@ -4,6 +4,13 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import ${packageName}.config.YmlConfig;
 import ${packageName}.dto.criteria.BaseCriteria;
 import ${packageName}.dto.help.ApiAdapterConfigDTO;
 import ${packageName}.dto.help.ApiAdapterCriteriaDTO;
@@ -14,19 +21,19 @@ import ${packageName}.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,6 +41,9 @@ import java.util.regex.Pattern;
 public class ApiAdapterServiceImpl implements ApiAdapterService {
 
     private final Logger log = LoggerFactory.getLogger(ApiAdapterServiceImpl.class);
+
+    @Autowired
+    private YmlConfig ymlConfig;
 
     private Map<String, ApiAdapterConfigDTO> apiAdapterConfigDTOMap;
 
@@ -50,7 +60,8 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
             }
             BufferedReader reader = new BufferedReader(new InputStreamReader(configFileNameResource.getInputStream()));
             String line = null;
-            while ((line = reader.readLine()) != null) {
+            List<ApiAdapterConfigDTO> configList = new ArrayList<>();
+            while ((line = reader.readLine()) != null && line.endsWith(".json")) {
                 ClassPathResource configFileResource = new ClassPathResource("apiAdapter/" + line);
                 if (!configFileResource.exists()) {
                     continue;
@@ -79,10 +90,105 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                 configDTO.setReturnConfigTreeList(fieldConfigTreeList);
                 // 最终将配置放到Map中
                 apiAdapterConfigDTOMap.put(key, configDTO);
+                configList.add(configDTO);
+            }
+            if ("true".equals(ymlConfig.getApiPdfGenerate())) {
+                // 生成PDF格式的API文档
+                Document pdfDocument = new Document(PageSize.A4);
+                String apiDocPath = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\apiDoc\\";
+                try {
+                    // 生成PDF格式的API说明文档
+                    PdfWriter.getInstance(pdfDocument, new FileOutputStream(apiDocPath + "api.pdf"));
+                    pdfDocument.addTitle("API文档说明");
+                    pdfDocument.open();
+                    for (ApiAdapterConfigDTO configDTO : configList) {
+                        writeApiToPdf(pdfDocument, configDTO, configDTO.getReturnConfigTreeList());
+                    }
+                } finally {
+                    pdfDocument.close();
+                }
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new CommonException(e.getMessage());
+        }
+    }
+
+    /**
+     * 将API写入PDF文档
+     * @param pdfDocument
+     * @param configDTO
+     * @param fieldConfigTreeList
+     */
+    private void writeApiToPdf(Document pdfDocument, ApiAdapterConfigDTO configDTO,
+                             List<ApiAdapterResultFieldDTO> fieldConfigTreeList) throws Exception {
+        JSONObject descrJsonObj = new JSONObject();
+        getJsonObjFromConfig(descrJsonObj, fieldConfigTreeList);
+
+        // 往PDF格式的接口文档写入内容
+        Font pdfFont = new Font(BaseFont.createFont("/font/simsun.ttf", BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED), 8);
+        pdfDocument.add(new Paragraph("接口URL：" + configDTO.getHttpUrl(), pdfFont));
+        pdfDocument.add(new Paragraph("接口方法：" + configDTO.getHttpMethod(), pdfFont));
+        pdfDocument.add(new Paragraph("接口编号：" + configDTO.getInterNo(), pdfFont));
+        pdfDocument.add(new Paragraph("接口描述：" + configDTO.getInterDescr(), pdfFont));
+        pdfDocument.add(new Paragraph("接口参数：", pdfFont));
+        // 生成一个两列的表格
+        PdfPTable pdfPTableParam = new PdfPTable(2);
+        // 设置单元格高度
+        int fixedHeight = 12;
+        // 设置参数表头
+        PdfPCell pdfPCellParamTitle = new PdfPCell(new Phrase("参数名", pdfFont));
+        pdfPCellParamTitle.setFixedHeight(fixedHeight);
+        pdfPCellParamTitle.setHorizontalAlignment(Element.ALIGN_CENTER);//设置水平居中
+        pdfPCellParamTitle.setVerticalAlignment(Element.ALIGN_MIDDLE);//设置垂直居中
+        pdfPTableParam.addCell(pdfPCellParamTitle);
+        pdfPCellParamTitle = new PdfPCell(new Phrase("参数说明", pdfFont));
+        pdfPCellParamTitle.setFixedHeight(fixedHeight);
+        pdfPCellParamTitle.setHorizontalAlignment(Element.ALIGN_CENTER);//设置水平居中
+        pdfPCellParamTitle.setVerticalAlignment(Element.ALIGN_MIDDLE);//设置垂直居中
+        pdfPTableParam.addCell(pdfPCellParamTitle);
+        // 设置表内容
+        Optional.ofNullable(configDTO.getParam() == null ? null : configDTO.getParam().getCriteriaList())
+                .get().forEach(apiAdapterCriteriaDTO -> {
+            PdfPCell pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getFromParam(), pdfFont));
+            pdfPCellParam.setFixedHeight(fixedHeight);
+            pdfPTableParam.addCell(pdfPCellParam);
+            pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getDescr(), pdfFont));
+            pdfPCellParam.setFixedHeight(fixedHeight);
+            pdfPTableParam.addCell(pdfPCellParam);
+        });
+        pdfDocument.add(pdfPTableParam);
+        // 设置返回说明
+        pdfDocument.add(new Paragraph("接口返回：", pdfFont));
+        String formattedJson = JSON.toJSONString(descrJsonObj, SerializerFeature.PrettyFormat);
+        formattedJson = formattedJson.replace("\t", "\u00a0\u00a0");
+        pdfDocument.add(new Paragraph(formattedJson, pdfFont));
+        pdfDocument.add(new Paragraph("===================================================================================", pdfFont));
+    }
+
+    /**
+     * 生成最终格式的JSON描述
+     * @param jsonObject
+     * @param fieldConfigTreeList
+     */
+    private void getJsonObjFromConfig(JSONObject jsonObject, List<ApiAdapterResultFieldDTO> fieldConfigTreeList) {
+        for (ApiAdapterResultFieldDTO fieldConfigTree : fieldConfigTreeList) {
+            JSONObject nextJsonObject = new JSONObject();
+            String keyName = fieldConfigTree.getName();
+            if (keyName.contains(".")) {
+                keyName = keyName.substring(keyName.lastIndexOf(".") + 1);
+            }
+            if ("list".equals(fieldConfigTree.getType())) {
+                JSONArray jsonArray = new JSONArray();
+                jsonArray.add(nextJsonObject);
+                jsonObject.put(keyName, jsonArray);
+                getJsonObjFromConfig(nextJsonObject, fieldConfigTree.getSubFieldList());
+            } else if ("object".equals(fieldConfigTree.getType())) {
+                jsonObject.put(keyName, nextJsonObject);
+                getJsonObjFromConfig(nextJsonObject, fieldConfigTree.getSubFieldList());
+            } else {
+                jsonObject.put(keyName, fieldConfigTree.getDescr());
+            }
         }
     }
 

@@ -10,6 +10,7 @@ public class ApiAdapterResultFieldDTO {
     private String name;        // 转换后的参数名称
     private String type;        // 转换后的参数类型（list：列表  object或不填：Object）
     private String fromName;    // 转换前的参数名称
+    private String descr;       // 返回参数描述
 
     private Integer level;      // 转换后所在list层级
 
@@ -45,6 +46,14 @@ public class ApiAdapterResultFieldDTO {
 
     public void setSubFieldList(List<ApiAdapterResultFieldDTO> subFieldList) {
         this.subFieldList = subFieldList;
+    }
+
+    public String getDescr() {
+        return descr;
+    }
+
+    public void setDescr(String descr) {
+        this.descr = descr;
     }
 
     public Integer getLevel() {

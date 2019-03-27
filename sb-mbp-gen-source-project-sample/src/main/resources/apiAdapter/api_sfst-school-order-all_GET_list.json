@@ -7,6 +7,7 @@
         "criteriaList": [
             {
                 "fromParam":"orderOrMaterialNoLike",
+                "descr":"订单编号或原料编号模糊查询",
                 "toCriteriaList": [
                     "orderOrMaterialNoLike",
                     "sfstSchoolBatchList.sfstSupplierInboundBatch.sfstMaterial.orderOrMaterialNoLike"
@@ -14,6 +15,7 @@
             },
             {
                 "fromParam":"orderNo_e",
+                "descr":"订单编号",
                 "toCriteriaList": [
                     "orderNo.equals"
                 ]
@@ -37,21 +39,21 @@
     },
     "result":{
         "fieldList":[
-            {"name":"id", "fromName":"id"},
-            {"name":"myOrderNo", "fromName":"orderNo"},
-            {"name":"supplierName", "fromName":"sfstSupplier.name"},
-            {"name":"batchList", "type":"list", "fromName":"sfstSchoolBatchList"},
-            {"name":"batchList.test", "type":"object"},
-            {"name":"batchList.test.abc", "fromName":"sfstSchoolBatchList.schoolBatchNo"},
-            {"name":"batchList.sbNo", "fromName":"sfstSchoolBatchList.schoolBatchNo"},
-            {"name":"batchList.productionDate", "fromName":"sfstSchoolBatchList.sfstSupplierInboundBatch.productionDate"},
-            {"name":"supplier", "type":"object"},
-            {"name":"supplier.ddd", "fromName":"sfstSupplier.name"},
-            {"name":"supplier.myList", "type":"list", "fromName":"sfstSchoolBatchList"},
-            {"name":"supplier.myList.ooo", "type":"object"},
-            {"name":"supplier.myList.ooo.yourList", "type":"list", "fromName":"sfstSchoolBatchList.sfstMaterial.sfstMaterialPriceList"},
-            {"name":"supplier.myList.ooo.yourList.qqqPrice", "fromName":"sfstSchoolBatchList.sfstMaterial.sfstMaterialPriceList.unitPrice"},
-            {"name":"supplier.myList.ooo.yourList.myDate", "fromName":"sfstSchoolBatchList.sfstMaterial.sfstMaterialPriceList.executeDate"}
+            {"name":"id", "fromName":"id","descr":"订单ID"},
+            {"name":"myOrderNo", "fromName":"orderNo","descr":"订单编号"},
+            {"name":"supplierName", "fromName":"sfstSupplier.name","descr":"供应商名称"},
+            {"name":"batchList", "type":"list", "fromName":"sfstSchoolBatchList","descr":"批次"},
+            {"name":"batchList.test", "type":"object","descr":"批次XX"},
+            {"name":"batchList.test.abc", "fromName":"sfstSchoolBatchList.schoolBatchNo","descr":"订单ID"},
+            {"name":"batchList.sbNo", "fromName":"sfstSchoolBatchList.schoolBatchNo","descr":"批次号"},
+            {"name":"batchList.productionDate", "fromName":"sfstSchoolBatchList.sfstSupplierInboundBatch.productionDate","descr":"生产日期"},
+            {"name":"supplier", "type":"object","descr":"供应商"},
+            {"name":"supplier.ddd", "fromName":"sfstSupplier.name","descr":"供应商名称"},
+            {"name":"supplier.myList", "type":"list", "fromName":"sfstSchoolBatchList","descr":"学校批次"},
+            {"name":"supplier.myList.ooo", "type":"object","descr":"学校批次XX"},
+            {"name":"supplier.myList.ooo.yourList", "type":"list", "fromName":"sfstSchoolBatchList.sfstMaterial.sfstMaterialPriceList","descr":"原料单价属性"},
+            {"name":"supplier.myList.ooo.yourList.qqqPrice", "fromName":"sfstSchoolBatchList.sfstMaterial.sfstMaterialPriceList.unitPrice","descr":"原料单价"},
+            {"name":"supplier.myList.ooo.yourList.myDate", "fromName":"sfstSchoolBatchList.sfstMaterial.sfstMaterialPriceList.executeDate","descr":"单价执行日期"}
         ]
     },
     "sqlColumnList":[

@@ -9,6 +9,7 @@ public class ApiAdapterCriteriaDTO {
 
     private String fromParam;               // 来源参数名
     private List<String> toCriteriaList;    // 转换后的条件参数
+    private String descr;                   // 参数描述
 
     public String getFromParam() {
         return fromParam;
@@ -24,5 +25,13 @@ public class ApiAdapterCriteriaDTO {
 
     public void setToCriteriaList(List<String> toCriteriaList) {
         this.toCriteriaList = toCriteriaList;
+    }
+
+    public String getDescr() {
+        return descr;
+    }
+
+    public void setDescr(String descr) {
+        this.descr = descr;
     }
 }

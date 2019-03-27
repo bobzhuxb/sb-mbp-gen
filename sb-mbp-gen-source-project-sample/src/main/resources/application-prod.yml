@@ -59,3 +59,5 @@ jhipster:
 
 permission:
     do-init: false
+api-pdf:
+    generate: false
