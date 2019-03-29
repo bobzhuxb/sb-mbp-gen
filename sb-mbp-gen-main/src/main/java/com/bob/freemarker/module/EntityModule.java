@@ -341,7 +341,8 @@ public class EntityModule {
         generateDTO(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateCriteria(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateMapper(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
-        generateMapperXml(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
+        // 使用共通Mapper，此处暂时不需要aopdeal目录
+//        generateMapperXml(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateService(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateServiceImpl(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         // 转为配置文件处理，此处暂时不需要aopdeal目录

@@ -888,7 +888,9 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     }
                 } else if (Constants.cascadeDeleteType.NULL.getValue().equals(relationDTO.getCascadeDelete())) {
                     // 级联置空
-                    GlobalCache.getMapperMap().get(relationDTO.getToType()).cascadeToNull(relatedColumnName, domain.getId());
+                    GlobalCache.getMapperMap().get(relationDTO.getToType()).cascadeToNull(
+                            GlobalCache.getEntityConfigMap().get(relationDTO.getToType()).getTableName(),
+                            relatedColumnName, domain.getId());
                 } else {
                     // 默认：级联删除
                     GlobalCache.getServiceMap().get(relationDTO.getToType()).baseDeleteByMapCascade(
@@ -979,7 +981,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         String countQuerySql = baseGetCountQuerySql(entityTypeName, criteria, tableIndexMap);
         Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, null, tableIndexMap, null);
         // 执行查询并返回结果
-        IPage<O> pageResult = GlobalCache.getMapperMap().get(entityTypeName).joinSelectPage(pageQuery, dataQuerySql, wrapper)
+        IPage<O> pageResult = GlobalCache.getMapperMap().get(entityTypeName).joinSelectPage(
+                pageQuery, dataQuerySql, wrapper)
                 .convert(entity -> baseDoConvert(entityTypeName, (T)entity, criteria,
                         appendParamMap == null ? new HashMap<>() : appendParamMap));
         int totalCount = GlobalCache.getMapperMap().get(entityTypeName).joinSelectCount(countQuerySql, wrapper);

@@ -1,5 +1,6 @@
 package ${packageName}.domain;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.util.Objects;

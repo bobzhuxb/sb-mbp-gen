@@ -20,8 +20,11 @@ public class BaseEntityConfigServiceImpl implements BaseEntityConfigService {
             BaseEntityConfigDTO baseEntityConfigDTO = new BaseEntityConfigDTO();
             GlobalCache.getEntityConfigMap().put(entityName, baseEntityConfigDTO);
             try {
-                Class domainClass = Class.forName("com.bob.sm.domain." + entityName);
+                String fullDomainName = "com.bob.sm.domain." + entityName;
+                Class domainClass = Class.forName(fullDomainName);
                 BaseDomain childDomain = (BaseDomain) domainClass.getConstructor().newInstance();
+                // 设置实体对应的domain全限定名
+                baseEntityConfigDTO.setFullDomainName(fullDomainName);
                 // 设置表名
                 setTableName(baseEntityConfigDTO, entityName, domainClass, childDomain);
             } catch (Exception e) {
@@ -52,7 +55,6 @@ public class BaseEntityConfigServiceImpl implements BaseEntityConfigService {
             throw new Exception("com.bob.sm.domain." + entityName + "_TableName属性值为空");
         }
         baseEntityConfigDTO.setTableName(tableName.toString());
-
     }
 
 }

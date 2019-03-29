@@ -70,10 +70,10 @@ dependencies {
 	// Mysql
 	compile "mysql:mysql-connector-java"
 	// MyBatis Plus
-	compile "com.baomidou:mybatis-plus-boot-starter:3.0.7"
-	compile "com.baomidou:mybatis-plus:3.0.7"
-	compile "com.baomidou:mybatis-plus-extension:3.0.7"
-	compile "com.baomidou:mybatis-plus-generator:3.0.7"
+	compile "com.baomidou:mybatis-plus-boot-starter:3.1.0"
+	compile "com.baomidou:mybatis-plus:3.1.0"
+	compile "com.baomidou:mybatis-plus-extension:3.1.0"
+	compile "com.baomidou:mybatis-plus-generator:3.1.0"
 	// 事务处理API
 	compile "javax.transaction:javax.transaction-api"
 

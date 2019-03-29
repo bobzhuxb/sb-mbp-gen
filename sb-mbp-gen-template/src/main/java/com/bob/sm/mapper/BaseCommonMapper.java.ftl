@@ -6,17 +6,24 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
 public interface BaseCommonMapper<T> extends BaseMapper<T> {
 
-    void cascadeToNull(@Param("relationColumnName")String relationColumnName, @Param("relationId")long relationId);
+    @Update("UPDATE ${r'${tableName}'} SET ${r'${relationColumnName}'} = null WHERE ${r'${relationColumnName}'} = ${r'#{'}relationId}")
+    void cascadeToNull(@Param("tableName") String tableName, @Param("relationColumnName") String relationColumnName,
+                       @Param("relationId") long relationId);
 
+    @Select("${r'${queryMain}'} ${r'${ew.customSqlSegment}'}")
     List<T> joinSelectList(@Param("queryMain") String queryMain, @Param(Constants.WRAPPER) Wrapper<T> wrapper);
 
+    @Select("${r'${queryMain}'} ${r'${ew.customSqlSegment}'}")
     IPage<T> joinSelectPage(Page<T> page, @Param("queryMain") String queryMain, @Param(Constants.WRAPPER) Wrapper<T> wrapper);
 
+    @Select("${r'${queryMain}'} ${r'${ew.customSqlSegment}'}")
     Integer joinSelectCount(@Param("queryMain") String queryMain, @Param(Constants.WRAPPER) Wrapper<T> wrapper);
 
 }
