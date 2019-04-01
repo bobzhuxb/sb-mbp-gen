@@ -74,7 +74,7 @@ public class AccountController {
                     "  \"currentPassword\": \"当前密码\",\n" +
                     "  \"newPassword\": \"新密码\",\n" +
                     "}")
-            @RequestBody PasswordChangeDTO passwordChangeDto, BindingResult bindingResult) {
+            @RequestBody @Validated PasswordChangeDTO passwordChangeDto, BindingResult bindingResult) {
         // 参数验证
         ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields(bindingResult);
         if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
