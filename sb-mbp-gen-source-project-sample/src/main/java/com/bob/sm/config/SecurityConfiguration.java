@@ -80,7 +80,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // 这里写放开权限的URL
             .antMatchers(HttpMethod.OPTIONS, "/**")
             .antMatchers("/static/**")
-            .antMatchers("/static/apiDoc/*.pdf")
+            .antMatchers("/inter/doc/*.pdf")
             .antMatchers("/swagger-ui.html");
     }
 

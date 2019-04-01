@@ -4,7 +4,7 @@ spring:
     profiles:
         active: dev
     resources:
-        static-locations: classpath:/META-INF/resources/,classpath:/resources/, classpath:/static/, classpath:/public/, file:${r'${spring.http.multipart.location}'}
+        static-locations: classpath:/META-INF/resources/,classpath:/resources/, classpath:/static/, classpath:/inter/, classpath:/public/, file:${r'${spring.http.multipart.location}'}
     servlet:
         multipart:
             max-request-size: -1

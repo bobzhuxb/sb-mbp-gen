@@ -55,7 +55,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
         apiAdapterConfigDTOMap = new HashMap<>();
         try {
             // 获取资源目录apiAdapter下的所有json配置文件
-            ClassPathResource configFileNameResource = new ClassPathResource("apiAdapter/config_files");
+            ClassPathResource configFileNameResource = new ClassPathResource("inter/adapter/config_files");
             if (!configFileNameResource.exists()) {
                 return;
             }
@@ -63,7 +63,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
             String line = null;
             List<ApiAdapterConfigDTO> configList = new ArrayList<>();
             while ((line = reader.readLine()) != null && line.endsWith(".json")) {
-                ClassPathResource configFileResource = new ClassPathResource("apiAdapter/" + line);
+                ClassPathResource configFileResource = new ClassPathResource("inter/adapter/" + line);
                 if (!configFileResource.exists()) {
                     continue;
                 }
@@ -96,7 +96,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
             if ("true".equals(ymlConfig.getApiPdfGenerate())) {
                 // 生成PDF格式的API文档
                 Document pdfDocument = new Document(PageSize.A4);
-                String apiDocPath = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\apiDoc\\";
+                String apiDocPath = System.getProperty("user.dir") + "\\src\\main\\resources\\inter\\doc\\";
                 try {
                     // 生成PDF格式的API说明文档
                     PdfWriter.getInstance(pdfDocument, new FileOutputStream(apiDocPath + "api.pdf"));
@@ -127,7 +127,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
         getJsonObjFromConfig(descrJsonObj, fieldConfigTreeList);
 
         // 往PDF格式的接口文档写入内容
-        Font pdfFont = new Font(BaseFont.createFont("/font/simsun.ttf", BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED), 8);
+        Font pdfFont = new Font(BaseFont.createFont("/inter/font/simsun.ttf", BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED), 8);
         pdfDocument.add(new Paragraph("接口URL：" + configDTO.getHttpUrl(), pdfFont));
         pdfDocument.add(new Paragraph("接口方法：" + configDTO.getHttpMethod(), pdfFont));
         pdfDocument.add(new Paragraph("接口编号：" + configDTO.getInterNo(), pdfFont));
