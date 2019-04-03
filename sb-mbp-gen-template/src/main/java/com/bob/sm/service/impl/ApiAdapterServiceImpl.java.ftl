@@ -235,65 +235,83 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
      * @param fieldConfigTreeList
      */
     private void writeApiToPdf(Document pdfDocument, ApiAdapterConfigDTO configDTO,
-                             List<ApiAdapterResultFieldDTO> fieldConfigTreeList) throws Exception {
+                               List<ApiAdapterResultFieldDTO> fieldConfigTreeList) throws Exception {
         JSONObject descrJsonObj = new JSONObject();
         getJsonObjFromConfig(descrJsonObj, fieldConfigTreeList);
 
         // 往PDF格式的接口文档写入内容
-        Font pdfFont = new Font(BaseFont.createFont("/inter/font/simsun.ttf", BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED), 8);
-        pdfDocument.add(new Paragraph("接口URL：" + configDTO.getHttpUrl(), pdfFont));
-        pdfDocument.add(new Paragraph("接口方法：" + configDTO.getHttpMethod(), pdfFont));
-        pdfDocument.add(new Paragraph("接口编号：" + configDTO.getInterNo() == null ? "（无）" : configDTO.getInterNo(), pdfFont));
-        pdfDocument.add(new Paragraph("接口描述：" + configDTO.getInterDescr(), pdfFont));
+        Font fontText = new Font(BaseFont.createFont("/inter/font/simsun.ttf", BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED), 7);
+        Font fontTitle = new Font(BaseFont.createFont("/inter/font/simsun.ttf", BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED), 8, Font.BOLD);
+        Paragraph urlParagraph = new Paragraph();
+        urlParagraph.add(new Chunk("接口URL：", fontTitle));
+        urlParagraph.add(new Chunk(configDTO.getHttpUrl(), fontText));
+        pdfDocument.add(urlParagraph);
+        Paragraph methodParagraph = new Paragraph();
+        methodParagraph.add(new Chunk("接口方法：", fontTitle));
+        methodParagraph.add(new Chunk(configDTO.getHttpMethod(), fontText));
+        pdfDocument.add(methodParagraph);
+        Paragraph noParagraph = new Paragraph();
+        noParagraph.add(new Chunk("接口编号：", fontTitle));
+        noParagraph.add(new Chunk(configDTO.getInterNo() == null ? "（无）" : configDTO.getInterNo(), fontText));
+        pdfDocument.add(noParagraph);
+        Paragraph descrParagraph = new Paragraph();
+        descrParagraph.add(new Chunk("接口描述：", fontTitle));
+        descrParagraph.add(new Chunk(configDTO.getInterDescr() == null ? "（无）" : configDTO.getInterDescr(), fontText));
+        pdfDocument.add(descrParagraph);
         if (configDTO.getParam() != null && configDTO.getParam().getCriteriaList() != null) {
-            pdfDocument.add(new Paragraph("接口URL参数：", pdfFont));
+            Paragraph paramParagraph = new Paragraph();
+            paramParagraph.add(new Chunk("接口URL参数：", fontTitle));
+            pdfDocument.add(paramParagraph);
             // 生成一个两列的表格
             PdfPTable pdfPTableParam = new PdfPTable(2);
             // 设置单元格高度
             int fixedHeight = 12;
             // 设置参数表头
-            PdfPCell pdfPCellParamTitle = new PdfPCell(new Phrase("参数名", pdfFont));
+            PdfPCell pdfPCellParamTitle = new PdfPCell(new Phrase("参数名", fontText));
             pdfPCellParamTitle.setFixedHeight(fixedHeight);
             pdfPCellParamTitle.setHorizontalAlignment(Element.ALIGN_CENTER);//设置水平居中
             pdfPCellParamTitle.setVerticalAlignment(Element.ALIGN_MIDDLE);//设置垂直居中
             pdfPTableParam.addCell(pdfPCellParamTitle);
-            pdfPCellParamTitle = new PdfPCell(new Phrase("参数说明", pdfFont));
+            pdfPCellParamTitle = new PdfPCell(new Phrase("参数说明", fontText));
             pdfPCellParamTitle.setFixedHeight(fixedHeight);
             pdfPCellParamTitle.setHorizontalAlignment(Element.ALIGN_CENTER);//设置水平居中
             pdfPCellParamTitle.setVerticalAlignment(Element.ALIGN_MIDDLE);//设置垂直居中
             pdfPTableParam.addCell(pdfPCellParamTitle);
             // 设置表内容
             configDTO.getParam().getCriteriaList().forEach(apiAdapterCriteriaDTO -> {
-                PdfPCell pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getFromParam(), pdfFont));
+                PdfPCell pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getFromParam(), fontText));
                 pdfPCellParam.setNoWrap(false);
                 pdfPTableParam.addCell(pdfPCellParam);
-                pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getDescr(), pdfFont));
+                pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getDescr(), fontText));
                 pdfPCellParam.setNoWrap(false);
                 pdfPTableParam.addCell(pdfPCellParam);
             });
             pdfDocument.add(pdfPTableParam);
         }
         if (configDTO.getParam() != null && configDTO.getParam().getJsonBody() != null) {
-            pdfDocument.add(new Paragraph("接口Body参数：", pdfFont));
+            Paragraph bodyParagraph = new Paragraph();
+            bodyParagraph.add(new Chunk("接口Body参数：", fontTitle));
             String paramFormattedJson = JSON.toJSONString(configDTO.getParam().getJsonBody(), SerializerFeature.PrettyFormat);
             paramFormattedJson = paramFormattedJson.replace("\t", "\u00a0\u00a0");
-            pdfDocument.add(new Paragraph(paramFormattedJson, pdfFont));
+            bodyParagraph.add(new Chunk(paramFormattedJson, fontText));
+            pdfDocument.add(bodyParagraph);
         }
         // 设置返回说明
-        pdfDocument.add(new Paragraph("接口返回：", pdfFont));
+        pdfDocument.add(new Paragraph("接口返回：", fontTitle));
         pdfDocument.add(new Paragraph("resultCode - "
                 + (configDTO.getResult() == null || configDTO.getResult().getResultCode() == null ?
-                        "" : configDTO.getResult().getResultCode()), pdfFont));
+                        "" : configDTO.getResult().getResultCode()), fontText));
         pdfDocument.add(new Paragraph("errMsg - "
                 + (configDTO.getResult() == null || configDTO.getResult().getErrMsg() == null ?
-                        "" : configDTO.getResult().getErrMsg()), pdfFont));
+                        "" : configDTO.getResult().getErrMsg()), fontText));
         pdfDocument.add(new Paragraph("data - "
                 + (configDTO.getResult() == null || configDTO.getResult().getData() == null ?
-                "" : configDTO.getResult().getData()), pdfFont));
+                "" : configDTO.getResult().getData()), fontText));
         String resultFormattedJson = JSON.toJSONString(descrJsonObj, SerializerFeature.PrettyFormat);
         resultFormattedJson = resultFormattedJson.replace("\t", "\u00a0\u00a0");
-        pdfDocument.add(new Paragraph(resultFormattedJson, pdfFont));
-        pdfDocument.add(new Paragraph("===================================================================================", pdfFont));
+        pdfDocument.add(new Paragraph(resultFormattedJson, fontText));
+        pdfDocument.add(new Paragraph("==============================================================================" +
+                "==================================================", fontText));
     }
 
     /**
