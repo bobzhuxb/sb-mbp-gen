@@ -10,9 +10,6 @@ import com.bob.sm.service.AccountService;
 import com.bob.sm.util.ParamValidatorUtil;
 import com.bob.sm.web.rest.errors.CommonException;
 import io.micrometer.core.annotation.Timed;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +24,6 @@ import java.util.Optional;
 /**
  * 注意规范：新增的方法以create开头，修改的方法以update开头，删除的方法以delete开头，查询的方法以get开头
  */
-@Api(description="当前用户")
 @RestController
 @RequestMapping("/api")
 public class AccountController {
@@ -41,7 +37,6 @@ public class AccountController {
      * 当前请求是否已登录
      * @return 当前请求是否已登录
      */
-    @ApiOperation(value="当前请求是否已登录")
     @GetMapping("/authenticate")
     public ResponseEntity<String> isAuthenticated(HttpServletRequest request) {
         log.debug("Controller ==> 判断当前请求是否已登录 : {}", request);
@@ -52,7 +47,6 @@ public class AccountController {
      * 获取当前登录用户信息
      * @return
      */
-    @ApiOperation(value="获取当前登录用户信息")
     @GetMapping("/account")
     @Timed
     public ResponseEntity<EnhanceUserDTO> getAccount() {
@@ -68,13 +62,8 @@ public class AccountController {
      * 当前账号修改自己的密码
      * @param passwordChangeDto
      */
-    @ApiOperation(value="当前账号修改自己的密码")
     @PostMapping("/change-password")
     public ResponseEntity<ReturnCommonDTO> changePassword(
-            @ApiParam("{\n" +
-                    "  \"currentPassword\": \"当前密码\",\n" +
-                    "  \"newPassword\": \"新密码\",\n" +
-                    "}")
             @RequestBody @Validated PasswordChangeDTO passwordChangeDto, BindingResult bindingResult) {
         // 参数验证
         ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields(bindingResult);
@@ -96,12 +85,8 @@ public class AccountController {
      * 管理员重置别人的密码
      * @param passwordResetDTO
      */
-    @ApiOperation(value="管理员重置别人的密码")
     @PostMapping("/admin-reset-password")
     public ResponseEntity<ReturnCommonDTO> resetPassword(
-            @ApiParam("{\n" +
-                    "  \"userId\": \"被重置密码的用户ID\",\n" +
-                    "}")
             @RequestBody PasswordResetDTO passwordResetDTO, BindingResult bindingResult) {
         // 参数验证
         ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields(bindingResult);

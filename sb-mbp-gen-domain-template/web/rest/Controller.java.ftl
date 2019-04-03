@@ -10,7 +10,6 @@ import ${packageName}.dto.help.*;
 import ${packageName}.service.*;
 import ${packageName}.util.ParamValidatorUtil;
 import ${packageName}.web.rest.errors.*;
-import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +17,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
 
 /**
  * 注意规范：新增的方法以create开头，修改的方法以update开头，删除的方法以delete开头，查询的方法以get开头
  */
-@Api(description="${entityComment}")
 @RestController
 @RequestMapping("/api")
 public class ${eentityName}Controller {
@@ -44,27 +41,6 @@ public class ${eentityName}Controller {
 	 * @param bindingResult 参数验证结果（注意：不分配groups分组时，默认每次都需要验证）
      * @return 结果返回码和消息
      */
-    @ApiOperation(value="新增${entityComment}")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name="${entityName}DTO", dataType = "string", value = "{\n" +
-                    <#list fieldList as field>
-					<#if field.camelName != 'insertTime' && field.camelName != 'insertUserId' && field.camelName != 'updateTime' && field.camelName != 'operateUserId'>
-                    "  \"${field.camelName}\": <#if field.javaType == 'String'>\"</#if>${field.comment}<#if field.javaType == 'String'>\"</#if>,\n" +
-					</#if>
-					</#list>
-                    <#list toFromList as toFrom>
-                    "  \"${toFrom.toFromEntityName}Id\": ${toFrom.toFromComment}ID,\n" +
-			        </#list>
-                    <#list fromToList as fromTo>
-                    "  \"${fromTo.fromToEntityName}<#if fromTo.relationType == 'OneToMany'>List</#if>\": <#if fromTo.relationType == 'OneToOne'>{<#else>[</#if>${fromTo.fromToComment}<#if fromTo.relationType == 'OneToMany'>列表</#if>（级联类型：${fromTo.fromToEntityType}）<#if fromTo.relationType == 'OneToOne'>}<#else>]</#if>,\n" +
-			        </#list>
-                    "}"),
-    })
-    @ApiResponses({
-            @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败<br/>" +
-                    "errMsg - 错误消息" +
-                    "data - 新增成功时返回的主键ID")
-    })
     @PostMapping("/${entityUrl}")
     public ResponseEntity<ReturnCommonDTO> create${eentityName}(
         @RequestBody @Validated(value = {ValidateCreateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
@@ -93,28 +69,6 @@ public class ${eentityName}Controller {
 	 * @param bindingResult 参数验证结果（注意：不分配groups分组时，默认每次都需要验证）
      * @return 结果返回码和消息
      */
-    @ApiOperation(value="修改${entityComment}")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name="${entityName}DTO", dataType = "string", value = "{\n" +
-                    "  \"id\": \"主键ID\",\n" +
-                    <#list fieldList as field>
-					<#if field.camelName != 'insertTime' && field.camelName != 'insertUserId' && field.camelName != 'updateTime' && field.camelName != 'operateUserId'>
-                    "  \"${field.camelName}\": <#if field.javaType == 'String'>\"</#if>${field.comment}<#if field.javaType == 'String'>\"</#if>,\n" +
-					</#if>
-					</#list>
-                    <#list toFromList as toFrom>
-                    "  \"${toFrom.toFromEntityName}Id\": ${toFrom.toFromComment}ID,\n" +
-			        </#list>
-                    <#list fromToList as fromTo>
-                    "  \"${fromTo.fromToEntityName}<#if fromTo.relationType == 'OneToMany'>List</#if>\": <#if fromTo.relationType == 'OneToOne'>{<#else>[</#if>${fromTo.fromToComment}<#if fromTo.relationType == 'OneToMany'>列表</#if>（级联类型：${fromTo.fromToEntityType}）<#if fromTo.relationType == 'OneToOne'>}<#else>]</#if>,\n" +
-			        </#list>
-                    "}"),
-    })
-    @ApiResponses({
-            @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败<br/>" +
-                    "errMsg - 错误消息" +
-                    "data - 修改成功时返回的主键ID")
-    })
     @PutMapping("/${entityUrl}")
     public ResponseEntity<ReturnCommonDTO> update${eentityName}(
         @RequestBody @Validated(value = {ValidateUpdateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
@@ -142,13 +96,8 @@ public class ${eentityName}Controller {
      * @param id 主键ID
      * @return 结果返回码和消息
      */
-    @ApiOperation(value="单个删除${entityComment}")
-    @ApiResponses({
-            @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败<br/>" +
-                    "errMsg - 错误消息")
-    })
     @DeleteMapping("/${entityUrl}/{id}")
-    public ResponseEntity<ReturnCommonDTO> delete${eentityName}(@ApiParam(name="主键ID") @PathVariable Long id) {
+    public ResponseEntity<ReturnCommonDTO> delete${eentityName}(@PathVariable Long id) {
         log.debug("Controller ==> 根据ID删除${eentityName} : {}", id);
         ReturnCommonDTO resultDTO = null;
         try {
@@ -165,17 +114,8 @@ public class ${eentityName}Controller {
      * @param idList 主键ID列表
      * @return 结果返回码和消息
      */
-    @ApiOperation(value="批量删除${entityComment}")
-    @ApiResponses({
-            @ApiResponse(code=200, message="resultCode - 1：操作成功  2：操作失败<br/>" +
-                    "errMsg - 错误消息")
-    })
     @DeleteMapping("/${entityUrl}")
-    public ResponseEntity<ReturnCommonDTO> delete${eentityName}s(
-            @ApiParam("[\n" +
-					"id1,id2,id3\n" +
-                    "]")
-        @RequestBody List<Long> idList) {
+    public ResponseEntity<ReturnCommonDTO> delete${eentityName}s(@RequestBody List<Long> idList) {
         log.debug("Controller ==> 批量删除${eentityName} : {}", idList);
         ReturnCommonDTO resultDTO = null;
         try {
@@ -193,19 +133,9 @@ public class ${eentityName}Controller {
 	 * @param criteria 附带查询条件
      * @return 使用ResponseEntity封装的单条${entityComment}数据
      */
-    @ApiOperation(value="获取单条-${entityComment}")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name="associationNameList", paramType="path", dataType="string", value="关联查询的字段${associationNameComment}"),
-            @ApiImplicitParam(name="dictionaryNameList", paramType="path", dataType="string", value="关联查询的数据字典值${dictionaryNameList}")
-    })
-    @ApiResponses({
-            @ApiResponse(code=200, message="resultCode - 1：查询成功  2：查询失败<br/>" +
-                    "errMsg - 错误消息<br/>" +
-                    "data - 查询结果", response=Object.class)
-    })
     @GetMapping("/${entityUrl}/{primaryId}")
     public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}(
-            @ApiParam(name="主键ID") @PathVariable Long primaryId, @ApiIgnore ${eentityName}Criteria criteria) {
+            @PathVariable Long primaryId, ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 根据ID查询${eentityName} : {}, {}", primaryId, criteria);
         ReturnCommonDTO<${eentityName}DTO> data = ${entityName}Service.baseFindOne(DOMAIN_NAME, primaryId, criteria, null);
         return ResponseEntity.ok().headers(null).body(data);
@@ -216,30 +146,9 @@ public class ${eentityName}Controller {
 	 * @param criteria 查询条件
      * @return 使用ResponseEntity封装的多条${entityComment}数据
      */
-    @ApiOperation(value="获取所有-${entityComment}")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name="associationNameList", paramType="path", dataType="string", value="关联查询的字段${associationNameComment}"),
-            @ApiImplicitParam(name="dictionaryNameList", paramType="path", dataType="string", value="关联查询的数据字典值${dictionaryNameList}"),
-            @ApiImplicitParam(name="sort", paramType="path", dataType="string", value="排序"),
-            @ApiImplicitParam(name="id.equals", paramType="path", dataType="long", value="主键ID"),
-			<#list fieldList as field>
-            @ApiImplicitParam(name="${field.camelName}.equals", paramType="path",<#if field.javaType == 'Integer'> dataType="int",<#elseif field.javaType == 'Long'> dataType="long",<#elseif field.javaType == 'Double'> dataType="double",<#else> dataType="string",</#if> value="${field.comment}"),
-			</#list>
-			@ApiImplicitParam(name="insertUser.?.equals", paramType="path", value="创建者"),
-			@ApiImplicitParam(name="operateUser.?.equals", paramType="path", value="最后更新者"),
-			<#list toFromList as toFrom>
-			@ApiImplicitParam(name="${toFrom.toFromEntityName}Id.equals", paramType="path", value="关联的${toFrom.toFromComment}ID"),
-			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
-			</#list>
-    })
-    @ApiResponses({
-            @ApiResponse(code=200, message="resultCode - 1：查询成功  2：查询失败<br/>" +
-                    "errMsg - 错误消息<br/>" +
-                    "data - 查询结果", response=Object.class)
-    })
     @GetMapping("/${entityUrl}-all")
     public ResponseEntity<ReturnCommonDTO<List<${eentityName}DTO>>> getAll${eentityName}s(
-            @ApiIgnore ${eentityName}Criteria criteria) {
+            ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询所有${eentityName} : {}", criteria);
         ReturnCommonDTO<List<${eentityName}DTO>> data = ${entityName}Service.baseFindAll(DOMAIN_NAME, criteria, null);
         return ResponseEntity.ok().headers(null).body(data);
@@ -251,32 +160,9 @@ public class ${eentityName}Controller {
 	 * @param pageable 分页条件
      * @return 使用ResponseEntity封装的分页${entityComment}数据
      */
-    @ApiOperation(value="获取分页-${entityComment}")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name="associationNameList", paramType="path", dataType="string", value="关联查询的字段${associationNameComment}"),
-            @ApiImplicitParam(name="dictionaryNameList", paramType="path", dataType="string", value="关联查询的数据字典值${dictionaryNameList}"),
-            @ApiImplicitParam(name="sort", paramType="path", dataType="string", value="排序"),
-            @ApiImplicitParam(name="page", paramType="path", dataType="long", value="分页：当前页"),
-            @ApiImplicitParam(name="size", paramType="path", dataType="long", value="分页：每页大小"),
-            @ApiImplicitParam(name="id.equals", paramType="path", dataType="long", value="主键ID"),
-            <#list fieldList as field>
-            @ApiImplicitParam(name="${field.camelName}.equals", paramType="path",<#if field.javaType == 'Integer'> dataType="int",<#elseif field.javaType == 'Long'> dataType="long",<#elseif field.javaType == 'Double'> dataType="double",<#else> dataType="string",</#if> value="${field.comment}"),
-			</#list>
-			@ApiImplicitParam(name="insertUser.?.equals", paramType="path", value="创建者"),
-			@ApiImplicitParam(name="operateUser.?.equals", paramType="path", value="最后更新者"),
-			<#list toFromList as toFrom>
-			@ApiImplicitParam(name="${toFrom.toFromEntityName}Id.equals", paramType="path", value="关联的${toFrom.toFromComment}ID"),
-			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
-			</#list>
-    })
-    @ApiResponses({
-            @ApiResponse(code=200, message="resultCode - 1：查询成功  2：查询失败<br/>" +
-                    "errMsg - 错误消息<br/>" +
-                    "data - 查询结果", response=Object.class)
-    })
     @GetMapping("/${entityUrl}")
     public ResponseEntity<ReturnCommonDTO<IPage<${eentityName}DTO>>> getPage${eentityName}s(
-            @ApiIgnore ${eentityName}Criteria criteria, @ApiIgnore MbpPage pageable) {
+            ${eentityName}Criteria criteria, MbpPage pageable) {
         log.debug("Controller ==> 分页查询${eentityName} : {}, {}", criteria, pageable);
         ReturnCommonDTO<IPage<${eentityName}DTO>> data = ${entityName}Service.baseFindPage(DOMAIN_NAME, criteria, pageable, null);
         return ResponseEntity.ok().headers(null).body(data);
@@ -287,26 +173,8 @@ public class ${eentityName}Controller {
 	 * @param criteria 查询条件
      * @return 使用ResponseEntity封装的${entityComment}数量
      */
-    @ApiOperation(value="获取数量-${entityComment}")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name="id.equals", paramType="path", dataType="long", value="主键ID"),
-            <#list fieldList as field>
-            @ApiImplicitParam(name="${field.camelName}.equals", paramType="path",<#if field.javaType == 'Integer'> dataType="int",<#elseif field.javaType == 'Long'> dataType="long",<#elseif field.javaType == 'Double'> dataType="double",<#else> dataType="string",</#if> value="${field.comment}"),
-			</#list>
-			@ApiImplicitParam(name="insertUser.?.equals", paramType="path", value="创建者"),
-			@ApiImplicitParam(name="operateUser.?.equals", paramType="path", value="最后更新者"),
-			<#list toFromList as toFrom>
-			@ApiImplicitParam(name="${toFrom.toFromEntityName}Id.equals", paramType="path", value="关联的${toFrom.toFromComment}ID"),
-			@ApiImplicitParam(name="${toFrom.toFromEntityName}.?.equals", paramType="path", value="关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"),
-			</#list>
-    })
-    @ApiResponses({
-            @ApiResponse(code=200, message="resultCode - 1：查询成功  2：查询失败<br/>" +
-                    "errMsg - 错误消息<br/>" +
-                    "data - 查询结果", response=Object.class)
-    })
     @GetMapping("/${entityUrl}-count")
-    public ResponseEntity<ReturnCommonDTO<Integer>> get${eentityName}Count(@ApiIgnore ${eentityName}Criteria criteria) {
+    public ResponseEntity<ReturnCommonDTO<Integer>> get${eentityName}Count(${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询数量${eentityName} : {}", criteria);
         ReturnCommonDTO<Integer> data = ${entityName}Service.baseFindCount(DOMAIN_NAME, criteria, null);
         return ResponseEntity.ok().headers(null).body(data);

@@ -15,6 +15,10 @@
                 "fromParam":"${toFrom.toFromEntityName}Id.xxx",
                 "descr":"${toFrom.toFromComment}ID"
             },
+            {
+                "fromParam":"${toFrom.toFromEntityName}.?.xxx",
+                "descr":"关联的${toFrom.toFromComment}，其中 ? 对应于GET /api/${toFrom.toFromEntityUrl}的查询字段"
+            }
 </#list>
             {
                 "fromParam":"id.xxx",

@@ -62,8 +62,8 @@ public class EntityModule {
             generateEntity(projectPath + projectName + "\\", packageName, entityComment, eentityName, fieldList,
                     relationshipListCurrent, useDictionaryList, entityTemplatePath, cfg);
         }
-        // Swagger2Configuration.java文件的特别修改
-        swagger2ConfigurationSpecial(entityDTOList, relationshipList, projectPath, projectName, packageName);
+        // Swagger2Configuration.java文件的特别修改（此处暂时废弃Swagger）
+//        swagger2ConfigurationSpecial(entityDTOList, relationshipList, projectPath, projectName, packageName);
         // GlobalCache.java文件的特别修改
         globalCacheSpecial(entityDTOList, relationshipList, projectPath, projectName, packageName);
         // 最后把生成实体用的jdl文件拷贝到项目目录下

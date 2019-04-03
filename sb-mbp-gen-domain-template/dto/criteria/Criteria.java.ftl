@@ -1,8 +1,6 @@
 package ${packageName}.dto.criteria;
 
 import ${packageName}.dto.criteria.filter.*;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -10,7 +8,6 @@ import java.util.Objects;
 /**
  * ${entityComment} 条件过滤器
  */
-@ApiModel(description = "${entityComment}")
 public class ${eentityName}Criteria extends BaseCriteria implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -19,13 +16,11 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
     <#list fieldList as field>
 	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
 
-    @ApiModelProperty(value = "${field.comment}")
     private <#if field.javaType == 'String'>StringFilter<#elseif field.javaType == 'Long'>LongFilter<#elseif field.javaType == 'Integer'>IntegerFilter<#elseif field.javaType == 'Double'>DoubleFilter<#else>Filter</#if> ${field.camelName};    // ${field.comment}
 	</#if>
     </#list>
 	<#list toFromList as toFrom>
 
-    @ApiModelProperty(value = "${toFrom.toFromComment}ID")
     private LongFilter ${toFrom.toFromEntityName}Id;    // ${toFrom.toFromComment}ID
 	</#list>
 	<#list toFromList as toFrom>

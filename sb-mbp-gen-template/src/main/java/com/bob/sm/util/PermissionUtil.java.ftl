@@ -3,8 +3,6 @@ package ${packageName}.util;
 import ${packageName}.annotation.PermissionConfigAllow;
 import ${packageName}.config.Constants;
 import ${packageName}.dto.SystemPermissionDTO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
@@ -64,7 +62,8 @@ public class PermissionUtil {
             Class clazz = Class.forName(className);
             Annotation classRestControllerAnnotation = clazz.getDeclaredAnnotation(RestController.class);
             Annotation classRequestMappingAnnotation = clazz.getDeclaredAnnotation(RequestMapping.class);
-            Annotation classApiAnnotation = clazz.getDeclaredAnnotation(Api.class);
+//            Annotation classApiAnnotation = clazz.getDeclaredAnnotation(Api.class);
+            Annotation classApiAnnotation = null;
             if (classRestControllerAnnotation == null || classRequestMappingAnnotation == null) {
                 // 没有RestController或没有RequestMapping注解的过滤掉
                 return new ArrayList<>();
@@ -74,7 +73,8 @@ public class PermissionUtil {
                 // 不填写URL的过滤掉
                 return new ArrayList<>();
             }
-            String description = classApiAnnotation == null ? "" : ((Api)classApiAnnotation).description();
+//            String description = classApiAnnotation == null ? "" : ((Api)classApiAnnotation).description();
+            String description = "";
             for (String prefixUrl : prefixUrls) {
                 SystemPermissionDTO systemPermissionDTO = new SystemPermissionDTO();
                 systemPermissionDTO.setName(description);
@@ -89,7 +89,8 @@ public class PermissionUtil {
             List<SystemPermissionDTO> methodPermissionList = new ArrayList<>();
             Method[] methods = clazz.getDeclaredMethods();
             for (Method method : methods) {
-                Annotation methodApiOperationAnnotation = method.getDeclaredAnnotation(ApiOperation.class);
+//                Annotation methodApiOperationAnnotation = method.getDeclaredAnnotation(ApiOperation.class);
+                Annotation methodApiOperationAnnotation = null;
                 Annotation methodGetMappingAnnotation = method.getDeclaredAnnotation(GetMapping.class);
                 Annotation methodPostMappingAnnotation = method.getDeclaredAnnotation(PostMapping.class);
                 Annotation methodPutMappingAnnotation = method.getDeclaredAnnotation(PutMapping.class);
@@ -121,7 +122,8 @@ public class PermissionUtil {
                 if (permissionConfigAllowAnnotation != null) {
                     permissionConfigAllow = ((PermissionConfigAllow)permissionConfigAllowAnnotation).allow();
                 }
-                String name = methodApiOperationAnnotation == null ? "" : ((ApiOperation)methodApiOperationAnnotation).value();
+//                String name = methodApiOperationAnnotation == null ? "" : ((ApiOperation)methodApiOperationAnnotation).value();
+                String name = "";
                 for (String httpUrl : httpUrls) {
                     SystemPermissionDTO systemPermissionDTO = new SystemPermissionDTO();
                     systemPermissionDTO.setName(name);

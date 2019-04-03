@@ -7,8 +7,6 @@ import ${packageName}.config.YmlConfig;
 import ${packageName}.security.jwt.JWTFilter;
 import ${packageName}.web.rest.vm.LoginVM;
 import io.micrometer.core.annotation.Timed;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -28,7 +26,6 @@ import javax.validation.Valid;
 /**
  * Controller to authenticate users.
  */
-@Api(description="登录认证")
 @RestController
 @RequestMapping("/api")
 public class UserJWTController {
@@ -46,7 +43,6 @@ public class UserJWTController {
         this.authenticationManager = authenticationManager;
     }
 
-    @ApiOperation(value="用户登录")
     @PostMapping("/authenticate")
     @Timed
     public ResponseEntity<JWTToken> authorize(@Valid @RequestBody LoginVM loginVM) {
