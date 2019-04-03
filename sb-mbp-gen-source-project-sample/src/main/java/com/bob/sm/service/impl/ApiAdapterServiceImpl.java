@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
@@ -100,9 +101,10 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                 // 生成PDF格式的API文档
                 Document pdfDocument = new Document(PageSize.A4);
                 String apiDocPath = System.getProperty("user.dir") + "\\src\\main\\resources\\inter\\doc\\";
+                String pdfFileName = apiDocPath + "api.pdf";
                 try {
                     // 生成PDF格式的API说明文档
-                    PdfWriter.getInstance(pdfDocument, new FileOutputStream(apiDocPath + "api.pdf"));
+                    PdfWriter.getInstance(pdfDocument, new FileOutputStream(pdfFileName));
                     pdfDocument.addTitle("API文档说明");
                     pdfDocument.open();
                     for (ApiAdapterConfigDTO configDTO : configList) {
@@ -170,9 +172,10 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                 // 生成PDF格式的API文档
                 Document pdfDocument = new Document(PageSize.A4);
                 String apiDocPath = System.getProperty("user.dir") + "\\src\\main\\resources\\inter\\doc\\";
+                String pdfFileName = apiDocPath + "apibase.pdf";
                 try {
                     // 生成PDF格式的API说明文档
-                    PdfWriter.getInstance(pdfDocument, new FileOutputStream(apiDocPath + "apibase.pdf"));
+                    PdfWriter.getInstance(pdfDocument, new FileOutputStream(pdfFileName));
                     pdfDocument.addTitle("API文档说明(Base)");
                     pdfDocument.open();
                     for (ApiAdapterConfigDTO configDTO : configList) {
@@ -225,10 +228,10 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
             // 设置表内容
             configDTO.getParam().getCriteriaList().forEach(apiAdapterCriteriaDTO -> {
                 PdfPCell pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getFromParam(), pdfFont));
-                pdfPCellParam.setFixedHeight(fixedHeight);
+                pdfPCellParam.setNoWrap(false);
                 pdfPTableParam.addCell(pdfPCellParam);
                 pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getDescr(), pdfFont));
-                pdfPCellParam.setFixedHeight(fixedHeight);
+                pdfPCellParam.setNoWrap(false);
                 pdfPTableParam.addCell(pdfPCellParam);
             });
             pdfDocument.add(pdfPTableParam);
@@ -241,12 +244,15 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
         }
         // 设置返回说明
         pdfDocument.add(new Paragraph("接口返回：", pdfFont));
-        pdfDocument.add(new Paragraph(
-                "resultCode - " + configDTO.getResult() == null ? "" : configDTO.getResult().getResultCode(), pdfFont));
-        pdfDocument.add(new Paragraph(
-                "errMsg - " + configDTO.getResult() == null ? "" : configDTO.getResult().getErrMsg(), pdfFont));
-        pdfDocument.add(new Paragraph(
-                "data - " + configDTO.getResult() == null ? "" : configDTO.getResult().getData(), pdfFont));
+        pdfDocument.add(new Paragraph("resultCode - "
+                + (configDTO.getResult() == null || configDTO.getResult().getResultCode() == null ?
+                        "" : configDTO.getResult().getResultCode()), pdfFont));
+        pdfDocument.add(new Paragraph("errMsg - "
+                + (configDTO.getResult() == null || configDTO.getResult().getErrMsg() == null ?
+                        "" : configDTO.getResult().getErrMsg()), pdfFont));
+        pdfDocument.add(new Paragraph("data - "
+                + (configDTO.getResult() == null || configDTO.getResult().getData() == null ?
+                "" : configDTO.getResult().getData()), pdfFont));
         String resultFormattedJson = JSON.toJSONString(descrJsonObj, SerializerFeature.PrettyFormat);
         resultFormattedJson = resultFormattedJson.replace("\t", "\u00a0\u00a0");
         pdfDocument.add(new Paragraph(resultFormattedJson, pdfFont));

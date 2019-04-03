@@ -460,7 +460,7 @@ public class EntityModule {
                 "doc\\", "getPage.json.ftl");
         generateJsonFile(projectDirectory, packageName, jsonFileNamePrefix + "-count_GET", entityTemplatePath, root, cfg,
                 "doc\\", "getCount.json.ftl");
-        String configFileContentAppend = jsonFileNamePrefix + "_POST\r"
+        String configFileContentAppend = jsonFileNamePrefix + "_POST.json\r"
                 + jsonFileNamePrefix + "_PUT.json\r"
                 + jsonFileNamePrefix + "_1_DELETE.json\r"
                 + jsonFileNamePrefix + "_DELETE.json\r"
