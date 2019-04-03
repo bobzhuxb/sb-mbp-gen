@@ -348,6 +348,7 @@ public class EntityModule {
         // 转为配置文件处理，此处暂时不需要aopdeal目录
 //        generateServiceAopdeal(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateController(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
+        generateDocJson(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
     }
 
     /**
@@ -428,6 +429,49 @@ public class EntityModule {
                                           String entityTemplatePath, Map root, Configuration cfg) throws Exception {
         generateXmlFile(projectDirectory, packageName, eentityName + "Mapper", entityTemplatePath, root, cfg,
                 "mapperxml\\", "Mapper.xml.ftl");
+    }
+
+    /**
+     * 生成API说明的json文档
+     * @param projectDirectory
+     * @param packageName
+     * @param eentityName
+     * @param entityTemplatePath
+     * @param root
+     * @param cfg
+     * @throws Exception
+     */
+    private static void generateDocJson(String projectDirectory, String packageName, String eentityName,
+                                        String entityTemplatePath, Map root, Configuration cfg) throws Exception {
+        String jsonFileNamePrefix = "api_" + StringUtil.camelToCenterline(eentityName);
+        generateJsonFile(projectDirectory, packageName, jsonFileNamePrefix + "_POST", entityTemplatePath, root, cfg,
+                "doc\\", "create.json.ftl");
+        generateJsonFile(projectDirectory, packageName, jsonFileNamePrefix + "_PUT", entityTemplatePath, root, cfg,
+                "doc\\", "update.json.ftl");
+        generateJsonFile(projectDirectory, packageName, jsonFileNamePrefix + "_1_DELETE", entityTemplatePath, root, cfg,
+                "doc\\", "delete.json.ftl");
+        generateJsonFile(projectDirectory, packageName, jsonFileNamePrefix + "_DELETE", entityTemplatePath, root, cfg,
+                "doc\\", "deleteList.json.ftl");
+        generateJsonFile(projectDirectory, packageName, jsonFileNamePrefix + "_1_GET", entityTemplatePath, root, cfg,
+                "doc\\", "get.json.ftl");
+        generateJsonFile(projectDirectory, packageName, jsonFileNamePrefix + "-all_GET", entityTemplatePath, root, cfg,
+                "doc\\", "getList.json.ftl");
+        generateJsonFile(projectDirectory, packageName, jsonFileNamePrefix + "_GET", entityTemplatePath, root, cfg,
+                "doc\\", "getPage.json.ftl");
+        generateJsonFile(projectDirectory, packageName, jsonFileNamePrefix + "-count_GET", entityTemplatePath, root, cfg,
+                "doc\\", "getCount.json.ftl");
+        String configFileContentAppend = jsonFileNamePrefix + "_POST\r"
+                + jsonFileNamePrefix + "_PUT.json\r"
+                + jsonFileNamePrefix + "_1_DELETE.json\r"
+                + jsonFileNamePrefix + "_DELETE.json\r"
+                + jsonFileNamePrefix + "_1_GET.json\r"
+                + jsonFileNamePrefix + "-all_GET.json\r"
+                + jsonFileNamePrefix + "_GET.json\r"
+                + jsonFileNamePrefix + "-count_GET.json\r";
+        File configFile = new File(projectDirectory + "src\\main\\resources\\inter\\base\\config_files");
+        OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(configFile, true), "UTF-8");
+        out.write(configFileContentAppend);
+        out.close();
     }
 
     /**
@@ -539,6 +583,31 @@ public class EntityModule {
         Template temp = cfg.getTemplate(ftlName, "UTF-8");
         String toPath = projectDirectory + "src\\main\\resources\\mapper\\";
         String fileName = xmlFileName + ".xml";
+        File file = new File(toPath + fileName);
+        // 写文件
+        temp.process(root, new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
+    }
+
+    /**
+     * 根据ftl文件生成Json文件
+     * @param projectDirectory
+     * @param packageName
+     * @param jsonFileName
+     * @param entityTemplatePath
+     * @param root
+     * @param cfg
+     * @param appendPath
+     * @param ftlName
+     * @throws Exception
+     */
+    private static void generateJsonFile(String projectDirectory, String packageName, String jsonFileName,
+                                        String entityTemplatePath, Map root, Configuration cfg,
+                                        String appendPath, String ftlName) throws Exception {
+        cfg.setDirectoryForTemplateLoading(new File(entityTemplatePath + appendPath));
+        // 加载模板文件
+        Template temp = cfg.getTemplate(ftlName, "UTF-8");
+        String toPath = projectDirectory + "src\\main\\resources\\inter\\base\\";
+        String fileName = jsonFileName + ".json";
         File file = new File(toPath + fileName);
         // 写文件
         temp.process(root, new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));

@@ -55,10 +55,11 @@ public class ApplicationInit implements ApplicationRunner {
     }
 
     /**
-     * 初始化前端接口适配器
+     * 初始化前端接口适配器和API文档
      */
     private void initApiAdapter() {
         apiAdapterService.initApiAdapter();
+        apiAdapterService.initApiDocBase();
     }
 
     /**

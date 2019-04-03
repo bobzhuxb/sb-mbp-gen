@@ -11,6 +11,8 @@ public class ApiAdapterParamDTO {
     private List<String> associationNameList;               // 级联查询的参数名列表（GET）
     private List<String> dictionaryNameList;                // 数据字典查询列表（GET）
 
+    private Object jsonBody;                                // json格式的body实体内容
+
     public List<ApiAdapterCriteriaDTO> getCriteriaList() {
         return criteriaList;
     }
@@ -35,4 +37,11 @@ public class ApiAdapterParamDTO {
         this.dictionaryNameList = dictionaryNameList;
     }
 
+    public Object getJsonBody() {
+        return jsonBody;
+    }
+
+    public void setJsonBody(Object jsonBody) {
+        this.jsonBody = jsonBody;
+    }
 }

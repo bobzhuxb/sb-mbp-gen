@@ -62,7 +62,10 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
             BufferedReader reader = new BufferedReader(new InputStreamReader(configFileNameResource.getInputStream()));
             String line = null;
             List<ApiAdapterConfigDTO> configList = new ArrayList<>();
-            while ((line = reader.readLine()) != null && line.endsWith(".json")) {
+            while ((line = reader.readLine()) != null) {
+                if (!line.endsWith(".json")) {
+                    continue;
+                }
                 ClassPathResource configFileResource = new ClassPathResource("inter/adapter/" + line);
                 if (!configFileResource.exists()) {
                     continue;
@@ -93,7 +96,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                 apiAdapterConfigDTOMap.put(key, configDTO);
                 configList.add(configDTO);
             }
-            if ("true".equals(ymlConfig.getApiPdfGenerate())) {
+            if ("true".equals(ymlConfig.getApiPdfGenerate()) && configList.size() > 0) {
                 // 生成PDF格式的API文档
                 Document pdfDocument = new Document(PageSize.A4);
                 String apiDocPath = System.getProperty("user.dir") + "\\src\\main\\resources\\inter\\doc\\";
@@ -101,6 +104,76 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                     // 生成PDF格式的API说明文档
                     PdfWriter.getInstance(pdfDocument, new FileOutputStream(apiDocPath + "api.pdf"));
                     pdfDocument.addTitle("API文档说明");
+                    pdfDocument.open();
+                    for (ApiAdapterConfigDTO configDTO : configList) {
+                        writeApiToPdf(pdfDocument, configDTO, configDTO.getReturnConfigTreeList());
+                    }
+                } finally {
+                    pdfDocument.close();
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new CommonException(e.getMessage());
+        }
+    }
+
+    /**
+     * 初始化前端接口适配器
+     */
+    public void initApiDocBase() {
+        apiAdapterConfigDTOMap = new HashMap<>();
+        try {
+            // 获取资源目录apiAdapter下的所有json配置文件
+            ClassPathResource configFileNameResource = new ClassPathResource("inter/base/config_files");
+            if (!configFileNameResource.exists()) {
+                return;
+            }
+            BufferedReader reader = new BufferedReader(new InputStreamReader(configFileNameResource.getInputStream()));
+            String line = null;
+            List<ApiAdapterConfigDTO> configList = new ArrayList<>();
+            while ((line = reader.readLine()) != null) {
+                if (!line.endsWith(".json")) {
+                    continue;
+                }
+                ClassPathResource configFileResource = new ClassPathResource("inter/base/" + line);
+                if (!configFileResource.exists()) {
+                    continue;
+                }
+                ApiAdapterConfigDTO configDTO =
+                        JSON.parseObject(configFileResource.getInputStream(), StandardCharsets.UTF_8, ApiAdapterConfigDTO.class,
+                                // 自动关闭流
+                                Feature.AutoCloseSource,
+                                // 允许注释
+                                Feature.AllowComment,
+                                // 允许单引号
+                                Feature.AllowSingleQuotes,
+                                // 使用 Big decimal
+                                Feature.UseBigDecimal);
+                String key = configDTO.getHttpUrl().substring(1).replace("/", "_")
+                        + "_" + configDTO.getHttpMethod();
+                if (!line.equals(key + ".json")) {
+                    throw new CommonException(line + "文件名与配置不符");
+                }
+                // 按处理结果的层级排序（需要一层一层处理）
+                List<ApiAdapterResultFieldDTO> fieldConfigSortList = sortReturnConfigList(configDTO);
+                // 按处理结果的层级组装成树状结构
+                List<ApiAdapterResultFieldDTO> fieldConfigTreeList = new ArrayList<>();
+                formReturnConfigTree(fieldConfigTreeList, "", fieldConfigSortList, 1);
+                // 将结果设置进configDTO中
+                configDTO.setReturnConfigTreeList(fieldConfigTreeList);
+                // 最终将配置放到Map中
+                apiAdapterConfigDTOMap.put(key, configDTO);
+                configList.add(configDTO);
+            }
+            if ("true".equals(ymlConfig.getApiPdfGenerate()) && configList.size() > 0) {
+                // 生成PDF格式的API文档
+                Document pdfDocument = new Document(PageSize.A4);
+                String apiDocPath = System.getProperty("user.dir") + "\\src\\main\\resources\\inter\\doc\\";
+                try {
+                    // 生成PDF格式的API说明文档
+                    PdfWriter.getInstance(pdfDocument, new FileOutputStream(apiDocPath + "apibase.pdf"));
+                    pdfDocument.addTitle("API文档说明(Base)");
                     pdfDocument.open();
                     for (ApiAdapterConfigDTO configDTO : configList) {
                         writeApiToPdf(pdfDocument, configDTO, configDTO.getReturnConfigTreeList());
@@ -130,40 +203,53 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
         Font pdfFont = new Font(BaseFont.createFont("/inter/font/simsun.ttf", BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED), 8);
         pdfDocument.add(new Paragraph("接口URL：" + configDTO.getHttpUrl(), pdfFont));
         pdfDocument.add(new Paragraph("接口方法：" + configDTO.getHttpMethod(), pdfFont));
-        pdfDocument.add(new Paragraph("接口编号：" + configDTO.getInterNo(), pdfFont));
+        pdfDocument.add(new Paragraph("接口编号：" + configDTO.getInterNo() == null ? "（无）" : configDTO.getInterNo(), pdfFont));
         pdfDocument.add(new Paragraph("接口描述：" + configDTO.getInterDescr(), pdfFont));
-        pdfDocument.add(new Paragraph("接口参数：", pdfFont));
-        // 生成一个两列的表格
-        PdfPTable pdfPTableParam = new PdfPTable(2);
-        // 设置单元格高度
-        int fixedHeight = 12;
-        // 设置参数表头
-        PdfPCell pdfPCellParamTitle = new PdfPCell(new Phrase("参数名", pdfFont));
-        pdfPCellParamTitle.setFixedHeight(fixedHeight);
-        pdfPCellParamTitle.setHorizontalAlignment(Element.ALIGN_CENTER);//设置水平居中
-        pdfPCellParamTitle.setVerticalAlignment(Element.ALIGN_MIDDLE);//设置垂直居中
-        pdfPTableParam.addCell(pdfPCellParamTitle);
-        pdfPCellParamTitle = new PdfPCell(new Phrase("参数说明", pdfFont));
-        pdfPCellParamTitle.setFixedHeight(fixedHeight);
-        pdfPCellParamTitle.setHorizontalAlignment(Element.ALIGN_CENTER);//设置水平居中
-        pdfPCellParamTitle.setVerticalAlignment(Element.ALIGN_MIDDLE);//设置垂直居中
-        pdfPTableParam.addCell(pdfPCellParamTitle);
-        // 设置表内容
-        Optional.ofNullable(configDTO.getParam() == null ? null : configDTO.getParam().getCriteriaList())
-                .ifPresent(criteriaList -> criteriaList.forEach(apiAdapterCriteriaDTO -> {
-            PdfPCell pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getFromParam(), pdfFont));
-            pdfPCellParam.setFixedHeight(fixedHeight);
-            pdfPTableParam.addCell(pdfPCellParam);
-            pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getDescr(), pdfFont));
-            pdfPCellParam.setFixedHeight(fixedHeight);
-            pdfPTableParam.addCell(pdfPCellParam);
-        }));
-        pdfDocument.add(pdfPTableParam);
+        if (configDTO.getParam() != null && configDTO.getParam().getCriteriaList() != null) {
+            pdfDocument.add(new Paragraph("接口URL参数：", pdfFont));
+            // 生成一个两列的表格
+            PdfPTable pdfPTableParam = new PdfPTable(2);
+            // 设置单元格高度
+            int fixedHeight = 12;
+            // 设置参数表头
+            PdfPCell pdfPCellParamTitle = new PdfPCell(new Phrase("参数名", pdfFont));
+            pdfPCellParamTitle.setFixedHeight(fixedHeight);
+            pdfPCellParamTitle.setHorizontalAlignment(Element.ALIGN_CENTER);//设置水平居中
+            pdfPCellParamTitle.setVerticalAlignment(Element.ALIGN_MIDDLE);//设置垂直居中
+            pdfPTableParam.addCell(pdfPCellParamTitle);
+            pdfPCellParamTitle = new PdfPCell(new Phrase("参数说明", pdfFont));
+            pdfPCellParamTitle.setFixedHeight(fixedHeight);
+            pdfPCellParamTitle.setHorizontalAlignment(Element.ALIGN_CENTER);//设置水平居中
+            pdfPCellParamTitle.setVerticalAlignment(Element.ALIGN_MIDDLE);//设置垂直居中
+            pdfPTableParam.addCell(pdfPCellParamTitle);
+            // 设置表内容
+            configDTO.getParam().getCriteriaList().forEach(apiAdapterCriteriaDTO -> {
+                PdfPCell pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getFromParam(), pdfFont));
+                pdfPCellParam.setFixedHeight(fixedHeight);
+                pdfPTableParam.addCell(pdfPCellParam);
+                pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getDescr(), pdfFont));
+                pdfPCellParam.setFixedHeight(fixedHeight);
+                pdfPTableParam.addCell(pdfPCellParam);
+            });
+            pdfDocument.add(pdfPTableParam);
+        }
+        if (configDTO.getParam() != null && configDTO.getParam().getJsonBody() != null) {
+            pdfDocument.add(new Paragraph("接口Body参数：", pdfFont));
+            String paramFormattedJson = JSON.toJSONString(configDTO.getParam().getJsonBody(), SerializerFeature.PrettyFormat);
+            paramFormattedJson = paramFormattedJson.replace("\t", "\u00a0\u00a0");
+            pdfDocument.add(new Paragraph(paramFormattedJson, pdfFont));
+        }
         // 设置返回说明
         pdfDocument.add(new Paragraph("接口返回：", pdfFont));
-        String formattedJson = JSON.toJSONString(descrJsonObj, SerializerFeature.PrettyFormat);
-        formattedJson = formattedJson.replace("\t", "\u00a0\u00a0");
-        pdfDocument.add(new Paragraph(formattedJson, pdfFont));
+        pdfDocument.add(new Paragraph(
+                "resultCode - " + configDTO.getResult() == null ? "" : configDTO.getResult().getResultCode(), pdfFont));
+        pdfDocument.add(new Paragraph(
+                "errMsg - " + configDTO.getResult() == null ? "" : configDTO.getResult().getErrMsg(), pdfFont));
+        pdfDocument.add(new Paragraph(
+                "data - " + configDTO.getResult() == null ? "" : configDTO.getResult().getData(), pdfFont));
+        String resultFormattedJson = JSON.toJSONString(descrJsonObj, SerializerFeature.PrettyFormat);
+        resultFormattedJson = resultFormattedJson.replace("\t", "\u00a0\u00a0");
+        pdfDocument.add(new Paragraph(resultFormattedJson, pdfFont));
         pdfDocument.add(new Paragraph("===================================================================================", pdfFont));
     }
 
@@ -258,6 +344,10 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                 if (parameter instanceof BaseCriteria) {
                     // 正常情况下，该if分支只会进来一次
                     for (ApiAdapterCriteriaDTO criteriaDTO : configDTO.getParam().getCriteriaList()) {
+                        if (criteriaDTO.getToCriteriaList() == null) {
+                            // 不需要转换，继续下一条
+                            continue;
+                        }
                         String value = request.getParameter(criteriaDTO.getFromParam());
                         if (value == null) {
                             // 没有该参数，继续下一条验证
@@ -430,6 +520,9 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
         List<ApiAdapterResultFieldDTO> fieldConfigSortList = new ArrayList<>();
         // 层级数，每个点分隔不同层级
         int currentLevel = 0;
+        if (configDTO.getResult() == null || configDTO.getResult().getFieldList() == null) {
+            return fieldConfigSortList;
+        }
         while (fieldConfigSortList.size() < configDTO.getResult().getFieldList().size()) {
             currentLevel++;
             for (ApiAdapterResultFieldDTO resultFieldDTO : configDTO.getResult().getFieldList()) {
