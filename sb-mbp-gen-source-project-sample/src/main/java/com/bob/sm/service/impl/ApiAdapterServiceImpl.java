@@ -83,7 +83,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                                 Feature.UseBigDecimal);
                 String key = configDTO.getHttpUrl().substring(1).replace("/", "_")
                         + "_" + configDTO.getHttpMethod() + "_" + configDTO.getInterNo();
-                if (!line.equals(key + ".json")) {
+                if (line.startsWith("#") || !line.equals(key + ".json")) {
                     throw new CommonException(line + "文件名与配置不符");
                 }
                 // 按处理结果的层级排序（需要一层一层处理）
@@ -154,7 +154,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                                 Feature.UseBigDecimal);
                 String key = configDTO.getHttpUrl().substring(1).replace("/", "_")
                         + "_" + configDTO.getHttpMethod();
-                if (!line.equals(key + ".json")) {
+                if (line.startsWith("#") || !line.equals(key + ".json")) {
                     throw new CommonException(line + "文件名与配置不符");
                 }
                 // 按处理结果的层级排序（需要一层一层处理）
@@ -164,8 +164,45 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                 formReturnConfigTree(fieldConfigTreeList, "", fieldConfigSortList, 1);
                 // 将结果设置进configDTO中
                 configDTO.setReturnConfigTreeList(fieldConfigTreeList);
-                // 最终将配置放到Map中
-                apiAdapterConfigDTOMap.put(key, configDTO);
+                configList.add(configDTO);
+            }
+            // 获取资源目录apiAdapter下的所有json配置文件
+            ClassPathResource configFileNameExtendResource = new ClassPathResource("inter/extend/config_files");
+            if (!configFileNameResource.exists()) {
+                return;
+            }
+            BufferedReader readerExtend = new BufferedReader(new InputStreamReader(configFileNameExtendResource.getInputStream()));
+            String lineExtend = null;
+            while ((lineExtend = readerExtend.readLine()) != null) {
+                if (lineExtend.startsWith("#") || !lineExtend.endsWith(".json")) {
+                    continue;
+                }
+                ClassPathResource configFileResource = new ClassPathResource("inter/extend/" + lineExtend);
+                if (!configFileResource.exists()) {
+                    continue;
+                }
+                ApiAdapterConfigDTO configDTO =
+                        JSON.parseObject(configFileResource.getInputStream(), StandardCharsets.UTF_8, ApiAdapterConfigDTO.class,
+                                // 自动关闭流
+                                Feature.AutoCloseSource,
+                                // 允许注释
+                                Feature.AllowComment,
+                                // 允许单引号
+                                Feature.AllowSingleQuotes,
+                                // 使用 Big decimal
+                                Feature.UseBigDecimal);
+                String key = configDTO.getHttpUrl().substring(1).replace("/", "_")
+                        + "_" + configDTO.getHttpMethod();
+                if (!lineExtend.equals(key + ".json")) {
+                    throw new CommonException(lineExtend + "文件名与配置不符");
+                }
+                // 按处理结果的层级排序（需要一层一层处理）
+                List<ApiAdapterResultFieldDTO> fieldConfigSortList = sortReturnConfigList(configDTO);
+                // 按处理结果的层级组装成树状结构
+                List<ApiAdapterResultFieldDTO> fieldConfigTreeList = new ArrayList<>();
+                formReturnConfigTree(fieldConfigTreeList, "", fieldConfigSortList, 1);
+                // 将结果设置进configDTO中
+                configDTO.setReturnConfigTreeList(fieldConfigTreeList);
                 configList.add(configDTO);
             }
             if ("true".equals(ymlConfig.getApiPdfGenerate()) && configList.size() > 0) {
