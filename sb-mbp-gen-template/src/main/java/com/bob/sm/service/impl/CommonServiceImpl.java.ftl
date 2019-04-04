@@ -119,22 +119,61 @@ public class CommonServiceImpl implements CommonService {
     public ReturnCommonDTO downloadFile(HttpServletResponse response, File file, String changeFileName) {
         log.debug("下载文件 : {}", file.getAbsolutePath());
         String fullFileName = file.getAbsolutePath();
+        FileInputStream fis = null;
         try {
             if (!file.exists()) {
                 return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "文件不存在");
             }
+            fis = new FileInputStream(file);
+            return downloadFileBase(response, fis, fullFileName, changeFileName);
+        } catch (Exception e) {
+            log.error("文件下载失败：" + fullFileName, e);
+            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "文件下载失败");
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    log.error("文件下载失败：" + fullFileName, e);
+                }
+            }
+        }
+    }
+
+    /**
+     * 从服务器端下载文件
+     * @param response
+     * @param inputStream 输入流
+     * @param changeFileName 修改后的文件名（不包含路径）
+     * @return
+     * @throws UnsupportedEncodingException
+     */
+    public ReturnCommonDTO downloadFile(HttpServletResponse response, InputStream inputStream, String changeFileName) {
+        return downloadFileBase(response, inputStream, null, changeFileName);
+    }
+
+    /**
+     * 从服务器端下载文件
+     * @param response
+     * @param inputStream 输入流
+     * @param oriFileName 原始文件名
+     * @param changeFileName 修改后的文件名（不包含路径）
+     * @return
+     * @throws UnsupportedEncodingException
+     */
+    public ReturnCommonDTO downloadFileBase(HttpServletResponse response, InputStream inputStream, String oriFileName,
+                                            String changeFileName) {
+        try {
             // 配置文件下载
-            response.setHeader("content-type", "application/octet-stream");
-            response.setContentType("application/octet-stream");
+            response.setHeader("content-type", "application/json");
+            response.setContentType("application/json");
             // 下载文件能正常显示中文
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(changeFileName, "UTF-8"));
             // 实现文件下载
             byte[] buffer = new byte[1024];
-            FileInputStream fis = null;
             BufferedInputStream bis = null;
             try {
-                fis = new FileInputStream(file);
-                bis = new BufferedInputStream(fis);
+                bis = new BufferedInputStream(inputStream);
                 OutputStream os = response.getOutputStream();
                 int i = bis.read(buffer);
                 while (i != -1) {
@@ -142,26 +181,26 @@ public class CommonServiceImpl implements CommonService {
                     i = bis.read(buffer);
                 }
             } catch (Exception e) {
-                log.error("文件下载失败：" + fullFileName, e);
+                log.error("文件下载失败：" + (oriFileName == null ? "" : oriFileName), e);
                 return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "文件下载失败");
             } finally {
+                if (inputStream != null) {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        log.error("文件关闭失败：" + (oriFileName == null ? "" : oriFileName), e);
+                    }
+                }
                 if (bis != null) {
                     try {
                         bis.close();
                     } catch (IOException e) {
-                        log.error("文件关闭失败：" + fullFileName, e);
-                    }
-                }
-                if (fis != null) {
-                    try {
-                        fis.close();
-                    } catch (IOException e) {
-                        log.error("文件关闭失败：" + fullFileName, e);
+                        log.error("文件关闭失败：" + (oriFileName == null ? "" : oriFileName), e);
                     }
                 }
             }
         } catch (Exception e) {
-            log.error("文件下载失败：" + fullFileName, e);
+            log.error("文件下载失败：" + (oriFileName == null ? "" : oriFileName), e);
             return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "文件下载失败");
         }
         return new ReturnCommonDTO();

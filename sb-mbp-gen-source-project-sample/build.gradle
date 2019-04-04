@@ -119,12 +119,12 @@ dependencies {
 	// iText操作PDF
 	compile "com.itextpdf:itextpdf:5.5.13"
 	// 快速SAX模式的XML解析器
-	compile "com.fasterxml.jackson.datatype:jackson-datatype-hppc"
-	compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
-	compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5"
-	compile "com.fasterxml.jackson.core:jackson-annotations"
-	compile "com.fasterxml.jackson.core:jackson-databind"
-	compile "com.fasterxml.jackson.module:jackson-module-afterburner"
+//	compile "com.fasterxml.jackson.datatype:jackson-datatype-hppc"
+//	compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+//	compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5"
+//	compile "com.fasterxml.jackson.core:jackson-annotations"
+//	compile "com.fasterxml.jackson.core:jackson-databind"
+//	compile "com.fasterxml.jackson.module:jackson-module-afterburner"
 	// 图片压缩
 	compile "net.coobird:thumbnailator:0.4.8"
 

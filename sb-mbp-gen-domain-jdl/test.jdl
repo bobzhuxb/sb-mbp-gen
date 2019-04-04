@@ -1,136 +1,825 @@
-// 数据字典
-entity BaseDictionary {
-    // 数据字典类别编码
-	//@NotBlank
+// 用户
+entity SystemUser {
+    // 登录账号
+	//@NotBlank(groups={ValidateCreateGroup.class})
 	//@Size(min = 1, max = 255)
-    dicType String
-    // 数据字典代码
-	//@NotBlank
-	//@Size(min = 1, max = 255)
-    dicCode String
-    // 数据字典中文值
-	//@NotBlank
-	//@Size(min = 1, max = 255)
-    dicValue String
-    // 数据字典描述
-	//@Size(min = 1, max = 255)
-    dicDiscription String
-}
-
-// 工作人员
-entity SmPerson {
+    login String
+    // 密码
+    //@RestFieldAllow(allowGet = false)
+    password String
+    // 账号状态（1：启用 2：停用）
+    accountStatus Integer
     // 姓名
 	//@NotBlank(groups={ValidateCreateGroup.class})
 	//@Size(min = 1, max = 255)
     name String
     // 手机号
-	//@NotBlank(groups={ValidateCreateGroup.class})
 	//@ValidCell
     cell String
-    // 民族代码
-	//#DIC_TYPE:NATION
-	//@NotBlank(groups={ValidateCreateGroup.class})
-	//@Size(min = 1, max = 255)
-    nationCode String
-    // 国家代码
-	//#DIC_TYPE:COUNTRY
-	//@NotBlank(groups={ValidateCreateGroup.class})
-	//@Size(min = 1, max = 255)
-    countryCode String
+    // 其他联系方式
+	//@Size(max = 255)
+    contractInfo String
+    // 身份证号
+	//@ValidCid
+    identifyNo String
+    // 邮箱
+	//@Size(max = 255)
+    email String
+    // 头像图片相对路径
+	//@Size(max = 255)
+    imgRelativePath String
+    // 备注
+	//@Size(max = 255)
+    memo String
 }
 
-// 会议
-entity SmMeeting {
-    // 会议编号
-	//@RestFieldAllow(allowSet = false)
-    meetingNo String
-    // 会议名称
-	//@NotBlank
+// 角色
+entity SystemRole {
+    // 角色标识
+	//@NotBlank(groups={ValidateCreateGroup.class})
 	//@Size(min = 1, max = 255)
     name String
-    // 所属科室代码
-	//#DIC_TYPE:KESHI
-	//@NotBlank
+    // 角色中文名称
+	//@NotBlank(groups={ValidateCreateGroup.class})
 	//@Size(min = 1, max = 255)
-    ksCode String
+    chineseName String
+    // 角色描述
+	//@Size(max = 255)
+    description String
 }
 
-// 会议详细
-entity SmMeetingDetail {
-    // 详细描述
-	//@Size(min = 1, max = 255)
-    detailInfo String
-    // 详情浏览次数
-	//@RestFieldAllow(allowSet = false)
-    detailViews Integer
+// 用户角色关系
+entity SystemUserRole {
 }
 
-// 会议日程
-entity SmMeetingSchedule {
-    // 开始日期
-	//@NotBlank
-	//@ValidDate
-    startTime String
-    // 结束日期
-	//@NotBlank
-	//@ValidDate
-    entTime String
+// 操作许可
+entity SystemPermission {
+    // 操作许可名称
+	//@NotBlank(groups={ValidateCreateGroup.class})
+	//@Size(min = 1, max = 255)
+    name String
+    // 操作许可描述
+	//@Size(max = 255)
+    description String
+	// 许可所属系统代码（只有在多系统联合配置权限时使用）
+	//@Size(max = 255)
+	systemCode String
+	// 操作许可类别（例如：GET/POST/PUT/DELETE等）
+	//@Size(max = 255)
+	httpType String
+	// 访问URL
+	//@Size(max = 255)
+	httpUrl String
+	// 功能归类
+	//@Size(max = 255)
+	functionCategroy String
+	// 名称是否已更改（1：未更改  2：已更改）
+	//@Min(1)
+	//@Max(2)
+	nameModified Integer
+	// 当前层级
+	//@Min(0)
+	currentLevel Integer
+	// 是否允许配置（1：是   2：否）
+    //@ValidEnum(target = Constants.yesNo.class)
+	allowConfig Integer
+}
+
+// 资源
+entity SystemResource {
+    // 资源类别（PERMISSION：权限   CLIENT_TYPE：客户端应用    SUB_SYSTEM：子系统）
+	//@NotBlank(groups={ValidateCreateGroup.class})
+	//@Size(min = 1, max = 255)
+    resourceType String
+    // 资源名称
+	//@NotBlank(groups={ValidateCreateGroup.class})
+	//@Size(min = 1, max = 255)
+    name String
+    // 资源描述
+	//@Size(max = 255)
+    description String
+	// 资源所属系统代码（只有在多系统联合配置权限时使用）
+	//@Size(max = 255)
+	systemCode String
+	// 资源特性标识（同一系统，同一类别内资源特性标识）
+	//@Size(max = 255)
+	identify String
+	// 当前层级
+	//@Min(0)
+	currentLevel Integer
+	// 层级内排序
+	//@Min(0)
+	levelIndex Integer
+}
+
+// 资源许可关系
+entity SystemResourcePermission {
+}
+
+// 角色资源关系
+entity SystemRoleResource {
+}
+
+// 用户资源关系
+entity SystemUserResource {
+}
+
+// 组织机构
+entity SystemOrganization {
+    // 组织机构代码
+	//@NotBlank(groups={ValidateCreateGroup.class})
+	//@Size(min = 1, max = 255)
+    organizationCode String
+    // 组织机构名称
+	//@NotBlank(groups={ValidateCreateGroup.class})
+	//@Size(min = 1, max = 255)
+    name String
+    // 组织机构描述
+	//@Size(max = 255)
+    description String
+	// 当前层级
+	//@Min(0)
+	currentLevel Integer
+}
+
+// 操作日志
+entity SystemLog {
+    // 日志类型
 	//@NotBlank
 	//@Size(min = 1, max = 255)
-    // 内容
+    logType String
+    // 日志内容
+	//@NotBlank
+	//@Size(min = 1, max = 255)
     content String
 }
 
-// 会议嘉宾
-entity SmMeetingGuest {
-    // 姓名
-	//@NotBlank
+// 数据字典
+entity SystemDictionary {
+    // 数据字典类别编码
+	//@NotBlank(groups={ValidateCreateGroup.class})
 	//@Size(min = 1, max = 255)
+    dicType String
+    // 数据字典代码
+	//@NotBlank(groups={ValidateCreateGroup.class})
+	//@Size(min = 1, max = 255)
+    dicCode String
+    // 数据字典中文值
+	//@NotBlank(groups={ValidateCreateGroup.class})
+	//@Size(min = 1, max = 255)
+    dicValue String
+    // 数据字典描述
+	//@Size(max = 255)
+    dicDescription String
+}
+
+// 供应商
+entity SfstSupplier {
+    // 供应商代码（编号）
+    //@Size(min = 2, max = 2)
+    supplierCode String
+    // 社会统一信用代码
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    socialUnifiedCreditCode String
+    // 企业名称
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
     name String
-    // 描述
-	//@Size(min = 1, max = 255)
-    descr String
+    // 法人代表
+    //@Size(max = 255)
+    legalPerson String
+    // 证照有效期
+	//@ValidDate
+    licenseEndDate String
+    // 企业地址省市区代码
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 10)
+    companyAddressProvCityDist String
+    // 企业详细地址
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    companyAddressDetail String
+    // 联系人
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    contractPerson String
+    // 联系方式
+    //@Size(max = 255)
+    contractPhone String
+    // 公司简介
+    //@Size(max = 255)
+    companyIntroduction String
+    // 是否学校的直接供应商（1：是  2：否）
+    //@ValidEnum(target = Constants.yesNo.class)
+    directToSchool Integer
 }
 
-// 支付日志
-//@RestClassAllow(allowSet = false)
-entity SmPayLog {
-    // 接口类型
-    interType String
-    // 传入参数
-    param String
-    // 返回结果
-    result String
+// 企业证照
+entity SfstSupplierLicense {
+    // 证照名称
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    name String
+    // 证照有效期
+	//@ValidDate
+    endDate String
+    // 证照图片相对路径
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    picRelativePath String
 }
 
-// 会议嘉宾照片
-entity SmMeetingGuestPhoto {
-    // 照片相对路径
-	//@NotBlank
-	//@Size(min = 1, max = 255)
+// 学校
+entity SfstSchool {
+    // 学校代码（编号）
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 2, max = 2)
+    schoolCode String
+    // 学校名称
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    name String
+    // 联系人
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    contractPerson String
+    // 联系方式
+    //@Size(max = 255)
+    contractPhone String
+    // 学校地址省市区代码
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 10)
+    schoolAddressProvCityDist String
+    // 学校详细地址
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    schoolAddressDetail String
+    // 经度
+    //@ValidLatLongitude
+    longitude String
+    // 纬度
+    //@ValidLatLongitude
+    latitude String
+    // 学校简介
+    //@Size(max = 255)
+    schoolIntroduction String
+    // 学校追溯H5页面图片相对路径
+    //@Size(max = 255)
+    schoolPicRelativePath String
+}
+
+// 学校获奖证书
+entity SfstSchoolCertificate {
+    // 证书名称
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    name String
+    // 证书图片相对路径
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    relativePath String
+}
+
+// 学校类型
+entity SfstSchoolType {
+    // 学校类型
+	//#DIC_TYPE:SCHOOL_TYPE
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    typeCode String
+}
+
+// 学校供应商清单
+entity SfstSchoolSupplier {
+}
+
+// 原料
+entity SfstMaterial {
+    // 产品编号
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    materialNo String
+    // 产品名称
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    name String
+    // 原料分类
+	//#DIC_TYPE:MATERIAL_TYPE
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    categoryCode String
+    // 规格
+    //@Size(max = 255)
+    specification String
+    // 原料单位
+	//#DIC_TYPE:MATERIAL_UNIT
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    unitCode String
+    // 保质期（天）
+    //@Min(1)
+    qualityDays Integer
+    // 品牌
+    //@Size(max = 255)
+    brand String
+    // 产地
+    //@Size(max = 255)
+    originPlace String
+    // 产品介绍
+    //@Size(max = 255)
+    materialIntroduction String
+}
+
+// 原料图片
+entity SfstMaterialPic {
+    // 图片名称
+    //@Size(max = 255)
+    name String
+    // 图片相对路径
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    relativePath String
+}
+
+// 原料日价格
+entity SfstMaterialPrice {
+    // 执行日期
+	//@NotBlank(groups={ValidateCreateGroup.class})
+	//@ValidDate
+    executeDate String
+    // 单价
+	//@NotBlank(groups={ValidateCreateGroup.class})
+    //@ValidMoney
+    unitPrice String
+}
+
+// 学校原料限制
+entity SfstSchoolMaterialAttr {
+    // 是否当日用完（1：是  2：否）
+    //@ValidEnum(target = Constants.yesNo.class)
+    useUpDaily Integer
+}
+
+// 供应商入库单
+entity SfstSupplierInboundOrder {
+    // 入库单号
+    //@RestFieldAllow(allowSet = false)
+    supplierOrderNo String
+    // 入库日期
+	//@NotBlank(groups={ValidateCreateGroup.class})
+	//@ValidDate
+    inboundDate String
+    // 用于生成入库单号的供应商编号
+    //@RestFieldAllow(allowSet = false)
+    supplierCodeForOrderNo String
+    // 用于生成入库单号的入库日期
+    //@RestFieldAllow(allowSet = false)
+    inboundDateForOrderNo String
+    // 用于生成入库单号的流水号
+    //@RestFieldAllow(allowSet = false)
+    serialNoForOrderNo Integer
+}
+
+// 供应商入库单批次
+entity SfstSupplierInboundBatch {
+	// 批次号
+    //@RestFieldAllow(allowSet = false)
+    supplierbatchNo String
+    // 生产日期
+	//@NotBlank(groups={ValidateCreateGroup.class})
+	//@ValidDate
+    productionDate String
+    // 该入库单批次的总数量
+    //@Min(1)
+    totalNumber Integer
+    // 供应商库存中该批次的剩余数量
+    //@Min(0)
+    restNumber Integer
+    // 用于生成入库单批次号的入库单号
+    //@RestFieldAllow(allowSet = false)
+    inboundOrderNoForBatchNo String
+    // 用于生成入库单批次号的流水号
+    //@RestFieldAllow(allowSet = false)
+    serialNoForBatchNo Integer
+}
+
+// 食品检测记录
+entity SfstTestRecord {
+	// 检测名称
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    testName String
+	// 检测日期
+	//@NotBlank(groups={ValidateCreateGroup.class})
+	//@ValidDate
+    testDate String
+    // 检测结果（1：合格  2：不合格）
+    testResult Integer
+    // 检测单位
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    testOrganization String
+}
+
+// 食品检测记录报告
+entity SfstTestRecordReport {
+	// 报告图片名称
+    //@Size(max = 255)
+    name String
+    // 图片相对路径
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    relativePath String
+}
+
+// 食品检测记录批次
+entity SfstTestRecordBatch {
+}
+
+// 学校批次
+entity SfstSchoolBatch {
+	// 学校批次号
+    //@RestFieldAllow(allowSet = false)
+    schoolBatchNo String
+    // 该学校批次的总数量
+    //@Min(1)
+    totalNumber Integer
+    // 学校库存中该批次的剩余数量
+    //@Min(0)
+    restNumber Integer
+    // 单价
+    //@RestFieldAllow(allowSet = false)
+    unitPrice String
+    // 批次总价
+    //@RestFieldAllow(allowSet = false)
+    totalPrice String
+    // 备注
+    //@Size(max = 255)
+    memo String
+    // 用于生成学校批次号的供应商批次号
+    //@RestFieldAllow(allowSet = false)
+    supplierBatchNoForBatchNo String
+    // 用于生成学校批次号的学校编号
+    //@RestFieldAllow(allowSet = false)
+    schoolCodeForBatchNo String
+    // 用于生成学校批次号的流水号
+    //@RestFieldAllow(allowSet = false)
+    serialNoForBatchNo Integer
+}
+
+// 学校按原料汇总库存记录
+entity SfstSchoolMaterialStockRecord {
+	// 库存变化类型（1：入库  2：出库）
+    //@RestFieldAllow(allowSet = false)
+    stockChangeType Integer
+    // 库存变化数量
+    //@RestFieldAllow(allowSet = false)
+    stockChangeNumber Integer
+    // 库存变化金额
+    //@RestFieldAllow(allowSet = false)
+    stockChangePrice String
+    // 库存结余数量
+    //@RestFieldAllow(allowSet = false)
+    stockRestNumber Integer
+    // 库存结余金额
+    //@RestFieldAllow(allowSet = false)
+    stockRestPrice String
+}
+
+// 学校订单
+entity SfstSchoolOrder {
+	// 订单编号
+    //@RestFieldAllow(allowSet = false)
+    orderNo String
+	// 下单时间
+    //@RestFieldAllow(allowSet = false)
+    orderTime String
+	// 订单状态
+    orderStatus String
+	// 订单总价
+    //@RestFieldAllow(allowSet = false)
+    totalPrice String
+    // 要求配送时间
+	//@NotBlank(groups={ValidateCreateGroup.class})
+	//@ValidDateTime
+    requestDeliveryTime String
+    // 学校备注
+    //@Size(max = 255)
+    schoolMemo String
+    // 出货时间
+	//@ValidDateTime
+    shipTime String
+    // 收货时间
+    //@ValidDateTime
+    receiptTime String
+    // 是否留作记录用的原始订单（1：是  2：否）
+    //@RestFieldAllow(allowSet = false)
+    //@ValidEnum(target = Constants.yesNo.class)
+    originalOrNot Integer
+    // 用于生成学校订单号的供应商编号
+    //@RestFieldAllow(allowSet = false)
+    supplierCodeForOrderNo String
+    // 用于生成学校订单号的学校编号
+    //@RestFieldAllow(allowSet = false)
+    schoolCodeForOrderNo String
+    // 用于生成学校订单号的下单日期
+    //@RestFieldAllow(allowSet = false)
+    orderDateForOrderNo String
+    // 用于生成学校订单号的流水号
+    //@RestFieldAllow(allowSet = false)
+    serialNoForOrderNo Integer
+}
+
+// 学校出库记录
+entity SfstSchoolOutboundRecord {
+    // 出库单号
+    //@RestFieldAllow(allowSet = false)
+    outboundNo String
+    // 出库数量
+    //@Min(1)
+    outboundNumber Integer
+    // 出库类型
+	//#DIC_TYPE:SCHOOL_OUTBOUND_TYPE
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    outboundTypeCode String
+    // 用于生成学校出库单号的学校批次号
+    //@RestFieldAllow(allowSet = false)
+    schoolBatchNoForOutboundNo String
+    // 用于生成学校出库单号的流水号
+    //@RestFieldAllow(allowSet = false)
+    serialNoForOutboundNo Integer
+}
+
+// 菜品
+entity SfstDish {
+    // 菜品编号
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    dishNo String
+    // 菜品名称
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    name String
+    // 菜品售价
+    //@ValidMoney
+    price String
+    // 菜品简介
+    //@Size(max = 255)
+    description String
+}
+
+// 菜品图片
+entity SfstDishPic {
+	// 菜品图片名称
+    //@Size(max = 255)
+    name String
+    // 图片相对路径
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    relativePath String
+}
+
+// 菜品原料关系
+entity SfstDishMaterial {
+}
+
+// 菜谱
+entity SfstMenu {
+    // 菜谱编号
+    //@RestFieldAllow(allowSet = false)
+    menuNo String
+    // 菜谱日期
+	//@NotBlank(groups={ValidateCreateGroup.class})
+	//@ValidDate
+    menuDate String
+    // 菜谱星期
+    //@RestFieldAllow(allowSet = false)
+    weekDay Integer
+    // 是否已发布
+	//@CreateInitValue("2")
+    //@ValidEnum(target = Constants.yesNo.class)
+    published Integer
+    // 发布时间
+    //@RestFieldAllow(allowSet = false)
+    publishTime String
+}
+
+// 子菜谱
+entity SfstSubMenu {
+    // 名称
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@Size(min = 1, max = 255)
+    name String
+    // 备注
+    //@Size(max = 255)
+    memo String
+}
+
+// 子菜谱的菜品条目
+entity SfstSubMenuDish {
+    // 类别（1：早餐  2：午餐  3：晚餐）
+    menuDishType String
+}
+
+// 子菜谱的菜品条目和批次关系
+entity SfstSubMenuDishSchoolBatch {
+}
+
+// 展示用的调味品
+entity SfstCondimentShow {
+    // 当前是否展示（1：是  2：否）
+    //@ValidEnum(target = Constants.yesNo.class)
+    showNow Integer
+}
+
+// 财务结算单
+entity SfstFinancialBill {
+    // 流水号
+    //@RestFieldAllow(allowSet = false)
+    billNo String
+    // 起始年月
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@ValidMonth
+    startYearMonth String
+    // 终止年月
+    //@NotBlank(groups={ValidateCreateGroup.class})
+    //@ValidMonth
+    endYearMonth String
+    // 合计金额
+    //@RestFieldAllow(allowSet = false)
+    totalPrice String
+    // 账单状态
+    billStatus String
+    // 提交财务结算时间
+    //@RestFieldAllow(allowSet = false)
+    submitTime String
+    // 供应商确认或驳回时间
+    //@RestFieldAllow(allowSet = false)
+    supplierConfirmTime String
+    // 初审通过时间
+    //@RestFieldAllow(allowSet = false)
+    firstCheckTime String
+    // 终审通过时间
+    //@RestFieldAllow(allowSet = false)
+    finalCheckTime String
+}
+
+// 学校订单与财务结算单
+entity SfstOrderBill {
+}
+
+// Excel导入记录表
+entity SfstExcelImportHis {
+    // 导入类型
+    //@RestFieldAllow(allowSet = false)
+    importType String
+    // 导入文件的相对路径
+    //@RestFieldAllow(allowSet = false)
     relativePath String
 }
 
 relationship OneToOne {
-    // 会议{会议详情}
-	//@Min(0)
-	SmMeeting{smMeetingDetail} to SmMeetingDetail{smMeeting}
+	// 最新学校订单{最原始订单}
+	SfstSchoolOrder{originalOrder} to SfstSchoolOrder{newestOrder}
 }
 
 relationship OneToMany {
+	// 用户{角色}
+	SystemUser{systemUserRole} to SystemUserRole{systemUser}
+    // 角色{用户}
+	SystemRole{systemUserRole} to SystemUserRole{systemRole}
+    // 父操作许可{子操作许可}
+	SystemPermission{child} to SystemPermission{parent}
+	// 父资源{子资源}
+	SystemResource{child} to SystemResource{parent}
+    // 父组织机构{子组织机构}
+	SystemOrganization{child} to SystemOrganization{parent}
+    // 资源{许可}
+	SystemResource{systemResourcePermission} to SystemResourcePermission{systemResource}
+    // 许可{资源}
+	SystemPermission{systemResourcePermission} to SystemResourcePermission{systemPermission}
+    // 角色{资源}
+	SystemRole{systemRoleResource} to SystemRoleResource{systemRole}
+    // 资源{角色}
+	SystemResource{systemRoleResource} to SystemRoleResource{systemResource}
+    // 用户{资源}
+	SystemUser{systemUserResource} to SystemUserResource{systemUser}
+    // 资源{用户}
+	SystemResource{systemUserResource} to SystemUserResource{systemResource}
+    // 组织机构{用户}
+    //!CASCADE_DELETE:NULL
+	SystemOrganization{systemUser} to SystemUser{systemOrganization}
     // 父数据字典{子数据字典}
-	BaseDictionary{child} to BaseDictionary{parent}
-    // 组织者{会议}
-    //!CASCADE_DELETE:NULL
-	SmPerson{asmMeeting} to SmMeeting{organizer}
-    // 联系人{会议}
-    //!CASCADE_DELETE:NULL
-	SmPerson{bsmMeeting} to SmMeeting{contractor}
-    // 会议{会议日程}
+	SystemDictionary{child} to SystemDictionary{parent}
+    // 供应商{上游供应商}
+	SfstSupplier{upSfstSupplier} to SfstSupplier{downSfstSupplier}
+    // 供应商{企业证照}
+	SfstSupplier{sfstSupplierLicense} to SfstSupplierLicense{sfstSupplier}
+    // 学校{学校类型}
+	SfstSchool{sfstSchoolType} to SfstSchoolType{sfstSchool}
+    // 学校{获奖证书}
+	SfstSchool{sfstSchoolCertificate} to SfstSchoolCertificate{sfstSchool}
+	// 所属学校{用户}
     //!CASCADE_DELETE:FORBIDDEN
-	SmMeeting{smMeetingSchedule} to SmMeetingSchedule{smMeeting}
-    // 会议{会议嘉宾}
-	SmMeeting{smMeetingGuest} to SmMeetingGuest{smMeeting}
-    // 会议嘉宾{嘉宾照片}
-	SmMeetingGuest{smMeetingGuestPhoto} to SmMeetingGuestPhoto{smMeetingGuest}
+	SfstSchool{systemUser} to SystemUser{sfstSchool}
+	// 所属供应商{用户}
+    //!CASCADE_DELETE:FORBIDDEN
+	SfstSupplier{systemUser} to SystemUser{sfstSupplier}
+    // 学校{供应商}
+	SfstSchool{sfstSchoolSupplier} to SfstSchoolSupplier{sfstSchool}
+    // 供应商{学校}
+	SfstSupplier{sfstSchoolSupplier} to SfstSchoolSupplier{sfstSupplier}
+    // 原料{原料图片}
+	SfstMaterial{sfstMaterialPic} to SfstMaterialPic{sfstMaterial}
+    // 原料{每日单价}
+	SfstMaterial{sfstMaterialPrice} to SfstMaterialPrice{sfstMaterial}
+    // 供应商{原料}
+	SfstSupplier{sfstMaterial} to SfstMaterial{sfstSupplier}
+    // 学校{学校原料限制}
+	SfstSchool{sfstSchoolMaterialAttr} to SfstSchoolMaterialAttr{sfstSchool}
+    // 原料{学校原料限制}
+	SfstMaterial{sfstSchoolMaterialAttr} to SfstSchoolMaterialAttr{sfstMaterial}
+    // 所属供应商{供应商的入库单}
+	SfstSupplier{upSupplierInboundOrder} to SfstSupplierInboundOrder{downSupplier}
+    // 上游供应商{提供给下游供应商的入库单}
+	SfstSupplier{downSupplierInboundOrder} to SfstSupplierInboundOrder{upSupplier}
+    // 供应商入库单{供应商批次}
+	SfstSupplierInboundOrder{sfstSupplierInboundBatch} to SfstSupplierInboundBatch{sfstSupplierInboundOrder}
+    // 原料{供应商批次}
+    //!CASCADE_DELETE:FORBIDDEN
+    SfstMaterial{sfstSupplierInboundBatch} to SfstSupplierInboundBatch{sfstMaterial}
+    // 供应商{检测记录}
+    SfstSupplier{sfstTestRecord} to SfstTestRecord{sfstSupplier}
+    // 检测记录{检测报告}
+    SfstTestRecord{sfstTestRecordReport} to SfstTestRecordReport{sfstTestRecord}
+    // 检测记录{检测的供应商批次}
+    SfstTestRecord{sfstTestRecordBatch} to SfstTestRecordBatch{sfstTestRecord}
+    // 供应商批次{被检测过的批次}
+    SfstSupplierInboundBatch{sfstTestRecordBatch} to SfstTestRecordBatch{sfstSupplierInboundBatch}
+    // 供应商批次{学校批次}
+    //!CASCADE_DELETE:FORBIDDEN
+    SfstSupplierInboundBatch{sfstSchoolBatch} to SfstSchoolBatch{sfstSupplierInboundBatch}
+    // 供应商{学校订单}
+    //!CASCADE_DELETE:FORBIDDEN
+    SfstSupplier{sfstSchoolOrder} to SfstSchoolOrder{sfstSupplier}
+    // 学校{学校订单}
+    //!CASCADE_DELETE:FORBIDDEN
+    SfstSchool{sfstSchoolOrder} to SfstSchoolOrder{sfstSchool}
+    // 学校订单{学校批次}
+    //!CASCADE_DELETE:FORBIDDEN
+    SfstSchoolOrder{sfstSchoolBatch} to SfstSchoolBatch{sfstSchoolOrder}
+    // 出货人{作为出货人的学校订单}
+    //!CASCADE_DELETE:FORBIDDEN
+    SystemUser{schoolOrderAsShipPerson} to SfstSchoolOrder{shipPerson}
+    // 收货人{作为收货人的学校订单}
+    //!CASCADE_DELETE:FORBIDDEN
+    SystemUser{schoolOrderAsReceiptPerson} to SfstSchoolOrder{receiptPerson}
+    // 原料{学校批次}
+    //!CASCADE_DELETE:FORBIDDEN
+    SfstMaterial{sfstSchoolBatch} to SfstSchoolBatch{sfstMaterial}
+    // 学校批次{学校出库记录}
+    //!CASCADE_DELETE:FORBIDDEN
+    SfstSchoolBatch{sfstSchoolOutboundRecord} to SfstSchoolOutboundRecord{sfstSchoolBatch}
+    // 原料{学校按原料汇总库存记录}
+    //!CASCADE_DELETE:FORBIDDEN
+    SfstMaterial{sfstSchoolMaterialStockRecord} to SfstSchoolMaterialStockRecord{sfstMaterial}
+    // 学校{学校按原料汇总库存记录}
+    //!CASCADE_DELETE:FORBIDDEN
+    SfstSchool{sfstSchoolMaterialStockRecord} to SfstSchoolMaterialStockRecord{sfstSchool}
+    // 菜品{菜品图片}
+    SfstDish{sfstDishPic} to SfstDishPic{sfstDish}
+    // 菜品{使用的原料}
+    SfstDish{sfstDishMaterial} to SfstDishMaterial{sfstDish}
+    // 原料{所属菜品}
+    SfstMaterial{sfstDishMaterial} to SfstDishMaterial{sfstMaterial}
+    // 学校{菜品}
+    SfstSchool{sfstDish} to SfstDish{sfstSchool}
+    // 学校{菜谱}
+    SfstSchool{sfstMenu} to SfstMenu{sfstSchool}
+    // 菜谱{子菜谱}
+    SfstMenu{sfstSubMenu} to SfstSubMenu{sfstMenu}
+    // 子菜谱{子菜谱的菜品条目}
+    SfstSubMenu{sfstSubMenuDish} to SfstSubMenuDish{sfstSubMenu}
+    // 菜品{被使用的子菜谱条目}
+    SfstDish{sfstSubMenuDish} to SfstSubMenuDish{sfstDish}
+    // 子菜谱的菜品条目{原料的学校批次}
+    SfstSubMenuDish{sfstSubMenuDishSchoolBatch} to SfstSubMenuDishSchoolBatch{sfstSubMenuDish}
+    // 学校批次{被使用的子菜谱的菜品条目}
+	SfstSchoolBatch{sfstSubMenuDishSchoolBatch} to SfstSubMenuDishSchoolBatch{sfstSchoolBatch}
+    // 学校批次{展示用的调味品}
+    //!CASCADE_DELETE:FORBIDDEN
+    SfstSchoolBatch{sfstCondimentShow} to SfstCondimentShow{sfstSchoolBatch}
+    // 财务结算单{学校订单}
+    SfstFinancialBill{sfstOrderBill} to SfstOrderBill{sfstFinancialBill}
+    // 学校订单{财务结算单}
+    //!CASCADE_DELETE:FORBIDDEN
+    SfstSchoolOrder{sfstOrderBill} to SfstOrderBill{sfstSchoolOrder}
+    // 学校{财务结算单}
+    //!CASCADE_DELETE:FORBIDDEN
+    SfstSchool{sfstFinancialBill} to SfstFinancialBill{sfstSchool}
+    // 供应商{财务结算单}
+    //!CASCADE_DELETE:FORBIDDEN
+    SfstSupplier{sfstFinancialBill} to SfstFinancialBill{sfstSupplier}
 }

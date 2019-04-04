@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +18,11 @@ public interface CommonService {
     ReturnCommonDTO downloadFile(HttpServletResponse response, File file, String changeFileName);
 
     ReturnCommonDTO downloadFile(HttpServletResponse response, String fullFileName, String changeFileName);
+
+    ReturnCommonDTO downloadFile(HttpServletResponse response, InputStream inputStream, String changeFileName);
+
+    ReturnCommonDTO downloadFileBase(HttpServletResponse response, InputStream inputStream, String oriFileName,
+                                     String changeFileName);
 
     ReturnCommonDTO exportExcel(HttpServletResponse response, String fileName, String sheetName,
                                 int maxColumn, int tableStartRow, List<ExcelCellDTO> beforeDataCellList,

@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
@@ -121,10 +120,9 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
     }
 
     /**
-     * 初始化前端接口适配器
+     * 初始化基本接口的文档
      */
     public void initApiDocBase() {
-        apiAdapterConfigDTOMap = new HashMap<>();
         try {
             // 获取资源目录apiAdapter下的所有json配置文件
             ClassPathResource configFileNameResource = new ClassPathResource("inter/base/config_files");

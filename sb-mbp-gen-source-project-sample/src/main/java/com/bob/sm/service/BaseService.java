@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.bob.sm.config.Constants;
 import com.bob.sm.config.GlobalCache;
-import com.bob.sm.domain.BaseDictionary;
+import com.bob.sm.domain.SystemDictionary;
 import com.bob.sm.domain.BaseDomain;
 import com.bob.sm.dto.BaseDTO;
 import com.bob.sm.dto.criteria.BaseCriteria;
@@ -860,16 +860,16 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 删除级联实体或置空关联字段或禁止删除
         listByMap(columnMap).forEach(domain -> {
             Optional.ofNullable(GlobalCache.getEntityRelationsMap().get(entityTypeName)).get().forEach(relationDTO -> {
-                if ("BaseDictionary".equals(entityTypeName)) {
+                if ("SystemDictionary".equals(entityTypeName)) {
                     // 数据字典需要判断是否有使用该数据字典的信息
                     for (Map.Entry<String, List<BaseEntityConfigDicDTO>> entityDicEntry : GlobalCache.getEntityDicNameMap().entrySet()) {
                         String entityDicTypeName = entityDicEntry.getKey();
                         List<BaseEntityConfigDicDTO> entityConfigDicList = entityDicEntry.getValue();
                         for (BaseEntityConfigDicDTO entityConfigDicDTO : entityConfigDicList) {
-                            if (entityConfigDicDTO.getDicType().equals(((BaseDictionary) domain).getDicType())) {
+                            if (entityConfigDicDTO.getDicType().equals(((SystemDictionary) domain).getDicType())) {
                                 int useCount = GlobalCache.getMapperMap().get(entityDicTypeName).selectCount(
                                         new QueryWrapper<>().eq(entityConfigDicDTO.getColumnName(),
-                                                ((BaseDictionary) domain).getDicCode()));
+                                                ((SystemDictionary) domain).getDicCode()));
                                 if (useCount > 0) {
                                     throw new CommonException("有使用该数据字典的" + entityConfigDicDTO.getDicTypeName() + "信息，禁止删除。");
                                 }
