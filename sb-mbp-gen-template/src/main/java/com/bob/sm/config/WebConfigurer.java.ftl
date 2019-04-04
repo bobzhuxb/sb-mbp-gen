@@ -1,11 +1,11 @@
 package ${packageName}.config;
 
-import com.codahale.metrics.MetricRegistry;
+//import com.codahale.metrics.MetricRegistry;
 //import com.codahale.metrics.servlet.InstrumentedFilter;
 //import com.codahale.metrics.servlets.MetricsServlet;
 import ${packageName}.aop.filter.CachingHttpHeadersFilter;
 import ${packageName}.config.help.PropertiesHelp;
-import io.prometheus.client.exporter.MetricsServlet;
+//import io.prometheus.client.exporter.MetricsServlet;
 import io.undertow.UndertowOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,7 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
 
     private final PropertiesHelp propertiesHelp;
 
-    private MetricRegistry metricRegistry;
+//    private MetricRegistry metricRegistry;
 
     public WebConfigurer(Environment env, PropertiesHelp propertiesHelp) {
 
@@ -191,8 +191,8 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
         return new CorsFilter(source);
     }
 
-    @Autowired(required = false)
-    public void setMetricRegistry(MetricRegistry metricRegistry) {
-        this.metricRegistry = metricRegistry;
-    }
+//    @Autowired(required = false)
+//    public void setMetricRegistry(MetricRegistry metricRegistry) {
+//        this.metricRegistry = metricRegistry;
+//    }
 }

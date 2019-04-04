@@ -87,8 +87,8 @@ dependencies {
 
 	// ===================================接口文档=====================================
 	// Swagger
-	compile "io.springfox:springfox-swagger2:2.5.0"
-	compile "io.springfox:springfox-swagger-ui:2.5.0"
+//	compile "io.springfox:springfox-swagger2:2.5.0"
+//	compile "io.springfox:springfox-swagger-ui:2.5.0"
 
 	// ===================================异常=====================================
 	// 错误处理
@@ -101,11 +101,13 @@ dependencies {
 	compile "commons-io:commons-io:2.6"
 	// commons-beanutils工具包
 	compile "commons-beanutils:commons-beanutils:1.9.3"
+	// google的guava包
+	compile "com.google.guava:guava:27.1-jre"
 	// 注解生成get/set方法
 	compile "org.projectlombok:lombok"
 	// CGLIB
-	compile "commons-beanutils:commons-beanutils:1.9.3"
-	compile "cglib:cglib-nodep:3.2.4"
+//	compile "commons-beanutils:commons-beanutils:1.9.3"
+//	compile "cglib:cglib-nodep:3.2.4"
 	// apache的http客户端
 	compile "org.apache.httpcomponents:httpclient"
 	// Alibaba的FastJson
@@ -128,7 +130,7 @@ dependencies {
 
 	// ===================================监控=====================================
 	// Spring监控模块
-	compile "org.springframework.boot:spring-boot-starter-actuator"
+//	compile "org.springframework.boot:spring-boot-starter-actuator"
 	// 健康监测Metrics报告
 //	compile "io.dropwizard.metrics:metrics-core:3.2.6"
 //	compile "io.dropwizard.metrics:metrics-jcache:3.2.6"
@@ -138,9 +140,9 @@ dependencies {
 //	compile "io.dropwizard.metrics:metrics-servlets:3.2.6"
 //	compile "com.ryantenney.metrics:metrics-spring:3.1.3"
 	// Prometheus监控
-	compile "io.prometheus:simpleclient:0.6.0"
-	compile "io.prometheus:simpleclient_dropwizard:0.6.0"
-	compile "io.prometheus:simpleclient_servlet:0.6.0"
+//	compile "io.prometheus:simpleclient:0.6.0"
+//	compile "io.prometheus:simpleclient_dropwizard:0.6.0"
+//	compile "io.prometheus:simpleclient_servlet:0.6.0"
 
 	// ===================================微信支付=====================================
 

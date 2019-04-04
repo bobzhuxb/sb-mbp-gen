@@ -13,7 +13,7 @@
                 "descr":"关联查询的数据字典值${dictionaryNameList}"
             },
             {
-                "fromParam":"sort",
+                "fromParam":"orderBy",
                 "descr":"排序"
             },
             {

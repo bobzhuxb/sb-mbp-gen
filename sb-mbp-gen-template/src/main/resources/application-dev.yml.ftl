@@ -58,6 +58,6 @@ jhipster:
             queue-size: 512
 
 permission:
-    do-init: true
+    do-init: false
 api-pdf:
     generate: true

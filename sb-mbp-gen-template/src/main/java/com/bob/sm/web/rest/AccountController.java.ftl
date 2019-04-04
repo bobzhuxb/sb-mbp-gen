@@ -9,7 +9,6 @@ import ${packageName}.security.SecurityUtils;
 import ${packageName}.service.AccountService;
 import ${packageName}.util.ParamValidatorUtil;
 import ${packageName}.web.rest.errors.CommonException;
-import io.micrometer.core.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +47,6 @@ public class AccountController {
      * @return
      */
     @GetMapping("/account")
-    @Timed
     public ResponseEntity<EnhanceUserDTO> getAccount() {
         Optional<String> loginOptional = SecurityUtils.getCurrentUserLogin();
         if (!loginOptional.isPresent()) {

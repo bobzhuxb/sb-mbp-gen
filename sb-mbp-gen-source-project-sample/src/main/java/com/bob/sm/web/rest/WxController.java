@@ -4,7 +4,6 @@ import com.bob.sm.dto.help.ParamWxOpenIdDTO;
 import com.bob.sm.dto.help.WxLoginStatusDTO;
 import com.bob.sm.service.WxService;
 import com.bob.sm.web.rest.errors.BadRequestAlertException;
-import io.micrometer.core.annotation.Timed;
 import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +33,6 @@ public class WxController {
      * @return the ResponseEntity with status 200 (OK) and the result in body
      */
     @PostMapping("/get-open-id")
-    @Timed
     public ResponseEntity<WxLoginStatusDTO> getOpenId(
             @RequestBody @Valid ParamWxOpenIdDTO wxOpenIdParamDTO) {
         log.debug("REST request to get openId : {}", wxOpenIdParamDTO);

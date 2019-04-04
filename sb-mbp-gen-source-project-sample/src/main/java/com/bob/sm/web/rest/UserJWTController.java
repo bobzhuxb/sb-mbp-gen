@@ -1,18 +1,12 @@
 package com.bob.sm.web.rest;
 
-import com.bob.sm.security.jwt.TokenProvider;
-import com.bob.sm.util.HttpUtil;
-import com.alibaba.fastjson.JSON;
-import com.bob.sm.config.YmlConfig;
 import com.bob.sm.security.jwt.JWTFilter;
+import com.bob.sm.security.jwt.TokenProvider;
 import com.bob.sm.web.rest.vm.LoginVM;
-import io.micrometer.core.annotation.Timed;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,9 +24,6 @@ import javax.validation.Valid;
 @RequestMapping("/api")
 public class UserJWTController {
 
-    @Autowired
-    private YmlConfig ymlConfig;
-
     private final TokenProvider tokenProvider;
 
     private final AuthenticationManager authenticationManager;
@@ -44,7 +35,6 @@ public class UserJWTController {
     }
 
     @PostMapping("/authenticate")
-    @Timed
     public ResponseEntity<JWTToken> authorize(@Valid @RequestBody LoginVM loginVM) {
 
         UsernamePasswordAuthenticationToken authenticationToken =
