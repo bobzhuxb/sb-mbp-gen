@@ -570,7 +570,12 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                             // 获取不到值说明没有关于这个orderBy的条件查询，需要追加一个空的条件查询
                             String[] orderBySplit = orderBy.split("\\.");
                             for (int i = 0; i < orderBySplit.length; i++) {
-                                Field orderByKeyField = criteriaIter.getClass().getDeclaredField(orderBySplit[i]);
+                                // 如果最后一段有空格（例如后面跟desc）,需要截取前面的部分
+                                String orderFieldName = orderBySplit[i];
+                                if (orderFieldName.contains(" ")) {
+                                    orderFieldName = orderFieldName.split(" ")[0];
+                                }
+                                Field orderByKeyField = criteriaIter.getClass().getDeclaredField(orderFieldName);
                                 orderByKeyField.setAccessible(true);
                                 Object fieldValue = orderByKeyField.get(criteriaIter);
                                 // 前面的都是BaseCriteria的子类对象
