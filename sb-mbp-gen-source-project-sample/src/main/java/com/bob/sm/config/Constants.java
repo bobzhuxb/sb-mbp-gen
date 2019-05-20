@@ -1,5 +1,11 @@
 package com.bob.sm.config;
 
+import com.bob.sm.dto.help.PageElementDTO;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Application constants.
  */
@@ -27,6 +33,16 @@ public final class Constants {
     public static final String WXAPP_SECRET = "b6242b7342e74e9b6595cf1e60c13ec6";
     // 小程序APP授权类型（获取认证码）
     public static final String WXAPP_GRANT_TYPE = "authorization_code";
+	
+	// 配置的页面和按钮
+    public static final List<PageElementDTO> pageElementList = new ArrayList<>(Arrays.asList(
+            new PageElementDTO("personal", "个人中心", "PAGE", Arrays.asList(
+                    new PageElementDTO("personal_personal", "个人中心", "PAGE", Arrays.asList(
+                            new PageElementDTO("personal_personal_read", "查询", "ELEMENT", null),
+                            new PageElementDTO("personal_personal_update", "修改", "ELEMENT", null)
+                    ))
+            ))
+    ));
 
     // 通用Enum接口
     public interface EnumInter {

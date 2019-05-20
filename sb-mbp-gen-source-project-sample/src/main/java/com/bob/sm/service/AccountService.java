@@ -14,6 +14,4 @@ public interface AccountService {
 
     ReturnCommonDTO resetPassword(long userId);
 
-    void savePermissionsWithChildren(List<SystemPermissionDTO> permissionList);
-
 }

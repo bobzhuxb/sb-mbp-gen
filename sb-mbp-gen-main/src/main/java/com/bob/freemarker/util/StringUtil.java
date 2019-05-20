@@ -28,6 +28,28 @@ public class StringUtil {
     }
 
     /**
+     * 驼峰标识转全小写标识
+     * @param camelName 驼峰标识
+     * @return 全小写标识
+     */
+    public static String camelToLower(String camelName) {
+        if (null == camelName || "".equals(camelName)) {
+            return camelName;
+        }
+        String lowerName = "";
+        char[] camelChars = camelName.toCharArray();
+        for (int i = 0; i < camelChars.length; i++) {
+            char c = camelChars[i];
+            if (c >= 'A' && c <= 'Z') {
+                lowerName += (char)(c + 32);
+            } else {
+                lowerName += c;
+            }
+        }
+        return lowerName;
+    }
+
+    /**
      * 驼峰标识转中划线标识
      * @param camelName 驼峰标识
      * @return 中划线标识

@@ -1,6 +1,5 @@
 package ${packageName}.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import ${packageName}.config.Constants;
 import ${packageName}.domain.SystemPermission;
 import ${packageName}.domain.SystemUser;
@@ -22,11 +21,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -51,9 +48,6 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private SystemUserMapper systemUserMapper;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     /**
      * 根据登录账号获取用户全信息
@@ -144,52 +138,12 @@ public class AccountServiceImpl implements AccountService {
         if (user == null) {
             return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "用户不存在");
         }
-        String encryptedPassword = passwordEncoder.encode("123456");
+        String encryptedPassword = new BCryptPasswordEncoder().encode("123456");
         SystemUser userUpdate = new SystemUser();
         userUpdate.setId(user.getId());
         userUpdate.setPassword(encryptedPassword);
         systemUserMapper.updateById(userUpdate);
         return new ReturnCommonDTO();
-    }
-
-    /**
-     * 保存许可（包括子数据）
-     * @param permissionList
-     */
-    public void savePermissionsWithChildren(List<SystemPermissionDTO> permissionList) {
-        log.debug("Service ==> 保存许可 {}", permissionList);
-        String nowTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-        for (SystemPermissionDTO permissionParentDTO : permissionList) {
-            // 1、先存父级资源
-            String httpUrl = permissionParentDTO.getHttpUrl();
-            String functionCategroy = permissionParentDTO.getFunctionCategroy();
-            int currentLevel = permissionParentDTO.getCurrentLevel();
-            SystemPermission permissionExist = systemPermissionMapper.selectOne(new QueryWrapper<SystemPermission>()
-                    .eq("http_url", httpUrl).eq("function_categroy", functionCategroy)
-                    .eq("current_level", currentLevel));
-            SystemPermission permissionParent = new SystemPermission();
-            MyBeanUtil.copyNonNullProperties(permissionParentDTO, permissionParent);
-            saveOrUpdatePermission(permissionExist, permissionParent, nowTime);
-            long parentId = permissionParent.getId();
-            // 2、再存子资源
-            List<SystemPermissionDTO> childPermissionList = permissionParentDTO.getChildList();
-            for (SystemPermissionDTO permissionChildDTO : childPermissionList) {
-                String childHttpType = permissionChildDTO.getHttpType();
-                String childHttpUrl = permissionChildDTO.getHttpUrl();
-                // 合并类URL和方法URL
-                String childFullHttpUrl = httpUrl + childHttpUrl;
-                permissionChildDTO.setHttpUrl(childFullHttpUrl);
-                int childCurrentLevel = permissionChildDTO.getCurrentLevel();
-                SystemPermission permissionChildExist = systemPermissionMapper.selectOne(
-                        new QueryWrapper<SystemPermission>()
-                                .eq("http_type", childHttpType).eq("http_url", childFullHttpUrl)
-                                .eq("current_level", childCurrentLevel));
-                SystemPermission permissionChild = new SystemPermission();
-                MyBeanUtil.copyNonNullProperties(permissionChildDTO, permissionChild);
-                permissionChild.setParentId(parentId);
-                saveOrUpdatePermission(permissionChildExist, permissionChild, nowTime);
-            }
-        }
     }
 
     private void resourceUnDuplicate(List<SystemResourceDTO> newResourceList, List<SystemResourceDTO> toResourceList) {
@@ -204,30 +158,6 @@ public class AccountServiceImpl implements AccountService {
             if (!resourceExist) {
                 toResourceList.add(roleResourceDTO);
             }
-        }
-    }
-
-    /**
-     * 处理许可数据（中间过程）
-     * @param permissionExist
-     * @param systemPermission
-     * @param nowTime
-     */
-    private void saveOrUpdatePermission(SystemPermission permissionExist, SystemPermission systemPermission,
-                                        String nowTime) {
-        if (systemPermission.getParentId() == null) {
-            systemPermission.setParentId(0L);
-        }
-        if (permissionExist != null) {
-            // 已经存在该数据
-            systemPermission.setId(permissionExist.getId());
-            systemPermission.setUpdateTime(nowTime);
-            systemPermissionMapper.updateById(systemPermission);
-        } else {
-            // 不存在该数据
-            systemPermission.setInsertTime(nowTime);
-            systemPermission.setUpdateTime(nowTime);
-            systemPermissionMapper.insert(systemPermission);
         }
     }
 

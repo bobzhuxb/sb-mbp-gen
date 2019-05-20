@@ -57,7 +57,5 @@ jhipster:
             port: 5000
             queue-size: 512
 
-permission:
-    do-init: false
 api-pdf:
     generate: false

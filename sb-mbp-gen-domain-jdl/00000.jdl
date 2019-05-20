@@ -14,7 +14,6 @@ entity SystemUser {
 	//@Size(min = 1, max = 255)
     name String
     // 手机号
-	//@NotBlank(groups={ValidateCreateGroup.class})
 	//@ValidCell
     cell String
     // 其他联系方式
@@ -53,15 +52,37 @@ entity SystemRole {
 entity SystemUserRole {
 }
 
-// 权限
+// 操作许可
 entity SystemPermission {
-    // 权限标识
+    // 操作许可名称
 	//@NotBlank(groups={ValidateCreateGroup.class})
 	//@Size(min = 1, max = 255)
-    code String
-    // 权限描述
+    name String
+    // 操作许可描述
 	//@Size(max = 255)
     description String
+	// 许可所属系统代码（只有在多系统联合配置权限时使用）
+	//@Size(max = 255)
+	systemCode String
+	// 操作许可类别（例如：GET/POST/PUT/DELETE等）
+	//@Size(max = 255)
+	httpType String
+	// 访问URL
+	//@Size(max = 255)
+	httpUrl String
+	// 功能归类
+	//@Size(max = 255)
+	functionCategroy String
+	// 名称是否已更改（1：未更改  2：已更改）
+	//@Min(1)
+	//@Max(2)
+	nameModified Integer
+	// 当前层级
+	//@Min(0)
+	currentLevel Integer
+	// 是否允许配置（1：是   2：否）
+    //@ValidEnum(target = Constants.yesNo.class)
+	allowConfig Integer
 }
 
 // 资源
@@ -89,29 +110,6 @@ entity SystemResource {
 	// 层级内排序
 	//@Min(0)
 	levelIndex Integer
-}
-
-// 页面元素和权限
-entity SystemPageElementPermission {
-    // 页面元素标识
-	//@NotBlank(groups={ValidateCreateGroup.class})
-	//@Size(min = 1, max = 255)
-    pageElementCode String
-    // 权限标识
-	//@NotBlank(groups={ValidateCreateGroup.class})
-	//@Size(min = 1, max = 255)
-    permissionIdentify String
-}
-
-// 角色和页面元素
-entity SystemRolePageElement {
-    // 角色ID
-	//@NotNull(groups={ValidateCreateGroup.class})
-    roleId Long
-    // 页面元素标识
-	//@NotBlank(groups={ValidateCreateGroup.class})
-	//@Size(min = 1, max = 255)
-    pageElementCode String
 }
 
 // 资源许可关系
@@ -188,12 +186,6 @@ entity SfstSupplier {
     //@NotBlank(groups={ValidateCreateGroup.class})
     //@Size(min = 1, max = 255)
     name String
-    // 银行的收款人账号
-    //@Size(min = 1, max = 255)
-    bankReceiptAccount String
-    // 银行的收款人户名
-    //@Size(min = 1, max = 255)
-    bankReceiptAccountName String
     // 法人代表
     //@Size(max = 255)
     legalPerson String
@@ -248,18 +240,6 @@ entity SfstSchool {
     //@NotBlank(groups={ValidateCreateGroup.class})
     //@Size(min = 1, max = 255)
     name String
-    // 银行的学校编号
-    //@Size(min = 1, max = 50)
-    bankSchoolCode String
-    // 银行的学校名称
-    //@Size(min = 1, max = 255)
-    bankSchoolName String
-    // 银行的付款人账号
-    //@RestFieldAllow(allowSet = false)
-    bankPayAccount String
-    // 银行的付款人户名
-    //@RestFieldAllow(allowSet = false)
-    bankPayAccountName String
     // 联系人
     //@NotBlank(groups={ValidateCreateGroup.class})
     //@Size(min = 1, max = 255)
@@ -349,10 +329,6 @@ entity SfstMaterial {
     // 产品介绍
     //@Size(max = 255)
     materialIntroduction String
-    // 是否已发布（1：是  2：否）
-    //@ValidEnum(target = Constants.yesNo.class)
-	//@CreateInitValue("1")
-    published Integer
 }
 
 // 原料图片
@@ -415,9 +391,11 @@ entity SfstSupplierInboundBatch {
 	//@ValidDate
     productionDate String
     // 该入库单批次的总数量
-    totalNumber String
+    //@Min(1)
+    totalNumber Integer
     // 供应商库存中该批次的剩余数量
-    restNumber String
+    //@Min(0)
+    restNumber Integer
     // 用于生成入库单批次号的入库单号
     //@RestFieldAllow(allowSet = false)
     inboundOrderNoForBatchNo String
@@ -465,9 +443,11 @@ entity SfstSchoolBatch {
     //@RestFieldAllow(allowSet = false)
     schoolBatchNo String
     // 该学校批次的总数量
-    totalNumber String
+    //@Min(1)
+    totalNumber Integer
     // 学校库存中该批次的剩余数量
-    restNumber String
+    //@Min(0)
+    restNumber Integer
     // 单价
     //@RestFieldAllow(allowSet = false)
     unitPrice String
@@ -495,13 +475,13 @@ entity SfstSchoolMaterialStockRecord {
     stockChangeType Integer
     // 库存变化数量
     //@RestFieldAllow(allowSet = false)
-    stockChangeNumber String
+    stockChangeNumber Integer
     // 库存变化金额
     //@RestFieldAllow(allowSet = false)
     stockChangePrice String
     // 库存结余数量
     //@RestFieldAllow(allowSet = false)
-    stockRestNumber String
+    stockRestNumber Integer
     // 库存结余金额
     //@RestFieldAllow(allowSet = false)
     stockRestPrice String
@@ -557,7 +537,8 @@ entity SfstSchoolOutboundRecord {
     //@RestFieldAllow(allowSet = false)
     outboundNo String
     // 出库数量
-    outboundNumber String
+    //@Min(1)
+    outboundNumber Integer
     // 出库类型
 	//#DIC_TYPE:SCHOOL_OUTBOUND_TYPE
     //@NotBlank(groups={ValidateCreateGroup.class})
@@ -683,27 +664,6 @@ entity SfstFinancialBill {
     // 终审通过时间
     //@RestFieldAllow(allowSet = false)
     finalCheckTime String
-    // 支付时间
-    //@RestFieldAllow(allowSet = false)
-    payTime String
-    // 付款人账号
-    //@RestFieldAllow(allowSet = false)
-    bankPayAccount String
-    // 收款人账号
-    //@RestFieldAllow(allowSet = false)
-    bankReceiptAccount String
-    // 银行交易日期
-    //@RestFieldAllow(allowSet = false)
-    bankTradeDate String
-    // 银行交易时间
-    //@RestFieldAllow(allowSet = false)
-    bankTradeTime String
-    // 银行流水号
-    //@RestFieldAllow(allowSet = false)
-    bankTradeNo String
-    // 对账标志
-    //@RestFieldAllow(allowSet = false)
-    bankReconciliationStatus String
 }
 
 // 学校订单与财务结算单
@@ -720,19 +680,6 @@ entity SfstExcelImportHis {
     relativePath String
 }
 
-// 建行支付接口调用记录表
-//@RestClassAllow(allowSet = false)
-entity SfstCcbInterRecord {
-    // 调用的接口编号
-    interNo String
-    // 传入参数
-    param String
-    // 返回数据
-    result String
-    // 异常状况
-    exception String
-}
-
 relationship OneToOne {
 	// 最新学校订单{最原始订单}
 	SfstSchoolOrder{originalOrder} to SfstSchoolOrder{newestOrder}
@@ -743,6 +690,8 @@ relationship OneToMany {
 	SystemUser{systemUserRole} to SystemUserRole{systemUser}
     // 角色{用户}
 	SystemRole{systemUserRole} to SystemUserRole{systemRole}
+    // 父操作许可{子操作许可}
+	SystemPermission{child} to SystemPermission{parent}
 	// 父资源{子资源}
 	SystemResource{child} to SystemResource{parent}
     // 父组织机构{子组织机构}

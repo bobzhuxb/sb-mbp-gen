@@ -5,6 +5,7 @@ import ${packageName}.dto.criteria.SystemResourcePermissionCriteria;
 import ${packageName}.dto.criteria.SystemUserCriteria;
 import ${packageName}.dto.criteria.filter.LongFilter;
 import ${packageName}.dto.criteria.filter.StringFilter;
+import ${packageName}.mapper.SystemPermissionMapper;
 import ${packageName}.service.AccountService;
 import ${packageName}.service.SystemResourcePermissionService;
 import ${packageName}.service.SystemUserService;
@@ -31,17 +32,10 @@ public class DomainUserDetailsService implements UserDetailsService {
     private final Logger log = LoggerFactory.getLogger(DomainUserDetailsService.class);
 
     @Autowired
-    private AccountService accountService;
-
-    @Autowired
     private SystemUserService systemUserService;
 
     @Autowired
-    private SystemResourcePermissionService systemResourcePermissionService;
-
-    public DomainUserDetailsService(AccountService accountService) {
-        this.accountService = accountService;
-    }
+    private SystemPermissionMapper systemPermissionMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -69,44 +63,18 @@ public class DomainUserDetailsService implements UserDetailsService {
                     .collect(Collectors.toList());
             grantedAuthorities.addAll(grantedRoleNames);
         }
-        // TODO: 暂时删除动态权限
-//        List<Long> permissionIdList = getPermissionIdsOfUser(login);
-//        List<GrantedAuthority> grantedPermissionIds = permissionIdList.stream()
-//                .map(permissionId -> new SimpleGrantedAuthority(String.valueOf(permissionId)))
-//                .collect(Collectors.toList());
-//        grantedAuthorities.addAll(grantedPermissionIds);
+        // 动态权限
+        List<String> permissionIdentifyList = systemPermissionMapper.findPermissionIdentifyByLogin(login);
+        if (permissionIdentifyList != null && permissionIdentifyList.size() > 0) {
+            List<GrantedAuthority> grantedPermissions = permissionIdentifyList.stream()
+                    .map(permissionIdentify -> new SimpleGrantedAuthority(permissionIdentify))
+                    .collect(Collectors.toList());
+            grantedAuthorities.addAll(grantedPermissions);
+        }
 
         return new org.springframework.security.core.userdetails.User(userDTO.getLogin(),
                 userDTO.getPassword(),
                 grantedAuthorities);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Long> getPermissionIdsOfUser(String login) {
-        List<Long> resourceIdList = accountService.getFullUserInfoByLogin(login).getResources().stream()
-                .map(systemResourceDTO -> systemResourceDTO.getId()).collect(Collectors.toList());
-        SystemResourcePermissionCriteria resourcePermissionCriteria = new SystemResourcePermissionCriteria();
-        LongFilter resourceIdFilter = new LongFilter();
-        resourceIdFilter.setIn(resourceIdList);
-        resourcePermissionCriteria.setSystemResourceId(resourceIdFilter);
-        resourcePermissionCriteria.setAssociationNameList(Arrays.asList("systemPermission"));
-        List<SystemResourcePermissionDTO> systemResourcePermissionDTOList
-                = systemResourcePermissionService.baseFindAll(
-                        "SystemResourcePermission", resourcePermissionCriteria, null).getData();
-        // 去重
-        List<Long> permissionIdList = new ArrayList<>();
-        for (SystemResourcePermissionDTO systemResourcePermissionDTO : systemResourcePermissionDTOList) {
-            boolean exist = false;
-            for (long permissionId : permissionIdList) {
-                if (systemResourcePermissionDTO.getSystemPermissionId().equals(permissionId)) {
-                    exist = true;
-                }
-            }
-            if (!exist) {
-                permissionIdList.add(systemResourcePermissionDTO.getSystemPermissionId());
-            }
-        }
-        return permissionIdList;
     }
 
 }

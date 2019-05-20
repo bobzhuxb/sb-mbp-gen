@@ -277,10 +277,12 @@ public class EntityModule {
         String entityName = eentityName.substring(0, 1).toLowerCase() + eentityName.substring(1);
         String entityUrl = StringUtil.camelToCenterline(eentityName);
         String tableName = StringUtil.camelToUnderline(eentityName);
+        String lowerName = StringUtil.camelToLower(eentityName);
         root.put("entityComment", entityComment);
         root.put("entityName", entityName);
         root.put("eentityName", eentityName);
         root.put("tableName", tableName);
+        root.put("lowerName", lowerName);
         root.put("entityUrl", entityUrl);
         root.put("fieldList", fieldList);
         root.put("useDictionaryList", useDictionaryList);
@@ -341,8 +343,7 @@ public class EntityModule {
         generateDTO(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateCriteria(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateMapper(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
-        // 使用共通Mapper，此处暂时不需要aopdeal目录
-//        generateMapperXml(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
+        generateMapperXml(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateService(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateServiceImpl(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         // 转为配置文件处理，此处暂时不需要aopdeal目录
@@ -564,7 +565,7 @@ public class EntityModule {
     }
 
     /**
-     * 根据ftl文件生成Xml文件
+     * 根据ftl文件生成Xml文件（使用共通Mapper，基本不需要mapper.xml文件）
      * @param projectDirectory
      * @param packageName
      * @param xmlFileName
@@ -583,9 +584,12 @@ public class EntityModule {
         Template temp = cfg.getTemplate(ftlName, "UTF-8");
         String toPath = projectDirectory + "src\\main\\resources\\mapper\\";
         String fileName = xmlFileName + ".xml";
-        File file = new File(toPath + fileName);
-        // 写文件
-        temp.process(root, new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
+        if (xmlFileName.equals("SystemPermissionMapper")) {
+            // 只有SystemPermissionMapper.xml文件需要追加个方法
+            File file = new File(toPath + fileName);
+            // 写文件
+            temp.process(root, new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
+        }
     }
 
     /**

@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -42,6 +43,7 @@ public class ${eentityName}Controller {
      * @return 结果返回码和消息
      */
     @PostMapping("/${entityUrl}")
+    @PreAuthorize("hasCreate('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO> create${eentityName}(
         @RequestBody @Validated(value = {ValidateCreateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
         log.debug("Controller ==> 新增${eentityName} : {}", ${entityName}DTO);
@@ -70,6 +72,7 @@ public class ${eentityName}Controller {
      * @return 结果返回码和消息
      */
     @PutMapping("/${entityUrl}")
+    @PreAuthorize("hasUpdate('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO> update${eentityName}(
         @RequestBody @Validated(value = {ValidateUpdateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
         log.debug("Controller ==> 修改${eentityName} : {}", ${entityName}DTO);
@@ -97,6 +100,7 @@ public class ${eentityName}Controller {
      * @return 结果返回码和消息
      */
     @DeleteMapping("/${entityUrl}/{id}")
+    @PreAuthorize("hasDelete('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO> delete${eentityName}(@PathVariable Long id) {
         log.debug("Controller ==> 根据ID删除${eentityName} : {}", id);
         ReturnCommonDTO resultDTO = null;
@@ -115,6 +119,7 @@ public class ${eentityName}Controller {
      * @return 结果返回码和消息
      */
     @DeleteMapping("/${entityUrl}")
+    @PreAuthorize("hasDelete('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO> delete${eentityName}s(@RequestBody List<Long> idList) {
         log.debug("Controller ==> 批量删除${eentityName} : {}", idList);
         ReturnCommonDTO resultDTO = null;
@@ -134,6 +139,7 @@ public class ${eentityName}Controller {
      * @return 使用ResponseEntity封装的单条${entityComment}数据
      */
     @GetMapping("/${entityUrl}/{primaryId}")
+    @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}(
             @PathVariable Long primaryId, ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 根据ID查询${eentityName} : {}, {}", primaryId, criteria);
@@ -147,6 +153,7 @@ public class ${eentityName}Controller {
      * @return 使用ResponseEntity封装的多条${entityComment}数据
      */
     @GetMapping("/${entityUrl}-all")
+    @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<List<${eentityName}DTO>>> getAll${eentityName}s(
             ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询所有${eentityName} : {}", criteria);
@@ -161,6 +168,7 @@ public class ${eentityName}Controller {
      * @return 使用ResponseEntity封装的分页${entityComment}数据
      */
     @GetMapping("/${entityUrl}")
+    @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<IPage<${eentityName}DTO>>> getPage${eentityName}s(
             ${eentityName}Criteria criteria, MbpPage pageable) {
         log.debug("Controller ==> 分页查询${eentityName} : {}, {}", criteria, pageable);
@@ -174,6 +182,7 @@ public class ${eentityName}Controller {
      * @return 使用ResponseEntity封装的${entityComment}数量
      */
     @GetMapping("/${entityUrl}-count")
+    @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<Integer>> get${eentityName}Count(${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询数量${eentityName} : {}", criteria);
         ReturnCommonDTO<Integer> data = ${entityName}Service.baseFindCount(DOMAIN_NAME, criteria, null);

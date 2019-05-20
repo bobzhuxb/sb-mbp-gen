@@ -12,6 +12,7 @@ public class EntityDTO {
     private String entityName;      // 首字母小写（驼峰标识）的实体名称
     private String entityUrl;       // 实体在URL中的名称
     private String tableName;       // 实体对应的数据库表名
+    private String lowerName;       // 实体全小写名称（不包括中划线或下划线）
     private List<String> annotationList;        // 实体DTO的注解
     private List<EntityFieldDTO> fieldList;     // 域（成员变量）
 
@@ -53,6 +54,14 @@ public class EntityDTO {
 
     public void setTableName(String tableName) {
         this.tableName = tableName;
+    }
+
+    public String getLowerName() {
+        return lowerName;
+    }
+
+    public void setLowerName(String lowerName) {
+        this.lowerName = lowerName;
     }
 
     public List<String> getAnnotationList() {
