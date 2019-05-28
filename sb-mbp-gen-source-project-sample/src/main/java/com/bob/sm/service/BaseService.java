@@ -44,6 +44,14 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     }
 
     /**
+     * 删除验证（具体子类实现）
+     * @param domain 数据库中查询出的实体数据内容
+     */
+    default void baseDeleteValidator(T domain) {
+        // TODO: 删除验证写在这里（由具体实现覆盖）
+    }
+
+    /**
      * 附加的条件查询增强方法，实现类可覆盖该方法，写自己的条件查询增强方法
      * @param wrapper 增强前的Wrapper条件
      * @param criteria 原始的查询条件
@@ -884,6 +892,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 }
                 // 数据库表的关联列字段名。注意：这里先限制为不能随意修改关联字段的数据库字段名，留待以后优化
                 String relatedColumnName = MyStringUtil.camelToUnderline(relationDTO.getToName()) + "_id";
+                // 删除验证（例如权限验证等）
+                baseDeleteValidator(domain);
                 if (Constants.cascadeDeleteType.FORBIDDEN.getValue().equals(relationDTO.getCascadeDelete())) {
                     // 级联禁止删除
                     int subCount = GlobalCache.getMapperMap().get(relationDTO.getToType()).selectCount(

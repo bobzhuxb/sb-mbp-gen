@@ -11,11 +11,11 @@ buildscript {
 }
 
 apply plugin: 'java'
-apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'war'
 apply plugin: 'io.spring.dependency-management'
 
+archivesBaseName = '${projectName}'
 group = '${packageName}'
 version = '0.1'
 sourceCompatibility = 1.8

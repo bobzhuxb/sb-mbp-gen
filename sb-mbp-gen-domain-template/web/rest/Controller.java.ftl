@@ -143,8 +143,14 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}(
             @PathVariable Long primaryId, ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 根据ID查询${eentityName} : {}, {}", primaryId, criteria);
-        ReturnCommonDTO<${eentityName}DTO> data = ${entityName}Service.baseFindOne(DOMAIN_NAME, primaryId, criteria, null);
-        return ResponseEntity.ok().headers(null).body(data);
+        ReturnCommonDTO<${eentityName}DTO> resultDTO = null;
+        try {
+            resultDTO = ${entityName}Service.baseFindOne(DOMAIN_NAME, primaryId, criteria, null);
+        } catch (CommonException e) {
+            log.error(e.getMessage(), e);
+            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
+        }
+        return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
     /**
@@ -157,8 +163,14 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<List<${eentityName}DTO>>> getAll${eentityName}s(
             ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询所有${eentityName} : {}", criteria);
-        ReturnCommonDTO<List<${eentityName}DTO>> data = ${entityName}Service.baseFindAll(DOMAIN_NAME, criteria, null);
-        return ResponseEntity.ok().headers(null).body(data);
+        ReturnCommonDTO<List<${eentityName}DTO>> resultDTO = null;
+        try {
+            resultDTO = ${entityName}Service.baseFindAll(DOMAIN_NAME, criteria, null);
+        } catch (CommonException e) {
+            log.error(e.getMessage(), e);
+            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
+        }
+        return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
     /**
@@ -172,8 +184,14 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<IPage<${eentityName}DTO>>> getPage${eentityName}s(
             ${eentityName}Criteria criteria, MbpPage pageable) {
         log.debug("Controller ==> 分页查询${eentityName} : {}, {}", criteria, pageable);
-        ReturnCommonDTO<IPage<${eentityName}DTO>> data = ${entityName}Service.baseFindPage(DOMAIN_NAME, criteria, pageable, null);
-        return ResponseEntity.ok().headers(null).body(data);
+        ReturnCommonDTO<IPage<${eentityName}DTO>> resultDTO = null;
+        try {
+            resultDTO = ${entityName}Service.baseFindPage(DOMAIN_NAME, criteria, pageable, null);
+        } catch (CommonException e) {
+            log.error(e.getMessage(), e);
+            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
+        }
+        return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
     /**
@@ -185,8 +203,14 @@ public class ${eentityName}Controller {
     @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<Integer>> get${eentityName}Count(${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询数量${eentityName} : {}", criteria);
-        ReturnCommonDTO<Integer> data = ${entityName}Service.baseFindCount(DOMAIN_NAME, criteria, null);
-        return ResponseEntity.ok().headers(null).body(data);
+        ReturnCommonDTO<Integer> resultDTO = null;
+        try {
+            resultDTO = ${entityName}Service.baseFindCount(DOMAIN_NAME, criteria, null);
+        } catch (CommonException e) {
+            log.error(e.getMessage(), e);
+            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
+        }
+        return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
 }

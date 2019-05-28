@@ -1,1 +1,6 @@
-# 这里填写此目录下的json文件，每行一条
+api_account_GET.json
+api_admin-reset-password_POST.json
+api_authenticate_GET.json
+api_authenticate_POST.json
+api_change-password_POST.json
+api_file-upload_POST.json
