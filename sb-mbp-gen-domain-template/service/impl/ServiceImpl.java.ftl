@@ -19,6 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
+/*
+ * ${entityComment}
+ */
 @Service
 @EnableAspectJAutoProxy(exposeProxy = true)
 @Transactional

@@ -11,7 +11,7 @@ spring:
         password: ${dbPassword}
     http:
         multipart:
-            location: /data/sbmbp
+            location: /data/${projectName}
 
 server:
     port: 8080

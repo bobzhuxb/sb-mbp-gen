@@ -59,7 +59,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param revertTableIndexMap 根据表别名反向查条件名的Map
      * @return 增强后的Wrapper条件
      */
-    default <C> Wrapper<T> baseWrapperEnhance(QueryWrapper<T> wrapper, C criteria, List<NormalCriteriaDTO> normalCriteriaList,
+    default Wrapper<T> baseWrapperEnhance(QueryWrapper<T> wrapper, C criteria, List<NormalCriteriaDTO> normalCriteriaList,
                                               Map<String, String> revertTableIndexMap) {
         // TODO: 附加的条件查询写在这里（由具体实现覆盖）
         return wrapper;
@@ -99,7 +99,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     default ReturnCommonDTO baseDeleteByRelationIdWithoutIdList(String entityTypeName, String relatedColumnName,
                                                                 long relatedId, List<Long> idList) {
         Optional.ofNullable(GlobalCache.getMapperMap().get(entityTypeName).selectList(
-                new QueryWrapper<T>().select("id").eq(relatedColumnName, relatedId).notIn("id", idList))
+                new QueryWrapper<T>().select("id").eq(relatedColumnName, relatedId).notIn(
+                        idList != null && idList.size() > 0, "id", idList))
         ).get().stream().forEach(domain -> {
             ReturnCommonDTO returnCommonDTO = baseDeleteByMapCascade(entityTypeName, new HashMap<String, Object>() {{
                 put("id", ((BaseDomain) domain).getId());

@@ -1,5 +1,9 @@
 package com.bob.sm.web.rest;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.bob.sm.config.Constants;
+import com.bob.sm.domain.SystemUser;
+import com.bob.sm.mapper.SystemUserMapper;
 import com.bob.sm.security.jwt.JWTFilter;
 import com.bob.sm.security.jwt.TokenProvider;
 import com.bob.sm.web.rest.vm.LoginVM;
@@ -28,6 +32,9 @@ public class UserJWTController {
 
     private final AuthenticationManager authenticationManager;
 
+    @Autowired
+    private SystemUserMapper systemUserMapper;
+
     public UserJWTController(TokenProvider tokenProvider,
                              AuthenticationManager authenticationManager) {
         this.tokenProvider = tokenProvider;
@@ -46,7 +53,10 @@ public class UserJWTController {
         String jwt = tokenProvider.createToken(authentication, rememberMe);
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
-        return new ResponseEntity<>(new JWTToken(jwt), httpHeaders, HttpStatus.OK);
+        SystemUser systemUser = systemUserMapper.selectList(
+                new QueryWrapper<SystemUser>().eq("login", loginVM.getUsername())).get(0);
+        return new ResponseEntity<>(new JWTToken(jwt, systemUser.getLogin(), systemUser.getName()),
+                httpHeaders, HttpStatus.OK);
     }
 
     /**
@@ -54,15 +64,31 @@ public class UserJWTController {
      */
     static class JWTToken {
         private String id_token;
+        private String login;
+        private String name;
         public JWTToken() {}
-        public JWTToken(String id_token) {
+        public JWTToken(String id_token, String login, String name) {
             this.id_token = id_token;
+            this.login = login;
+            this.name = name;
         }
         public String getId_token() {
             return id_token;
         }
         public void setId_token(String id_token) {
             this.id_token = id_token;
+        }
+        public String getLogin() {
+            return login;
+        }
+        public void setLogin(String login) {
+            this.login = login;
+        }
+        public String getName() {
+            return name;
+        }
+        public void setName(String name) {
+            this.name = name;
         }
     }
 

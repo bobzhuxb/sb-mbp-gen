@@ -277,12 +277,14 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
             pdfPTableParam.addCell(pdfPCellParamTitle);
             // 设置表内容
             configDTO.getParam().getCriteriaList().forEach(apiAdapterCriteriaDTO -> {
-                PdfPCell pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getFromParam(), fontText));
-                pdfPCellParam.setNoWrap(false);
-                pdfPTableParam.addCell(pdfPCellParam);
-                pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getDescr(), fontText));
-                pdfPCellParam.setNoWrap(false);
-                pdfPTableParam.addCell(pdfPCellParam);
+                if (apiAdapterCriteriaDTO.getFromParam() != null && apiAdapterCriteriaDTO.getDescr() != null) {
+                    PdfPCell pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getFromParam(), fontText));
+                    pdfPCellParam.setNoWrap(false);
+                    pdfPTableParam.addCell(pdfPCellParam);
+                    pdfPCellParam = new PdfPCell(new Phrase(apiAdapterCriteriaDTO.getDescr(), fontText));
+                    pdfPCellParam.setNoWrap(false);
+                    pdfPTableParam.addCell(pdfPCellParam);
+                }
             });
             pdfDocument.add(pdfPTableParam);
         }
@@ -358,6 +360,13 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
      */
     public void processReturn(HttpServletRequest request, Object[] parameters, Object retVal) {
         ApiAdapterConfigDTO apiAdapterConfigDTO = getApiAdapterConfigFromRequest(request);
+        if (apiAdapterConfigDTO == null || apiAdapterConfigDTO.getResult() == null
+                || apiAdapterConfigDTO.getResult().getFieldList() != null
+                || apiAdapterConfigDTO.getResult().getFieldList().size() == 0
+                || apiAdapterConfigDTO.getResult().getFieldList().get(0).getFromName() == null) {
+            // 不需要特殊处理的返回
+            return;
+        }
         processReturnField(apiAdapterConfigDTO, request, parameters, retVal);
     }
 
@@ -403,6 +412,43 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                 if (parameter instanceof BaseCriteria) {
                     // 正常情况下，该if分支只会进来一次
                     for (ApiAdapterCriteriaDTO criteriaDTO : configDTO.getParam().getCriteriaList()) {
+                        if (criteriaDTO.getFixedValue() != null) {
+                            // 参数设置为固定值
+                            String[] fromParamSingles = criteriaDTO.getFromParam().split("\\.");
+                            // 参数迭代器（一层一层迭代）
+                            Object objIter = parameter;
+                            for (int index = 0; index < fromParamSingles.length; index++) {
+                                String fromParamSingle = fromParamSingles[index];
+                                if (objIter == null) {
+                                    break;
+                                }
+                                // 获取属性（使用apache的包可以获取包括父类的属性）
+                                Field field = FieldUtils.getField(objIter.getClass(), fromParamSingle, true);
+                                // 设置对象的访问权限，保证对private的属性的访问
+                                if (field != null) {
+                                    field.setAccessible(true);
+                                    Object fieldData = field.get(objIter);
+                                    if (index != fromParamSingles.length - 1) {
+                                        // BaseCriteria类别的参数（前面几层）
+                                        if (fieldData == null) {
+                                            // 参数值为空的话，创建该参数
+                                            Object subCriteria = Class.forName(field.getGenericType().getTypeName()).newInstance();
+                                            field.set(objIter, subCriteria);
+                                            objIter = subCriteria;
+                                        } else if (fieldData instanceof BaseCriteria) {
+                                            objIter = fieldData;
+                                        } else {
+                                            log.warn("条件：" + fromParamSingle + "=" + criteriaDTO.getFixedValue() + " 配置错误（属性：" + fromParamSingle
+                                                    + "不是BaseCriteria或其子类型），忽略该条配置");
+                                        }
+                                    } else {
+                                        // Filter类别的参数（最后一层）或普通类别的参数
+                                        field.set(objIter, criteriaDTO.getFixedValue());
+                                        objIter = null;
+                                    }
+                                }
+                            }
+                        }
                         if (criteriaDTO.getToCriteriaList() == null) {
                             // 不需要转换，继续下一条
                             continue;
@@ -412,6 +458,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                             // 没有该参数，继续下一条验证
                             continue;
                         }
+                        // 参数转换
                         for (String toCriteria : criteriaDTO.getToCriteriaList()) {
                             String[] toCriteriaSingles = toCriteria.split("\\.");
                             // 参数迭代器（一层一层迭代）
