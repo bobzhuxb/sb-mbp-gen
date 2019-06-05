@@ -1,1 +1,1 @@
-rootProject.name = 'sbmbp'
+rootProject.name = '${projectName}'

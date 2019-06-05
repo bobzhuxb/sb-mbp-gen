@@ -10,6 +10,13 @@
         }
     },
     "result":{
-        "id_token": "token值"
+        "resultCode": "1：操作成功  2：操作失败",
+        "errMsg": "错误消息",
+        "data": "返回的数据",
+        "fieldList":[
+            {"name":"id_token", "descr":"token值"},
+            {"name":"login", "descr":"登录名"},
+            {"name":"name", "descr":"姓名"}
+        ]
     }
 }
