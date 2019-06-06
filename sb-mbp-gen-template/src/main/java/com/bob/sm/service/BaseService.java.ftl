@@ -735,6 +735,44 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     e.printStackTrace();
                 }
             }
+            if ("insertUser".equals(associationName)) {
+                // 获取创建者
+                Long insertUserId = dto.getInsertUserId();
+                if (insertUserId == null) {
+                    continue;
+                }
+                List<String> associationName2List = new ArrayList<>();
+                for (String associationNameIter : associationNameList) {
+                    if (associationNameIter.startsWith("insertUser.")) {
+                        String associationName2 = associationNameIter.substring("insertUser.".length());
+                        associationName2List.add(associationName2);
+                    }
+                }
+                BaseCriteria insertUserCriteria = new BaseCriteria();
+                insertUserCriteria.setAssociationNameList(associationName2List);
+                ReturnCommonDTO<SystemUserDTO> insertUserRtn = GlobalCache.getServiceMap().get("SystemUser")
+                        .baseFindOne("SystemUser", insertUserId, insertUserCriteria, appendParamMap);
+                dto.setInsertUser(insertUserRtn.getData());
+            }
+            if ("operateUser".equals(associationName)) {
+                // 获取最后更新者
+                Long operateUserId = dto.getOperateUserId();
+                if (operateUserId == null) {
+                    continue;
+                }
+                List<String> associationName2List = new ArrayList<>();
+                for (String associationNameIter : associationNameList) {
+                    if (associationNameIter.startsWith("operateUser.")) {
+                        String associationName2 = associationNameIter.substring("operateUser.".length());
+                        associationName2List.add(associationName2);
+                    }
+                }
+                BaseCriteria operateUserCriteria = new BaseCriteria();
+                operateUserCriteria.setAssociationNameList(associationName2List);
+                ReturnCommonDTO<SystemUserDTO> operateUserRtn = GlobalCache.getServiceMap().get("SystemUser")
+                        .baseFindOne("SystemUser", operateUserId, operateUserCriteria, appendParamMap);
+                dto.setOperateUser(operateUserRtn.getData());
+            }
         }
         return dto;
     }
