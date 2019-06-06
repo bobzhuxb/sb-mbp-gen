@@ -10,6 +10,7 @@ import ${packageName}.config.GlobalCache;
 import ${packageName}.domain.SystemDictionary;
 import ${packageName}.domain.BaseDomain;
 import ${packageName}.dto.BaseDTO;
+import ${packageName}.dto.SystemUserDTO;
 import ${packageName}.dto.criteria.BaseCriteria;
 import ${packageName}.dto.criteria.filter.*;
 import ${packageName}.dto.help.*;
@@ -60,7 +61,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @return 增强后的Wrapper条件
      */
     default Wrapper<T> baseWrapperEnhance(QueryWrapper<T> wrapper, C criteria, List<NormalCriteriaDTO> normalCriteriaList,
-                                              Map<String, String> revertTableIndexMap) {
+                                          Map<String, String> revertTableIndexMap) {
         // TODO: 附加的条件查询写在这里（由具体实现覆盖）
         return wrapper;
     }
@@ -68,9 +69,10 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     /**
      * 数据权限过滤器
      * @param criteria 附加条件
+     * @param interceptReturnInfo 拦截的返回信息
      * @return 是否有权限（true：有权限  false：无权限）
      */
-    default boolean baseDataAuthorityFilter(C criteria) {
+    default boolean baseDataAuthorityFilter(C criteria, ReturnCommonDTO interceptReturnInfo) {
         // TODO: 数据权限的过滤写在这里（由具体实现覆盖）
         return true;
     }
@@ -970,9 +972,13 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // ID条件设定
         Wrapper<T> wrapper = baseIdEqualsPrepare(entityTypeName, id, criteria);
         // 数据权限过滤
-        boolean dataFilterPass = baseDataAuthorityFilter(criteria);
+        ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
+        boolean dataFilterPass = baseDataAuthorityFilter(criteria, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
+        }
+        if (interceptReturnInfo.getResultCode() != null) {
+            return interceptReturnInfo;
         }
         // 执行查询并返回结果
         return Optional.ofNullable(getOne(wrapper)).map(entity ->
@@ -992,9 +998,13 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
-        boolean dataFilterPass = baseDataAuthorityFilter(criteria);
+        ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
+        boolean dataFilterPass = baseDataAuthorityFilter(criteria, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
+        }
+        if (interceptReturnInfo.getResultCode() != null) {
+            return interceptReturnInfo;
         }
         // 预处理orderBy的内容
         basePreOrderBy(criteria, tableIndexMap);
@@ -1023,9 +1033,13 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
-        boolean dataFilterPass = baseDataAuthorityFilter(criteria);
+        ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
+        boolean dataFilterPass = baseDataAuthorityFilter(criteria, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
+        }
+        if (interceptReturnInfo.getResultCode() != null) {
+            return interceptReturnInfo;
         }
         // 预处理orderBy的内容
         basePreOrderBy(criteria, tableIndexMap);
@@ -1055,9 +1069,13 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
-        boolean dataFilterPass = baseDataAuthorityFilter(criteria);
+        ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
+        boolean dataFilterPass = baseDataAuthorityFilter(criteria, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
+        }
+        if (interceptReturnInfo.getResultCode() != null) {
+            return interceptReturnInfo;
         }
         // 获取查询SQL（select和join）
         String countQuerySql = baseGetCountQuerySql(entityTypeName, criteria, tableIndexMap);
