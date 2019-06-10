@@ -973,6 +973,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         Wrapper<T> wrapper = baseIdEqualsPrepare(entityTypeName, id, criteria);
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
+        interceptReturnInfo.setResultCode(null);        // 初始化数据
         boolean dataFilterPass = baseDataAuthorityFilter(criteria, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
@@ -999,6 +1000,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
+        interceptReturnInfo.setResultCode(null);        // 初始化数据
         boolean dataFilterPass = baseDataAuthorityFilter(criteria, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
@@ -1034,6 +1036,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
+        interceptReturnInfo.setResultCode(null);        // 初始化数据
         boolean dataFilterPass = baseDataAuthorityFilter(criteria, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
@@ -1070,6 +1073,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
+        interceptReturnInfo.setResultCode(null);        // 初始化数据
         boolean dataFilterPass = baseDataAuthorityFilter(criteria, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
