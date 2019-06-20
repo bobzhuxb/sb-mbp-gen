@@ -13,6 +13,7 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.bob.sm.config.YmlConfig;
 import com.bob.sm.dto.criteria.BaseCriteria;
+import com.bob.sm.dto.criteria.filter.Filter;
 import com.bob.sm.dto.help.ApiAdapterConfigDTO;
 import com.bob.sm.dto.help.ApiAdapterCriteriaDTO;
 import com.bob.sm.dto.help.ApiAdapterResultFieldDTO;
@@ -481,7 +482,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                                             Object subCriteria = Class.forName(field.getGenericType().getTypeName()).newInstance();
                                             field.set(objIter, subCriteria);
                                             objIter = subCriteria;
-                                        } else if (fieldData instanceof BaseCriteria) {
+                                        } else if (fieldData instanceof BaseCriteria || fieldData instanceof Filter) {
                                             objIter = fieldData;
                                         } else {
                                             log.warn("条件：" + toCriteria + "=" + value + " 配置错误（属性：" + toCriteriaSingle
