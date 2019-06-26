@@ -418,16 +418,24 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 }
                 if (result instanceof StringFilter) {
                     if (((StringFilter)result).getContains() != null) {
-                        wrapper.like(columnName, ((StringFilter) result).getContains());
+                        wrapper.and(i -> i.like(columnName, ((StringFilter) result).getContains()
+                                .replace("/", "//").replace("_", "/_").replace("%", "/%"))
+                                .last("ESCAPE '/'"));
                     }
                     if (((StringFilter)result).getNotContains() != null) {
-                        wrapper.notLike(columnName, ((StringFilter) result).getNotContains());
+                        wrapper.and(i -> i.notLike(columnName, ((StringFilter) result).getContains()
+                                .replace("/", "//").replace("_", "/_").replace("%", "/%"))
+                                .last("ESCAPE '/'"));
                     }
                     if (((StringFilter)result).getStartWith() != null) {
-                        wrapper.likeRight(columnName, ((StringFilter) result).getStartWith());
+                        wrapper.and(i -> i.likeRight(columnName, ((StringFilter) result).getContains()
+                                .replace("/", "//").replace("_", "/_").replace("%", "/%"))
+                                .last("ESCAPE '/'"));
                     }
                     if (((StringFilter)result).getEndWith() != null) {
-                        wrapper.likeLeft(columnName, ((StringFilter) result).getEndWith());
+                        wrapper.and(i -> i.likeLeft(columnName, ((StringFilter) result).getContains()
+                                .replace("/", "//").replace("_", "/_").replace("%", "/%"))
+                                .last("ESCAPE '/'"));
                     }
                 }
                 if (result instanceof BooleanFilter) {
@@ -935,22 +943,25 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 String relatedColumnName = MyStringUtil.camelToUnderline(relationDTO.getToName()) + "_id";
                 // 删除验证（例如权限验证等）
                 baseDeleteValidator(domain);
-                if (Constants.cascadeDeleteType.FORBIDDEN.getValue().equals(relationDTO.getCascadeDelete())) {
-                    // 级联禁止删除
-                    int subCount = GlobalCache.getMapperMap().get(relationDTO.getToType()).selectCount(
-                            new QueryWrapper<>().eq(relatedColumnName, domain.getId()));
-                    if (subCount > 0) {
-                        throw new CommonException("有存在的" + relationDTO.getFromToComment() + "，禁止删除。");
+                if ("from".equals(relationDTO.getFromOrTo())) {
+                    // 级联删除是本体作为主，所以此处是from
+                    if (Constants.cascadeDeleteType.FORBIDDEN.getValue().equals(relationDTO.getCascadeDelete())) {
+                        // 级联禁止删除
+                        int subCount = GlobalCache.getMapperMap().get(relationDTO.getToType()).selectCount(
+                                new QueryWrapper<>().eq(relatedColumnName, domain.getId()));
+                        if (subCount > 0) {
+                            throw new CommonException("有存在的" + relationDTO.getFromToComment() + "，禁止删除。");
+                        }
+                    } else if (Constants.cascadeDeleteType.NULL.getValue().equals(relationDTO.getCascadeDelete())) {
+                        // 级联置空
+                        GlobalCache.getMapperMap().get(relationDTO.getToType()).cascadeToNull(
+                                GlobalCache.getEntityConfigMap().get(relationDTO.getToType()).getTableName(),
+                                relatedColumnName, domain.getId());
+                    } else {
+                        // 默认：级联删除
+                        GlobalCache.getServiceMap().get(relationDTO.getToType()).baseDeleteByMapCascade(
+                                relationDTO.getToType(), new HashMap<String, Object>() {{put(relatedColumnName, domain.getId());}});
                     }
-                } else if (Constants.cascadeDeleteType.NULL.getValue().equals(relationDTO.getCascadeDelete())) {
-                    // 级联置空
-                    GlobalCache.getMapperMap().get(relationDTO.getToType()).cascadeToNull(
-                            GlobalCache.getEntityConfigMap().get(relationDTO.getToType()).getTableName(),
-                            relatedColumnName, domain.getId());
-                } else {
-                    // 默认：级联删除
-                    GlobalCache.getServiceMap().get(relationDTO.getToType()).baseDeleteByMapCascade(
-                            relationDTO.getToType(), new HashMap<String, Object>() {{put(relatedColumnName, domain.getId());}});
                 }
             });
         });
