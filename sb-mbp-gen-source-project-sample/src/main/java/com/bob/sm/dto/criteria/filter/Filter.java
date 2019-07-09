@@ -12,6 +12,8 @@ public class Filter<FIELD_TYPE> implements Serializable {
     private Boolean nullable;       // 是否为null
     private List<FIELD_TYPE> in;    // SQL中的in
     private List<FIELD_TYPE> notIn; // SQL中的not in
+    private List<String> exists;    // SQL中的exists
+    private List<String> notExists; // SQL中的not exists
 
     private FIELD_TYPE greaterThan;
     private FIELD_TYPE lessThan;
@@ -60,6 +62,22 @@ public class Filter<FIELD_TYPE> implements Serializable {
 
     public List<FIELD_TYPE> getNotIn() {
         return notIn;
+    }
+
+    public List<String> getExists() {
+        return exists;
+    }
+
+    public void setExists(List<String> exists) {
+        this.exists = exists;
+    }
+
+    public List<String> getNotExists() {
+        return notExists;
+    }
+
+    public void setNotExists(List<String> notExists) {
+        this.notExists = notExists;
     }
 
     public Filter<FIELD_TYPE> setNotIn(List<FIELD_TYPE> notIn) {

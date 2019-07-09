@@ -494,6 +494,16 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     if (((Filter)result).getNotIn() != null) {
                         wrapper.notIn(columnName, ((Filter)result).getNotIn());
                     }
+                    if (((Filter)result).getExists() != null) {
+                        for (Object existSql : ((Filter)result).getExists()) {
+                            wrapper.exists((String)existSql);
+                        }
+                    }
+                    if (((Filter)result).getNotExists() != null) {
+                        for (Object notExistSql : ((Filter)result).getNotExists()) {
+                            wrapper.notExists((String)notExistSql);
+                        }
+                    }
                     if (((Filter)result).getGreaterThan() != null) {
                         wrapper.gt(columnName, ((Filter)result).getGreaterThan());
                     }
@@ -960,7 +970,9 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     } else {
                         // 默认：级联删除
                         GlobalCache.getServiceMap().get(relationDTO.getToType()).baseDeleteByMapCascade(
-                                relationDTO.getToType(), new HashMap<String, Object>() {{put(relatedColumnName, domain.getId());}});
+                                relationDTO.getToType(), new HashMap<String, Object>() {{
+                                    put(relatedColumnName, domain.getId());
+                                }});
                     }
                 }
             });
