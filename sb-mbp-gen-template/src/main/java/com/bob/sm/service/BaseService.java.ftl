@@ -39,9 +39,28 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     /**
      * 新增修改验证（具体子类实现）
      * @param dto 主实体
+     * @param appendMap 附加的参数
      */
-    default void baseSaveValidator(O dto) {
+    default void baseSaveValidator(O dto, Map<String, Object> appendMap) {
         // TODO: 新增修改验证写在这里（由具体实现覆盖）
+    }
+
+    /**
+     * 新增修改之后的操作（具体子类实现）
+     * @param dto 主实体
+     * @param appendMap 附加的参数（前面处理过的结果）
+     */
+    default void baseDoAfterSave(O dto, Map<String, Object> appendMap) {
+        // TODO: 新增修改之后的操作写在这里（由具体实现覆盖）
+    }
+
+    /**
+     * 新增修改最终返回前的操作（具体子类实现）
+     * @param dto 主实体
+     * @param appendMap 附加的参数（前面处理过的结果）
+     */
+    default void baseDoBeforeSaveReturn(O dto, Map<String, Object> appendMap) {
+        // TODO: 新增修改之后的操作写在这里（由具体实现覆盖）
     }
 
     /**
@@ -813,8 +832,10 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         dto.setInsertUserId(dto.getId() == null ? nowUserId : null);
         dto.setUpdateTime(nowTime);
         dto.setOperateUserId(nowUserId);
+        // 附加的传递参数
+        Map<String, Object> appendMap = new HashMap<>();
         // 新增修改验证
-        baseSaveValidator(dto);
+        baseSaveValidator(dto, appendMap);
         // 获取实体配置
         Class<? extends BaseDomain> entityClass = GlobalCache.getDomainClassMap().get(entityTypeName);
         T entity = null;
@@ -828,6 +849,9 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         boolean result = saveOrUpdate(entity);
         // 新增或修改后的主键ID
         long dtoId = entity.getId();
+        dto.setId(dtoId);
+        // 新增或更新之后的操作
+        baseDoAfterSave(dto, appendMap);
         // 级联新增或修改
         List<BaseEntityConfigRelationDTO> relationList = GlobalCache.getEntityRelationsMap().get(entityTypeName);
         if (relationList == null || relationList.size() == 0) {
@@ -889,7 +913,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 throw new CommonException(e.getMessage());
             }
         }
-        dto.setId(dtoId);
+		// 所有保存完成后的操作
+		baseDoBeforeSaveReturn(dto, appendMap);
         return result ? new ReturnCommonDTO(dtoId) : new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "保存失败");
     }
 

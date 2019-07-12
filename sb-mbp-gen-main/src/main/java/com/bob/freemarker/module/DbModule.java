@@ -173,7 +173,7 @@ public class DbModule {
             if (dbTableExist == null) {
                 // 表不存在，新建
                 String createSql = "create table " + tableName + "(";
-                createSql += "`id` bigint(20) not null primary key comment '自增主键', ";
+                createSql += "`id` bigint(20) not null primary key comment '主键', ";
                 for (int i = 0; i < entityDTO.getFieldList().size(); i++) {
                     EntityFieldDTO fieldDTO = entityDTO.getFieldList().get(i);
                     String columnName = StringUtil.camelToUnderline(fieldDTO.getCamelName());
