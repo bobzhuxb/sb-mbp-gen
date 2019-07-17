@@ -6,7 +6,7 @@ import java.util.List;
 
 public class RolePageElementsDTO {
 
-    private Long roleId;               // 角色ID
+    private String roleId;               // 角色ID
 
     @NotBlank
     @Size(min = 1, max = 255)
@@ -21,11 +21,11 @@ public class RolePageElementsDTO {
 
     private List<String> pageElementCodeList;   // 页面或页面元素的代码列表
 
-    public Long getRoleId() {
+    public String getRoleId() {
         return roleId;
     }
 
-    public void setRoleId(Long roleId) {
+    public void setRoleId(String roleId) {
         this.roleId = roleId;
     }
 

@@ -8,6 +8,9 @@ import ${packageName}.dto.criteria.*;
 import ${packageName}.dto.criteria.filter.*;
 import ${packageName}.dto.help.*;
 import ${packageName}.mapper.*;
+<#if eentityName == 'SystemPermission'>
+import ${packageName}.security.SecurityUtils;
+</#if>
 import ${packageName}.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
