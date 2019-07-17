@@ -20,9 +20,9 @@ SET FOREIGN_KEY_CHECKS=0;
 -- ----------------------------
 DROP TABLE IF EXISTS `base_authority_resource`;
 CREATE TABLE `base_authority_resource` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `id` char(50) NOT NULL,
   `authority_name` varchar(255) DEFAULT NULL COMMENT '角色名称',
-  `base_resource_id` bigint(20) DEFAULT NULL,
+  `base_resource_id` char(50) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_base_authority_resource_base_resource_id` (`base_resource_id`),
   CONSTRAINT `fk_base_authority_resource_base_resource_id` FOREIGN KEY (`base_resource_id`) REFERENCES `base_resource` (`id`)
@@ -33,12 +33,12 @@ CREATE TABLE `base_authority_resource` (
 -- ----------------------------
 DROP TABLE IF EXISTS `base_dictionary`;
 CREATE TABLE `base_dictionary` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `id` char(50) NOT NULL,
   `dic_type` varchar(255) DEFAULT NULL COMMENT '数据字典类别编码',
   `dic_code` varchar(255) DEFAULT NULL COMMENT '数据字典代码',
   `dic_value` varchar(255) DEFAULT NULL COMMENT '数据字典中文值',
   `dic_discription` varchar(255) DEFAULT NULL COMMENT '数据字典描述',
-  `parent_id` bigint(20) DEFAULT NULL COMMENT '父级ID',
+  `parent_id` char(50) DEFAULT NULL COMMENT '父级ID',
   `current_level` int(11) DEFAULT NULL COMMENT '当前层级',
   `insert_time` varchar(255) DEFAULT NULL COMMENT '插入时间',
   `update_time` varchar(255) DEFAULT NULL COMMENT '更新时间',
@@ -50,11 +50,11 @@ CREATE TABLE `base_dictionary` (
 -- ----------------------------
 DROP TABLE IF EXISTS `base_organization`;
 CREATE TABLE `base_organization` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `id` char(50) NOT NULL,
   `code` varchar(255) DEFAULT NULL COMMENT '组织机构代码',
   `name` varchar(255) DEFAULT NULL COMMENT '组织机构名称',
   `description` varchar(255) DEFAULT NULL COMMENT '组织机构描述',
-  `parent_id` bigint(20) DEFAULT NULL COMMENT '父级ID',
+  `parent_id` char(50) DEFAULT NULL COMMENT '父级ID',
   `current_level` int(11) DEFAULT NULL COMMENT '当前层级',
   `insert_time` varchar(255) DEFAULT NULL COMMENT '插入时间',
   `update_time` varchar(255) DEFAULT NULL COMMENT '更新时间',
@@ -66,7 +66,7 @@ CREATE TABLE `base_organization` (
 -- ----------------------------
 DROP TABLE IF EXISTS `base_permission`;
 CREATE TABLE `base_permission` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `id` char(50) NOT NULL,
   `name` varchar(255) DEFAULT NULL COMMENT '操作许可名称',
   `description` varchar(255) DEFAULT NULL COMMENT '操作许可描述',
   `system_code` varchar(255) DEFAULT NULL COMMENT '许可所属系统代码（只有在多系统联合配置权限时使用）',
@@ -74,7 +74,7 @@ CREATE TABLE `base_permission` (
   `http_url` varchar(255) DEFAULT NULL COMMENT '访问URL',
   `function_categroy` varchar(255) DEFAULT NULL COMMENT '功能归类',
   `name_modified` int(11) DEFAULT NULL COMMENT '名称是否已更改（1：未更改  2：已更改）',
-  `parent_id` bigint(20) DEFAULT NULL COMMENT '父级ID',
+  `parent_id` char(50) DEFAULT NULL COMMENT '父级ID',
   `current_level` int(11) DEFAULT NULL COMMENT '当前层级',
   `allow_config` int(11) DEFAULT NULL COMMENT '是否允许配置（1：是   2：否）',
   `insert_time` varchar(255) DEFAULT NULL COMMENT '插入时间',
@@ -87,13 +87,13 @@ CREATE TABLE `base_permission` (
 -- ----------------------------
 DROP TABLE IF EXISTS `base_resource`;
 CREATE TABLE `base_resource` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `id` char(50) NOT NULL,
   `resource_type` varchar(255) DEFAULT NULL COMMENT '资源类别（PERMISSION：权限   CLIENT_TYPE：客户端应用    SUB_SYSTEM：子系统）',
   `name` varchar(255) DEFAULT NULL COMMENT '资源名称',
   `description` varchar(255) DEFAULT NULL COMMENT '资源描述',
   `system_code` varchar(255) DEFAULT NULL COMMENT '资源所属系统代码（只有在多系统联合配置权限时使用）',
   `identify` varchar(255) DEFAULT NULL COMMENT '资源特性标识（同一系统，同一类别内资源特性标识）',
-  `parent_id` bigint(20) DEFAULT NULL COMMENT '父级ID',
+  `parent_id` char(50) DEFAULT NULL COMMENT '父级ID',
   `current_level` int(11) DEFAULT NULL COMMENT '当前层级',
   `insert_time` varchar(255) DEFAULT NULL COMMENT '插入时间',
   `update_time` varchar(255) DEFAULT NULL COMMENT '更新时间',
@@ -105,11 +105,11 @@ CREATE TABLE `base_resource` (
 -- ----------------------------
 DROP TABLE IF EXISTS `base_resource_permission`;
 CREATE TABLE `base_resource_permission` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `id` char(50) NOT NULL,
   `insert_time` varchar(255) DEFAULT NULL COMMENT '插入时间',
   `update_time` varchar(255) DEFAULT NULL COMMENT '更新时间',
-  `base_permission_id` bigint(20) DEFAULT NULL,
-  `base_resource_id` bigint(20) DEFAULT NULL,
+  `base_permission_id` char(50) DEFAULT NULL,
+  `base_resource_id` char(50) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_base_resource_permission_base_permission_id` (`base_permission_id`),
   KEY `fk_base_resource_permission_base_resource_id` (`base_resource_id`),
@@ -122,8 +122,8 @@ CREATE TABLE `base_resource_permission` (
 -- ----------------------------
 DROP TABLE IF EXISTS `base_user_organization`;
 CREATE TABLE `base_user_organization` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `user_id` bigint(20) DEFAULT NULL COMMENT '用户ID',
+  `id` char(50) NOT NULL,
+  `user_id` char(50) DEFAULT NULL COMMENT '用户ID',
   `organization_code` varchar(255) DEFAULT NULL COMMENT '组织机构代码',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户组织架构关系';
@@ -133,9 +133,9 @@ CREATE TABLE `base_user_organization` (
 -- ----------------------------
 DROP TABLE IF EXISTS `base_user_resource`;
 CREATE TABLE `base_user_resource` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `user_id` bigint(20) DEFAULT NULL COMMENT '用户ID',
-  `base_resource_id` bigint(20) DEFAULT NULL,
+  `id` char(50) NOT NULL,
+  `user_id` char(50) DEFAULT NULL COMMENT '用户ID',
+  `base_resource_id` char(50) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_base_user_resource_base_resource_id` (`base_resource_id`),
   CONSTRAINT `fk_base_user_resource_base_resource_id` FOREIGN KEY (`base_resource_id`) REFERENCES `base_resource` (`id`)
@@ -157,7 +157,7 @@ CREATE TABLE `jhi_authority` (
 -- ----------------------------
 DROP TABLE IF EXISTS `jhi_date_time_wrapper`;
 CREATE TABLE `jhi_date_time_wrapper` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `id` char(50) NOT NULL,
   `instant` timestamp NULL DEFAULT NULL,
   `local_date_time` timestamp NULL DEFAULT NULL,
   `offset_date_time` timestamp NULL DEFAULT NULL,
@@ -173,7 +173,7 @@ CREATE TABLE `jhi_date_time_wrapper` (
 -- ----------------------------
 DROP TABLE IF EXISTS `jhi_persistent_audit_event`;
 CREATE TABLE `jhi_persistent_audit_event` (
-  `event_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `event_id` char(50) NOT NULL,
   `principal` varchar(50) NOT NULL,
   `event_date` timestamp NULL DEFAULT NULL,
   `event_type` varchar(255) DEFAULT NULL,
@@ -186,7 +186,7 @@ CREATE TABLE `jhi_persistent_audit_event` (
 -- ----------------------------
 DROP TABLE IF EXISTS `jhi_persistent_audit_evt_data`;
 CREATE TABLE `jhi_persistent_audit_evt_data` (
-  `event_id` bigint(20) NOT NULL,
+  `event_id` char(50) NOT NULL,
   `name` varchar(150) NOT NULL,
   `value` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`event_id`,`name`),
@@ -199,7 +199,7 @@ CREATE TABLE `jhi_persistent_audit_evt_data` (
 -- ----------------------------
 DROP TABLE IF EXISTS `jhi_user`;
 CREATE TABLE `jhi_user` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `id` char(50) NOT NULL,
   `login` varchar(50) NOT NULL,
   `password_hash` varchar(60) NOT NULL,
   `first_name` varchar(50) DEFAULT NULL,
@@ -224,7 +224,7 @@ CREATE TABLE `jhi_user` (
 -- ----------------------------
 DROP TABLE IF EXISTS `jhi_user_authority`;
 CREATE TABLE `jhi_user_authority` (
-  `user_id` bigint(20) NOT NULL,
+  `user_id` char(50) NOT NULL,
   `authority_name` varchar(50) NOT NULL,
   PRIMARY KEY (`user_id`,`authority_name`),
   KEY `fk_authority_name` (`authority_name`),

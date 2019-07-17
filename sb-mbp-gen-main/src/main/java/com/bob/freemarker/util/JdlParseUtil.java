@@ -158,8 +158,8 @@ public class JdlParseUtil {
                 if (entityDTO != null) {
                     // entity结束行
                     // 最后，默认加上insertTime和updateTime和insertUserId和operateUserId字段
-                    entityDTO.getFieldList().add(new EntityFieldDTO("insertUserId", "String", "bigint(20)", "创建者用户ID"));
-                    entityDTO.getFieldList().add(new EntityFieldDTO("operateUserId", "String", "bigint(20)", "操作者用户ID"));
+                    entityDTO.getFieldList().add(new EntityFieldDTO("insertUserId", "String", "char(50)", "创建者用户ID"));
+                    entityDTO.getFieldList().add(new EntityFieldDTO("operateUserId", "String", "char(50)", "操作者用户ID"));
                     entityDTO.getFieldList().add(new EntityFieldDTO("insertTime", "String", "varchar(255)", "插入时间"));
                     entityDTO.getFieldList().add(new EntityFieldDTO("updateTime", "String", "varchar(255)", "更新时间"));
                     entityDTOList.add(entityDTO);

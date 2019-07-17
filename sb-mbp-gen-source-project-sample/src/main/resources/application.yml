@@ -32,7 +32,7 @@ management:
 mybatis-plus:
     global-config:
         db-config:
-            id-type: id_worker
+            id-type: id_worker_str
     mapper-locations: classpath:/mapper/*Mapper.xml
 
 jhipster:

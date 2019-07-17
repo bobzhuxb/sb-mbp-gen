@@ -173,7 +173,7 @@ public class DbModule {
             if (dbTableExist == null) {
                 // 表不存在，新建
                 String createSql = "create table " + tableName + "(";
-                createSql += "`id` bigint(20) not null primary key comment '主键', ";
+                createSql += "`id` char(50) not null primary key comment '主键', ";
                 for (int i = 0; i < entityDTO.getFieldList().size(); i++) {
                     EntityFieldDTO fieldDTO = entityDTO.getFieldList().get(i);
                     String columnName = StringUtil.camelToUnderline(fieldDTO.getCamelName());
@@ -192,7 +192,7 @@ public class DbModule {
                     for (RelationshipDTO relationColumn : relationColumnList) {
                         String relationColumnName = StringUtil.camelToUnderline(relationColumn.getToFromEntityName()) + "_id";
                         String relationComment = relationColumn.getToFromComment() + "ID";
-                        createSql += ", `" + relationColumnName + "` bigint(20) comment '" + relationComment + "'";
+                        createSql += ", `" + relationColumnName + "` char(50) comment '" + relationComment + "'";
                     }
                 }
                 createSql += ") COMMENT='" + entityDTO.getEntityComment() + "'";
@@ -224,15 +224,12 @@ public class DbModule {
                         statement.executeUpdate("alter table `" + tableName + "` add `" + newColumnName + "` "
                                 + newColumnType + " comment '" + newColumnComment + "'");
                     } else {
-                        // 列已经存在，更新列类型或注释
+                        // 列已经存在
                         for (DbColumnDTO dbColumnExist : dbTableExist.getColumnList()) {
                             if (dbColumnExist.getColumnName().equals(newColumnName)) {
-                                if (!newColumnType.equals(dbColumnExist.getColumnType())
-                                        || !newColumnComment.equals(dbColumnExist.getColumnComment())) {
-                                    // 列类型或注释不同，更新列
-                                    statement.executeUpdate("alter table `" + tableName + "` modify column `"
-                                            + newColumnName + "` " + newColumnType + " comment '" + newColumnComment + "'");
-                                }
+                                // 直接更新列类型和注释
+                                statement.executeUpdate("alter table `" + tableName + "` modify column `"
+                                        + newColumnName + "` " + newColumnType + " comment '" + newColumnComment + "'");
                                 break;
                             }
                         }
@@ -249,17 +246,14 @@ public class DbModule {
                         if (!toDeleteColumnNameList.contains(relationColumnName)) {
                             // 列不存在，新增列
                             statement.executeUpdate("alter table `" + tableName + "` add `" + relationColumnName
-                                    + "` bigint(20) comment '" + relationComment + "'");
+                                    + "` char(50) comment '" + relationComment + "'");
                         } else {
-                            // 列已经存在，更新列类型或注释
+                            // 列已经存在
                             for (DbColumnDTO dbColumnExist : dbTableExist.getColumnList()) {
                                 if (dbColumnExist.getColumnName().equals(relationColumnName)) {
-                                    if (!"bigint(20)".equals(dbColumnExist.getColumnType())
-                                            || !relationComment.equals(dbColumnExist.getColumnComment())) {
-                                        // 列类型或注释不同，更新列
-                                        statement.executeUpdate("alter table `" + tableName + "` modify column `"
-                                                + relationColumnName + "` bigint(20) comment '" + relationComment + "'");
-                                    }
+                                    // 直接更新列类型和注释
+                                    statement.executeUpdate("alter table `" + tableName + "` modify column `"
+                                            + relationColumnName + "` char(50) comment '" + relationComment + "'");
                                     break;
                                 }
                             }
