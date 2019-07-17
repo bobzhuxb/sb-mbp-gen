@@ -12,6 +12,6 @@ public interface AccountService {
 
     ReturnCommonDTO changePassword(String currentClearTextPassword, String newPassword);
 
-    ReturnCommonDTO resetPassword(long userId);
+    ReturnCommonDTO resetPassword(String userId);
 
 }

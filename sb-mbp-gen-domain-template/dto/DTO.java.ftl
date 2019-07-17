@@ -19,8 +19,6 @@ ${annotation}
 </#list>
 </#if>
 public class ${eentityName}DTO extends BaseDTO {
-
-    private Long id;
 	<#list fieldList as field>
 	<#if field.camelName != 'insertTime' && field.camelName != 'updateTime' && field.camelName != 'insertUserId' && field.camelName != 'operateUserId'>
 
@@ -43,7 +41,7 @@ public class ${eentityName}DTO extends BaseDTO {
     ${annotation}
 	</#list>
 	</#if>
-    private Long ${toFrom.toFromEntityName}Id;    // ${toFrom.toFromComment}ID
+    private String ${toFrom.toFromEntityName}Id;    // ${toFrom.toFromComment}ID
 	</#list>
 	<#if (toFromList?? && (toFromList?size > 0)) || (fromToList?? && (fromToList?size > 0)) >
     
@@ -70,14 +68,6 @@ public class ${eentityName}DTO extends BaseDTO {
 
     // ================self code:自定义属性start=====================
     // ================self code:自定义属性end=====================
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 	<#list fieldList as field>
 	<#if field.camelName != 'insertTime' && field.camelName != 'updateTime' && field.camelName != 'insertUserId' && field.camelName != 'operateUserId'>
 	
@@ -102,11 +92,11 @@ public class ${eentityName}DTO extends BaseDTO {
 	</#list>
 	<#list toFromList as toFrom>
 
-    public Long get${toFrom.toFromEntityUName}Id() {
+    public String get${toFrom.toFromEntityUName}Id() {
         return ${toFrom.toFromEntityName}Id;
     }
 
-    public void set${toFrom.toFromEntityUName}Id(Long ${toFrom.toFromEntityName}Id) {
+    public void set${toFrom.toFromEntityUName}Id(String ${toFrom.toFromEntityName}Id) {
         this.${toFrom.toFromEntityName}Id = ${toFrom.toFromEntityName}Id;
     }
 	</#list>

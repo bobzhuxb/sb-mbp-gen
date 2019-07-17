@@ -55,7 +55,7 @@ public class CommonUserServiceImpl implements CommonUserService {
      * 获取当前用户的用户ID
      * @return
      */
-    public Long getCurrentUserId() {
+    public String getCurrentUserId() {
         return SecurityUtils.getCurrentUserLogin().map(login -> findUserIdByLogin(login)).get();
     }
 
@@ -64,7 +64,7 @@ public class CommonUserServiceImpl implements CommonUserService {
      * @param login
      * @return
      */
-    public Long findUserIdByLogin(String login) {
+    public String findUserIdByLogin(String login) {
         return Optional.ofNullable(findUserByLogin(login, false)).map(user -> user.getId()).get();
     }
 

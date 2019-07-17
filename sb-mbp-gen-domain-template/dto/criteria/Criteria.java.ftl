@@ -11,8 +11,6 @@ import java.util.Objects;
 public class ${eentityName}Criteria extends BaseCriteria implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    private LongFilter id;
     <#list fieldList as field>
 	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
 
@@ -21,7 +19,7 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
     </#list>
 	<#list toFromList as toFrom>
 
-    private LongFilter ${toFrom.toFromEntityName}Id;    // ${toFrom.toFromComment}ID
+    private StringFilter ${toFrom.toFromEntityName}Id;    // ${toFrom.toFromComment}ID
 	</#list>
 	<#list toFromList as toFrom>
 
@@ -34,17 +32,6 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
 
     // ================self code:增强的查询条件参数start=====================
     // ================self code:增强的查询条件参数end=====================
-
-    public ${eentityName}Criteria() {
-    }
-
-    public LongFilter getId() {
-        return id;
-    }
-
-    public void setId(LongFilter id) {
-        this.id = id;
-    }
     <#list fieldList as field>
 	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
     
@@ -59,11 +46,11 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
 	</#list>
 	<#list toFromList as toFrom>
 
-    public LongFilter get${toFrom.toFromEntityUName}Id() {
+    public StringFilter get${toFrom.toFromEntityUName}Id() {
         return ${toFrom.toFromEntityName}Id;
     }
 	
-	public void set${toFrom.toFromEntityUName}Id(LongFilter ${toFrom.toFromEntityName}Id) {
+	public void set${toFrom.toFromEntityUName}Id(StringFilter ${toFrom.toFromEntityName}Id) {
         this.${toFrom.toFromEntityName}Id = ${toFrom.toFromEntityName}Id;
     }
 	</#list>
@@ -100,7 +87,7 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
             return false;
         }
         final ${eentityName}Criteria that = (${eentityName}Criteria) o;
-        return Objects.equals(id, that.id)
+        return Objects.equals(getId(), that.getId())
 				<#list fieldList as field>
 				<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
                 && Objects.equals(${field.camelName}, that.${field.camelName})
@@ -111,7 +98,7 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
 
     @Override
     public int hashCode() {
-        return Objects.hash(id
+        return Objects.hash(getId()
 				<#list fieldList as field>
 				<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
                 , ${field.camelName}
@@ -123,7 +110,7 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
     @Override
     public String toString() {
         return "${eentityName}Criteria{" +
-                (id != null ? "id=" + id + ", " : "") +
+                (getId() != null ? "id=" + getId() + ", " : "") +
 				<#list fieldList as field>
 				<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
                 (${field.camelName} != null ? "${field.camelName}=" + ${field.camelName} + ", " : "") +

@@ -77,7 +77,7 @@ public class AccountServiceImpl implements AccountService {
             List<SystemResourceDTO> roleResourceListDup = systemUserDTO.getSystemUserRoleList().stream()
                     .flatMap(systemUserRoleDTO -> {
                         SystemRoleResourceCriteria systemRoleResourceCriteria = new SystemRoleResourceCriteria();
-                        LongFilter roleIdFilter = new LongFilter();
+                        StringFilter roleIdFilter = new StringFilter();
                         roleIdFilter.setEquals(systemUserRoleDTO.getSystemRoleId());
                         systemRoleResourceCriteria.setSystemRoleId(roleIdFilter);
                         systemRoleResourceCriteria.setAssociationNameList(Arrays.asList("systemResource"));
@@ -113,7 +113,7 @@ public class AccountServiceImpl implements AccountService {
         log.debug("Service ==> 用户自己修改密码");
         SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
         if (systemUserDTO == null) {
-            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "用户不存在");
+            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "当前用户不存在");
         }
         String currentEncryptedPassword = systemUserDTO.getPassword();
         if (!new BCryptPasswordEncoder().matches(currentClearTextPassword, currentEncryptedPassword)) {
@@ -128,11 +128,32 @@ public class AccountServiceImpl implements AccountService {
     }
 
     /**
+     * 当前用户验证密码
+     * @param currentClearTextPassword
+     * @return
+     */
+    public ReturnCommonDTO<Integer> validatePassword(String currentClearTextPassword) {
+        log.debug("Service ==> 用户自己修改密码");
+        SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
+        if (systemUserDTO == null) {
+            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "当前用户不存在");
+        }
+        String currentEncryptedPassword = systemUserDTO.getPassword();
+        if (new BCryptPasswordEncoder().matches(currentClearTextPassword, currentEncryptedPassword)) {
+            return new ReturnCommonDTO(Constants.yesNo.YES.getValue());
+        } else {
+            ReturnCommonDTO rtn = new ReturnCommonDTO(Constants.yesNo.NO.getValue());
+            rtn.setErrMsg("原密码错误");
+            return rtn;
+        }
+    }
+
+    /**
      * 管理员重置别人的密码
      * @param userId
      * @return
      */
-    public ReturnCommonDTO resetPassword(long userId) {
+    public ReturnCommonDTO resetPassword(String userId) {
         log.debug("Service ==> 管理员重置别人的密码");
         SystemUser user = systemUserMapper.selectById(userId);
         if (user == null) {

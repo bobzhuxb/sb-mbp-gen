@@ -10,7 +10,7 @@
 </#if>
 </#list>
 <#list toFromList as toFrom>
-            "${toFrom.toFromEntityName}Id": "${toFrom.toFromComment}ID（无引号）",
+            "${toFrom.toFromEntityName}Id": "${toFrom.toFromComment}ID",
 </#list>
 <#list fromToList as fromTo>
             "${fromTo.fromToEntityName}<#if fromTo.relationType == 'OneToMany'>List</#if>": <#if fromTo.relationType == 'OneToMany'>[</#if>{"说明": "${fromTo.fromToComment}<#if fromTo.relationType == 'OneToMany'>列表</#if>（级联类型：${fromTo.fromToEntityType}）"}<#if fromTo.relationType == 'OneToMany'>]</#if>,

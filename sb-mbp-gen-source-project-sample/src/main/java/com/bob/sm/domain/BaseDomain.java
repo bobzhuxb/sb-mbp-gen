@@ -4,37 +4,37 @@ import java.io.Serializable;
 
 public class BaseDomain implements Serializable {
 
-    private Long id;
+    private String id;
 
-    private Long insertUserId;    // 创建者用户ID
+    private String insertUserId;    // 创建者用户ID
 
-    private Long operateUserId;    // 操作者用户ID
+    private String operateUserId;    // 操作者用户ID
 
     private String insertTime;    // 插入时间
 
     private String updateTime;    // 更新时间
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public Long getInsertUserId() {
+    public String getInsertUserId() {
         return insertUserId;
     }
 
-    public void setInsertUserId(Long insertUserId) {
+    public void setInsertUserId(String insertUserId) {
         this.insertUserId = insertUserId;
     }
 
-    public Long getOperateUserId() {
+    public String getOperateUserId() {
         return operateUserId;
     }
 
-    public void setOperateUserId(Long operateUserId) {
+    public void setOperateUserId(String operateUserId) {
         this.operateUserId = operateUserId;
     }
 

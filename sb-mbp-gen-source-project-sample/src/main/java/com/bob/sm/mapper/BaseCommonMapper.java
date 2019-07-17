@@ -15,7 +15,7 @@ public interface BaseCommonMapper<T> extends BaseMapper<T> {
 
     @Update("UPDATE ${tableName} SET ${relationColumnName} = null WHERE ${relationColumnName} = #{relationId}")
     void cascadeToNull(@Param("tableName") String tableName, @Param("relationColumnName") String relationColumnName,
-                       @Param("relationId") long relationId);
+                       @Param("relationId") String relationId);
 
     @Select("<script>"
             + "${queryMain} ${ew.customSqlSegment}"

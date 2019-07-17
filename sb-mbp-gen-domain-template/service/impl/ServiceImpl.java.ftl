@@ -47,7 +47,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @param roleId id of role
      * @return result page elements
      */
-    public List<SystemRolePageElement> getPageElementsByRole(long roleId) {
+    public List<SystemRolePageElement> getPageElementsByRole(String roleId) {
         List<SystemRolePageElement> rolePageElementList = systemRolePageElementMapper.selectByMap(
                 new HashMap<String, Object>(){{
                     put("role_id", roleId);
@@ -114,8 +114,8 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @param roleId id of role
      * @return
      */
-    public List<PageElementDTO> getPageElementTree(Long roleId) {
-        if (roleId == null || roleId == 0) {
+    public List<PageElementDTO> getPageElementTree(String roleId) {
+        if (roleId == null || "0".equals(roleId)) {
             return Constants.pageElementList;
         }
         List<SystemRolePageElement> authorityPageElementList = getPageElementsByRole(roleId);

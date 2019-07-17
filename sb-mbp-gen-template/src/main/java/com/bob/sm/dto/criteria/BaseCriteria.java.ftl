@@ -6,11 +6,13 @@ import java.util.List;
 
 public class BaseCriteria {
 
+    private StringFilter id;
+
     private NothingFilter nothing;    // 无任何操作
 
-    private LongFilter insertUserId;    // 创建者用户ID
+    private StringFilter insertUserId;    // 创建者用户ID
 
-    private LongFilter operateUserId;    // 操作者用户ID
+    private StringFilter operateUserId;    // 操作者用户ID
 
     private StringFilter insertTime;    // 插入时间
 
@@ -28,6 +30,14 @@ public class BaseCriteria {
 
     private SystemUserCriteria operateUser;    // 操作者用户
 
+    public StringFilter getId() {
+        return id;
+    }
+
+    public void setId(StringFilter id) {
+        this.id = id;
+    }
+
     public NothingFilter getNothing() {
         return nothing;
     }
@@ -36,19 +46,19 @@ public class BaseCriteria {
         this.nothing = nothing;
     }
 
-    public LongFilter getInsertUserId() {
+    public StringFilter getInsertUserId() {
         return insertUserId;
     }
 
-    public void setInsertUserId(LongFilter insertUserId) {
+    public void setInsertUserId(StringFilter insertUserId) {
         this.insertUserId = insertUserId;
     }
 
-    public LongFilter getOperateUserId() {
+    public StringFilter getOperateUserId() {
         return operateUserId;
     }
 
-    public void setOperateUserId(LongFilter operateUserId) {
+    public void setOperateUserId(StringFilter operateUserId) {
         this.operateUserId = operateUserId;
     }
 

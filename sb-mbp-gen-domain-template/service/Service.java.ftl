@@ -16,7 +16,7 @@ public interface ${eentityName}Service extends BaseService<${eentityName}, ${een
 	<#if eentityName == 'SystemPermission'>
     void saveRolePermissions(RolePageElementsDTO rolePageElementsDTO);
 
-    List<PageElementDTO> getPageElementTree(Long roleId);
+    List<PageElementDTO> getPageElementTree(String roleId);
 
     List<PageElementDTO> getPageElementOfCurrentUser();
 	</#if>

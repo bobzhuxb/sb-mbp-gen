@@ -99,7 +99,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
      */
     default ReturnCommonDTO baseDeleteByRelationIdWithoutIdList(String entityTypeName, String relatedColumnName,
-                                                                long relatedId, List<Long> idList) {
+                                                                String relatedId, List<String> idList) {
         Optional.ofNullable(GlobalCache.getMapperMap().get(entityTypeName).selectList(
                 new QueryWrapper<T>().select("id").eq(relatedColumnName, relatedId).notIn(
                         idList != null && idList.size() > 0, "id", idList))
@@ -121,7 +121,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param baseCriteria 附加条件
      * @return 查询通用Wrapper
      */
-    default Wrapper<T> baseIdEqualsPrepare(String entityTypeName, Long id, BaseCriteria baseCriteria) {
+    default Wrapper<T> baseIdEqualsPrepare(String entityTypeName, String id, BaseCriteria baseCriteria) {
         // 获取实体配置
         Class criteriaClass = GlobalCache.getCriteriaClassMap().get(entityTypeName);
         C criteria = null;
@@ -689,7 +689,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         // 设置级联查询的查询条件
                         Class subCriteriaClass = Class.forName("${packageName}.dto.criteria." + relationDTO.getToType() + "Criteria");
                         BaseCriteria subCriteria = (BaseCriteria) subCriteriaClass.newInstance();
-                        LongFilter relatedIdFilter = new LongFilter();
+                        StringFilter relatedIdFilter = new StringFilter();
                         relatedIdFilter.setEquals(dto.getId());
                         Field relatedIdField = FieldUtils.getField(subCriteriaClass, relationDTO.getToName() + "Id", true);
                         relatedIdField.setAccessible(true);
@@ -735,7 +735,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         subCriteria.setAssociationNameList(subAssociationNameList);
                         // 调用级联的Service的方法进行查询
                         Object subDTO = GlobalCache.getServiceMap().get(relationDTO.getFromType()).baseFindOne(
-                                relationDTO.getFromType(), (long)relatedId, subCriteria, appendParamMap).getData();
+                                relationDTO.getFromType(), (String)relatedId, subCriteria, appendParamMap).getData();
                         // 最终设置到主体dto的成员变量中
                         Field dtoField = FieldUtils.getField(dto.getClass(), relationDTO.getToName(), true);
                         dtoField.set(dto, subDTO);
@@ -747,7 +747,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             }
             if ("insertUser".equals(associationName)) {
                 // 获取创建者
-                Long insertUserId = dto.getInsertUserId();
+                String insertUserId = dto.getInsertUserId();
                 if (insertUserId == null) {
                     continue;
                 }
@@ -766,7 +766,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             }
             if ("operateUser".equals(associationName)) {
                 // 获取最后更新者
-                Long operateUserId = dto.getOperateUserId();
+                String operateUserId = dto.getOperateUserId();
                 if (operateUserId == null) {
                     continue;
                 }
@@ -795,10 +795,10 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      */
     default ReturnCommonDTO baseSave(String entityTypeName, O dto) {
         // 获取主键ID，根据ID存在与否判断是新增还是修改
-        Long dtoIdUpdate = dto.getId();
+        String dtoIdUpdate = dto.getId();
         // 设置当前用户和时间
         String nowTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        Long nowUserId = GlobalCache.getCommonUserService().getCurrentUserId();
+        String nowUserId = GlobalCache.getCommonUserService().getCurrentUserId();
         dto.setInsertTime(dto.getId() == null ? nowTime : null);
         dto.setInsertUserId(dto.getId() == null ? nowUserId : null);
         dto.setUpdateTime(nowTime);
@@ -817,7 +817,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 新增或更新当前实体
         boolean result = saveOrUpdate(entity);
         // 新增或修改后的主键ID
-        long dtoId = entity.getId();
+        String dtoId = entity.getId();
         // 级联新增或修改
         List<BaseEntityConfigRelationDTO> relationList = GlobalCache.getEntityRelationsMap().get(entityTypeName);
         if (relationList == null || relationList.size() == 0) {
@@ -840,7 +840,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 List<? extends BaseDTO> subList = (List<? extends BaseDTO>) subListObj;
                 if (dtoIdUpdate != null) {
                     // 如果是修改：获取传入的子属性的ID列表（去掉null的）
-                    List<Long> subDtoIdList = subList.stream()
+                    List<String> subDtoIdList = subList.stream()
                             .filter(subDTO -> subDTO.getId() != null)
                             .map(subDTO -> subDTO.getId()).collect(Collectors.toList());
                     // 数据库表的关联列字段名。注意：这里先限制为不能随意修改关联字段的数据库字段名，留待以后优化
@@ -890,7 +890,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @return 结果返回码和消息
      * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事务的一致性
      */
-    default ReturnCommonDTO baseDeleteById(String entityTypeName, Long id) {
+    default ReturnCommonDTO baseDeleteById(String entityTypeName, String id) {
         return baseDeleteByMapCascade(entityTypeName, new HashMap<String, Object>() {{put("id", id);}});
     }
 
@@ -901,7 +901,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @return 结果返回码和消息
      * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
      */
-    default ReturnCommonDTO baseDeleteByIdList(String entityTypeName, List<Long> idList) {
+    default ReturnCommonDTO baseDeleteByIdList(String entityTypeName, List<String> idList) {
         idList.forEach(id -> {
             ReturnCommonDTO returnCommonDTO = baseDeleteByMapCascade(entityTypeName, new HashMap<String, Object>() {{put("id", id);}});
             if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
@@ -980,7 +980,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param appendParamMap 附加参数
      * @return 单条数据内容
      */
-    default ReturnCommonDTO<O> baseFindOne(String entityTypeName, Long id, C criteria,
+    default ReturnCommonDTO<O> baseFindOne(String entityTypeName, String id, C criteria,
                                            Map<String, Object> appendParamMap) {
         // ID条件设定
         Wrapper<T> wrapper = baseIdEqualsPrepare(entityTypeName, id, criteria);

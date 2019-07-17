@@ -180,8 +180,7 @@ public class DbModule {
                     if ("id".equals(fieldDTO.getCamelName())) {
                         continue;
                     } else {
-                        String dbType = convertJavaTypeToColumnType(fieldDTO.getJavaType());
-                        createSql += "`" + columnName + "` " + dbType + " comment '" + fieldDTO.getComment() + "'";
+                        createSql += "`" + columnName + "` " + fieldDTO.getColumnType() + " comment '" + fieldDTO.getComment() + "'";
                     }
                     if (i < entityDTO.getFieldList().size() - 1) {
                         createSql += ", ";
@@ -218,7 +217,7 @@ public class DbModule {
                 // entity自带字段
                 for (EntityFieldDTO fieldDTO : entityDTO.getFieldList()) {
                     String newColumnName = StringUtil.camelToUnderline(fieldDTO.getCamelName());
-                    String newColumnType = convertJavaTypeToColumnType(fieldDTO.getJavaType());
+                    String newColumnType = fieldDTO.getColumnType();
                     String newColumnComment = fieldDTO.getComment();
                     if (!toDeleteColumnNameList.contains(newColumnName)) {
                         // 列不存在，新增列
@@ -315,16 +314,19 @@ public class DbModule {
      * @param javaType
      * @return
      */
-    private static String convertJavaTypeToColumnType(String javaType) {
-        String dbType = "varchar(255)";
-        if ("Integer".equals(javaType)) {
-            dbType = "int(11)";
-        } else if ("Long".equals(javaType)) {
-            dbType = "bigint(20)";
-        } else if ("Double".equals(javaType)) {
-            dbType = "double(11, 2)";
+    public static String convertJavaTypeToColumnType(String javaType, String columnType) {
+        if (columnType != null) {
+            return columnType;
         }
-        return dbType;
+        columnType = "varchar(255)";
+        if ("Integer".equals(javaType)) {
+            columnType = "int(11)";
+        } else if ("Long".equals(javaType)) {
+            columnType = "bigint(20)";
+        } else if ("Double".equals(javaType)) {
+            columnType = "double(11, 2)";
+        }
+        return columnType;
     }
 
     /**

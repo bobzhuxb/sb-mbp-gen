@@ -101,7 +101,7 @@ public class ${eentityName}Controller {
      */
     @DeleteMapping("/${entityUrl}/{id}")
     @PreAuthorize("hasDelete('${lowerName}')")
-    public ResponseEntity<ReturnCommonDTO> delete${eentityName}(@PathVariable Long id) {
+    public ResponseEntity<ReturnCommonDTO> delete${eentityName}(@PathVariable String id) {
         log.debug("Controller ==> 根据ID删除${eentityName} : {}", id);
         ReturnCommonDTO resultDTO = null;
         try {
@@ -120,7 +120,7 @@ public class ${eentityName}Controller {
      */
     @DeleteMapping("/${entityUrl}")
     @PreAuthorize("hasDelete('${lowerName}')")
-    public ResponseEntity<ReturnCommonDTO> delete${eentityName}s(@RequestBody List<Long> idList) {
+    public ResponseEntity<ReturnCommonDTO> delete${eentityName}s(@RequestBody List<String> idList) {
         log.debug("Controller ==> 批量删除${eentityName} : {}", idList);
         ReturnCommonDTO resultDTO = null;
         try {
@@ -141,7 +141,7 @@ public class ${eentityName}Controller {
     @GetMapping("/${entityUrl}/{primaryId}")
     @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}(
-            @PathVariable Long primaryId, ${eentityName}Criteria criteria) {
+            @PathVariable String primaryId, ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 根据ID查询${eentityName} : {}, {}", primaryId, criteria);
         ReturnCommonDTO<${eentityName}DTO> resultDTO = null;
         try {

@@ -12,8 +12,6 @@ import java.util.Objects;
 public class ${eentityName} extends BaseDomain {
 
     private static final long serialVersionUID = 1L;
-
-    private Long id;
     <#list fieldList as field>
 	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
 
@@ -27,16 +25,8 @@ public class ${eentityName} extends BaseDomain {
     </#list>
 	<#list toFromList as toFrom>
 
-    private Long ${toFrom.toFromEntityName}Id;    // ${toFrom.toFromComment}ID
+    private String ${toFrom.toFromEntityName}Id;    // ${toFrom.toFromComment}ID
 	</#list>
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
     <#list fieldList as field>
 	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
 
@@ -61,11 +51,11 @@ public class ${eentityName} extends BaseDomain {
     </#list>
 	<#list toFromList as toFrom>
 
-    public Long get${toFrom.toFromEntityUName}Id() {
+    public String get${toFrom.toFromEntityUName}Id() {
         return ${toFrom.toFromEntityName}Id;
     }
 
-    public void set${toFrom.toFromEntityUName}Id(Long ${toFrom.toFromEntityName}Id) {
+    public void set${toFrom.toFromEntityUName}Id(String ${toFrom.toFromEntityName}Id) {
         this.${toFrom.toFromEntityName}Id = ${toFrom.toFromEntityName}Id;
     }
 	</#list>

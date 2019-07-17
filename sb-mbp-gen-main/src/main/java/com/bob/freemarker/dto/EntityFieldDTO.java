@@ -1,5 +1,6 @@
 package com.bob.freemarker.dto;
 
+import com.bob.freemarker.module.DbModule;
 import com.bob.freemarker.util.StringUtil;
 
 import java.util.List;
@@ -11,6 +12,7 @@ public class EntityFieldDTO {
 
     private String comment;             // 成员变量注释
     private String javaType;            // 成员变量的Java类型
+    private String columnType;          // 数据库的列类型
     private String camelName;           // 首字母小写的驼峰标识名
     private String ccamelName;          // 首字母大写的驼峰标识名
     private String camelNameUnderline;  // 下划线连接的标识名
@@ -23,9 +25,9 @@ public class EntityFieldDTO {
 
     public EntityFieldDTO() {}
 
-    public EntityFieldDTO(String camelName, String javaType, String comment, String camelNameDic,
+    public EntityFieldDTO(String camelName, String javaType, String columnType, String comment, String camelNameDic,
                           String dictionaryType, String commentDic) {
-        this(camelName, javaType, comment);
+        this(camelName, javaType, columnType, comment);
         this.camelNameDic = camelNameDic;
         this.dictionaryType = dictionaryType;
         this.commentDic = commentDic;
@@ -33,9 +35,10 @@ public class EntityFieldDTO {
         this.ccamelNameDicUnderline = StringUtil.camelToUnderline(camelNameDic);
     }
 
-    public EntityFieldDTO(String camelName, String javaType, String comment) {
+    public EntityFieldDTO(String camelName, String javaType, String columnType, String comment) {
         this.comment = comment;
         this.javaType = javaType;
+        this.columnType = DbModule.convertJavaTypeToColumnType(javaType, columnType);
         this.camelName = camelName;
         this.ccamelName = camelName.substring(0, 1).toUpperCase() + camelName.substring(1);
         this.camelNameUnderline = StringUtil.camelToUnderline(camelName);
@@ -55,6 +58,14 @@ public class EntityFieldDTO {
 
     public void setJavaType(String javaType) {
         this.javaType = javaType;
+    }
+
+    public String getColumnType() {
+        return columnType;
+    }
+
+    public void setColumnType(String columnType) {
+        this.columnType = columnType;
     }
 
     public String getCamelName() {
