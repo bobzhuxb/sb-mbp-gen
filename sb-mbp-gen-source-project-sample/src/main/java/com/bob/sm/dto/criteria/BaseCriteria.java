@@ -18,6 +18,8 @@ public class BaseCriteria {
 
     private String orderBy;     // 排序属性（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）
 
+    private Integer limit;      // 限制的查询数量
+
     private List<String> associationNameList;   // 关联属性获取（列出的属性都会关联查询）
 
     private List<String> dictionaryNameList;    // 关联数据字典值获取（列出的属性都会关联查询）
@@ -72,6 +74,14 @@ public class BaseCriteria {
 
     public void setOrderBy(String orderBy) {
         this.orderBy = orderBy;
+    }
+
+    public Integer getLimit() {
+        return limit;
+    }
+
+    public void setLimit(Integer limit) {
+        this.limit = limit;
     }
 
     public List<String> getAssociationNameList() {

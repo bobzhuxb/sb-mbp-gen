@@ -1,4 +1,4 @@
-package ${packageName}.mapper;
+${packageName} com.ts.dt.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -13,17 +13,23 @@ import java.util.List;
 
 public interface BaseCommonMapper<T> extends BaseMapper<T> {
 
-    @Update("UPDATE ${r'${tableName}'} SET ${r'${relationColumnName}'} = null WHERE ${r'${relationColumnName}'} = ${r'#{'}relationId}")
+    @Update("UPDATE ${tableName} SET ${relationColumnName} = null WHERE ${relationColumnName} = #{relationId}")
     void cascadeToNull(@Param("tableName") String tableName, @Param("relationColumnName") String relationColumnName,
                        @Param("relationId") long relationId);
 
-    @Select("${r'${queryMain}'} ${r'${ew.customSqlSegment}'}")
-    List<T> joinSelectList(@Param("queryMain") String queryMain, @Param(Constants.WRAPPER) Wrapper<T> wrapper);
+    @Select("<script>"
+            + "${queryMain} ${ew.customSqlSegment}"
+            + "<if test='limit != null'>"
+            + "LIMIT ${limit}"
+            + "</if>"
+            + "</script>")
+    List<T> joinSelectList(@Param("queryMain") String queryMain, @Param(Constants.WRAPPER) Wrapper<T> wrapper,
+                           @Param("limit") Integer limit);
 
-    @Select("${r'${queryMain}'} ${r'${ew.customSqlSegment}'}")
+    @Select("${queryMain} ${ew.customSqlSegment}")
     IPage<T> joinSelectPage(Page<T> page, @Param("queryMain") String queryMain, @Param(Constants.WRAPPER) Wrapper<T> wrapper);
 
-    @Select("${r'${queryMain}'} ${r'${ew.customSqlSegment}'}")
+    @Select("${queryMain} ${ew.customSqlSegment}")
     Integer joinSelectCount(@Param("queryMain") String queryMain, @Param(Constants.WRAPPER) Wrapper<T> wrapper);
 
 }

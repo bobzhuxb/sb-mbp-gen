@@ -39,28 +39,9 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     /**
      * 新增修改验证（具体子类实现）
      * @param dto 主实体
-     * @param appendMap 附加的参数
      */
-    default void baseSaveValidator(O dto, Map<String, Object> appendMap) {
+    default void baseSaveValidator(O dto) {
         // TODO: 新增修改验证写在这里（由具体实现覆盖）
-    }
-
-    /**
-     * 新增修改之后的操作（具体子类实现）
-     * @param dto 主实体
-     * @param appendMap 附加的参数（前面处理过的结果）
-     */
-    default void baseDoAfterSave(O dto, Map<String, Object> appendMap) {
-        // TODO: 新增修改之后的操作写在这里（由具体实现覆盖）
-    }
-
-    /**
-     * 新增修改最终返回前的操作（具体子类实现）
-     * @param dto 主实体
-     * @param appendMap 附加的参数（前面处理过的结果）
-     */
-    default void baseDoBeforeSaveReturn(O dto, Map<String, Object> appendMap) {
-        // TODO: 新增修改之后的操作写在这里（由具体实现覆盖）
     }
 
     /**
@@ -513,16 +494,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     if (((Filter)result).getNotIn() != null) {
                         wrapper.notIn(columnName, ((Filter)result).getNotIn());
                     }
-                    if (((Filter)result).getExists() != null) {
-                        for (Object existSql : ((Filter)result).getExists()) {
-                            wrapper.exists((String)existSql);
-                        }
-                    }
-                    if (((Filter)result).getNotExists() != null) {
-                        for (Object notExistSql : ((Filter)result).getNotExists()) {
-                            wrapper.notExists((String)notExistSql);
-                        }
-                    }
                     if (((Filter)result).getGreaterThan() != null) {
                         wrapper.gt(columnName, ((Filter)result).getGreaterThan());
                     }
@@ -832,10 +803,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         dto.setInsertUserId(dto.getId() == null ? nowUserId : null);
         dto.setUpdateTime(nowTime);
         dto.setOperateUserId(nowUserId);
-        // 附加的传递参数
-        Map<String, Object> appendMap = new HashMap<>();
         // 新增修改验证
-        baseSaveValidator(dto, appendMap);
+        baseSaveValidator(dto);
         // 获取实体配置
         Class<? extends BaseDomain> entityClass = GlobalCache.getDomainClassMap().get(entityTypeName);
         T entity = null;
@@ -849,9 +818,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         boolean result = saveOrUpdate(entity);
         // 新增或修改后的主键ID
         long dtoId = entity.getId();
-        dto.setId(dtoId);
-        // 新增或更新之后的操作
-        baseDoAfterSave(dto, appendMap);
         // 级联新增或修改
         List<BaseEntityConfigRelationDTO> relationList = GlobalCache.getEntityRelationsMap().get(entityTypeName);
         if (relationList == null || relationList.size() == 0) {
@@ -913,8 +879,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 throw new CommonException(e.getMessage());
             }
         }
-		// 所有保存完成后的操作
-		baseDoBeforeSaveReturn(dto, appendMap);
+        dto.setId(dtoId);
         return result ? new ReturnCommonDTO(dtoId) : new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "保存失败");
     }
 
@@ -1064,7 +1029,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, null, tableIndexMap, null);
         // 执行查询并返回结果
         return new ReturnCommonDTO(GlobalCache.getMapperMap().get(entityTypeName)
-                .joinSelectList(dataQuerySql, wrapper).stream()
+                .joinSelectList(dataQuerySql, wrapper, criteria.getLimit()).stream()
                 .map(entity -> baseDoConvert(entityTypeName, (T)entity, criteria,
                         appendParamMap == null ? new HashMap<>() : appendParamMap)).collect(Collectors.toList()));
     }

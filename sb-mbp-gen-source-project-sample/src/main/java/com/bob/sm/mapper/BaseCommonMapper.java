@@ -17,8 +17,14 @@ public interface BaseCommonMapper<T> extends BaseMapper<T> {
     void cascadeToNull(@Param("tableName") String tableName, @Param("relationColumnName") String relationColumnName,
                        @Param("relationId") long relationId);
 
-    @Select("${queryMain} ${ew.customSqlSegment}")
-    List<T> joinSelectList(@Param("queryMain") String queryMain, @Param(Constants.WRAPPER) Wrapper<T> wrapper);
+    @Select("<script>"
+            + "${queryMain} ${ew.customSqlSegment}"
+            + "<if test='limit != null'>"
+            + "LIMIT ${limit}"
+            + "</if>"
+            + "</script>")
+    List<T> joinSelectList(@Param("queryMain") String queryMain, @Param(Constants.WRAPPER) Wrapper<T> wrapper,
+                           @Param("limit") Integer limit);
 
     @Select("${queryMain} ${ew.customSqlSegment}")
     IPage<T> joinSelectPage(Page<T> page, @Param("queryMain") String queryMain, @Param(Constants.WRAPPER) Wrapper<T> wrapper);

@@ -8,7 +8,6 @@ import ${packageName}.dto.criteria.*;
 import ${packageName}.dto.criteria.filter.*;
 import ${packageName}.dto.help.*;
 import ${packageName}.mapper.*;
-import ${packageName}.security.SecurityUtils;
 import ${packageName}.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
