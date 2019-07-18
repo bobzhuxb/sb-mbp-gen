@@ -82,8 +82,27 @@ public class MyBeanUtil {
                 if (annotation != null) {
                     // 设置对象的访问权限，保证对private的属性的访问
                     field.setAccessible(true);
+                    // 获取外部传入的值
                     Object value = field.get(object);
+                    // 是否设置值
+                    boolean forceSetValue = false;
                     if (value == null) {
+                        // 没有传值，则设置为annotation指定的值或默认值
+                        forceSetValue = true;
+                    } else {
+                        // 是否强制设置值
+                        Method annotationMethodForce = annotation.annotationType().getDeclaredMethod("force");
+                        Object force = null;
+                        if (annotationMethodForce != null) {
+                            force = annotationMethodForce.invoke(annotation);
+                        }
+                        if (force instanceof Boolean && (boolean) force) {
+                            // 强制设置值，则忽略传入的值，直接设置为annotation指定的值或默认值
+                            forceSetValue = true;
+                        }
+                    }
+                    if (forceSetValue) {
+                        // 没有传值，则设置为annotation指定的值或默认值
                         Method annotationMethod = annotation.annotationType().getDeclaredMethod(attrName);
                         if (annotationMethod != null) {
                             value = annotationMethod.invoke(annotation);

@@ -12,4 +12,6 @@ import java.lang.annotation.*;
 public @interface CreateInitValue {
 
     String value();
+
+    boolean force();
 }

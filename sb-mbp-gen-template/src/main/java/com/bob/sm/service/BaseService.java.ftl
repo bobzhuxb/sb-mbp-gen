@@ -12,6 +12,7 @@ import ${packageName}.domain.BaseDomain;
 import ${packageName}.dto.BaseDTO;
 import ${packageName}.dto.SystemUserDTO;
 import ${packageName}.dto.criteria.BaseCriteria;
+import ${packageName}.dto.criteria.SystemUserCriteria;
 import ${packageName}.dto.criteria.filter.*;
 import ${packageName}.dto.help.*;
 import ${packageName}.util.GenericsUtil;
@@ -130,7 +131,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 throw new CommonException(returnCommonDTO.getErrMsg());
             }
         });
-        return new ReturnCommonDTO();
+            return new ReturnCommonDTO();
     }
 
     /**
@@ -787,7 +788,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         associationName2List.add(associationName2);
                     }
                 }
-                BaseCriteria insertUserCriteria = new BaseCriteria();
+                SystemUserCriteria insertUserCriteria = new SystemUserCriteria();
                 insertUserCriteria.setAssociationNameList(associationName2List);
                 ReturnCommonDTO<SystemUserDTO> insertUserRtn = GlobalCache.getServiceMap().get("SystemUser")
                         .baseFindOne("SystemUser", insertUserId, insertUserCriteria, appendParamMap);
@@ -806,7 +807,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         associationName2List.add(associationName2);
                     }
                 }
-                BaseCriteria operateUserCriteria = new BaseCriteria();
+                SystemUserCriteria operateUserCriteria = new SystemUserCriteria();
                 operateUserCriteria.setAssociationNameList(associationName2List);
                 ReturnCommonDTO<SystemUserDTO> operateUserRtn = GlobalCache.getServiceMap().get("SystemUser")
                         .baseFindOne("SystemUser", operateUserId, operateUserCriteria, appendParamMap);
@@ -915,7 +916,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         }
         // 所有保存完成后的操作
         baseDoBeforeSaveReturn(dto, appendMap);
-        return result ? new ReturnCommonDTO(dtoId) : new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "保存失败");
+        return result ? new ReturnCommonDTO(Constants.commonReturnStatus.SUCCESS.getValue(), null, dtoId)
+                : new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "保存失败");
     }
 
     /**
