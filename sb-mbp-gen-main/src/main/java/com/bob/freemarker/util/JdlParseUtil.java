@@ -50,7 +50,8 @@ public class JdlParseUtil {
         // 当前relationship类型
         String currentRelationType = null;
         // 遍历文件每一行
-        for (String jdlLine : jdlLineList) {
+        for (int lineIndex = 0; lineIndex < jdlLineList.size(); lineIndex++) {
+            String jdlLine = jdlLineList.get(lineIndex);
             // 去掉首尾空白符
             jdlLine = jdlLine.trim();
             if ("".equals(jdlLine)) {
@@ -181,6 +182,8 @@ public class JdlParseUtil {
                         camelName = matcher.group(1);
                         javaType = matcher.group(2);
                         columnType = matcher.group(4);
+                    } else {
+                        throw new Exception("第" + (lineIndex + 1) + "行格式不正确。");
                     }
                     if (columnType == null || "".equals(columnType.trim())) {
                         columnType = null;
