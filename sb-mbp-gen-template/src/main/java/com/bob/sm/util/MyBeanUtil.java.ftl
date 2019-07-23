@@ -2,6 +2,7 @@ package ${packageName}.util;
 
 import ${packageName}.annotation.RestClassAllow;
 import ${packageName}.annotation.RestFieldAllow;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -192,6 +193,48 @@ public class MyBeanUtil {
             return object;
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    /**
+     * 所有字段置空
+     * @param object
+     * @return
+     */
+    public static void setAllFieldToNull(Object object) {
+        Field[] fields = object.getClass().getDeclaredFields();
+        try {
+            for (Field field : fields) {
+                // 设置对象的访问权限，保证对private的属性的访问
+                field.setAccessible(true);
+                // 获取外部传入的值
+                field.set(object, null);
+            }
+        } catch (Exception e) {
+            // 异常不处理
+        }
+    }
+
+    /**
+     * 部分字段置空
+     * @param object 数据实体
+     * @param exceptFieldNameList 不置空的字段名
+     * @return
+     */
+    public static void setAllFieldToNullExcept(Object object, List<String> exceptFieldNameList) {
+        Field[] fields = object.getClass().getDeclaredFields();
+        try {
+            for (Field field : fields) {
+                String fieldName = field.getName();
+                if (!exceptFieldNameList.contains(fieldName)) {
+                    // 设置对象的访问权限，保证对private的属性的访问
+                    field.setAccessible(true);
+                    // 获取外部传入的值
+                    field.set(object, null);
+                }
+            }
+        } catch (Exception e) {
+            // 异常不处理
         }
     }
 

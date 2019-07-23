@@ -41,9 +41,11 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * 新增修改验证（具体子类实现）
      * @param dto 主实体
      * @param appendMap 附加的参数
+     * @return 是否继续执行保存
      */
-    default void baseSaveValidator(O dto, Map<String, Object> appendMap) {
+    default boolean baseSaveValidator(O dto, Map<String, Object> appendMap) {
         // TODO: 新增修改验证写在这里（由具体实现覆盖）
+        return true;
     }
 
     /**
@@ -836,7 +838,11 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 附加的传递参数
         Map<String, Object> appendMap = new HashMap<>();
         // 新增修改验证
-        baseSaveValidator(dto, appendMap);
+        boolean continueSave = baseSaveValidator(dto, appendMap);
+        if (!continueSave) {
+            // 不继续保存,在此处终止
+            return new ReturnCommonDTO();
+        }
         // 获取实体配置
         Class<? extends BaseDomain> entityClass = GlobalCache.getDomainClassMap().get(entityTypeName);
         T entity = null;
