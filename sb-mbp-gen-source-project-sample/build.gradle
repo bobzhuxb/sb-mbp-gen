@@ -111,7 +111,7 @@ dependencies {
 	// apache的http客户端
 	compile "org.apache.httpcomponents:httpclient"
 	// Alibaba的FastJson
-	compile "com.alibaba:fastjson:1.2.47"
+	compile "com.alibaba:fastjson:1.2.58"
 	// POI操作Office
 	compile "org.apache.poi:poi:3.17"
 	compile "org.apache.poi:poi-ooxml:3.17"
@@ -127,6 +127,8 @@ dependencies {
 //	compile "com.fasterxml.jackson.module:jackson-module-afterburner"
 	// 图片压缩
 	compile "net.coobird:thumbnailator:0.4.8"
+	// 拼音
+	compile "com.belerweb:pinyin4j:2.5.1"
 
 	// ===================================监控=====================================
 	// Spring监控模块

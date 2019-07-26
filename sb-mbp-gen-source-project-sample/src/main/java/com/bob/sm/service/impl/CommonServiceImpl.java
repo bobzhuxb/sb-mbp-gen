@@ -167,6 +167,9 @@ public class CommonServiceImpl implements CommonService {
             // 配置文件下载
             response.setHeader("content-type", "application/json");
             response.setContentType("application/json");
+            if (changeFileName == null || "".equals(changeFileName.trim())) {
+                changeFileName = oriFileName.substring(oriFileName.lastIndexOf(File.separator) + 1);
+            }
             // 下载文件能正常显示中文
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(changeFileName, "UTF-8"));
             // 实现文件下载

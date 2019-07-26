@@ -490,7 +490,15 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                                         }
                                     } else {
                                         // Filter类别的参数（最后一层）或普通类别的参数
-                                        field.set(objIter, value);
+                                        if ("class java.lang.String".equals(field.getGenericType().toString())) {
+                                            field.set(objIter, value);
+                                        } else if ("class java.lang.Integer".equals(field.getGenericType().toString())) {
+                                            field.set(objIter, Integer.parseInt(value));
+                                        } else if ("class java.lang.Double".equals(field.getGenericType().toString())) {
+                                            field.set(objIter, Double.parseDouble(value));
+                                        } else {
+                                            field.set(objIter, value);
+                                        }
                                         objIter = null;
                                     }
                                 } else {
