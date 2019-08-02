@@ -49,6 +49,10 @@ public class ControllerAspect {
         HttpServletRequest request = sra.getRequest();
         // 方法参数
         Object[] parameters = pjp.getArgs();
+        for (Object parameter : parameters) {
+            MyBeanUtil.setAllFieldValue("allowSet", null, parameter);
+            MyBeanUtil.setFieldValueByRestFieldAllow("allowSet", null, parameter);
+        }
         // 处理查询条件
         apiAdapterService.processQueryParam(request, parameters);
         // 继续执行后续的操作
@@ -95,6 +99,7 @@ public class ControllerAspect {
         // 方法参数
         Object[] parameters = pjp.getArgs();
         for (Object parameter : parameters) {
+            MyBeanUtil.setAllFieldValue("allowSet", null, parameter);
             MyBeanUtil.setFieldValueByRestFieldAllow("allowSet", null, parameter);
         }
         // 继续执行后续的操作

@@ -47,6 +47,36 @@ public class MyBeanUtil {
     }
 
     /**
+     * 获取对象的值非null的属性
+     * @param source 对象实体
+     * @paeam exceptNameList 排除在外的属性名List
+     * @return
+     */
+    public static String[] getNotNullPropertyNames(Object source, List<String> exceptNameList) {
+        final BeanWrapper src = new BeanWrapperImpl(source);
+        java.beans.PropertyDescriptor[] pds = src.getPropertyDescriptors();
+
+        Set<String> notEmptyNames = new HashSet<>();
+        for(java.beans.PropertyDescriptor pd : pds) {
+            try {
+                String propertyName = pd.getName();
+                if ("class".equals(propertyName)) {
+                    continue;
+                }
+                if (exceptNameList != null && exceptNameList.contains(propertyName)) {
+                    continue;
+                }
+                Object srcValue = src.getPropertyValue(propertyName);
+                if (srcValue != null) notEmptyNames.add(propertyName);
+            } catch (Exception e) {
+                continue;
+            }
+        }
+        String[] result = new String[notEmptyNames.size()];
+        return notEmptyNames.toArray(result);
+    }
+
+    /**
      * 获取对象的值为null的属性
      * @param source
      * @return

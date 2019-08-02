@@ -413,7 +413,8 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                 if (parameter instanceof BaseCriteria) {
                     // 正常情况下，该if分支只会进来一次
                     for (ApiAdapterCriteriaDTO criteriaDTO : configDTO.getParam().getCriteriaList()) {
-                        if (criteriaDTO.getFixedValue() != null) {
+                        Object fixedValue = criteriaDTO.getFixedValue();
+                        if (fixedValue != null) {
                             // 参数设置为固定值
                             String[] fromParamSingles = criteriaDTO.getFromParam().split("\\.");
                             // 参数迭代器（一层一层迭代）
@@ -439,12 +440,20 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                                         } else if (fieldData instanceof BaseCriteria || fieldData instanceof Filter) {
                                             objIter = fieldData;
                                         } else {
-                                            log.warn("条件：" + fromParamSingle + "=" + criteriaDTO.getFixedValue() + " 配置错误（属性：" + fromParamSingle
+                                            log.warn("条件：" + fromParamSingle + "=" + fixedValue + " 配置错误（属性：" + fromParamSingle
                                                     + "不是BaseCriteria或其子类型），忽略该条配置");
                                         }
                                     } else {
                                         // Filter类别的参数（最后一层）或普通类别的参数
-                                        field.set(objIter, criteriaDTO.getFixedValue());
+                                        if ("class java.lang.String".equals(field.getGenericType().toString())) {
+                                            field.set(objIter, fixedValue);
+                                        } else if ("class java.lang.Integer".equals(field.getGenericType().toString())) {
+                                            field.set(objIter, Integer.parseInt(fixedValue.toString()));
+                                        } else if ("class java.lang.Double".equals(field.getGenericType().toString())) {
+                                            field.set(objIter, Double.parseDouble(fixedValue.toString()));
+                                        } else {
+                                            field.set(objIter, fixedValue);
+                                        }
                                         objIter = null;
                                     }
                                 }
@@ -454,10 +463,15 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                             // 不需要转换，继续下一条
                             continue;
                         }
-                        String value = request.getParameter(criteriaDTO.getFromParam());
-                        if (value == null) {
-                            // 没有该参数，继续下一条验证
-                            continue;
+                        String value = null;
+                        if (fixedValue != null) {
+                            value = fixedValue.toString();
+                        } else {
+                            value = request.getParameter(criteriaDTO.getFromParam());
+                            if (value == null) {
+                                // 没有该参数，继续下一条验证
+                                continue;
+                            }
                         }
                         // 参数转换
                         for (String toCriteria : criteriaDTO.getToCriteriaList()) {

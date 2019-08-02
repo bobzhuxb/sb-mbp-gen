@@ -100,7 +100,19 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     }
 
     /**
-     * 获取其他关联属性
+     * 获取其他关联属性（前）
+     * @param dto 主实体
+     * @param criteria 关联属性的条件
+     * @param appendParamMap 附加的查询参数条件
+     * @return 带关联属性的主实体
+     */
+    default O baseGetAssociationsPrev(O dto, C criteria, Map<String, Object> appendParamMap) {
+        // TODO: 获取其他的关联属性写在这里（由具体实现覆盖）
+        return dto;
+    }
+
+    /**
+     * 获取其他关联属性（后）
      * @param dto 主实体
      * @param criteria 关联属性的条件
      * @param appendParamMap 附加的查询参数条件
@@ -361,63 +373,73 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             PropertyDescriptor pd = new PropertyDescriptor("orderBy", criteriaClazz);
             Method getMethod = pd.getReadMethod();
             Object result = getMethod.invoke(criteria);
+            // 是否直接使用
+            PropertyDescriptor pdDirectOrderBy = new PropertyDescriptor("useDirectOrderBy", criteriaClazz);
+            Method getMethodDirectOrderBy = pdDirectOrderBy.getReadMethod();
+            Object resultDirectOrderBy = getMethodDirectOrderBy.invoke(criteria);
             if (result instanceof String) {
-                String[] orderBys = ((String)result).trim().split("\\,");
-                for (String orderBy : orderBys) {
-                    String subTableName = tableName;
-                    if (tableIndexMap != null && orderBy.contains(".")) {
-                        subTableName = baseGetChangedTableName(orderBy, tableIndexMap);
-                    }
-                    String[] orderByDetail = orderBy.trim().split("\\s");
-                    // 获取排序的实际字段名
-                    String orderFieldName = orderByDetail[0];
-                    if (orderFieldName.contains(".")) {
-                        orderFieldName = orderFieldName.substring(orderFieldName.lastIndexOf(".") + 1);
-                    }
-                    if ("".equals(orderFieldName)) {
-                        // 排序的字段名不得为空
-                        continue;
-                    }
-                    // 获取排序的方向及顺序
-                    boolean isAsc = true;
-                    // 自定义排序的开始Index
-                    // 默认index=0表示字段，index=1表示asc或desc，自定义排序规则从index=2开始
-                    // 但是，如果参数传asc或desc，那么自定义排序规则从index=1开始
-                    int customOrderIndexStart = 2;
-                    // 排序方向字段（该字段数据也可能直接是自定义排序的第一项内容）
-                    String orderDirection = "";
-                    if (orderByDetail.length > 1) {
-                        orderDirection = orderByDetail[1];
-                        if ("".equals(orderDirection)) {
-                            // 按正常规则顺序排序
-                            isAsc = true;
-                        } else {
-                            if ("asc".equalsIgnoreCase(orderDirection) || "desc".equalsIgnoreCase(orderDirection)) {
-                                // 加了asc或desc的排序
-                                isAsc = "asc".equalsIgnoreCase(orderDirection);
-                            } else {
-                                // 没有加asc或desc的排序，默认asc排序，且orderDirection存放的内容变成了自定义排序的第一项
+                if (resultDirectOrderBy instanceof Integer && Constants.yesNo.YES.getValue().equals(resultDirectOrderBy)) {
+                    // 直接设置orderBy
+                    wrapper.last("ORDER BY " + result);
+                } else {
+                    // 通过处理设置orderBy
+                    String[] orderBys = ((String) result).trim().split("\\,");
+                    for (String orderBy : orderBys) {
+                        String subTableName = tableName;
+                        if (tableIndexMap != null && orderBy.contains(".")) {
+                            subTableName = baseGetChangedTableName(orderBy, tableIndexMap);
+                        }
+                        String[] orderByDetail = orderBy.trim().split("\\s");
+                        // 获取排序的实际字段名
+                        String orderFieldName = orderByDetail[0];
+                        if (orderFieldName.contains(".")) {
+                            orderFieldName = orderFieldName.substring(orderFieldName.lastIndexOf(".") + 1);
+                        }
+                        if ("".equals(orderFieldName)) {
+                            // 排序的字段名不得为空
+                            continue;
+                        }
+                        // 获取排序的方向及顺序
+                        boolean isAsc = true;
+                        // 自定义排序的开始Index
+                        // 默认index=0表示字段，index=1表示asc或desc，自定义排序规则从index=2开始
+                        // 但是，如果参数传asc或desc，那么自定义排序规则从index=1开始
+                        int customOrderIndexStart = 2;
+                        // 排序方向字段（该字段数据也可能直接是自定义排序的第一项内容）
+                        String orderDirection = "";
+                        if (orderByDetail.length > 1) {
+                            orderDirection = orderByDetail[1];
+                            if ("".equals(orderDirection)) {
+                                // 按正常规则顺序排序
                                 isAsc = true;
-                                customOrderIndexStart = 1;
+                            } else {
+                                if ("asc".equalsIgnoreCase(orderDirection) || "desc".equalsIgnoreCase(orderDirection)) {
+                                    // 加了asc或desc的排序
+                                    isAsc = "asc".equalsIgnoreCase(orderDirection);
+                                } else {
+                                    // 没有加asc或desc的排序，默认asc排序，且orderDirection存放的内容变成了自定义排序的第一项
+                                    isAsc = true;
+                                    customOrderIndexStart = 1;
+                                }
                             }
                         }
-                    }
-                    // 要排序的字段名（包括表名的别名）
-                    String orderColumnName = subTableName + "." + StringUtil.camelToUnderline(orderFieldName);
-                    // 自定义排序规则处理
-                    if (orderByDetail.length > 2 || customOrderIndexStart == 1) {
-                        String customFieldValueStr = "";
-                        if (customOrderIndexStart == 1) {
-                            customFieldValueStr += "," + (digitalPattern.matcher(orderDirection).matches() ?
-                                    orderDirection : "'" + orderDirection + "'");
+                        // 要排序的字段名（包括表名的别名）
+                        String orderColumnName = subTableName + "." + StringUtil.camelToUnderline(orderFieldName);
+                        // 自定义排序规则处理
+                        if (orderByDetail.length > 2 || customOrderIndexStart == 1) {
+                            String customFieldValueStr = "";
+                            if (customOrderIndexStart == 1) {
+                                customFieldValueStr += "," + (digitalPattern.matcher(orderDirection).matches() ?
+                                        orderDirection : "'" + orderDirection + "'");
+                            }
+                            for (int i = 2; i < orderByDetail.length; i++) {
+                                customFieldValueStr += "," + (digitalPattern.matcher(orderByDetail[i]).matches() ?
+                                        orderByDetail[i] : "'" + orderByDetail[i] + "'");
+                            }
+                            orderColumnName = "field(" + orderColumnName + customFieldValueStr + ")";
                         }
-                        for (int i = 2; i < orderByDetail.length; i++) {
-                            customFieldValueStr += "," + (digitalPattern.matcher(orderByDetail[i]).matches() ?
-                                    orderByDetail[i] : "'" + orderByDetail[i] + "'");
-                        }
-                        orderColumnName = "field(" + orderColumnName + customFieldValueStr + ")";
+                        wrapper.orderBy(true, isAsc, orderColumnName);
                     }
-                    wrapper.orderBy(true, isAsc, orderColumnName);
                 }
             }
         } catch (Exception e) {
@@ -609,48 +631,79 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             Object criteriaIter = criteria;
             // 获取传入的查询条件的类和域
             Class criteriaClazz = criteria.getClass();
-            PropertyDescriptor pd = new PropertyDescriptor("orderBy", criteriaClazz);
-            Method getMethod = pd.getReadMethod();
-            Object result = getMethod.invoke(criteria);
-            if (result instanceof String) {
-                String[] orderBys = ((String) result).trim().split("\\,");
-                for (String orderBy : orderBys) {
-                    if (tableIndexMap != null && orderBy.contains(".")) {
-                        String changedTableName = baseGetChangedTableName(orderBy, tableIndexMap);
-                        if (changedTableName == null) {
-                            // 获取不到值说明没有关于这个orderBy的条件查询，需要追加一个空的条件查询
-                            String[] orderBySplit = orderBy.split("\\.");
-                            for (int i = 0; i < orderBySplit.length; i++) {
-                                // 如果最后一段有空格（例如后面跟desc）,需要截取前面的部分
-                                String orderFieldName = orderBySplit[i];
-                                if (orderFieldName.contains(" ")) {
-                                    orderFieldName = orderFieldName.split(" ")[0];
-                                }
-                                Field orderByKeyField = criteriaIter.getClass().getDeclaredField(orderFieldName);
-                                orderByKeyField.setAccessible(true);
-                                Object fieldValue = orderByKeyField.get(criteriaIter);
-                                // 前面的都是BaseCriteria的子类对象
-                                if (fieldValue == null) {
-                                    fieldValue = Class.forName(orderByKeyField.getType().getName()).newInstance();
-                                    orderByKeyField.set(criteriaIter, fieldValue);
-                                }
-                                if (i != orderBySplit.length - 1) {
-                                    // 继续往下循环迭代
-                                    criteriaIter = fieldValue;
-                                } else {
-                                    // 最后一个.后面就是具体字段名，是Filter的子类对象，追加nothingFilter
-                                    if (fieldValue == null) {
-                                        orderByKeyField.set(criteriaIter, nothingFilter);
-                                    }
-                                }
-                            }
-                        }
-                    }
+            PropertyDescriptor pdOrderBy = new PropertyDescriptor("orderBy", criteriaClazz);
+            Method getMethodOrderBy = pdOrderBy.getReadMethod();
+            Object resultOrderBy = getMethodOrderBy.invoke(criteria);
+            // 是否直接使用
+            PropertyDescriptor pdDirectOrderBy = new PropertyDescriptor("useDirectOrderBy", criteriaClazz);
+            Method getMethodDirectOrderBy = pdDirectOrderBy.getReadMethod();
+            Object resultDirectOrderBy = getMethodDirectOrderBy.invoke(criteria);
+            // 获取排序所涉及的表
+            PropertyDescriptor pdAppendRelated = new PropertyDescriptor("appendRelated", criteriaClazz);
+            Method getMethodAppendRelated = pdAppendRelated.getReadMethod();
+            Object resultAppendRelated = getMethodAppendRelated.invoke(criteria);
+            if (resultAppendRelated instanceof String) {
+                // 获取相关表
+                baseProcessOrderBy(tableIndexMap, resultAppendRelated, criteriaIter, nothingFilter);
+            }
+            if (resultOrderBy instanceof String) {
+                // 通过处理设置orderBy
+                if (resultDirectOrderBy instanceof Integer && Constants.yesNo.YES.getValue().equals(resultDirectOrderBy)) {
+                    // 直接把orderBy放到SQL语句中的情况，不处理
+                } else {
+                    baseProcessOrderBy(tableIndexMap, resultOrderBy, criteriaIter, nothingFilter);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
             throw new CommonException(e.getMessage());
+        }
+    }
+
+    /**
+     * 处理order by所涉及到的表
+     * @param tableIndexMap
+     * @param result
+     * @param criteriaIter
+     * @param nothingFilter
+     * @throws Exception
+     */
+    default void baseProcessOrderBy(Map<String, String> tableIndexMap, Object result,
+                                    Object criteriaIter, NothingFilter nothingFilter) throws Exception {
+        // 通过处理设置orderBy
+        String[] orderBys = ((String) result).trim().split("\\,");
+        for (String orderBy : orderBys) {
+            if (tableIndexMap != null && orderBy.contains(".")) {
+                String changedTableName = baseGetChangedTableName(orderBy, tableIndexMap);
+                if (changedTableName == null) {
+                    // 获取不到值说明没有关于这个orderBy的条件查询，需要追加一个空的条件查询
+                    String[] orderBySplit = orderBy.split("\\.");
+                    for (int i = 0; i < orderBySplit.length; i++) {
+                        // 如果最后一段有空格（例如后面跟desc）,需要截取前面的部分
+                        String orderFieldName = orderBySplit[i];
+                        if (orderFieldName.contains(" ")) {
+                            orderFieldName = orderFieldName.split(" ")[0];
+                        }
+                        Field orderByKeyField = criteriaIter.getClass().getDeclaredField(orderFieldName);
+                        orderByKeyField.setAccessible(true);
+                        Object fieldValue = orderByKeyField.get(criteriaIter);
+                        // 前面的都是BaseCriteria的子类对象
+                        if (fieldValue == null) {
+                            fieldValue = Class.forName(orderByKeyField.getType().getName()).newInstance();
+                            orderByKeyField.set(criteriaIter, fieldValue);
+                        }
+                        if (i != orderBySplit.length - 1) {
+                            // 继续往下循环迭代
+                            criteriaIter = fieldValue;
+                        } else {
+                            // 最后一个.后面就是具体字段名，是Filter的子类对象，追加nothingFilter
+                            if (fieldValue == null) {
+                                orderByKeyField.set(criteriaIter, nothingFilter);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -766,8 +819,12 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         BaseCriteria subCriteria = (BaseCriteria) subCriteriaClass.newInstance();
                         subCriteria.setAssociationNameList(subAssociationNameList);
                         // 调用级联的Service的方法进行查询
-                        Object subDTO = GlobalCache.getServiceMap().get(relationDTO.getFromType()).baseFindOne(
-                                relationDTO.getFromType(), (String)relatedId, subCriteria, appendParamMap).getData();
+                        ReturnCommonDTO<O> subDTORtn = GlobalCache.getServiceMap().get(relationDTO.getFromType()).baseFindOne(
+                                relationDTO.getFromType(), (String)relatedId, subCriteria, appendParamMap);
+                        if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(subDTORtn.getResultCode())) {
+                            throw new CommonException(subDTORtn.getResultCode(), subDTORtn.getErrMsg());
+                        }
+                        Object subDTO = subDTORtn.getData();
                         // 最终设置到主体dto的成员变量中
                         Field dtoField = FieldUtils.getField(dto.getClass(), relationDTO.getToName(), true);
                         dtoField.set(dto, subDTO);
@@ -1179,6 +1236,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         if (dto.getId() == null) {
             return dto;
         }
+        // 处理关联属性（自定义）
+        baseGetAssociationsPrev(dto, criteria, appendParamMap);
         // 处理关联属性（共通）
         baseGetAssociations(entityTypeName, dto, criteria, appendParamMap);
         // 处理关联属性（自定义）

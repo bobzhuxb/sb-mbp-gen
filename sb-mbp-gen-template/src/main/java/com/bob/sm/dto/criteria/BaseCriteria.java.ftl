@@ -1,5 +1,6 @@
 package ${packageName}.dto.criteria;
 
+import ${packageName}.annotation.RestFieldAllow;
 import ${packageName}.dto.criteria.filter.*;
 
 import java.util.List;
@@ -17,6 +18,11 @@ public class BaseCriteria {
     private StringFilter insertTime;    // 插入时间
 
     private StringFilter updateTime;    // 更新时间
+
+    @RestFieldAllow(allowSet = false)
+    private Integer useDirectOrderBy;   // 直接使用的排序
+
+    private String appendRelated;       // 另外关联使用的表的属性
 
     private String orderBy;     // 排序属性（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）
 
@@ -76,6 +82,22 @@ public class BaseCriteria {
 
     public void setUpdateTime(StringFilter updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public Integer getUseDirectOrderBy() {
+        return useDirectOrderBy;
+    }
+
+    public void setUseDirectOrderBy(Integer useDirectOrderBy) {
+        this.useDirectOrderBy = useDirectOrderBy;
+    }
+
+    public String getAppendRelated() {
+        return appendRelated;
+    }
+
+    public void setAppendRelated(String appendRelated) {
+        this.appendRelated = appendRelated;
     }
 
     public String getOrderBy() {
