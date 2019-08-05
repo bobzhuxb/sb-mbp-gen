@@ -78,12 +78,13 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * 附加的条件查询增强方法，实现类可覆盖该方法，写自己的条件查询增强方法
      * @param wrapper 增强前的Wrapper条件
      * @param criteria 原始的查询条件
+     * @param appendParamMap 附加的传递参数
      * @param normalCriteriaList 普通的查询条件
      * @param revertTableIndexMap 根据表别名反向查条件名的Map
      * @return 增强后的Wrapper条件
      */
-    default Wrapper<T> baseWrapperEnhance(QueryWrapper<T> wrapper, C criteria, List<NormalCriteriaDTO> normalCriteriaList,
-                                          Map<String, String> revertTableIndexMap) {
+    default Wrapper<T> baseWrapperEnhance(QueryWrapper<T> wrapper, C criteria, Map<String, Object> appendParamMap,
+                                          List<NormalCriteriaDTO> normalCriteriaList, Map<String, String> revertTableIndexMap) {
         // TODO: 附加的条件查询写在这里（由具体实现覆盖）
         return wrapper;
     }
@@ -91,10 +92,11 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     /**
      * 数据权限过滤器
      * @param criteria 附加条件
+     * @param appendParamMap 附加的传递参数
      * @param interceptReturnInfo 拦截的返回信息
      * @return 是否有权限（true：有权限  false：无权限）
      */
-    default boolean baseDataAuthorityFilter(C criteria, ReturnCommonDTO interceptReturnInfo) {
+    default boolean baseDataAuthorityFilter(C criteria, Map<String, Object> appendParamMap, ReturnCommonDTO interceptReturnInfo) {
         // TODO: 数据权限的过滤写在这里（由具体实现覆盖）
         return true;
     }
@@ -153,9 +155,14 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param entityTypeName 实体类型简称
      * @param id 主键ID
      * @param baseCriteria 附加条件
+     * @param appendParamMap 附加的传递参数
      * @return 查询通用Wrapper
      */
-    default Wrapper<T> baseIdEqualsPrepare(String entityTypeName, String id, BaseCriteria baseCriteria) {
+    default Wrapper<T> baseIdEqualsPrepare(String entityTypeName, String id, BaseCriteria baseCriteria,
+                                           Map<String, Object> appendParamMap) {
+        if (appendParamMap == null) {
+            appendParamMap = new HashMap<>();
+        }
         // 获取实体配置
         Class criteriaClass = GlobalCache.getCriteriaClassMap().get(entityTypeName);
         C criteria = null;
@@ -165,7 +172,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             throw new CommonException(e.getMessage());
         }
         MyBeanUtil.copyNonNullProperties(baseCriteria, criteria);
-        Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, null, null, null);
+        Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, appendParamMap, null, null, null);
         ((QueryWrapper<T>)wrapper).eq("id", id);
         return wrapper;
     }
@@ -334,13 +341,18 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param entityTypeName 实体类型名
      * @param wrapper 转换前或转换后的wrapper
      * @param criteria 转换前的条件
+     * @param appendParamMap 附加的传递参数
      * @param lastFieldName 最后的field名
      * @param tableIndexMap 表index的Map
      * @param normalCriteriaList 其他非框架的条件
      * @return 转换后的wrapper
      */
-    default Wrapper<T> baseGetWrapper(String entityTypeName, QueryWrapper<T> wrapper, C criteria, String lastFieldName,
+    default Wrapper<T> baseGetWrapper(String entityTypeName, QueryWrapper<T> wrapper, C criteria,
+                                      Map<String, Object> appendParamMap, String lastFieldName,
                                       Map<String, String> tableIndexMap, List<NormalCriteriaDTO> normalCriteriaList) {
+        if (appendParamMap == null) {
+            appendParamMap = new HashMap<>();
+        }
         // 获取实体配置
         BaseEntityConfigDTO entityConfig = GlobalCache.getEntityConfigMap().get(entityTypeName);
         // 是否调用的首栈（递归的第一次调用）
@@ -589,7 +601,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     // 级联的域名
                     String nowFieldName = lastFieldName == null ? fieldName : lastFieldName + "." + fieldName;
                     wrapper = (QueryWrapper<T>)GlobalCache.getServiceMap().get(domainTypeName).baseGetWrapper(
-                            domainTypeName, wrapper, (C)result, nowFieldName, tableIndexMap, normalCriteriaList);
+                            domainTypeName, wrapper, (C)result, appendParamMap, nowFieldName, tableIndexMap,
+                            normalCriteriaList);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -611,7 +624,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 }
                 revertTableIndexMap.put(tableName, "");
                 // 在递归调用的首栈，增强条件查询
-                wrapper = (QueryWrapper<T>) this.baseWrapperEnhance(wrapper, criteria, normalCriteriaList,
+                wrapper = (QueryWrapper<T>) this.baseWrapperEnhance(wrapper, criteria, appendParamMap, normalCriteriaList,
                         revertTableIndexMap);
             }
         }
@@ -750,6 +763,9 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         if (relationList == null || relationList.size() == 0) {
             return dto;
         }
+        if (appendParamMap == null) {
+            appendParamMap = new HashMap<>();
+        }
         // 获取级联的参数请求
         for (String associationName : associationNameList) {
             for (BaseEntityConfigRelationDTO relationDTO : relationList) {
@@ -780,6 +796,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         relatedIdField.setAccessible(true);
                         relatedIdField.set(subCriteria, relatedIdFilter);
                         subCriteria.setAssociationNameList(subAssociationNameList);
+                        // 前面已经验证过权限了，以后不用再次验证权限
+                        subCriteria.setAuthorityPass(Constants.yesNo.YES.getValue());
                         // 调用级联的Service的方法进行查询
                         Object subDTOList = GlobalCache.getServiceMap().get(relationDTO.getToType())
                                 .baseFindAll(relationDTO.getToType(), subCriteria, appendParamMap).getData();
@@ -1083,11 +1101,13 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     default ReturnCommonDTO<O> baseFindOne(String entityTypeName, String id, C criteria,
                                            Map<String, Object> appendParamMap) {
         // ID条件设定
-        Wrapper<T> wrapper = baseIdEqualsPrepare(entityTypeName, id, criteria);
+        Wrapper<T> wrapper = baseIdEqualsPrepare(entityTypeName, id, criteria,
+                appendParamMap == null ? new HashMap<>() : appendParamMap);
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
         interceptReturnInfo.setResultCode(null);        // 初始化数据
-        boolean dataFilterPass = baseDataAuthorityFilter(criteria, interceptReturnInfo);
+        boolean dataFilterPass = baseDataAuthorityFilter(criteria,
+                appendParamMap == null ? new HashMap<>() : appendParamMap, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
@@ -1114,7 +1134,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
         interceptReturnInfo.setResultCode(null);        // 初始化数据
-        boolean dataFilterPass = baseDataAuthorityFilter(criteria, interceptReturnInfo);
+        boolean dataFilterPass = baseDataAuthorityFilter(criteria,
+                appendParamMap == null ? new HashMap<>() : appendParamMap, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
@@ -1126,12 +1147,14 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 获取查询SQL（select和join）
         String dataQuerySql = baseGetDataQuerySql(entityTypeName, criteria, tableIndexMap);
         // 处理where条件
-        Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, null, tableIndexMap, null);
+        Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria,
+                appendParamMap == null ? new HashMap<>() : appendParamMap, null, tableIndexMap, null);
         // 执行查询并返回结果
         return new ReturnCommonDTO(GlobalCache.getMapperMap().get(entityTypeName)
                 .joinSelectList(dataQuerySql, wrapper, criteria.getLimit()).stream()
                 .map(entity -> baseDoConvert(entityTypeName, (T)entity, criteria,
-                        appendParamMap == null ? new HashMap<>() : appendParamMap)).collect(Collectors.toList()));
+                        appendParamMap == null ? new HashMap<>() : appendParamMap))
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -1150,7 +1173,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
         interceptReturnInfo.setResultCode(null);        // 初始化数据
-        boolean dataFilterPass = baseDataAuthorityFilter(criteria, interceptReturnInfo);
+        boolean dataFilterPass = baseDataAuthorityFilter(criteria,
+                appendParamMap == null ? new HashMap<>() : appendParamMap, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
@@ -1163,7 +1187,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         String dataQuerySql = baseGetDataQuerySql(entityTypeName, criteria, tableIndexMap);
         // 处理where条件
         String countQuerySql = baseGetCountQuerySql(entityTypeName, criteria, tableIndexMap);
-        Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, null, tableIndexMap, null);
+        Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria,
+                appendParamMap == null ? new HashMap<>() : appendParamMap, null, tableIndexMap, null);
         // 执行查询并返回结果
         IPage<O> pageResult = GlobalCache.getMapperMap().get(entityTypeName).joinSelectPage(
                 pageQuery, dataQuerySql, wrapper)
@@ -1182,12 +1207,16 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      */
     default ReturnCommonDTO<Integer> baseFindCount(String entityTypeName, C criteria,
                                                    Map<String, Object> appendParamMap) {
+        if (appendParamMap == null) {
+            appendParamMap = new HashMap<>();
+        }
         // 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
         interceptReturnInfo.setResultCode(null);        // 初始化数据
-        boolean dataFilterPass = baseDataAuthorityFilter(criteria, interceptReturnInfo);
+        boolean dataFilterPass = baseDataAuthorityFilter(criteria,
+                appendParamMap == null ? new HashMap<>() : appendParamMap, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
@@ -1197,7 +1226,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 获取查询SQL（select和join）
         String countQuerySql = baseGetCountQuerySql(entityTypeName, criteria, tableIndexMap);
         // 处理where条件
-        Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, null, tableIndexMap, null);
+        Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, appendParamMap, null, tableIndexMap, null);
         // 执行查询并返回结果
         return new ReturnCommonDTO(GlobalCache.getMapperMap().get(entityTypeName).joinSelectCount(countQuerySql, wrapper));
     }
@@ -1211,6 +1240,9 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @return 转换后的DTO
      */
     default O baseDoConvert(String entityTypeName, T entity, C criteria, Map<String, Object> appendParamMap) {
+        if (appendParamMap == null) {
+            appendParamMap = new HashMap<>();
+        }
         // 获取实体配置
         Class<? extends BaseDTO> dtoClass = GlobalCache.getDtoClassMap().get(entityTypeName);
         O dto = null;
@@ -1235,6 +1267,9 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     default O baseGetAssociationsAll(String entityTypeName, O dto, C criteria, Map<String, Object> appendParamMap) {
         if (dto.getId() == null) {
             return dto;
+        }
+        if (appendParamMap == null) {
+            appendParamMap = new HashMap<>();
         }
         // 处理关联属性（自定义）
         baseGetAssociationsPrev(dto, criteria, appendParamMap);

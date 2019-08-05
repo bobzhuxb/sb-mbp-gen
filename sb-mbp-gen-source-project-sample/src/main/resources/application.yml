@@ -10,6 +10,12 @@ spring:
             max-request-size: -1
             max-file-size: -1
 
+server:
+    compression:
+        enabled: true
+        mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript
+        min-response-size: 2048
+
 management:
     endpoints:
         web:

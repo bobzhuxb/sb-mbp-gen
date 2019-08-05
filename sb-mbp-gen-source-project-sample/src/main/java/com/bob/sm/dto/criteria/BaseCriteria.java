@@ -36,6 +36,9 @@ public class BaseCriteria {
 
     private SystemUserCriteria operateUser;    // 操作者用户
 
+    @RestFieldAllow(allowSet = false)
+    private Integer authorityPass;      // 权限是否已验证过（1：是  2或不填：否）
+
     public StringFilter getId() {
         return id;
     }
@@ -146,5 +149,13 @@ public class BaseCriteria {
 
     public void setOperateUser(SystemUserCriteria operateUser) {
         this.operateUser = operateUser;
+    }
+
+    public Integer getAuthorityPass() {
+        return authorityPass;
+    }
+
+    public void setAuthorityPass(Integer authorityPass) {
+        this.authorityPass = authorityPass;
     }
 }
