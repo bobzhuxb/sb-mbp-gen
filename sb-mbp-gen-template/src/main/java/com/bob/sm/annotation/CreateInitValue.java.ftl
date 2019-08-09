@@ -13,5 +13,5 @@ public @interface CreateInitValue {
 
     String value();
 
-    boolean force();
+    boolean force() default false;
 }

@@ -457,6 +457,8 @@ public class EntityModule {
                 "doc\\", "get.json.ftl");
         generateJsonFile(projectDirectory, packageName, jsonFileNamePrefix + "-all_GET", entityTemplatePath, root, cfg,
                 "doc\\", "getList.json.ftl");
+        generateJsonFile(projectDirectory, packageName, jsonFileNamePrefix + "-one_GET", entityTemplatePath, root, cfg,
+                "doc\\", "getOne.json.ftl");
         generateJsonFile(projectDirectory, packageName, jsonFileNamePrefix + "_GET", entityTemplatePath, root, cfg,
                 "doc\\", "getPage.json.ftl");
         generateJsonFile(projectDirectory, packageName, jsonFileNamePrefix + "-count_GET", entityTemplatePath, root, cfg,
@@ -467,6 +469,7 @@ public class EntityModule {
                 + jsonFileNamePrefix + "_DELETE.json\r"
                 + jsonFileNamePrefix + "_1_GET.json\r"
                 + jsonFileNamePrefix + "-all_GET.json\r"
+                + jsonFileNamePrefix + "-one_GET.json\r"
                 + jsonFileNamePrefix + "_GET.json\r"
                 + jsonFileNamePrefix + "-count_GET.json\r";
         File configFile = new File(projectDirectory + "src\\main\\resources\\inter\\base\\config_files");

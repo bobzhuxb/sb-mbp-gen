@@ -174,6 +174,44 @@ public class ${eentityName}Controller {
     }
 
     /**
+     * 条件查询单条
+     * @param criteria 查询条件
+     * @return 使用ResponseEntity封装的单条${entityComment}数据
+     */
+    @GetMapping("/${entityUrl}-one")
+    @PreAuthorize("hasRead('${lowerName}')")
+    public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}One(
+            ${eentityName}Criteria criteria) {
+        log.debug("Controller ==> 查询指定条件下单条${eentityName} : {}", criteria);
+        ReturnCommonDTO<${eentityName}DTO> resultDTO = null;
+        try {
+            ReturnCommonDTO<List<${eentityName}DTO>> resultTmp = ${entityName}Service.baseFindAll(DOMAIN_NAME, criteria, null);
+            if (Constants.commonReturnStatus.SUCCESS.getValue().equals(resultTmp.getResultCode())) {
+                if (resultTmp.getData() != null && resultTmp.getData().size() != 0) {
+                    // 有数据
+                    if (resultTmp.getData().size() == 1) {
+                        // 刚好一条数据
+                        resultDTO = new ReturnCommonDTO<>(resultTmp.getData().get(0));
+                    } else {
+                        // 多余一条数据
+                        throw new CommonException("数据异常，超过一条");
+                    }
+                } else {
+                    // 没有数据
+                    throw new CommonException("没有数据");
+                }
+            } else {
+                // 查询操作异常
+                resultDTO = new ReturnCommonDTO<>(resultTmp.getResultCode(), resultTmp.getErrMsg());
+            }
+        } catch (CommonException e) {
+            log.error(e.getMessage(), e);
+            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
+        }
+        return ResponseEntity.ok().headers(null).body(resultDTO);
+    }
+
+    /**
      * 分页查询
 	 * @param criteria 查询条件
 	 * @param pageable 分页条件

@@ -39,7 +39,7 @@ api-pdf:
     generate: false
 
 self:
-    url-perfix: https://xxxxxxxxx
+    url-prefix: https://xxxxxxxxx
 
 wx:
     app-id: xxxxxxx
