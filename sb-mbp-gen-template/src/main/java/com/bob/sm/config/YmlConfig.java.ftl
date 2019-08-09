@@ -71,6 +71,12 @@ public class YmlConfig {
     @Value("${r'${wx.app-secret}'}")
     private String wxAppSecret;
 
+    /**
+     * 微信ACCESS_TOKEN获取是否打开
+     */
+    @Value("${r'${wx.access-token-switch}'}")
+    private String wxAccessTokenSwitch;
+
     public String getLocation() {
         return location;
     }
@@ -149,5 +155,13 @@ public class YmlConfig {
 
     public void setWxAppSecret(String wxAppSecret) {
         this.wxAppSecret = wxAppSecret;
+    }
+
+    public String getWxAccessTokenSwitch() {
+        return wxAccessTokenSwitch;
+    }
+
+    public void setWxAccessTokenSwitch(String wxAccessTokenSwitch) {
+        this.wxAccessTokenSwitch = wxAccessTokenSwitch;
     }
 }

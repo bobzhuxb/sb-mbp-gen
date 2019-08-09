@@ -44,3 +44,4 @@ self:
 wx:
     app-id: xxxxxxx
     app-secret: yyyyyyy
+    access-token-switch: close
