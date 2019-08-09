@@ -46,14 +46,6 @@ jhipster:
         core-pool-size: 2
         max-pool-size: 50
         queue-capacity: 10000
-    # By default CORS is disabled. Uncomment to enable.
-    #cors:
-        #allowed-origins: "*"
-        #allowed-methods: "*"
-        #allowed-headers: "*"
-        #exposed-headers: "Authorization,Link,X-Total-Count"
-        #allow-credentials: true
-        #max-age: 1800
     mail:
         from: base@localhost
 

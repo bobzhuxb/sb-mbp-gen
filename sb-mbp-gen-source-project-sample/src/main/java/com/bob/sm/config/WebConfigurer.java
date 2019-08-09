@@ -61,7 +61,7 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
             log.info("Web application configuration, using profiles: {}", (Object[]) env.getActiveProfiles());
         }
         EnumSet<DispatcherType> disps = EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD, DispatcherType.ASYNC);
-        initMetrics(servletContext, disps);
+//        initMetrics(servletContext, disps);
         if (env.acceptsProfiles(Constants.SPRING_PROFILE_PRODUCTION)) {
             initCachingHttpHeadersFilter(servletContext, disps);
         }
@@ -152,10 +152,10 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
         cachingHttpHeadersFilter.setAsyncSupported(true);
     }
 
-    /**
-     * Initializes Metrics.
-     */
-    private void initMetrics(ServletContext servletContext, EnumSet<DispatcherType> disps) {
+//    /**
+//     * Initializes Metrics.
+//     */
+//    private void initMetrics(ServletContext servletContext, EnumSet<DispatcherType> disps) {
 //        log.debug("Initializing Metrics registries");
 //        servletContext.setAttribute(InstrumentedFilter.REGISTRY_ATTRIBUTE,
 //            metricRegistry);
@@ -176,20 +176,20 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
 //        metricsAdminServlet.addMapping("/management/metrics/*");
 //        metricsAdminServlet.setAsyncSupported(true);
 //        metricsAdminServlet.setLoadOnStartup(2);
-    }
+//    }
 
-    @Bean
-    public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = propertiesHelp.getCors();
-        if (config.getAllowedOrigins() != null && !config.getAllowedOrigins().isEmpty()) {
-            log.debug("Registering CORS filter");
-            source.registerCorsConfiguration("/api/**", config);
-            source.registerCorsConfiguration("/management/**", config);
-            source.registerCorsConfiguration("/v2/api-docs", config);
-        }
-        return new CorsFilter(source);
-    }
+//    @Bean
+//    public CorsFilter corsFilter() {
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        CorsConfiguration config = propertiesHelp.getCors();
+//        if (config.getAllowedOrigins() != null && !config.getAllowedOrigins().isEmpty()) {
+//            log.debug("Registering CORS filter");
+//            source.registerCorsConfiguration("/api/**", config);
+//            source.registerCorsConfiguration("/management/**", config);
+//            source.registerCorsConfiguration("/v2/api-docs", config);
+//        }
+//        return new CorsFilter(source);
+//    }
 
 //    @Autowired(required = false)
 //    public void setMetricRegistry(MetricRegistry metricRegistry) {

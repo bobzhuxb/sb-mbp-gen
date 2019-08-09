@@ -23,14 +23,6 @@ jhipster:
         ehcache: # Ehcache configuration
             time-to-live-seconds: 3600 # By default objects stay 1 hour in the cache
             max-entries: 100 # Number of objects in each cache entry
-    # CORS is only enabled by default with the "dev" profile, so BrowserSync can access the API
-    cors:
-        allowed-origins: "*"
-        allowed-methods: "*"
-        allowed-headers: "*"
-        exposed-headers: "Authorization,Link,X-Total-Count"
-        allow-credentials: true
-        max-age: 1800
     security:
         authentication:
             jwt:
@@ -42,20 +34,6 @@ jhipster:
     mail: # specific JHipster mail property, for standard properties see MailProperties
         from: 1234567890@qq.com
         base-url: http://127.0.0.1:8080
-    metrics: # DropWizard Metrics configuration, used by MetricsConfiguration
-        jmx:
-            enabled: true
-        prometheus:
-            enabled: false #expose metrics via prometheus
-        logs: # Reports Dropwizard metrics in the logs
-            enabled: false
-            report-frequency: 60 # in seconds
-    logging:
-        logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
-            enabled: false
-            host: localhost
-            port: 5000
-            queue-size: 512
 
 api-pdf:
     generate: false
