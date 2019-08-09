@@ -6,6 +6,7 @@ import com.bob.sm.config.Constants;
 import com.bob.sm.config.YmlConfig;
 import com.bob.sm.dto.help.*;
 import com.bob.sm.service.WxService;
+import com.bob.sm.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +30,13 @@ public class WxServiceImpl implements WxService {
      * 微信登录验证及系统登录
      * @param wxOpenIdParamDTO 微信验证标识
      */
+    @Override
     public WxLoginStatusDTO getOpenIdAndLogin(ParamWxOpenIdDTO wxOpenIdParamDTO) {
         log.debug("微信登录验证 : {}", wxOpenIdParamDTO);
         String nowTimeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         // 获取请求URL
-        String requestUrl = Constants.WXAPP_OPEN_ID_URL + "?appid=" + Constants.WXAPP_ID + "&secret=" + Constants.WXAPP_SECRET
+        String requestUrl = Constants.WXAPP_OPEN_ID_URL + "?appid=" + ymlConfig.getWxAppId()
+                + "&secret=" + ymlConfig.getWxAppSecret()
                 + "&js_code=" + wxOpenIdParamDTO.getJsCode().trim() + "&grant_type=" + Constants.WXAPP_GRANT_TYPE;
         Map<String, String> headerMap = new HashMap<>();
         headerMap.put("content-type", "application/json");
@@ -73,6 +76,116 @@ public class WxServiceImpl implements WxService {
         loginStatusDTO.setToken(token);
         loginStatusDTO.setOpenId(openId);
         return loginStatusDTO;
+    }
+
+    /**
+     * 单次获取并刷新ACCESS_TOKEN
+     * @return
+     */
+    @Override
+    public boolean refreshAccessTokenSingle() {
+        // 获取请求URL
+        String requestUrl = Constants.WXAPP_GET_TOKEN_URL + "?grant_type=client_credential&appid="
+                + ymlConfig.getWxAppId() + "&secret=" + ymlConfig.getWxAppSecret();
+        Map<String, String> headerMap = new HashMap<>();
+        headerMap.put("content-type", "application/json");
+        String httpResultJSONStr = null;
+        try {
+            httpResultJSONStr = HttpUtil.doGet(requestUrl, headerMap);
+        } catch (Exception e) {
+            // 获取ACCESS_TOKEN异常
+            log.error(e.getMessage(), e);
+            return false;
+        }
+        WxAccessTokenResultDTO wxAccessTokenDTO = JSON.parseObject(httpResultJSONStr, WxAccessTokenResultDTO.class);
+        if (wxAccessTokenDTO.getErrcode() != null && !"0".equals(wxAccessTokenDTO.getErrcode())) {
+            log.error(wxAccessTokenDTO.getErrmsg());
+            return false;
+        }
+        String accessToken = wxAccessTokenDTO.getAccess_token();
+        String expiresIn = wxAccessTokenDTO.getExpires_in();
+        log.info("ACCESS_TOKEN获取成功：" + accessToken + "。过期时间：" + expiresIn);
+        // 更新ACCESS_TOKEN
+        Constants.WX_ACCESS_TOKEN_NOW = accessToken;
+        return true;
+    }
+
+    /**
+     * 多次刷新ACCESS_TOKEN（获取失败时才再次获取）
+     * @param totalTimes 总次数
+     * @return
+     */
+    public boolean refreshAccessToken(int totalTimes) {
+        boolean result = false;
+        int times = 0;
+        while (true) {
+            times++;
+            try {
+                // 微信公众号的ACCESS_TOKEN刷新任务
+                result = refreshAccessTokenSingle();
+            } catch (Exception e) {
+                result = false;
+            }
+            if (!result && times < totalTimes) {
+                // 1分钟之后重新获取（最多10次）
+                try {
+                    Thread.sleep(60 * 1000);
+                } catch (InterruptedException e) {
+                    // 不做任何处理
+                }
+            } else {
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 根据当前的ACCESS_TOKEN获取ticket
+     * @param currentSubUrl 当前网页URL（不包含前缀地址等）
+     * @return
+     */
+    @Override
+    public ReturnCommonDTO<ReturnWxJsapiInfoDTO> getJsapiInfoByCurrentAccessToken(String currentSubUrl) {
+        if ("".equals(Constants.WX_ACCESS_TOKEN_NOW)) {
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "等待启动");
+        }
+        // 获取请求URL
+        String requestUrl = Constants.WXAPP_GET_TICKET_URL + "?access_token=" + Constants.WX_ACCESS_TOKEN_NOW
+                + "&type=jsapi";
+        Map<String, String> headerMap = new HashMap<>();
+        headerMap.put("content-type", "application/json");
+        String httpResultJSONStr = null;
+        try {
+            httpResultJSONStr = HttpUtil.doGet(requestUrl, headerMap);
+        } catch (Exception e) {
+            // 获取ticket异常
+            log.error(e.getMessage(), e);
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "获取ticket异常");
+        }
+        WxTicketResultDTO wxTicketResultDTO = JSON.parseObject(httpResultJSONStr, WxTicketResultDTO.class);
+        if (wxTicketResultDTO.getErrcode() != null && !"0".equals(wxTicketResultDTO.getErrcode())) {
+            log.error(wxTicketResultDTO.getErrmsg());
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "获取ticket失败");
+        }
+        String ticket = wxTicketResultDTO.getTicket();
+        String expiresIn = wxTicketResultDTO.getExpires_in();
+        String nonceStr = StringUtil.generateNonceStr();
+        String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
+        String url = ymlConfig.getSelfUrlPrefix() + currentSubUrl;
+        // 签名
+        String toBeSignatureStr = "jsapi_ticket=" + ticket + "&noncestr=" + nonceStr + "&timestamp="
+                + timestamp + "&url=" + url;
+        String signature = StringUtil.sha1(toBeSignatureStr);
+        // 设置返回数据
+        ReturnWxJsapiInfoDTO wxJsapiInfoDTO = new ReturnWxJsapiInfoDTO();
+        wxJsapiInfoDTO.setNonceStr(nonceStr);
+        wxJsapiInfoDTO.setTicket(ticket);
+        wxJsapiInfoDTO.setTimestamp(timestamp);
+        wxJsapiInfoDTO.setUrl(url);
+        wxJsapiInfoDTO.setSignature(signature);
+        // 返回数据
+        return new ReturnCommonDTO<>(wxJsapiInfoDTO);
     }
 
 }

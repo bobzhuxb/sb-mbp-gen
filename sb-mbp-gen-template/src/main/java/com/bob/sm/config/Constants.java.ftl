@@ -25,7 +25,8 @@ public final class Constants {
     /************ 微信登录配置 *************/
     // 小程序获取openId的URL
     public static final String WXAPP_OPEN_ID_URL = "https://api.weixin.qq.com/sns/jscode2session";
-    public static final String WXAPP_GET_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential";
+    public static final String WXAPP_GET_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token";
+    public static final String WXAPP_GET_TICKET_URL = "https://api.weixin.qq.com/cgi-bin/ticket/getticket";
     public static final String WXAPP_GET_QRCODE_URL = "https://api.weixin.qq.com/wxa/getwxacodeunlimit";
     // 小程序APP ID
     public static final String WXAPP_ID = "wx2ba49b048f0aba0b";
@@ -33,6 +34,8 @@ public final class Constants {
     public static final String WXAPP_SECRET = "b6242b7342e74e9b6595cf1e60c13ec6";
     // 小程序APP授权类型（获取认证码）
     public static final String WXAPP_GRANT_TYPE = "authorization_code";
+    // 小程序APP授权类型（获取认证码）
+    public static String WX_ACCESS_TOKEN_NOW = "";
 	
 	// 配置的页面和按钮
     public static final List<PageElementDTO> pageElementList = new ArrayList<>(Arrays.asList(

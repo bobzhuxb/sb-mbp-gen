@@ -1,10 +1,7 @@
 package com.bob.sm.web.rest;
 
-import com.bob.sm.dto.help.ParamWxOpenIdDTO;
-import com.bob.sm.dto.help.WxLoginStatusDTO;
+import com.bob.sm.dto.help.*;
 import com.bob.sm.service.WxService;
-import com.bob.sm.web.rest.errors.BadRequestAlertException;
-import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,16 +29,24 @@ public class WxController {
      * @param wxOpenIdParamDTO the request parameter
      * @return the ResponseEntity with status 200 (OK) and the result in body
      */
-    @PostMapping("/get-open-id")
+    @PostMapping("/public/get-wx-open-id")
     public ResponseEntity<WxLoginStatusDTO> getOpenId(
             @RequestBody @Valid ParamWxOpenIdDTO wxOpenIdParamDTO) {
         log.debug("REST request to get openId : {}", wxOpenIdParamDTO);
-        if (wxOpenIdParamDTO.getJsCode() == null || "".equals(wxOpenIdParamDTO.getJsCode().trim())
-                || wxOpenIdParamDTO.getWxName() == null || "".equals(wxOpenIdParamDTO.getWxName().trim())) {
-            throw new BadRequestAlertException("jsCode和wxName不得为空", "fsAppOpenIdParamDTO", "paramnull");
-        }
         WxLoginStatusDTO wxLoginStatusDTO = wxService.getOpenIdAndLogin(wxOpenIdParamDTO);
         return new ResponseEntity<>(wxLoginStatusDTO, null, HttpStatus.OK);
+    }
+
+    /**
+     * POST  /get-wx-js-api-info : Get JsApi Info.
+     *
+     * @return the ResponseEntity with status 200 (OK) and the result in body
+     */
+    @PostMapping("/public/get-wx-js-api-info")
+    public ResponseEntity<ReturnCommonDTO<ReturnWxJsapiInfoDTO>> getJsApiInfo(@RequestBody @Valid ParamWxJsApiDTO wxJsApiDTO) {
+        log.debug("REST request to get jsApi Info : {}", wxJsApiDTO);
+        ReturnCommonDTO<ReturnWxJsapiInfoDTO> rtn = wxService.getJsapiInfoByCurrentAccessToken(wxJsApiDTO.getUrl());
+        return new ResponseEntity<>(rtn, null, HttpStatus.OK);
     }
 
 }

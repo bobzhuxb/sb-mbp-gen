@@ -37,3 +37,10 @@ jhipster:
 
 api-pdf:
     generate: true
+
+self:
+    url-perfix: https://xxxxxxxxx
+
+wx:
+    app-id: xxxxxxx
+    app-secret: yyyyyyy

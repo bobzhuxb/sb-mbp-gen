@@ -53,6 +53,24 @@ public class YmlConfig {
     @Value("${app.pic-compress-quality}")
     private String picCompressQuality;
 
+    /**
+     * 本机URL前缀
+     */
+    @Value("${self.url-prefix}")
+    private String selfUrlPrefix;
+
+    /**
+     * 微信公众号APP_ID
+     */
+    @Value("${wx.app-id}")
+    private String wxAppId;
+
+    /**
+     * 微信公众号APP_SECRET
+     */
+    @Value("${wx.app-secret}")
+    private String wxAppSecret;
+
     public String getLocation() {
         return location;
     }
@@ -107,5 +125,29 @@ public class YmlConfig {
 
     public void setPicCompressQuality(String picCompressQuality) {
         this.picCompressQuality = picCompressQuality;
+    }
+
+    public String getSelfUrlPrefix() {
+        return selfUrlPrefix;
+    }
+
+    public void setSelfUrlPrefix(String selfUrlPrefix) {
+        this.selfUrlPrefix = selfUrlPrefix;
+    }
+
+    public String getWxAppId() {
+        return wxAppId;
+    }
+
+    public void setWxAppId(String wxAppId) {
+        this.wxAppId = wxAppId;
+    }
+
+    public String getWxAppSecret() {
+        return wxAppSecret;
+    }
+
+    public void setWxAppSecret(String wxAppSecret) {
+        this.wxAppSecret = wxAppSecret;
     }
 }
