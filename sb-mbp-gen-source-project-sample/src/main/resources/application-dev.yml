@@ -38,10 +38,8 @@ jhipster:
 api-pdf:
     generate: true
 
-self:
-    url-prefix: https://xxxxxxxxx
-
 wx:
     app-id: xxxxxxx
     app-secret: yyyyyyy
     access-token-switch: close
+    tx-map-key: HKHBZ-7SWKD-PSW4N-HOSX2-AKQA3-ICBNR

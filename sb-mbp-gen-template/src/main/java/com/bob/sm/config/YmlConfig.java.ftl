@@ -54,12 +54,6 @@ public class YmlConfig {
     private String picCompressQuality;
 
     /**
-     * 本机URL前缀
-     */
-    @Value("${r'${self.url-prefix}'}")
-    private String selfUrlPrefix;
-
-    /**
      * 微信公众号APP_ID
      */
     @Value("${r'${wx.app-id}'}")
@@ -76,6 +70,12 @@ public class YmlConfig {
      */
     @Value("${r'${wx.access-token-switch}'}")
     private String wxAccessTokenSwitch;
+
+    /**
+     * 腾讯地图Key
+     */
+    @Value("${wx.tx-map-key}")
+    private String txMapKey;
 
     public String getLocation() {
         return location;
@@ -133,14 +133,6 @@ public class YmlConfig {
         this.picCompressQuality = picCompressQuality;
     }
 
-    public String getSelfUrlPrefix() {
-        return selfUrlPrefix;
-    }
-
-    public void setSelfUrlPrefix(String selfUrlPrefix) {
-        this.selfUrlPrefix = selfUrlPrefix;
-    }
-
     public String getWxAppId() {
         return wxAppId;
     }
@@ -163,5 +155,13 @@ public class YmlConfig {
 
     public void setWxAccessTokenSwitch(String wxAccessTokenSwitch) {
         this.wxAccessTokenSwitch = wxAccessTokenSwitch;
+    }
+
+    public String getTxMapKey() {
+        return txMapKey;
+    }
+
+    public void setTxMapKey(String txMapKey) {
+        this.txMapKey = txMapKey;
     }
 }

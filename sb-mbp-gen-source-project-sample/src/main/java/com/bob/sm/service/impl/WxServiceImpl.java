@@ -142,11 +142,11 @@ public class WxServiceImpl implements WxService {
 
     /**
      * 根据当前的ACCESS_TOKEN获取ticket
-     * @param currentSubUrl 当前网页URL（不包含前缀地址等）
+     * @param publicPageUrl 当前网页URL
      * @return
      */
     @Override
-    public ReturnCommonDTO<ReturnWxJsapiInfoDTO> getJsapiInfoByCurrentAccessToken(String currentSubUrl) {
+    public ReturnCommonDTO<ReturnWxJsapiInfoDTO> getJsapiInfoByCurrentAccessToken(String publicPageUrl) {
         if ("".equals(Constants.WX_ACCESS_TOKEN_NOW)) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "等待启动");
         }
@@ -172,20 +172,52 @@ public class WxServiceImpl implements WxService {
         String expiresIn = wxTicketResultDTO.getExpires_in();
         String nonceStr = StringUtil.generateNonceStr();
         String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
-        String url = ymlConfig.getSelfUrlPrefix() + currentSubUrl;
         // 签名
         String toBeSignatureStr = "jsapi_ticket=" + ticket + "&noncestr=" + nonceStr + "&timestamp="
-                + timestamp + "&url=" + url;
+                + timestamp + "&url=" + publicPageUrl;
         String signature = StringUtil.sha1(toBeSignatureStr);
         // 设置返回数据
         ReturnWxJsapiInfoDTO wxJsapiInfoDTO = new ReturnWxJsapiInfoDTO();
         wxJsapiInfoDTO.setNonceStr(nonceStr);
         wxJsapiInfoDTO.setTicket(ticket);
         wxJsapiInfoDTO.setTimestamp(timestamp);
-        wxJsapiInfoDTO.setUrl(url);
+        wxJsapiInfoDTO.setUrl(publicPageUrl);
         wxJsapiInfoDTO.setSignature(signature);
         // 返回数据
         return new ReturnCommonDTO<>(wxJsapiInfoDTO);
+    }
+
+    /**
+     * 根据经纬度获取详细地址
+     * @param logLatDTO
+     * @return
+     */
+    public ReturnCommonDTO<ReturnMapAddress> getAddressByLogLat(ParamLogLatDTO logLatDTO) {
+        // 获取请求URL
+        String requestUrl = Constants.TXMAP_REVERSE_ADDRESS_PARSE_URL + "?key=" + ymlConfig.getTxMapKey()
+                + "&location=" + logLatDTO.getLatitude() + "," + logLatDTO.getLongitude();
+        Map<String, String> headerMap = new HashMap<>();
+        headerMap.put("content-type", "application/json");
+        String httpResultJSONStr = null;
+        try {
+            httpResultJSONStr = HttpUtil.doGet(requestUrl, headerMap);
+        } catch (Exception e) {
+            // 获取ticket异常
+            log.error(e.getMessage(), e);
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "获取ticket异常");
+        }
+        TxMapAddressReturnDTO txMapAddressReturnDTO = JSON.parseObject(httpResultJSONStr, TxMapAddressReturnDTO.class);
+        if (txMapAddressReturnDTO.getStatus() == null || txMapAddressReturnDTO.getStatus() != 0) {
+            log.error("腾讯逆地址解析失败：code=" + txMapAddressReturnDTO.getStatus() + "，message="
+                    + txMapAddressReturnDTO.getMessage());
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "解析失败");
+        }
+        if (txMapAddressReturnDTO.getResult() == null || txMapAddressReturnDTO.getResult().getAddress() == null) {
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "解析失败，没有该地址");
+        }
+        ReturnMapAddress returnMapAddress = new ReturnMapAddress();
+        returnMapAddress.setAddress(txMapAddressReturnDTO.getResult().getAddress());
+        return new ReturnCommonDTO<>(returnMapAddress);
     }
 
 }

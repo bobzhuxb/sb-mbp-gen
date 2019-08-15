@@ -49,4 +49,17 @@ public class WxController {
         return new ResponseEntity<>(rtn, null, HttpStatus.OK);
     }
 
+    /**
+     * POST  /get-wx-js-api-info : Get JsApi Info.
+     *
+     * @return the ResponseEntity with status 200 (OK) and the result in body
+     */
+    @PostMapping("/public/get-address-by-loglat")
+    public ResponseEntity<ReturnCommonDTO<ReturnMapAddress>> getAddressByLogLat(
+            @RequestBody @Valid ParamLogLatDTO logLatDTO) {
+        log.debug("REST request to get address by longitude and latitude Info : {}", logLatDTO);
+        ReturnCommonDTO<ReturnMapAddress> rtn = wxService.getAddressByLogLat(logLatDTO);
+        return new ResponseEntity<>(rtn, null, HttpStatus.OK);
+    }
+
 }

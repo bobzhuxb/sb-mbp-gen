@@ -36,6 +36,8 @@ public final class Constants {
     public static final String WXAPP_GRANT_TYPE = "authorization_code";
     // 小程序APP授权类型（获取认证码）
     public static String WX_ACCESS_TOKEN_NOW = "";
+    /************ 腾讯地图配置 *************/
+    public static String TXMAP_REVERSE_ADDRESS_PARSE_URL = "https://apis.map.qq.com/ws/geocoder/v1/";
 	
 	// 配置的页面和按钮
     public static final List<PageElementDTO> pageElementList = new ArrayList<>(Arrays.asList(

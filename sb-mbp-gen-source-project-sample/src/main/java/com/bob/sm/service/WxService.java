@@ -1,9 +1,6 @@
 package com.bob.sm.service;
 
-import com.bob.sm.dto.help.ReturnCommonDTO;
-import com.bob.sm.dto.help.ReturnWxJsapiInfoDTO;
-import com.bob.sm.dto.help.WxLoginStatusDTO;
-import com.bob.sm.dto.help.ParamWxOpenIdDTO;
+import com.bob.sm.dto.help.*;
 
 public interface WxService {
 
@@ -13,6 +10,8 @@ public interface WxService {
 
     boolean refreshAccessToken(int times);
 
-    ReturnCommonDTO<ReturnWxJsapiInfoDTO> getJsapiInfoByCurrentAccessToken(String currentSubUrl);
+    ReturnCommonDTO<ReturnWxJsapiInfoDTO> getJsapiInfoByCurrentAccessToken(String publicPageUrl);
+
+    ReturnCommonDTO<ReturnMapAddress> getAddressByLogLat(ParamLogLatDTO logLatDTO);
 
 }
