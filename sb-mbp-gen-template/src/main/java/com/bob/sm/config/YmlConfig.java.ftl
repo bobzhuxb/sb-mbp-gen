@@ -74,7 +74,7 @@ public class YmlConfig {
     /**
      * 腾讯地图Key
      */
-    @Value("${wx.tx-map-key}")
+    @Value("${r'${wx.tx-map-key}'}")
     private String txMapKey;
 
     public String getLocation() {
