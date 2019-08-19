@@ -22,7 +22,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *
  */
 @ConstraintComposition(CompositionType.OR)
-@Pattern(regexp = "^(\\-)?\\d{1,3}(\\.\\d{1,9})?$")
+@Pattern(regexp = "^(\\-)?\\d{1,3}(\\.\\d{1,20})?$")
 @Null
 @Length(min = 0, max = 0)
 @Documented
@@ -31,7 +31,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @ReportAsSingleViolation
 public @interface ValidLonLat {
-    String message() default "身份证号校验错误";
+    String message() default "经纬度校验错误";
 
     Class<?>[] groups() default {};
 
