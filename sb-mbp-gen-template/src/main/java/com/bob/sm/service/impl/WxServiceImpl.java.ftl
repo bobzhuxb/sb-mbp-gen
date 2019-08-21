@@ -1,5 +1,7 @@
 package ${packageName}.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import ${packageName}.util.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import ${packageName}.config.Constants;
@@ -93,7 +95,7 @@ public class WxServiceImpl implements WxService {
         try {
             httpResultJSONStr = HttpUtil.doGet(requestUrl, headerMap);
         } catch (Exception e) {
-            // 获取ACCESS_TOKEN异常
+            // 获取数据异常
             log.error(e.getMessage(), e);
             return false;
         }
@@ -159,7 +161,7 @@ public class WxServiceImpl implements WxService {
         try {
             httpResultJSONStr = HttpUtil.doGet(requestUrl, headerMap);
         } catch (Exception e) {
-            // 获取ticket异常
+            // 获取数据异常
             log.error(e.getMessage(), e);
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "获取ticket异常");
         }
@@ -192,7 +194,7 @@ public class WxServiceImpl implements WxService {
      * @param logLatDTO
      * @return
      */
-    public ReturnCommonDTO<ReturnMapAddress> getAddressByLogLat(ParamLogLatDTO logLatDTO) {
+    public ReturnCommonDTO<ReturnMapAddressDTO> getAddressByLogLat(ParamLogLatDTO logLatDTO) {
         // 获取请求URL
         String requestUrl = Constants.TXMAP_REVERSE_ADDRESS_PARSE_URL + "?key=" + ymlConfig.getTxMapKey()
                 + "&location=" + logLatDTO.getLatitude() + "," + logLatDTO.getLongitude();
@@ -202,7 +204,7 @@ public class WxServiceImpl implements WxService {
         try {
             httpResultJSONStr = HttpUtil.doGet(requestUrl, headerMap);
         } catch (Exception e) {
-            // 获取ticket异常
+            // 获取数据异常
             log.error(e.getMessage(), e);
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "获取ticket异常");
         }
@@ -215,9 +217,93 @@ public class WxServiceImpl implements WxService {
         if (txMapAddressReturnDTO.getResult() == null || txMapAddressReturnDTO.getResult().getAddress() == null) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "解析失败，没有该地址");
         }
-        ReturnMapAddress returnMapAddress = new ReturnMapAddress();
+        ReturnMapAddressDTO returnMapAddress = new ReturnMapAddressDTO();
         returnMapAddress.setAddress(txMapAddressReturnDTO.getResult().getAddress());
         return new ReturnCommonDTO<>(returnMapAddress);
+    }
+
+    /**
+     * 根据地点关键字在指定区域搜索
+     * @param mapKeywordSearchDTO
+     * @return
+     */
+    public ReturnCommonDTO<IPage<ReturnMapSearchResultDTO>> getAddressByKeyword(
+            ParamMapKeywordSearchDTO mapKeywordSearchDTO) {
+        // 默认在苏州查找
+        if (mapKeywordSearchDTO.getRegion() == null) {
+            mapKeywordSearchDTO.setRegion("苏州");
+        }
+        // 获取请求URL
+        String requestUrl = Constants.TXMAP_KEYWORD_SEARCH_URL + "?key=" + ymlConfig.getTxMapKey()
+                + "&keyword=" + mapKeywordSearchDTO.getKeyword() + "&region=" + mapKeywordSearchDTO.getRegion()
+                + "&page_index=" + mapKeywordSearchDTO.getCurrent() + "&page_size=" + mapKeywordSearchDTO.getSize();
+        Map<String, String> headerMap = new HashMap<>();
+        headerMap.put("content-type", "application/json");
+        String httpResultJSONStr = null;
+        try {
+            httpResultJSONStr = HttpUtil.doGet(requestUrl, headerMap);
+        } catch (Exception e) {
+            // 获取数据异常
+            log.error(e.getMessage(), e);
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "获取ticket异常");
+        }
+        TxMapSearchReturnDTO txMapSearchReturnDTO = JSON.parseObject(httpResultJSONStr, TxMapSearchReturnDTO.class);
+        if (txMapSearchReturnDTO.getStatus() == null || txMapSearchReturnDTO.getStatus() != 0) {
+            log.error("腾讯地图关键字查询失败：code=" + txMapSearchReturnDTO.getStatus() + "，message="
+                    + txMapSearchReturnDTO.getMessage());
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "解析失败");
+        }
+        if (txMapSearchReturnDTO.getCount() == null || txMapSearchReturnDTO.getData() == null) {
+            log.error("腾讯地图关键字查询失败：数据错误：" + httpResultJSONStr);
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "解析失败，数据有误");
+        }
+        List<ReturnMapSearchResultDTO> returnMapSearchResultList = new ArrayList<>();
+        for (TxMapSearchDataDTO txMapSearchDataDTO : txMapSearchReturnDTO.getData()) {
+            ReturnMapSearchResultDTO returnMapSearchResultDTO = new ReturnMapSearchResultDTO();
+            returnMapSearchResultDTO.setTitle(txMapSearchDataDTO.getTitle());
+            returnMapSearchResultDTO.setAddress(txMapSearchDataDTO.getAddress());
+            returnMapSearchResultDTO.setProvince(txMapSearchDataDTO.getProvince());
+            returnMapSearchResultDTO.setCity(txMapSearchDataDTO.getCity());
+            returnMapSearchResultDTO.setLongitude(txMapSearchDataDTO.getLocation().getLng());
+            returnMapSearchResultDTO.setLatitude(txMapSearchDataDTO.getLocation().getLat());
+            returnMapSearchResultList.add(returnMapSearchResultDTO);
+        }
+        // 组织分页数据
+        IPage<ReturnMapSearchResultDTO> page = new IPage<ReturnMapSearchResultDTO>() {
+            @Override
+            public List<ReturnMapSearchResultDTO> getRecords() {
+                return returnMapSearchResultList;
+            }
+            @Override
+            public IPage<ReturnMapSearchResultDTO> setRecords(List<ReturnMapSearchResultDTO> records) {
+                return null;
+            }
+            @Override
+            public long getTotal() {
+                return txMapSearchReturnDTO.getCount();
+            }
+            @Override
+            public IPage<ReturnMapSearchResultDTO> setTotal(long total) {
+                return null;
+            }
+            @Override
+            public long getSize() {
+                return mapKeywordSearchDTO.getSize();
+            }
+            @Override
+            public IPage<ReturnMapSearchResultDTO> setSize(long size) {
+                return null;
+            }
+            @Override
+            public long getCurrent() {
+                return mapKeywordSearchDTO.getCurrent();
+            }
+            @Override
+            public IPage<ReturnMapSearchResultDTO> setCurrent(long current) {
+                return null;
+            }
+        };
+        return new ReturnCommonDTO<>(page);
     }
 
 }

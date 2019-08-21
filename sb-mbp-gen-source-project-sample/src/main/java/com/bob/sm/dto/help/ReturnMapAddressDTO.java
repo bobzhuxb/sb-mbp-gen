@@ -1,9 +1,9 @@
-package ${packageName}.dto.help;
+package com.bob.sm.dto.help;
 
 /**
  * 腾讯地图详细地址（根据经纬度解析）
  */
-public class ReturnMapAddress {
+public class ReturnMapAddressDTO {
 
     private String address;             // 详细地址
 

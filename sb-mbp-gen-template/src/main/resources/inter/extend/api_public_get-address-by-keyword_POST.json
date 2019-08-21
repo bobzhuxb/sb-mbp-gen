@@ -1,0 +1,26 @@
+{
+    "httpMethod": "POST",
+    "httpUrl": "/api/public/get-address-by-keyword",
+    "interDescr": "根据关键字在腾讯地图搜索地址及经纬度",
+    "param": {
+        "jsonBody": {
+            "keyword": "关键字",
+            "region": "区域（例如：苏州）",
+            "size": 10,
+            "current": 1
+        }
+    },
+    "result":{
+        "resultCode": "1：操作成功  2：操作失败",
+        "errMsg": "错误消息",
+        "data": "相关信息",
+        "fieldList":[
+            {"name":"title", "descr":"提示文字"},
+            {"name":"address", "descr":"地址"},
+            {"name":"province", "descr":"省"},
+            {"name":"city", "descr":"市"},
+            {"name":"longitude", "descr":"经度"},
+            {"name":"latitude", "descr":"纬度"}
+        ]
+    }
+}

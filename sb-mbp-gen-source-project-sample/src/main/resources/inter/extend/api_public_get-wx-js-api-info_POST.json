@@ -1,0 +1,22 @@
+{
+    "httpMethod": "POST",
+    "httpUrl": "/api/public/get-wx-js-api-info",
+    "interDescr": "获取微信公众号的JSAPI信息",
+    "param": {
+        "jsonBody": {
+            "url": "相对URL"
+        }
+    },
+    "result":{
+        "resultCode": "1：操作成功  2：操作失败",
+        "errMsg": "错误消息",
+        "data": "相关信息",
+        "fieldList":[
+            {"name":"nonceStr", "descr":"nonceStr"},
+            {"name":"ticket", "descr":"ticket"},
+            {"name":"timestamp", "descr":"timestamp"},
+            {"name":"url", "descr":"url"},
+            {"name":"signature", "descr":"signature"}
+        ]
+    }
+}

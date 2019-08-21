@@ -1,0 +1,22 @@
+{
+    "httpMethod": "POST",
+    "httpUrl": "/api/public/get-wx-open-id",
+    "interDescr": "获取微信公众号的openId",
+    "param": {
+        "jsonBody": {
+            "jsCode": "jsCode",
+            "wxName": "微信名"
+        }
+    },
+    "result":{
+        "resultCode": "1：操作成功  2：操作失败",
+        "errMsg": "错误消息",
+        "data": "相关信息",
+        "fieldList":[
+            {"name":"loginName", "descr":"登录账号"},
+            {"name":"openId", "descr":"openId用于识别用户"},
+            {"name":"wxName", "descr":"微信名"},
+            {"name":"token", "descr":"token信息"}
+        ]
+    }
+}

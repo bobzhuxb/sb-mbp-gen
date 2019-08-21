@@ -37,7 +37,10 @@ public final class Constants {
     // 当前ACCESS_TOKEN
     public static String WX_ACCESS_TOKEN_NOW = "";
     /************ 腾讯地图配置 *************/
+    // 经纬度转地址描述
     public static String TXMAP_REVERSE_ADDRESS_PARSE_URL = "https://apis.map.qq.com/ws/geocoder/v1/";
+    // 地点关键字搜索
+    public static String TXMAP_KEYWORD_SEARCH_URL = "https://apis.map.qq.com/ws/place/v1/suggestion";
 	
 	// 配置的页面和按钮
     public static final List<PageElementDTO> pageElementList = new ArrayList<>(Arrays.asList(

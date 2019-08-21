@@ -6,6 +6,7 @@
         "jsonBody": {
             "username": "用户名",
             "password": "密码",
+            "systemCode": "所属系统（SUPERVISE：监管端  DRAG_STORE：企业端）",
             "rememberMe": "是否记住密码（true或false）"
         }
     },

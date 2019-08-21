@@ -1,0 +1,19 @@
+{
+    "httpMethod": "POST",
+    "httpUrl": "/api/public/get-address-by-loglat",
+    "interDescr": "根据经纬度获取详细地址",
+    "param": {
+        "jsonBody": {
+            "longitude": "经度",
+            "latitude": "纬度"
+        }
+    },
+    "result":{
+        "resultCode": "1：操作成功  2：操作失败",
+        "errMsg": "错误消息",
+        "data": "相关信息",
+        "fieldList":[
+            {"name":"address", "descr":"详细地址"}
+        ]
+    }
+}

@@ -1,5 +1,6 @@
 package com.bob.sm.web.rest;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.bob.sm.dto.help.*;
 import com.bob.sm.service.WxService;
 import org.slf4j.Logger;
@@ -24,7 +25,7 @@ public class WxController {
     private WxService wxService;
 
     /**
-     * POST  /get-open-id : Get Open Id.
+     * POST  /public/get-open-id : Get Open Id.
      *
      * @param wxOpenIdParamDTO the request parameter
      * @return the ResponseEntity with status 200 (OK) and the result in body
@@ -38,7 +39,7 @@ public class WxController {
     }
 
     /**
-     * POST  /get-wx-js-api-info : Get JsApi Info.
+     * POST  /public/get-wx-js-api-info : Get JsApi Info.
      *
      * @return the ResponseEntity with status 200 (OK) and the result in body
      */
@@ -50,15 +51,28 @@ public class WxController {
     }
 
     /**
-     * POST  /get-wx-js-api-info : Get JsApi Info.
+     * POST  /public/get-address-by-loglat : Get JsApi Info.
      *
      * @return the ResponseEntity with status 200 (OK) and the result in body
      */
     @PostMapping("/public/get-address-by-loglat")
-    public ResponseEntity<ReturnCommonDTO<ReturnMapAddress>> getAddressByLogLat(
+    public ResponseEntity<ReturnCommonDTO<ReturnMapAddressDTO>> getAddressByLogLat(
             @RequestBody @Valid ParamLogLatDTO logLatDTO) {
         log.debug("REST request to get address by longitude and latitude Info : {}", logLatDTO);
-        ReturnCommonDTO<ReturnMapAddress> rtn = wxService.getAddressByLogLat(logLatDTO);
+        ReturnCommonDTO<ReturnMapAddressDTO> rtn = wxService.getAddressByLogLat(logLatDTO);
+        return new ResponseEntity<>(rtn, null, HttpStatus.OK);
+    }
+
+    /**
+     * POST  /public/get-address-by-keyword : Get JsApi Info.
+     *
+     * @return the ResponseEntity with status 200 (OK) and the result in body
+     */
+    @PostMapping("/public/get-address-by-keyword")
+    public ResponseEntity<ReturnCommonDTO<IPage<ReturnMapSearchResultDTO>>> getAddressByKeyword(
+            @RequestBody @Valid ParamMapKeywordSearchDTO mapKeywordSearchDTO) {
+        log.debug("REST request to get address/longitude/latitude by keyword Info : {}", mapKeywordSearchDTO);
+        ReturnCommonDTO<IPage<ReturnMapSearchResultDTO>> rtn = wxService.getAddressByKeyword(mapKeywordSearchDTO);
         return new ResponseEntity<>(rtn, null, HttpStatus.OK);
     }
 

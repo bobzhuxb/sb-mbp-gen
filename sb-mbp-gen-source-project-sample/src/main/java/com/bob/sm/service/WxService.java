@@ -1,5 +1,6 @@
 package com.bob.sm.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.bob.sm.dto.help.*;
 
 public interface WxService {
@@ -12,6 +13,8 @@ public interface WxService {
 
     ReturnCommonDTO<ReturnWxJsapiInfoDTO> getJsapiInfoByCurrentAccessToken(String publicPageUrl);
 
-    ReturnCommonDTO<ReturnMapAddress> getAddressByLogLat(ParamLogLatDTO logLatDTO);
+    ReturnCommonDTO<ReturnMapAddressDTO> getAddressByLogLat(ParamLogLatDTO logLatDTO);
+
+    ReturnCommonDTO<IPage<ReturnMapSearchResultDTO>> getAddressByKeyword(ParamMapKeywordSearchDTO mapKeywordSearchDTO);
 
 }
