@@ -245,10 +245,12 @@ public class CommonServiceImpl implements CommonService {
                 outputStream = response.getOutputStream();
                 // 创建sheet页
                 SXSSFSheet sheet = workbook.createSheet(sheetName);
+                // 存储最大列宽，用于处理中文不能自动调整列宽的问题
+                Map<Integer, Integer> maxWidthMap = new HashMap<>();
                 // 在实际表格上方的单元格
                 if (beforeDataCellList != null) {
                     // key：relativeRow相对行数，value：该行的单元格数据
-                    ExcelUtil.addDataToExcel(beforeDataCellList, 0, workbook, sheet);
+                    ExcelUtil.addDataToExcel(beforeDataCellList, 0, maxWidthMap, workbook, sheet);
                 }
                 // 创建表头
                 SXSSFRow headRow = sheet.createRow(tableStartRow);
@@ -282,6 +284,8 @@ public class CommonServiceImpl implements CommonService {
                             SXSSFCell cell = dataRow.createCell(column);
                             cell.setCellValue(data == null ? "" : data.toString());
                             cell.setCellStyle(dataStyle);
+                            // 设置该列的最大宽度
+                            ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, column, null);
                         }
                     } else {
                         // 反射获取对象属性
@@ -296,6 +300,8 @@ public class CommonServiceImpl implements CommonService {
                                 SXSSFCell cell = dataRow.createCell(column);
                                 cell.setCellValue(data == null ? "" : data.toString());
                                 cell.setCellStyle(dataStyle);
+                                // 设置该列的最大宽度
+                                ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, column, null);
                             }
                         }
                     }
@@ -303,7 +309,7 @@ public class CommonServiceImpl implements CommonService {
                 // 在实际表格下方的单元格
                 if (afterDataCellList != null) {
                     // key：relativeRow相对行数，value：该行的单元格数据
-                    ExcelUtil.addDataToExcel(afterDataCellList, tableStartRow + dataList.size() + 1, workbook, sheet);
+                    ExcelUtil.addDataToExcel(afterDataCellList, tableStartRow + dataList.size() + 1, maxWidthMap, workbook, sheet);
                 }
                 // 合并单元格
                 if (cellRangeList != null) {
@@ -318,9 +324,11 @@ public class CommonServiceImpl implements CommonService {
                 sheet.trackAllColumnsForAutoSizing();
                 for (int column = 0; column < maxColumn; column++) {
                     sheet.autoSizeColumn(column);
+                    // 处理中文不能自动调整列宽的问题
+                    if (maxWidthMap.get(column) != null) {
+                        sheet.setColumnWidth(column, maxWidthMap.get(column));
+                    }
                 }
-                // 处理中文不能自动调整列宽的问题
-                ExcelUtil.setSizeColumn(sheet, maxColumn);
                 // 写入数据
                 workbook.write(outputStream);
             } catch (Exception e) {

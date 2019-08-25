@@ -64,15 +64,17 @@ public class ExcelUtil {
         for (int columnNum = 0; columnNum < size; columnNum++) {
             int columnWidth = sheet.getColumnWidth(columnNum) / 256;
             for (int rowNum = 0; rowNum < sheet.getLastRowNum(); rowNum++) {
-                SXSSFRow currentRow;
+                SXSSFRow currentRow = null;
                 // 当前行未被使用过
                 if (sheet.getRow(rowNum) == null) {
-                    currentRow = sheet.createRow(rowNum);
+                    // BUG修复：可能会导致java.lang.IllegalArgumentException:
+                    // Attempting to write a row[0] in the range [0,3850] that is already written to disk.
+                    // 原因：SXSSFWorkbook这个类是专门用来往Excel中写入大量数据的，它会偷偷摸摸的把数据写会磁盘，显得比较快。
+//                    currentRow = sheet.createRow(rowNum);
                 } else {
                     currentRow = sheet.getRow(rowNum);
                 }
-
-                if (currentRow.getCell(columnNum) != null) {
+                if (currentRow != null && currentRow.getCell(columnNum) != null) {
                     SXSSFCell currentCell = currentRow.getCell(columnNum);
                     if (currentCell.getCellType() == XSSFCell.CELL_TYPE_STRING) {
                         int length = currentCell.getStringCellValue().getBytes().length;
@@ -165,10 +167,12 @@ public class ExcelUtil {
      * 将数据填入Excel
      * @param dataCellList 数据
      * @param appendRow 绝对开始行（每个单元格的相对行加上该参数，得到该单元格的实际行）
+     * @param maxWidthMap 存储的最大列宽（Key：列序号  Value：列宽）
      * @param workbook Excel工作簿
      * @param sheet Excel的sheet
      */
-    public static void addDataToExcel(List<ExcelCellDTO> dataCellList, int appendRow, SXSSFWorkbook workbook, SXSSFSheet sheet) {
+    public static void addDataToExcel(List<ExcelCellDTO> dataCellList, int appendRow, Map<Integer, Integer> maxWidthMap,
+                                      SXSSFWorkbook workbook, SXSSFSheet sheet) {
         Map<Integer, List<ExcelCellDTO>> rowDataMap = dataCellList.stream()
                 .reduce(new HashMap<>(), (map, cellDTO) -> {
                     List<ExcelCellDTO> rowCellList = map.get(cellDTO.getRelativeRow());
@@ -198,7 +202,35 @@ public class ExcelUtil {
                 SXSSFCell cell = dataRow.createCell(excelCellDTO.getColumn());
                 cell.setCellValue(excelCellDTO.getValue());
                 cell.setCellStyle(dataStyle);
+                // 设置该列的最大宽度
+                ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, excelCellDTO.getColumn(), null);
             }
+        }
+    }
+
+    /**
+     * 计算并设置最大列宽
+     * @param maxWidthMap 存储的最大列宽（Key：列序号  Value：列宽）
+     * @param cell 单元格
+     * @param column 当前列序号
+     * @param columnLengthLimit 限制的最大列宽
+     */
+    public static void computeMaxColumnWith(Map<Integer, Integer> maxWidthMap, SXSSFCell cell,
+                                            int column, Integer columnLengthLimit) {
+        if (columnLengthLimit == null) {
+            // 这里把宽度最大限制到15000
+            columnLengthLimit = 15000;
+        }
+        int length = cell.getStringCellValue().getBytes().length  * 256 + 200;
+        // 这里把宽度最大限制到 columnLengthLimit
+        if (length > columnLengthLimit) {
+            length = columnLengthLimit;
+        }
+        Integer currentMaxLength = maxWidthMap.get(column);
+        if (currentMaxLength == null) {
+            maxWidthMap.put(column, length);
+        } else {
+            maxWidthMap.put(column, Math.max(length, maxWidthMap.get(column)));
         }
     }
 
