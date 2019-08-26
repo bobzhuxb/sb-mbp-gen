@@ -267,6 +267,8 @@ public class CommonServiceImpl implements CommonService {
                     SXSSFCell cell = headRow.createCell(column);
                     cell.setCellValue(titleDTO.getTitleContent());
                     cell.setCellStyle(titleNameStyle);
+                    // 设置该列的最大宽度
+                    ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, column, null);
                 }
                 // 表数据统一居中，加边框
                 CellStyle dataStyle = workbook.createCellStyle();
