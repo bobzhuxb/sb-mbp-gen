@@ -6,9 +6,9 @@ import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
 
-
 /**
- * copy code from MethodSecurityExpressionRoot
+ * 用于动态权限配置
+ * @author Bob
  */
 public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot implements MethodSecurityExpressionOperations {
     @Autowired

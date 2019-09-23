@@ -19,6 +19,10 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+/**
+ * 异步配置.
+ * @author Bob
+ */
 @Configuration
 @EnableConfigurationProperties(PropertiesHelp.class)
 @EnableAsync

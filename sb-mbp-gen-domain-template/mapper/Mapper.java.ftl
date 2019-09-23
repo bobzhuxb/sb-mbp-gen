@@ -9,6 +9,7 @@ import java.util.List;
 
 /**
  * ${entityComment} Mapper
+ * @author Bob
  */
 public interface ${eentityName}Mapper extends BaseCommonMapper<${eentityName}> {
 

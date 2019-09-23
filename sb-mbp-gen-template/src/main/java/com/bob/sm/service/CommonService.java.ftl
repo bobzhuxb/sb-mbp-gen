@@ -11,6 +11,10 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 共通处理类
+ * @author Bob
+ */
 public interface CommonService {
 
     ReturnCommonDTO<ReturnFileUploadDTO> uploadFile(MultipartFile file);

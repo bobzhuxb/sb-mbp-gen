@@ -2,6 +2,7 @@ package ${packageName}.dto.help;
 
 /**
  * 登录状态
+ * @author Bob
  */
 public class WxLoginStatusDTO extends ReturnCommonDTO {
 

@@ -2,6 +2,10 @@ package ${packageName}.domain;
 
 import java.io.Serializable;
 
+/**
+ * 基础Domain类
+ * @author Bob
+ */
 public class BaseDomain implements Serializable {
 
     private String id;

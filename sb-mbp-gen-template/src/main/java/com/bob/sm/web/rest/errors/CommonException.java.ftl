@@ -2,6 +2,10 @@ package ${packageName}.web.rest.errors;
 
 import ${packageName}.config.Constants;
 
+/**
+ * 共通异常类
+ * @author Bob
+ */
 public class CommonException extends RuntimeException {
 
     private String code;

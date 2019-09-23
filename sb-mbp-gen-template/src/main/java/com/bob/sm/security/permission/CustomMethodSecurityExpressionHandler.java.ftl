@@ -9,6 +9,10 @@ import org.springframework.security.authentication.AuthenticationTrustResolver;
 import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.core.Authentication;
 
+/**
+ * 用于动态权限配置
+ * @author Bob
+ */
 public class CustomMethodSecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
     private AuthenticationTrustResolver trustResolver =
         new AuthenticationTrustResolverImpl();

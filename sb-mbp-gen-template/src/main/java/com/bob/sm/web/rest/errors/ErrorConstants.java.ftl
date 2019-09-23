@@ -2,6 +2,10 @@ package ${packageName}.web.rest.errors;
 
 import java.net.URI;
 
+/**
+ * 错误常量类
+ * @author Bob
+ */
 public final class ErrorConstants {
 
     public static final String ERR_CONCURRENCY_FAILURE = "error.concurrencyFailure";

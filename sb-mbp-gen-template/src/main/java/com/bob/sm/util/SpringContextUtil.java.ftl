@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * 获取spring容器，以访问容器中定义的其他bean
+ * @author Bob
  */
 @Component
 @Lazy(false)

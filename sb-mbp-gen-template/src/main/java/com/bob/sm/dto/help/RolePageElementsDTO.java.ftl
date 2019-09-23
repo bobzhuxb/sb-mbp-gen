@@ -4,6 +4,10 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.List;
 
+/**
+ * 角色与页面关系
+ * @author Bob
+ */
 public class RolePageElementsDTO {
 
     private String roleId;               // 角色ID

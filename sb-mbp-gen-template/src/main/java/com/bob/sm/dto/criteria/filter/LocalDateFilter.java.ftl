@@ -6,6 +6,10 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * 查询过滤器
+ * @author Bob
+ */
 public class LocalDateFilter extends RangeFilter<LocalDate> {
 
     private static final long serialVersionUID = 1L;

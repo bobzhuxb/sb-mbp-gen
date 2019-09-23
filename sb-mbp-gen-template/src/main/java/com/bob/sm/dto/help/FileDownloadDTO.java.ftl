@@ -3,6 +3,10 @@ package ${packageName}.dto.help;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+/**
+ * 文件下载DTO
+ * @author Bob
+ */
 public class FileDownloadDTO {
 
     @NotBlank

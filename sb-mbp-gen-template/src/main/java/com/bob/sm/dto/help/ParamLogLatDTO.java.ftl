@@ -8,6 +8,7 @@ import javax.validation.constraints.Size;
 
 /**
  * 经纬度
+ * @author Bob
  */
 public class ParamLogLatDTO {
 

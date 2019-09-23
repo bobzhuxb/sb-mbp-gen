@@ -4,6 +4,7 @@ import java.util.List;
 
 /**
  * 前端接口适配器参数DTO
+ * @author Bob
  */
 public class ApiAdapterParamDTO {
 

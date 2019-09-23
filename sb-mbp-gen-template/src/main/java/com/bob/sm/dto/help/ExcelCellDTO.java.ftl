@@ -5,6 +5,10 @@ import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 
+/**
+ * Excel单元格配置DTO
+ * @author Bob
+ */
 public class ExcelCellDTO {
 
     private Integer relativeRow;            // 单元格所在相对行

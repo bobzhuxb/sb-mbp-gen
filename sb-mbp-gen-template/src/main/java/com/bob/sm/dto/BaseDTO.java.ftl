@@ -4,6 +4,10 @@ import ${packageName}.annotation.RestFieldAllow;
 
 import java.io.Serializable;
 
+/**
+ * 基础DTO
+ * @author Bob
+ */
 public class BaseDTO implements Serializable {
 
     private String id;

@@ -4,6 +4,7 @@ import javax.validation.constraints.NotBlank;
 
 /**
  * 管理员重置密码用的DTO.
+ * @author Bob
  */
 public class PasswordResetDTO {
 

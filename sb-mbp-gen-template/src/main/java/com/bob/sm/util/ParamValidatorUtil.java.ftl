@@ -5,6 +5,10 @@ import ${packageName}.dto.help.ReturnCommonDTO;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
+/**
+ * 参数验证工具类
+ * @author Bob
+ */
 public class ParamValidatorUtil {
 
     public static ReturnCommonDTO validateFields(BindingResult bindingResult) {

@@ -26,7 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 /**
- * Controller to authenticate users.
+ * 用户登录认证Controller.
+ * @author Bob
  */
 @RestController
 @RequestMapping("/api")

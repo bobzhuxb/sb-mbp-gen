@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 查询过滤器
+ * @author Bob
+ */
 public class Filter<FIELD_TYPE> implements Serializable {
 
     private static final long serialVersionUID = 1L;

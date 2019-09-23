@@ -18,7 +18,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * 0-1之间（可包括两位小数）
- *
+ * @author Bob
  */
 @ConstraintComposition(CompositionType.OR)
 @Pattern(regexp = "^1|(0.\\d{1,2})$")

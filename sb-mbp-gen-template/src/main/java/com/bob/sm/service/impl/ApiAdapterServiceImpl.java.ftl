@@ -39,6 +39,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * API适配器，动态修改相关参数和返回
+ * @author Bob
+ */
 @Service
 public class ApiAdapterServiceImpl implements ApiAdapterService {
 

@@ -3,6 +3,10 @@ package ${packageName}.util;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
+/**
+ * 反射工具类
+ * @author Bob
+ */
 public class GenericsUtil {
 
     /**

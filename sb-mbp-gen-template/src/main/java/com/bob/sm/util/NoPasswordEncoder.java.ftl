@@ -2,6 +2,10 @@ package ${packageName}.util;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+/**
+ * 免密登录
+ * @author Bob
+ */
 public class NoPasswordEncoder implements PasswordEncoder {
 
     @Override

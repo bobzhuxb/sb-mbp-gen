@@ -1,7 +1,8 @@
 package ${packageName}.security;
 
 /**
- * Constants for Spring Security authorities.
+ * Spring Security的常量类
+ * @author Bob
  */
 public final class AuthoritiesConstants {
 

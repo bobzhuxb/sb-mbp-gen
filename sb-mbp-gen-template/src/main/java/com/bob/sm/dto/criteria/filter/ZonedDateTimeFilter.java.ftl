@@ -6,6 +6,10 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+/**
+ * 查询过滤器
+ * @author Bob
+ */
 public class ZonedDateTimeFilter extends RangeFilter<ZonedDateTime> {
 
     private static final long serialVersionUID = 1L;

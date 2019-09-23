@@ -6,21 +6,40 @@ import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
 import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
 import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Random;
 
 /**
  * 字符串工具类
+ * @author Bob
  */
 public class MyStringUtil {
+
+    private static final String SYMBOLS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    private static final Random RANDOM = new SecureRandom();
+
+    /**
+     * 验证字符串是否为空
+     *
+     * @param input
+     * @return
+     */
+    public static boolean isEmpty(String input) {
+        return input == null || "".equals(input) || input.trim().equals("");
+    }
 
     /**
      * 首字母转小写
      */
     public static String toLowerCaseFirstOne(String s){
-        if(Character.isLowerCase(s.charAt(0)))
+        if(Character.isLowerCase(s.charAt(0))) {
             return s;
-        else
+        } else {
             return (new StringBuilder()).append(Character.toLowerCase(s.charAt(0))).append(s.substring(1)).toString();
+        }
     }
 
     /**
@@ -90,15 +109,62 @@ public class MyStringUtil {
         // 设置声调格式：
         defaultFormat.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
         for (int i = 0; i < charArray.length; i++) {
-            // 匹配中文,非中文转换会转换成null
             if (Character.toString(charArray[i]).matches("[\\u4E00-\\u9FA5]+")) {
+                // 匹配中文，非中文转换会转换成null
                 String[] hanyuPinyinStringArray = PinyinHelper.toHanyuPinyinStringArray(charArray[i], defaultFormat);
-                if (hanyuPinyinStringArray != null) {
+                if (hanyuPinyinStringArray != null && hanyuPinyinStringArray.length > 0
+                        && hanyuPinyinStringArray[0] != null && hanyuPinyinStringArray[0].length() > 0) {
                     pinyin.append(hanyuPinyinStringArray[0].charAt(0));
                 }
+            } else {
+                // 非中文原样输出
+                pinyin.append(charArray[i]);
             }
         }
         return pinyin.toString();
+    }
+
+    /**
+     * 获取随机字符串 Nonce Str
+     *
+     * @return String 随机字符串
+     */
+    public static String generateNonceStr() {
+        char[] nonceChars = new char[32];
+        for (int index = 0; index < nonceChars.length; ++index) {
+            nonceChars[index] = SYMBOLS.charAt(RANDOM.nextInt(SYMBOLS.length()));
+        }
+        return new String(nonceChars);
+    }
+
+    /**
+     * SHA签名
+     * @param data 待签名字符串
+     * @return
+     * @throws Exception
+     */
+    public static String sha1(String data) {
+        try {
+            MessageDigest digest = java.security.MessageDigest
+                    .getInstance("SHA-1");
+            digest.update(data.getBytes());
+            byte[] messageDigest = digest.digest();
+            // Create Hex String
+            StringBuffer hexString = new StringBuffer();
+            // 字节数组转换为 十六进制 数
+            for (int i = 0; i < messageDigest.length; i++) {
+                String shaHex = Integer.toHexString(messageDigest[i] & 0xFF);
+                if (shaHex.length() < 2) {
+                    hexString.append(0);
+                }
+                hexString.append(shaHex);
+            }
+            return hexString.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
 }

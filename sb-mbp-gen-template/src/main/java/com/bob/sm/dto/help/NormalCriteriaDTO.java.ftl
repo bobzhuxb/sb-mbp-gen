@@ -1,5 +1,9 @@
 package ${packageName}.dto.help;
 
+/**
+ * 普通查询条件DTO
+ * @author Bob
+ */
 public class NormalCriteriaDTO {
 
     private String tableName;   // 表名的别名

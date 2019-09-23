@@ -18,7 +18,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * 1-100之间的数（包括小数）
- *
+ * @author Bob
  */
 @ConstraintComposition(CompositionType.OR)
 @Pattern(regexp = "^100|\\d{1,2}(.\\d)$")

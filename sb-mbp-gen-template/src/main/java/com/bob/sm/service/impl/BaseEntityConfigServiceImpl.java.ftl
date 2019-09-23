@@ -9,6 +9,10 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
 
+/**
+ * 实体配置
+ * @author Bob
+ */
 @Service
 public class BaseEntityConfigServiceImpl implements BaseEntityConfigService {
 

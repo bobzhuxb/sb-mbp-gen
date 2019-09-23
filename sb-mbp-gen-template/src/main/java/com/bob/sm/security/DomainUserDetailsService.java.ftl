@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 /**
  * Authenticate a user from the database.
+ * @author Bob
  */
 @Component("userDetailsService")
 public class DomainUserDetailsService implements UserDetailsService {

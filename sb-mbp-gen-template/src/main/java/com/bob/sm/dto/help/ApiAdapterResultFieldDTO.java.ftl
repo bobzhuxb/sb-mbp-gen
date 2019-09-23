@@ -4,6 +4,7 @@ import java.util.List;
 
 /**
  * 前端接口适配器返回结果字段转换DTO
+ * @author Bob
  */
 public class ApiAdapterResultFieldDTO {
 

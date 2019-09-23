@@ -7,6 +7,7 @@ import java.util.Objects;
 
 /**
  * ${entityComment} 条件过滤器
+ * @author Bob
  */
 public class ${eentityName}Criteria extends BaseCriteria implements Serializable {
 

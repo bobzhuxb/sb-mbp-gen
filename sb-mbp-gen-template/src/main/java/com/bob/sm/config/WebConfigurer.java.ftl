@@ -36,6 +36,7 @@ import static java.net.URLDecoder.decode;
 
 /**
  * Configuration of web application with Servlet 3.0 APIs.
+ * @author Bob
  */
 @Configuration
 @EnableConfigurationProperties(PropertiesHelp.class)

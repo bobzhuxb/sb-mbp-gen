@@ -35,6 +35,10 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 系统用户共通处理类
+ * @author Bob
+ */
 @Service
 @EnableAspectJAutoProxy
 @Transactional

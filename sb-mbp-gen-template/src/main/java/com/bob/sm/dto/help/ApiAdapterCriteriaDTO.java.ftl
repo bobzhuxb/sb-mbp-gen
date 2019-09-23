@@ -4,6 +4,7 @@ import java.util.List;
 
 /**
  * 前端接口适配器条件查询DTO
+ * @author Bob
  */
 public class ApiAdapterCriteriaDTO {
 

@@ -7,7 +7,8 @@ import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
- * A DTO for the FsFileHistory entity.
+ * 微信OpenId获取
+ * @author Bob
  */
 public class ParamWxOpenIdDTO extends BaseDTO {
 

@@ -1,5 +1,9 @@
 package ${packageName}.dto.help;
 
+/**
+ * Excel单元格范围配置DTO
+ * @author Bob
+ */
 public class ExcelCellRangeDTO {
 
     private int fromRow;

@@ -5,6 +5,10 @@ import ${packageName}.dto.criteria.filter.*;
 
 import java.util.List;
 
+/**
+ * 基础查询类
+ * @author Bob
+ */
 public class BaseCriteria {
 
     private StringFilter id;

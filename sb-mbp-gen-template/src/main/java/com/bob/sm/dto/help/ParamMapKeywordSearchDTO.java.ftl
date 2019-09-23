@@ -7,6 +7,7 @@ import javax.validation.constraints.Size;
 
 /**
  * 地图关键字搜索
+ * @author Bob
  */
 public class ParamMapKeywordSearchDTO {
 

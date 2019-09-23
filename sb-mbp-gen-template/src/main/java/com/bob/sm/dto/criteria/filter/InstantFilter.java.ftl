@@ -5,6 +5,10 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 import java.time.Instant;
 
+/**
+ * 查询过滤器
+ * @author Bob
+ */
 public class InstantFilter extends RangeFilter<Instant> {
 
     private static final long serialVersionUID = 1L;

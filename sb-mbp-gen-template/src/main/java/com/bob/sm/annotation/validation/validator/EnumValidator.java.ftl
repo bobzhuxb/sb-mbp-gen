@@ -8,6 +8,10 @@ import javax.validation.ConstraintValidatorContext;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+/**
+ * 枚举验证器
+ * @author Bob
+ */
 public class EnumValidator implements ConstraintValidator<ValidEnum, Object> {
 
     Class<?>[] cls; //枚举类

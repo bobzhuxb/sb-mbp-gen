@@ -4,6 +4,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 
 /**
  * 腾讯地图详细地址（根据经纬度解析）
+ * @author Bob
  */
 public class TxMapAddressReturnDTO {
 

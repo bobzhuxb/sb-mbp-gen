@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * This filter is used in production, to put HTTP cache headers with a long (4 years) expiration time.
+ * @author Bob
  */
 public class CachingHttpHeadersFilter implements Filter {
 

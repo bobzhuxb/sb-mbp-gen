@@ -7,6 +7,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 
+/**
+ * 文件工具类
+ * @author Bob
+ */
 @Service
 public class FileUtil {
 

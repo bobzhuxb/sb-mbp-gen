@@ -6,7 +6,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 /**
- * A DTO for the ParamWxJsApiDTO entity.
+ * 微信JSAPI获取
+ * @author Bob
  */
 public class ParamWxJsApiDTO extends BaseDTO {
 

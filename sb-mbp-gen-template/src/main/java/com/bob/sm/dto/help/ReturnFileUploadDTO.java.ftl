@@ -1,7 +1,8 @@
 package ${packageName}.dto.help;
 
 /**
- * A DTO for the ReturnFileUploadDTO entity.
+ * 文件上传
+ * @author Bob
  */
 public class ReturnFileUploadDTO {
 

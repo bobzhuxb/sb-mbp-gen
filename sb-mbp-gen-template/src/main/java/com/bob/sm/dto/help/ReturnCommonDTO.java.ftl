@@ -2,6 +2,10 @@ package ${packageName}.dto.help;
 
 import ${packageName}.config.Constants;
 
+/**
+ * 数据返回的共通类
+ * @author Bob
+ */
 public class ReturnCommonDTO<T> {
 
     // 返回状态

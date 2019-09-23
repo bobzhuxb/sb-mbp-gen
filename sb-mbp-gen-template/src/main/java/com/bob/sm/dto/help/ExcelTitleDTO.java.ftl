@@ -1,5 +1,9 @@
 package ${packageName}.dto.help;
 
+/**
+ * Excel标题单元格配置DTO
+ * @author Bob
+ */
 public class ExcelTitleDTO {
 
     private String titleName;       // 标题名（字段或Key）

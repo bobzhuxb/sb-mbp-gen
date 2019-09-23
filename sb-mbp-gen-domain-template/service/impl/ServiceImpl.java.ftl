@@ -23,6 +23,7 @@ import java.util.*;
 
 /*
  * ${entityComment}
+ * @author Bob
  */
 @Service
 @EnableAspectJAutoProxy(exposeProxy = true)

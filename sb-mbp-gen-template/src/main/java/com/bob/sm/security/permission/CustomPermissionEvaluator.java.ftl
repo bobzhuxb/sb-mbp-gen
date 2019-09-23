@@ -7,6 +7,10 @@ import org.springframework.security.core.GrantedAuthority;
 
 import java.io.Serializable;
 
+/**
+ * 用于动态权限配置
+ * @author Bob
+ */
 public class CustomPermissionEvaluator implements PermissionEvaluator {
     private SystemPermissionService ps;
 

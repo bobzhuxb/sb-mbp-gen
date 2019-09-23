@@ -4,6 +4,7 @@ import java.lang.annotation.*;
 
 /**
  * 对Rest请求关闭类的所有属性的设置或访问
+ * @author Bob
  */
 @Documented
 @Target({ElementType.TYPE})

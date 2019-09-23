@@ -18,7 +18,6 @@ import ${packageName}.dto.help.*;
 import ${packageName}.util.GenericsUtil;
 import ${packageName}.util.MyBeanUtil;
 import ${packageName}.util.MyStringUtil;
-import ${packageName}.util.StringUtil;
 import ${packageName}.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -33,6 +32,10 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * Service类的基础实现
+ * @author Bob
+ */
 @EnableAspectJAutoProxy(exposeProxy = true)
 @Transactional
 public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O extends BaseDTO> extends IService<T> {
@@ -436,7 +439,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                             }
                         }
                         // 要排序的字段名（包括表名的别名）
-                        String orderColumnName = subTableName + "." + StringUtil.camelToUnderline(orderFieldName);
+                        String orderColumnName = subTableName + "." + MyStringUtil.camelToUnderline(orderFieldName);
                         // 自定义排序规则处理
                         if (orderByDetail.length > 2 || customOrderIndexStart == 1) {
                             String customFieldValueStr = "";
@@ -462,7 +465,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         for (Field field : fields) {
             try {
                 String fieldName = field.getName();
-                String columnName = tableName + "." + StringUtil.camelToUnderline(fieldName);
+                String columnName = tableName + "." + MyStringUtil.camelToUnderline(fieldName);
                 if ("serialVersionUID".equals(fieldName)) {
                     continue;
                 }
@@ -619,7 +622,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     String tableIndexAndName = entry.getValue();
                     String tableIndex = tableIndexAndName.split("_")[0];
                     String tableNameTmp = tableIndexAndName.split("_")[1];
-                    tableNameTmp = StringUtil.camelToUnderline(tableNameTmp) + "_" + tableIndex;
+                    tableNameTmp = MyStringUtil.camelToUnderline(tableNameTmp) + "_" + tableIndex;
                     revertTableIndexMap.put(tableNameTmp, criteriaStr);
                 }
                 revertTableIndexMap.put(tableName, "");

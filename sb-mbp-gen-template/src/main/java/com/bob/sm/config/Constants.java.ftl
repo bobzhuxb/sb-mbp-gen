@@ -7,7 +7,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Application constants.
+ * 常量类.
+ * @author Bob
  */
 public final class Constants {
 

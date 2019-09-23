@@ -9,6 +9,10 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+/**
+ * 网络地址处理工具类
+ * @author Bob
+ */
 public class NetworkUtil {
 
     public static void main(String[] args) {

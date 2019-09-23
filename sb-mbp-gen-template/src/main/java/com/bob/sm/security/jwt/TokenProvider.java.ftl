@@ -22,6 +22,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.stream.Collectors;
 
+/**
+ * JWT的Token生成器
+ * @author Bob
+ */
 @Component
 public class TokenProvider {
 

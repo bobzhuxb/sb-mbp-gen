@@ -3,7 +3,8 @@ package ${packageName}.dto.help;
 import java.io.Serializable;
 
 /**
- * A DTO for the FsFileHistory entity.
+ * 获取微信Access Token的返回
+ * @author Bob
  */
 public class WxAccessTokenResultDTO implements Serializable {
 

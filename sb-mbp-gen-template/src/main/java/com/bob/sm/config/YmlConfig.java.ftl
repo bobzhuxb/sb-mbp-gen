@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Configuration of spring boot configuration in yml file
+ * @author Bob
  */
 @Component
 @ConfigurationProperties

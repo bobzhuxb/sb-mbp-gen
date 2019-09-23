@@ -3,6 +3,10 @@ package ${packageName}.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import ${packageName}.dto.help.*;
 
+/**
+ * 微信相关处理类
+ * @author Bob
+ */
 public interface WxService {
 
     WxLoginStatusDTO getOpenIdAndLogin(ParamWxOpenIdDTO wxOpenIdParamDTO);

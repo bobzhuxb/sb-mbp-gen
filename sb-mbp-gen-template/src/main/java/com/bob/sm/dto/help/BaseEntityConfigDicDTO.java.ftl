@@ -2,6 +2,7 @@ package ${packageName}.dto.help;
 
 /**
  * 用于共通化Service代码的实体配置DTO
+ * @author Bob
  */
 public class BaseEntityConfigDicDTO {
 

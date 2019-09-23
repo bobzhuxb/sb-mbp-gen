@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 /**
  * Bean操作工具类
+ * @author Bob
  */
 public class MyBeanUtil {
 

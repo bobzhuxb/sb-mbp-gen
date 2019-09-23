@@ -7,7 +7,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Optional;
 
 /**
- * Utility class for Spring Security.
+ * Spring Security的工具类
+ * @author Bob
  */
 public final class SecurityUtils {
 

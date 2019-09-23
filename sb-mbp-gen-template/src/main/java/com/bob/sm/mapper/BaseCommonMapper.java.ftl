@@ -11,6 +11,10 @@ import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
+/**
+ * 基础Mapper类
+ * @author Bob
+ */
 public interface BaseCommonMapper<T> extends BaseMapper<T> {
 
     @Update("UPDATE ${r'${tableName}'} SET ${r'${relationColumnName}'} = null WHERE ${r'${relationColumnName}'} = ${r'#{'}relationId}")

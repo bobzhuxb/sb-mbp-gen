@@ -7,6 +7,7 @@ import java.util.Objects;
 
 /**
  * ${entityComment}
+ * @author Bob
  */
 @Data
 public class ${eentityName} extends BaseDomain {

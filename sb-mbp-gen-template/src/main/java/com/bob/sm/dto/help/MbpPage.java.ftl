@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * 分页参数配置DTO
+ * @author Bob
+ */
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)

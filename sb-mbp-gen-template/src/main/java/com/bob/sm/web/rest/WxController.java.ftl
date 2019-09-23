@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
+/**
+ * 微信相关Controller
+ * @author Bob
+ */
 @RestController
 @RequestMapping("/api")
 public class WxController {

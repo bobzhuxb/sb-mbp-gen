@@ -8,7 +8,7 @@ import ${packageName}.config.Constants;
 import ${packageName}.config.YmlConfig;
 import ${packageName}.dto.help.*;
 import ${packageName}.service.WxService;
-import ${packageName}.util.StringUtil;
+import ${packageName}.util.MyStringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +19,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+/**
+ * 微信相关处理类
+ * @author Bob
+ */
 @Service
 @Transactional
 public class WxServiceImpl implements WxService {
@@ -172,12 +176,12 @@ public class WxServiceImpl implements WxService {
         }
         String ticket = wxTicketResultDTO.getTicket();
         String expiresIn = wxTicketResultDTO.getExpires_in();
-        String nonceStr = StringUtil.generateNonceStr();
+        String nonceStr = MyStringUtil.generateNonceStr();
         String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
         // 签名
         String toBeSignatureStr = "jsapi_ticket=" + ticket + "&noncestr=" + nonceStr + "&timestamp="
                 + timestamp + "&url=" + publicPageUrl;
-        String signature = StringUtil.sha1(toBeSignatureStr);
+        String signature = MyStringUtil.sha1(toBeSignatureStr);
         // 设置返回数据
         ReturnWxJsapiInfoDTO wxJsapiInfoDTO = new ReturnWxJsapiInfoDTO();
         wxJsapiInfoDTO.setNonceStr(nonceStr);

@@ -9,6 +9,10 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+/**
+ * Spring Boot启动后的操作.
+ * @author Bob
+ */
 @Component
 @Order(value = 1)
 public class ApplicationInit implements ApplicationRunner {

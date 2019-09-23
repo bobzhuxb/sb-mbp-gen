@@ -4,6 +4,7 @@ import java.security.MessageDigest;
 
 /**
  * 字符串加解密工具类
+ * @author Bob
  */
 public class EncoderUtil {
 

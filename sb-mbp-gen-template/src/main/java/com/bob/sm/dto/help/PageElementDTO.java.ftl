@@ -2,6 +2,10 @@ package ${packageName}.dto.help;
 
 import java.util.List;
 
+/**
+ * 页面元素DTO
+ * @author Bob
+ */
 public class PageElementDTO implements Cloneable {
 
     private String code;        // 页面或页面元素的代码

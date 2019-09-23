@@ -10,7 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by huyong on 2016/6/16.
+ * 请求工具类
+ * @author Bob
  */
 public class RequestUtil {
 

@@ -11,6 +11,10 @@ import ${packageName}.dto.help.RolePageElementsDTO;
 import java.util.List;
 import java.util.Map;
 
+/*
+ * ${entityComment}
+ * @author Bob
+ */
 public interface ${eentityName}Service extends BaseService<${eentityName}, ${eentityName}Criteria, ${eentityName}DTO> {
 
 	<#if eentityName == 'SystemPermission'>

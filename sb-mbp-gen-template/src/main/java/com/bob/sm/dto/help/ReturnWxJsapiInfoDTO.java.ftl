@@ -1,5 +1,9 @@
 package ${packageName}.dto.help;
 
+/**
+ * 获取微信JSAPI的返回
+ * @author Bob
+ */
 public class ReturnWxJsapiInfoDTO {
 
     private String nonceStr;

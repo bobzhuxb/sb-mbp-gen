@@ -2,6 +2,10 @@ package ${packageName}.dto.help;
 
 import ${packageName}.config.Constants;
 
+/**
+ * 文件上传返回的共通类
+ * @author Bob
+ */
 public class ReturnUploadCommonDTO<T> extends ReturnCommonDTO<T> {
 
     // 返回状态

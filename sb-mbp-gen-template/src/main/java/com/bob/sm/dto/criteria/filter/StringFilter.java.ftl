@@ -2,6 +2,10 @@ package ${packageName}.dto.criteria.filter;
 
 import java.util.Objects;
 
+/**
+ * 查询过滤器
+ * @author Bob
+ */
 public class StringFilter extends Filter<String> {
 
     private static final long serialVersionUID = 1L;

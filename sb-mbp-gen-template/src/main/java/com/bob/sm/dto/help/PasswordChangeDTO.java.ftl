@@ -5,6 +5,7 @@ import javax.validation.constraints.Size;
 
 /**
  * 当前用户修改密码用的DTO.
+ * @author Bob
  */
 public class PasswordChangeDTO {
 

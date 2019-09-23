@@ -5,6 +5,7 @@ import java.util.Objects;
 
 /**
  * 用户账户
+ * @author Bob
  */
 public class EnhanceUserDTO extends SystemUserDTO {
 

@@ -2,6 +2,10 @@ package ${packageName}.dto.help;
 
 import java.util.List;
 
+/**
+ * 格式化后的分页DTO
+ * @author Bob
+ */
 public class PageFormattedData<T> {
 
     private Integer page;

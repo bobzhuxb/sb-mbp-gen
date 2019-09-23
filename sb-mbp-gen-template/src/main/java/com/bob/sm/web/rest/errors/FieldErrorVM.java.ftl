@@ -2,6 +2,10 @@ package ${packageName}.web.rest.errors;
 
 import java.io.Serializable;
 
+/**
+ * 域错误
+ * @author Bob
+ */
 public class FieldErrorVM implements Serializable {
 
     private static final long serialVersionUID = 1L;

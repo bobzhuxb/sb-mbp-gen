@@ -7,6 +7,10 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+/**
+ * Web Mvc配置.
+ * @author Bob
+ */
 @Configuration
 public class WebMvcConfiguration implements WebMvcConfigurer {
 

@@ -9,9 +9,7 @@ import ${packageName}.dto.help.ReturnCommonDTO;
 import ${packageName}.dto.help.ReturnFileUploadDTO;
 import ${packageName}.service.CommonService;
 import ${packageName}.util.ParamValidatorUtil;
-import ${packageName}.web.rest.errors.BadRequestAlertException;
 import ${packageName}.web.rest.errors.CommonException;
-import ${packageName}.web.rest.errors.InternalServerErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +22,10 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 
+/**
+ * 共通Controller
+ * @author Bob
+ */
 @RestController
 @RequestMapping("/api")
 public class CommonController {

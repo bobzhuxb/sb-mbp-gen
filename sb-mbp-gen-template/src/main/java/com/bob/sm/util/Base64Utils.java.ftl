@@ -7,6 +7,10 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+/**
+ * Base64工具类
+ * @author Bob
+ */
 public class Base64Utils {
 
     /**
@@ -87,8 +91,10 @@ public class Base64Utils {
      */
     public static boolean base64ToImage(String imgStr, String imgFilePath) { // 对字节数组字符串进行Base64解码并生成图片
 
-        if (StringUtil.isEmpty(imgStr)) // 图像数据为空
+        if (MyStringUtil.isEmpty(imgStr)) {
+            // 图像数据为空
             return false;
+        }
 
         BASE64Decoder decoder = new BASE64Decoder();
         try {

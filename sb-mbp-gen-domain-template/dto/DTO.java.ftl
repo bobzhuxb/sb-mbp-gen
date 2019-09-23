@@ -12,6 +12,7 @@ import java.util.Objects;
 
 /**
  * ${entityComment}
+ * @author Bob
  */
 <#if (annotationList)??>
 <#list annotationList as annotation>

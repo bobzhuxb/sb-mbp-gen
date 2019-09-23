@@ -13,6 +13,10 @@ import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
 
+/**
+ * 缓存配置.
+ * @author Bob
+ */
 @Configuration
 @EnableConfigurationProperties(PropertiesHelp.class)
 @EnableCaching

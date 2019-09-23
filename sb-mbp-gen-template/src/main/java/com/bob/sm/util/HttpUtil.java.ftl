@@ -27,6 +27,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Http工具类
+ * @author Bob
+ */
 public class HttpUtil {
 
     private static final String HTTP = "http";
