@@ -50,7 +50,7 @@ dependencies {
 	// ===================================日志=====================================
 	// Spring日志模块、logstash模块
 	compile "org.springframework.boot:spring-boot-starter-logging"
-	compile "net.logstash.logback:logstash-logback-encoder:5.2"
+//	compile "net.logstash.logback:logstash-logback-encoder:5.2"
 
 	// ===================================安全=====================================
 	// Spring安全模块

@@ -2,6 +2,7 @@ logging:
     level:
         ROOT: INFO
         com.bob.sm: INFO
+    config: classpath:logback-spring-dev.xml
 
 spring:
     datasource:

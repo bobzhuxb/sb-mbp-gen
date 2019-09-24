@@ -2,6 +2,7 @@ logging:
     level:
         ROOT: INFO
         ${packageName}: INFO
+    config: classpath:logback-spring-prod.xml
 
 spring:
     datasource:
