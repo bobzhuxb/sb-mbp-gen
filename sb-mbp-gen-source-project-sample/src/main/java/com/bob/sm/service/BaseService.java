@@ -866,6 +866,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     }
                 }
                 SystemUserCriteria insertUserCriteria = new SystemUserCriteria();
+                // 此处不用再验证权限
+                insertUserCriteria.setAuthorityPass(Constants.yesNo.YES.getValue());
                 insertUserCriteria.setAssociationNameList(associationName2List);
                 ReturnCommonDTO<SystemUserDTO> insertUserRtn = GlobalCache.getServiceMap().get("SystemUser")
                         .baseFindOne("SystemUser", insertUserId, insertUserCriteria, appendParamMap);
@@ -885,6 +887,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     }
                 }
                 SystemUserCriteria operateUserCriteria = new SystemUserCriteria();
+                // 此处不用再验证权限
+                operateUserCriteria.setAuthorityPass(Constants.yesNo.YES.getValue());
                 operateUserCriteria.setAssociationNameList(associationName2List);
                 ReturnCommonDTO<SystemUserDTO> operateUserRtn = GlobalCache.getServiceMap().get("SystemUser")
                         .baseFindOne("SystemUser", operateUserId, operateUserCriteria, appendParamMap);
