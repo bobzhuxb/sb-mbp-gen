@@ -2,8 +2,8 @@ package ${packageName}.config;
 
 import com.google.common.net.HttpHeaders;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.CacheControl;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -17,9 +17,13 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry
-                .addResourceHandler("/resources/**")
-                .addResourceLocations("/resources/")
-                .setCachePeriod(31556926);
+                .addResourceHandler("/favicon.png")
+                .addResourceLocations("classpath:/static/")
+                .setCacheControl(CacheControl.maxAge(90, TimeUnit.DAYS));
+        registry
+                .addResourceHandler("/*.js", "/*.css", "/static/*.png", "/icons/*.png")
+                .addResourceLocations("classpath:/static/")
+                .setCacheControl(CacheControl.maxAge(30, TimeUnit.DAYS));
     }
 
     @Override
