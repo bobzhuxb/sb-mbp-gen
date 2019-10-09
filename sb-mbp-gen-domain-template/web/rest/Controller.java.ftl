@@ -59,7 +59,7 @@ public class ${eentityName}Controller {
         }
         ReturnCommonDTO resultDTO = null;
         try {
-            resultDTO = ${entityName}Service.baseSave(DOMAIN_NAME, ${entityName}DTO);
+            resultDTO = ${entityName}Service.baseSave(DOMAIN_NAME, ${entityName}DTO, null);
         } catch (CommonException e) {
             log.error(e.getMessage(), e);
             resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
@@ -88,7 +88,7 @@ public class ${eentityName}Controller {
         }
         ReturnCommonDTO resultDTO = null;
         try {
-            resultDTO = ${entityName}Service.baseSave(DOMAIN_NAME, ${entityName}DTO);
+            resultDTO = ${entityName}Service.baseSave(DOMAIN_NAME, ${entityName}DTO, null);
         } catch (CommonException e) {
             log.error(e.getMessage(), e);
             resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
@@ -107,7 +107,7 @@ public class ${eentityName}Controller {
         log.debug("Controller ==> 根据ID删除${eentityName} : {}", id);
         ReturnCommonDTO resultDTO = null;
         try {
-            resultDTO = ${entityName}Service.baseDeleteById(DOMAIN_NAME, id);
+            resultDTO = ${entityName}Service.baseDeleteById(DOMAIN_NAME, id, null);
         } catch (CommonException e) {
             log.error(e.getMessage(), e);
             resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
@@ -126,7 +126,7 @@ public class ${eentityName}Controller {
         log.debug("Controller ==> 批量删除${eentityName} : {}", idList);
         ReturnCommonDTO resultDTO = null;
         try {
-            resultDTO = ${entityName}Service.baseDeleteByIdList(DOMAIN_NAME, idList);
+            resultDTO = ${entityName}Service.baseDeleteByIdList(DOMAIN_NAME, idList, null);
         } catch (CommonException e) {
             log.error(e.getMessage(), e);
             resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());

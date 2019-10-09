@@ -84,6 +84,8 @@ dependencies {
 	compile "javax.cache:cache-api"
 	// Ehcache
 	compile "org.ehcache:ehcache"
+	// Redis
+	compile "org.springframework.boot:spring-boot-starter-data-redis"
 
 	// ===================================接口文档=====================================
 	// Swagger

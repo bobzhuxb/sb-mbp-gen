@@ -18,7 +18,6 @@ import com.bob.sm.dto.help.*;
 import com.bob.sm.util.GenericsUtil;
 import com.bob.sm.util.MyBeanUtil;
 import com.bob.sm.util.MyStringUtil;
-import com.bob.sm.util.StringUtil;
 import com.bob.sm.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -69,8 +68,9 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     /**
      * 删除验证（具体子类实现）
      * @param domain 数据库中查询出的实体数据内容
+     * @param appendMap 附加的传递参数
      */
-    default void baseDeleteValidator(T domain) {
+    default void baseDeleteValidator(T domain, Map<String, Object> appendMap) {
         // TODO: 删除验证写在这里（由具体实现覆盖）
     }
 
@@ -131,18 +131,20 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param relatedColumnName 关联的字段名称
      * @param relatedId 关联的ID
      * @param idList 主键ID列表
+     * @param appendMap 附加的传递参数
      * @return 结果返回码和消息
      * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
      */
     default ReturnCommonDTO baseDeleteByRelationIdWithoutIdList(String entityTypeName, String relatedColumnName,
-                                                                String relatedId, List<String> idList) {
+                                                                String relatedId, List<String> idList,
+                                                                Map<String, Object> appendMap) {
         Optional.ofNullable(GlobalCache.getMapperMap().get(entityTypeName).selectList(
                 new QueryWrapper<T>().select("id").eq(relatedColumnName, relatedId).notIn(
                         idList != null && idList.size() > 0, "id", idList))
         ).get().stream().forEach(domain -> {
             ReturnCommonDTO returnCommonDTO = baseDeleteByMapCascade(entityTypeName, new HashMap<String, Object>() {{
                 put("id", ((BaseDomain) domain).getId());
-            }});
+            }}, appendMap);
             if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
                 throw new CommonException(returnCommonDTO.getErrMsg());
             }
@@ -379,7 +381,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 获取传入的查询条件的类和域
         Class criteriaClazz = criteria.getClass();
         // 数字的判断
-        Pattern digitalPattern = Pattern.compile("^[-\\+]?[\\d]*$");
+        final Pattern digitalPattern = Pattern.compile("^[-\\+]?[\\d]*$");
         // orderBy条件
         try {
             PropertyDescriptor pd = new PropertyDescriptor("orderBy", criteriaClazz);
@@ -436,7 +438,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                             }
                         }
                         // 要排序的字段名（包括表名的别名）
-                        String orderColumnName = subTableName + "." + StringUtil.camelToUnderline(orderFieldName);
+                        String orderColumnName = subTableName + "." + MyStringUtil.camelToUnderline(orderFieldName);
                         // 自定义排序规则处理
                         if (orderByDetail.length > 2 || customOrderIndexStart == 1) {
                             String customFieldValueStr = "";
@@ -462,7 +464,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         for (Field field : fields) {
             try {
                 String fieldName = field.getName();
-                String columnName = tableName + "." + StringUtil.camelToUnderline(fieldName);
+                String columnName = tableName + "." + MyStringUtil.camelToUnderline(fieldName);
                 if ("serialVersionUID".equals(fieldName)) {
                     continue;
                 }
@@ -619,7 +621,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     String tableIndexAndName = entry.getValue();
                     String tableIndex = tableIndexAndName.split("_")[0];
                     String tableNameTmp = tableIndexAndName.split("_")[1];
-                    tableNameTmp = StringUtil.camelToUnderline(tableNameTmp) + "_" + tableIndex;
+                    tableNameTmp = MyStringUtil.camelToUnderline(tableNameTmp) + "_" + tableIndex;
                     revertTableIndexMap.put(tableNameTmp, criteriaStr);
                 }
                 revertTableIndexMap.put(tableName, "");
@@ -902,9 +904,10 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * 新增或修改
      * @param entityTypeName 实体类型名
      * @param dto 主实体
+     * @param appendMap 附加的传递参数
      * @return
      */
-    default ReturnCommonDTO baseSave(String entityTypeName, O dto) {
+    default ReturnCommonDTO baseSave(String entityTypeName, O dto, Map<String, Object> appendMap) {
         // 获取主键ID，根据ID存在与否判断是新增还是修改
         String dtoIdUpdate = dto.getId();
         // 设置当前用户和时间
@@ -914,8 +917,10 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         dto.setInsertUserId(dto.getId() == null ? nowUserId : null);
         dto.setUpdateTime(nowTime);
         dto.setOperateUserId(nowUserId);
-        // 附加的传递参数
-        Map<String, Object> appendMap = new HashMap<>();
+        // 附加参数设置
+        if (appendMap == null) {
+            appendMap = new HashMap<>();
+        }
         // 新增修改验证
         boolean continueSave = baseSaveValidator(dto, appendMap);
         if (!continueSave) {
@@ -968,11 +973,13 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     if (subDtoIdList == null) {
                         // 如果子属性列表的所有都没有填写ID，则认为是全刷新，清空子属性列表
                         GlobalCache.getServiceMap().get(relationDTO.getToType()).baseDeleteByMapCascade(
-                                relationDTO.getToType(), new HashMap<String, Object>() {{put(relatedColumnName, dtoIdUpdate);}});
+                                relationDTO.getToType(),
+                                new HashMap<String, Object>() {{put(relatedColumnName, dtoIdUpdate);}},
+                                appendMap);
                     } else {
                         // 如果子属性列表的部分或全部填写了ID，则删除当前条件（指定了关联字段的值）下的其它数据
                         GlobalCache.getServiceMap().get(relationDTO.getToType()).baseDeleteByRelationIdWithoutIdList(
-                                relationDTO.getToType(), relatedColumnName, dtoIdUpdate, subDtoIdList);
+                                relationDTO.getToType(), relatedColumnName, dtoIdUpdate, subDtoIdList, appendMap);
                     }
                 }
                 // 然后，新增或修改子属性（需要级联保存的属性）
@@ -992,7 +999,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     // 新增或修改：设置最新修改人和最新修改时间
                     subDTO.setOperateUserId(nowUserId);
                     subDTO.setUpdateTime(nowTime);
-                    GlobalCache.getServiceMap().get(relationDTO.getToType()).baseSave(relationDTO.getToType(), subDTO);
+                    GlobalCache.getServiceMap().get(relationDTO.getToType()).baseSave(relationDTO.getToType(), subDTO, new HashMap<>());
                 });
             } catch (Exception e) {
                 e.printStackTrace();
@@ -1009,27 +1016,36 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * 根据ID删除数据（同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
      * @param entityTypeName 实体类型名
      * @param id 主键ID
+     * @param appendMap 附加的传递参数
      * @return 结果返回码和消息
      * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事务的一致性
      */
-    default ReturnCommonDTO baseDeleteById(String entityTypeName, String id) {
-        return baseDeleteByMapCascade(entityTypeName, new HashMap<String, Object>() {{put("id", id);}});
+    default ReturnCommonDTO baseDeleteById(String entityTypeName, String id, Map<String, Object> appendMap) {
+        if (appendMap == null) {
+            appendMap = new HashMap<>();
+        }
+        return baseDeleteByMapCascade(entityTypeName, new HashMap<String, Object>() {{put("id", id);}}, appendMap);
     }
 
     /**
      * 根据ID列表删除数据（同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
      * @param entityTypeName 实体类型名
      * @param idList 主键ID列表
+     * @param appendMap 附加的传递参数
      * @return 结果返回码和消息
      * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
      */
-    default ReturnCommonDTO baseDeleteByIdList(String entityTypeName, List<String> idList) {
-        idList.forEach(id -> {
-            ReturnCommonDTO returnCommonDTO = baseDeleteByMapCascade(entityTypeName, new HashMap<String, Object>() {{put("id", id);}});
+    default ReturnCommonDTO baseDeleteByIdList(String entityTypeName, List<String> idList, Map<String, Object> appendMap) {
+        if (appendMap == null) {
+            appendMap = new HashMap<>();
+        }
+        for (String id : idList) {
+            ReturnCommonDTO returnCommonDTO = baseDeleteByMapCascade(entityTypeName,
+                    new HashMap<String, Object>() {{put("id", id);}}, appendMap);
             if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
                 throw new CommonException(returnCommonDTO.getErrMsg());
             }
-        });
+        }
         return new ReturnCommonDTO();
     }
 
@@ -1037,10 +1053,12 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * 根据指定条件删除数据（级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
      * @param entityTypeName 实体类型名
      * @param columnMap 表字段map对象
+     * @param appendMap 附加的传递参数
      * @return 结果返回码和消息
      * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事务的一致性
      */
-    default ReturnCommonDTO baseDeleteByMapCascade(String entityTypeName, Map<String, Object> columnMap) {
+    default ReturnCommonDTO baseDeleteByMapCascade(String entityTypeName, Map<String, Object> columnMap,
+                                                   Map<String, Object> appendMap) {
         // 删除级联实体或置空关联字段或禁止删除
         listByMap(columnMap).forEach(domain -> {
             Optional.ofNullable(GlobalCache.getEntityRelationsMap().get(entityTypeName)).get().forEach(relationDTO -> {
@@ -1064,7 +1082,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 // 数据库表的关联列字段名。注意：这里先限制为不能随意修改关联字段的数据库字段名，留待以后优化
                 String relatedColumnName = MyStringUtil.camelToUnderline(relationDTO.getToName()) + "_id";
                 // 删除验证（例如权限验证等）
-                baseDeleteValidator(domain);
+                baseDeleteValidator(domain, appendMap);
                 if ("from".equals(relationDTO.getFromOrTo())) {
                     // 级联删除是本体作为主，所以此处是from
                     if (Constants.cascadeDeleteType.FORBIDDEN.getValue().equals(relationDTO.getCascadeDelete())) {
@@ -1084,7 +1102,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         GlobalCache.getServiceMap().get(relationDTO.getToType()).baseDeleteByMapCascade(
                                 relationDTO.getToType(), new HashMap<String, Object>() {{
                                     put(relatedColumnName, domain.getId());
-                                }});
+                                }}, appendMap);
                     }
                 }
             });
