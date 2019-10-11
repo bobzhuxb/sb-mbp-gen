@@ -162,4 +162,31 @@ public class ExcelCellDTO {
         this.value = value;
         return this;
     }
+
+    /**
+     * 设置所有框线
+     * @param borderTop
+     * @param borderBottom
+     * @param borderLeft
+     * @param borderRight
+     * @return
+     */
+    public ExcelCellDTO setAllBorder(BorderStyle borderTop, BorderStyle borderBottom,
+                                     BorderStyle borderLeft, BorderStyle borderRight) {
+        this.borderTop = borderTop;
+        this.borderBottom = borderBottom;
+        this.borderLeft = borderLeft;
+        this.borderRight = borderRight;
+        return this;
+    }
+
+    /**
+     * 设置所有框线
+     * @param border
+     * @return
+     */
+    public ExcelCellDTO setAllBorder(BorderStyle border) {
+        setAllBorder(border, border, border, border);
+        return this;
+    }
 }

@@ -424,7 +424,7 @@ public class RedisUtil {
     }
 
     /**
-     * 将set数据放入缓存
+     * 将数据放入set缓存（带超时时间）
      * @param key 键
      * @param time 时间(秒)
      * @param values 值 可以是多个
@@ -520,7 +520,7 @@ public class RedisUtil {
     }
 
     /**
-     * 将list放入缓存
+     * 将数据放入list缓存
      * @param key 键
      * @param value 值
      * @return
@@ -536,7 +536,7 @@ public class RedisUtil {
     }
 
     /**
-     * 将list放入缓存
+     * 将数据放入list缓存（带超时时间）
      * @param key 键
      * @param value 值
      * @param time 时间(秒)
@@ -572,7 +572,7 @@ public class RedisUtil {
     }
 
     /**
-     * 将list放入缓存
+     * 将list放入缓存（带超时时间）
      * @param key 键
      * @param value 值
      * @param time 时间(秒)
@@ -619,6 +619,20 @@ public class RedisUtil {
         try {
             Long remove = redisTemplate.opsForList().remove(key, count, value);
             return remove;
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    /**
+     * 获取并移除第一个数据（从左开始）
+     * @param key 键
+     * @return 移除的数据
+     */
+    public Object lPop(String key) {
+        try {
+            return redisTemplate.opsForList().leftPop(key);
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
             throw e;

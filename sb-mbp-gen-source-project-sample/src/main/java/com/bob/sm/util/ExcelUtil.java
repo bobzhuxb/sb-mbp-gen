@@ -3,6 +3,8 @@ package com.bob.sm.util;
 import com.bob.sm.dto.help.ExcelCellDTO;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.RegionUtil;
 import org.apache.poi.xssf.streaming.SXSSFCell;
 import org.apache.poi.xssf.streaming.SXSSFRow;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
@@ -25,9 +27,9 @@ public class ExcelUtil {
 //            if (xssfRow != null) {
 //                xssfRow.setCellType(xssfRow.CELL_TYPE_STRING);
 //            }
-            if (cell.getCellType() == cell.CELL_TYPE_BOOLEAN) {
+            if (cell.getCellType() == XSSFCell.CELL_TYPE_BOOLEAN) {
                 return String.valueOf(cell.getBooleanCellValue());
-            } else if (cell.getCellType() == cell.CELL_TYPE_NUMERIC) {
+            } else if (cell.getCellType() == XSSFCell.CELL_TYPE_NUMERIC) {
                 String result = "";
                 if (cell.getCellStyle().getDataFormat() == 22) {
                     // 处理自定义日期格式：m月d日(通过判断单元格的格式id解决，id的值是58)
@@ -41,7 +43,7 @@ public class ExcelUtil {
                     DecimalFormat format = new DecimalFormat();
                     String temp = style.getDataFormatString();
                     // 单元格设置成常规
-                    if (temp.equals("General")) {
+                    if ("General".equals(temp)) {
                         format.applyPattern("#");
                     }
                     result = format.format(value);
@@ -119,6 +121,23 @@ public class ExcelUtil {
         Optional.ofNullable(left).ifPresent(leftIn -> cellStyle.setBorderLeft(leftIn));//左边框
         Optional.ofNullable(right).ifPresent(rightIn -> cellStyle.setBorderRight(rightIn));//右边框
         return cellStyle;
+    }
+
+    /**
+     * 设置合并单元格的边框
+     * @param sheet Excel工作表
+     * @param top 上边框样式
+     * @param bottom 下边框样式
+     * @param left 左边框样式
+     * @param right 右边框样式
+     * @return 返回设置好的样式
+     */
+    public static void setRegionBorder(SXSSFSheet sheet, CellRangeAddress cellRangeAddress,
+                                       BorderStyle top, BorderStyle bottom, BorderStyle left, BorderStyle right) {
+        Optional.ofNullable(top).ifPresent(topIn -> RegionUtil.setBorderTop(topIn, cellRangeAddress, sheet));//上边框
+        Optional.ofNullable(bottom).ifPresent(bottomIn -> RegionUtil.setBorderBottom(bottomIn, cellRangeAddress, sheet));//下边框
+        Optional.ofNullable(left).ifPresent(leftIn -> RegionUtil.setBorderLeft(leftIn, cellRangeAddress, sheet));//左边框
+        Optional.ofNullable(right).ifPresent(rightIn -> RegionUtil.setBorderRight(rightIn, cellRangeAddress, sheet));//右边框
     }
 
     /**

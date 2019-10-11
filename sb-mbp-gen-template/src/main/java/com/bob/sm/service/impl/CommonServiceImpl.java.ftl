@@ -10,6 +10,7 @@ import ${packageName}.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.RegionUtil;
 import org.apache.poi.xssf.streaming.SXSSFCell;
 import org.apache.poi.xssf.streaming.SXSSFRow;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
@@ -54,6 +55,7 @@ public class CommonServiceImpl implements CommonService {
      * @param file 待上传的文件
      * @return 上传结果（路径、上传时间）
      */
+    @Override
     public ReturnCommonDTO<ReturnFileUploadDTO> uploadFile(MultipartFile file) {
         log.debug("上传文件 : {}", file.getOriginalFilename());
         Date nowDate = new Date();
@@ -107,6 +109,7 @@ public class CommonServiceImpl implements CommonService {
      * @return
      * @throws UnsupportedEncodingException
      */
+    @Override
     public ReturnCommonDTO downloadFile(HttpServletResponse response, String fullFileName, String changeFileName) {
         File file = new File(fullFileName);
         return downloadFile(response, file, changeFileName);
@@ -120,6 +123,7 @@ public class CommonServiceImpl implements CommonService {
      * @return
      * @throws UnsupportedEncodingException
      */
+    @Override
     public ReturnCommonDTO downloadFile(HttpServletResponse response, File file, String changeFileName) {
         log.debug("下载文件 : {}", file.getAbsolutePath());
         String fullFileName = file.getAbsolutePath();
@@ -152,6 +156,7 @@ public class CommonServiceImpl implements CommonService {
      * @return
      * @throws UnsupportedEncodingException
      */
+    @Override
     public ReturnCommonDTO downloadFile(HttpServletResponse response, InputStream inputStream, String changeFileName) {
         return downloadFileBase(response, inputStream, null, changeFileName);
     }
@@ -165,6 +170,7 @@ public class CommonServiceImpl implements CommonService {
      * @return
      * @throws UnsupportedEncodingException
      */
+    @Override
     public ReturnCommonDTO downloadFileBase(HttpServletResponse response, InputStream inputStream, String oriFileName,
                                             String changeFileName) {
         try {
@@ -228,6 +234,7 @@ public class CommonServiceImpl implements CommonService {
      * @return 导出结果
      * @throws Exception
      */
+    @Override
     public ReturnCommonDTO exportExcel(HttpServletResponse response, String fileName, String sheetName,
                                        int maxColumn, int tableStartRow, List<ExcelCellDTO> beforeDataCellList,
                                        List<ExcelCellDTO> afterDataCellList, List<ExcelTitleDTO> titleList,
@@ -256,58 +263,62 @@ public class CommonServiceImpl implements CommonService {
                     // key：relativeRow相对行数，value：该行的单元格数据
                     ExcelUtil.addDataToExcel(beforeDataCellList, 0, maxWidthMap, workbook, sheet);
                 }
-                // 创建表头
-                SXSSFRow headRow = sheet.createRow(tableStartRow);
-                // 表头统一居中，背景为灰色，加边框
-                CellStyle titleNameStyle = workbook.createCellStyle();
-                ExcelUtil.setAlignment(titleNameStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-                ExcelUtil.setBackgroundColor(titleNameStyle, IndexedColors.GREY_25_PERCENT.getIndex());
-                ExcelUtil.setBorder(titleNameStyle, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN);
-                // 设置表头信息
-                Map<String, Integer> titleNameMap = new HashMap<>();
-                for (int column = 0; column < titleList.size(); column++) {
-                    ExcelTitleDTO titleDTO = titleList.get(column);
-                    titleNameMap.put(titleDTO.getTitleName(), column);
-                    SXSSFCell cell = headRow.createCell(column);
-                    cell.setCellValue(titleDTO.getTitleContent());
-                    cell.setCellStyle(titleNameStyle);
-                    // 设置该列的最大宽度
-                    ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, column, null);
-                }
-                // 表数据统一居中，加边框
-                CellStyle dataStyle = workbook.createCellStyle();
-                ExcelUtil.setAlignment(dataStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-                ExcelUtil.setBorder(dataStyle, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN);
-                // 填入表数据
-                for (int dataRowCount = 0; dataRowCount < dataList.size(); dataRowCount++) {
-                    SXSSFRow dataRow = sheet.createRow(tableStartRow + dataRowCount + 1);
-                    Object dataObject = dataList.get(dataRowCount);
-                    if (dataObject instanceof Map) {
-                        // Map获取数据
-                        for (int column = 0; column < titleList.size(); column++) {
-                            String titleName = titleList.get(column).getTitleName();
-                            Object data = ((Map) dataObject).get(titleName);
-                            SXSSFCell cell = dataRow.createCell(column);
-                            cell.setCellValue(data == null ? "" : data.toString());
-                            cell.setCellStyle(dataStyle);
-                            // 设置该列的最大宽度
-                            ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, column, null);
-                        }
-                    } else {
-                        // 反射获取对象属性
-                        for (int column = 0; column < titleList.size(); column++) {
-                            String titleName = titleList.get(column).getTitleName();
-                            // 获取属性（使用apache的包可以获取包括父类的属性）
-                            Field field = FieldUtils.getField(dataObject.getClass(), titleName, true);
-                            // 设置对象的访问权限，保证对private的属性的访问
-                            if (field != null) {
-                                field.setAccessible(true);
-                                Object data = field.get(dataObject);
+                if (tableStartRow >= 0 && titleList != null && titleList.size() > 0
+                        && dataList != null && dataList.size() > 0) {
+                    // 存在有数据列表的情况下，生成数据列表
+                    // 创建表头
+                    SXSSFRow headRow = sheet.createRow(tableStartRow);
+                    // 表头统一居中，背景为灰色，加边框
+                    CellStyle titleNameStyle = workbook.createCellStyle();
+                    ExcelUtil.setAlignment(titleNameStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+                    ExcelUtil.setBackgroundColor(titleNameStyle, IndexedColors.GREY_25_PERCENT.getIndex());
+                    ExcelUtil.setBorder(titleNameStyle, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN);
+                    // 设置表头信息
+                    Map<String, Integer> titleNameMap = new HashMap<>();
+                    for (int column = 0; column < titleList.size(); column++) {
+                        ExcelTitleDTO titleDTO = titleList.get(column);
+                        titleNameMap.put(titleDTO.getTitleName(), column);
+                        SXSSFCell cell = headRow.createCell(column);
+                        cell.setCellValue(titleDTO.getTitleContent());
+                        cell.setCellStyle(titleNameStyle);
+                        // 设置该列的最大宽度
+                        ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, column, null);
+                    }
+                    // 表数据统一居中，加边框
+                    CellStyle dataStyle = workbook.createCellStyle();
+                    ExcelUtil.setAlignment(dataStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+                    ExcelUtil.setBorder(dataStyle, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN);
+                    // 填入表数据
+                    for (int dataRowCount = 0; dataRowCount < dataList.size(); dataRowCount++) {
+                        SXSSFRow dataRow = sheet.createRow(tableStartRow + dataRowCount + 1);
+                        Object dataObject = dataList.get(dataRowCount);
+                        if (dataObject instanceof Map) {
+                            // Map获取数据
+                            for (int column = 0; column < titleList.size(); column++) {
+                                String titleName = titleList.get(column).getTitleName();
+                                Object data = ((Map) dataObject).get(titleName);
                                 SXSSFCell cell = dataRow.createCell(column);
                                 cell.setCellValue(data == null ? "" : data.toString());
                                 cell.setCellStyle(dataStyle);
                                 // 设置该列的最大宽度
                                 ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, column, null);
+                            }
+                        } else {
+                            // 反射获取对象属性
+                            for (int column = 0; column < titleList.size(); column++) {
+                                String titleName = titleList.get(column).getTitleName();
+                                // 获取属性（使用apache的包可以获取包括父类的属性）
+                                Field field = FieldUtils.getField(dataObject.getClass(), titleName, true);
+                                // 设置对象的访问权限，保证对private的属性的访问
+                                if (field != null) {
+                                    field.setAccessible(true);
+                                    Object data = field.get(dataObject);
+                                    SXSSFCell cell = dataRow.createCell(column);
+                                    cell.setCellValue(data == null ? "" : data.toString());
+                                    cell.setCellStyle(dataStyle);
+                                    // 设置该列的最大宽度
+                                    ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, column, null);
+                                }
                             }
                         }
                     }
@@ -324,6 +335,9 @@ public class CommonServiceImpl implements CommonService {
                         CellRangeAddress totalTitleRegion = new CellRangeAddress(cellRangeDTO.getFromRow(),
                                 cellRangeDTO.getToRow(), cellRangeDTO.getFromColumn(), cellRangeDTO.getToColumn());
                         sheet.addMergedRegion(totalTitleRegion);
+                        // 合并单元格加边框
+                        ExcelUtil.setRegionBorder(sheet, totalTitleRegion, cellRangeDTO.getBorderTop(),
+                                cellRangeDTO.getBorderBottom(), cellRangeDTO.getBorderLeft(), cellRangeDTO.getBorderRight());
                     }
                 }
                 // 设置为根据内容自动调整列宽，必须在单元格设值以后进行
@@ -363,8 +377,9 @@ public class CommonServiceImpl implements CommonService {
      * @param allowNullList 每一列是否允许为空
      * @return 解析后的数据列表
      */
+    @Override
     public ReturnCommonDTO<List<Map<String, String>>> importParseExcel(String fullFileName, int columnCount,
-                List<String> columnNameList, List<String> columnKeyList, List<String> regexList, List<Boolean> allowNullList) {
+                                                                       List<String> columnNameList, List<String> columnKeyList, List<String> regexList, List<Boolean> allowNullList) {
         if (fullFileName == null || "".equals(fullFileName)) {
             return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件名为空");
         }
