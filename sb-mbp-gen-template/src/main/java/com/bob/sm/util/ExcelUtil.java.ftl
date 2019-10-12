@@ -198,7 +198,7 @@ public class ExcelUtil {
                                       SXSSFWorkbook workbook, SXSSFSheet sheet) {
         Map<Integer, List<ExcelCellDTO>> rowDataMap = dataCellList.stream()
                 .reduce(new HashMap<>(), (map, cellDTO) -> {
-                    List<ExcelCellDTO> rowCellList = map.get(cellDTO.getRelativeRow());
+                    List<ExcelCellDTO> rowCellList = map.get(appendRow + cellDTO.getRelativeRow());
                     if (rowCellList == null) {
                         rowCellList = new ArrayList<>();
                         map.put(appendRow + cellDTO.getRelativeRow(), rowCellList);
