@@ -1122,14 +1122,15 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      */
     default ReturnCommonDTO<O> baseFindOne(String entityTypeName, String id, C criteria,
                                            Map<String, Object> appendParamMap) {
+        if (appendParamMap == null) {
+            appendParamMap = new HashMap<>();
+        }
         // ID条件设定
-        Wrapper<T> wrapper = baseIdEqualsPrepare(entityTypeName, id, criteria,
-                appendParamMap == null ? new HashMap<>() : appendParamMap);
+        Wrapper<T> wrapper = baseIdEqualsPrepare(entityTypeName, id, criteria, appendParamMap);
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
         interceptReturnInfo.setResultCode(null);        // 初始化数据
-        boolean dataFilterPass = baseDataAuthorityFilter(criteria,
-                appendParamMap == null ? new HashMap<>() : appendParamMap, interceptReturnInfo);
+        boolean dataFilterPass = baseDataAuthorityFilter(criteria, appendParamMap, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
@@ -1137,9 +1138,9 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             return interceptReturnInfo;
         }
         // 执行查询并返回结果
+        Map<String, Object> appendParamMapFinal = appendParamMap;
         return Optional.ofNullable(getOne(wrapper)).map(entity ->
-                new ReturnCommonDTO(baseDoConvert(entityTypeName, entity, criteria,
-                        appendParamMap == null ? new HashMap<>() : appendParamMap)))
+                new ReturnCommonDTO(baseDoConvert(entityTypeName, entity, criteria, appendParamMapFinal)))
                 .orElse(new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "没有该数据"));
     }
 
@@ -1151,13 +1152,15 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @return 数据列表
      */
     default ReturnCommonDTO<List<O>> baseFindAll(String entityTypeName, C criteria, Map<String, Object> appendParamMap) {
+        if (appendParamMap == null) {
+            appendParamMap = new HashMap<>();
+        }
         // 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
         interceptReturnInfo.setResultCode(null);        // 初始化数据
-        boolean dataFilterPass = baseDataAuthorityFilter(criteria,
-                appendParamMap == null ? new HashMap<>() : appendParamMap, interceptReturnInfo);
+        boolean dataFilterPass = baseDataAuthorityFilter(criteria, appendParamMap, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
@@ -1169,13 +1172,12 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 获取查询SQL（select和join）
         String dataQuerySql = baseGetDataQuerySql(entityTypeName, criteria, tableIndexMap);
         // 处理where条件
-        Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria,
-                appendParamMap == null ? new HashMap<>() : appendParamMap, null, tableIndexMap, null);
+        Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, appendParamMap, null, tableIndexMap, null);
         // 执行查询并返回结果
+        Map<String, Object> appendParamMapFinal = appendParamMap;
         return new ReturnCommonDTO(GlobalCache.getMapperMap().get(entityTypeName)
                 .joinSelectList(dataQuerySql, wrapper, criteria.getLimit()).stream()
-                .map(entity -> baseDoConvert(entityTypeName, (T)entity, criteria,
-                        appendParamMap == null ? new HashMap<>() : appendParamMap))
+                .map(entity -> baseDoConvert(entityTypeName, (T)entity, criteria, appendParamMapFinal))
                 .collect(Collectors.toList()));
     }
 
@@ -1189,14 +1191,16 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      */
     default ReturnCommonDTO<IPage<O>> baseFindPage(String entityTypeName, C criteria, MbpPage pageable,
                                                    Map<String, Object> appendParamMap) {
+        if (appendParamMap == null) {
+            appendParamMap = new HashMap<>();
+        }
         Page<T> pageQuery = new Page<>(pageable.getPage(), pageable.getSize());
         // 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
         interceptReturnInfo.setResultCode(null);        // 初始化数据
-        boolean dataFilterPass = baseDataAuthorityFilter(criteria,
-                appendParamMap == null ? new HashMap<>() : appendParamMap, interceptReturnInfo);
+        boolean dataFilterPass = baseDataAuthorityFilter(criteria, appendParamMap, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
@@ -1209,13 +1213,12 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         String dataQuerySql = baseGetDataQuerySql(entityTypeName, criteria, tableIndexMap);
         // 处理where条件
         String countQuerySql = baseGetCountQuerySql(entityTypeName, criteria, tableIndexMap);
-        Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria,
-                appendParamMap == null ? new HashMap<>() : appendParamMap, null, tableIndexMap, null);
+        Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, appendParamMap, null, tableIndexMap, null);
         // 执行查询并返回结果
+        Map<String, Object> appendParamMapFinal = appendParamMap;
         IPage<O> pageResult = GlobalCache.getMapperMap().get(entityTypeName).joinSelectPage(
                 pageQuery, dataQuerySql, wrapper)
-                .convert(entity -> baseDoConvert(entityTypeName, (T)entity, criteria,
-                        appendParamMap == null ? new HashMap<>() : appendParamMap));
+                .convert(entity -> baseDoConvert(entityTypeName, (T)entity, criteria, appendParamMapFinal));
         int totalCount = GlobalCache.getMapperMap().get(entityTypeName).joinSelectCount(countQuerySql, wrapper);
         pageResult.setTotal((long)totalCount);
         return new ReturnCommonDTO(pageResult);
@@ -1237,8 +1240,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
         interceptReturnInfo.setResultCode(null);        // 初始化数据
-        boolean dataFilterPass = baseDataAuthorityFilter(criteria,
-                appendParamMap == null ? new HashMap<>() : appendParamMap, interceptReturnInfo);
+        boolean dataFilterPass = baseDataAuthorityFilter(criteria, appendParamMap, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该条件的查询权限");
         }
