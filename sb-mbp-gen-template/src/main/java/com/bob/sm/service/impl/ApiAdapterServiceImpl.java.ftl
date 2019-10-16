@@ -19,6 +19,7 @@ import ${packageName}.dto.help.ApiAdapterCriteriaDTO;
 import ${packageName}.dto.help.ApiAdapterResultFieldDTO;
 import ${packageName}.dto.help.ReturnCommonDTO;
 import ${packageName}.service.ApiAdapterService;
+import ${packageName}.web.rest.errors.CommonAlertException;
 import ${packageName}.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.slf4j.Logger;
@@ -51,11 +52,14 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
     @Autowired
     private YmlConfig ymlConfig;
 
+    private final Pattern pattern = Pattern.compile("/\\d+$");
+
     private Map<String, ApiAdapterConfigDTO> apiAdapterConfigDTOMap;
 
     /**
      * 初始化前端接口适配器
      */
+    @Override
     public void initApiAdapter() {
         apiAdapterConfigDTOMap = new HashMap<>();
         try {
@@ -88,7 +92,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                 String key = configDTO.getHttpUrl().substring(1).replace("/", "_")
                         + "_" + configDTO.getHttpMethod() + "_" + configDTO.getInterNo();
                 if (line.startsWith("#") || !line.equals(key + ".json")) {
-                    throw new CommonException(line + "文件名与配置不符");
+                    throw new CommonAlertException(line + "文件名与配置不符");
                 }
                 // 按处理结果的层级排序（需要一层一层处理）
                 List<ApiAdapterResultFieldDTO> fieldConfigSortList = sortReturnConfigList(configDTO);
@@ -120,13 +124,14 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw new CommonException(e.getMessage());
+            throw new CommonAlertException(e.getMessage());
         }
     }
 
     /**
      * 初始化基本接口的文档
      */
+    @Override
     public void initApiDocBase() {
         try {
             // 获取资源目录apiAdapter下的所有json配置文件
@@ -158,7 +163,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                 String key = configDTO.getHttpUrl().substring(1).replace("/", "_")
                         + "_" + configDTO.getHttpMethod();
                 if (line.startsWith("#") || !line.equals(key + ".json")) {
-                    throw new CommonException(line + "文件名与配置不符");
+                    throw new CommonAlertException(line + "文件名与配置不符");
                 }
                 // 按处理结果的层级排序（需要一层一层处理）
                 List<ApiAdapterResultFieldDTO> fieldConfigSortList = sortReturnConfigList(configDTO);
@@ -197,7 +202,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                 String key = configDTO.getHttpUrl().substring(1).replace("/", "_")
                         + "_" + configDTO.getHttpMethod();
                 if (!lineExtend.equals(key + ".json")) {
-                    throw new CommonException(lineExtend + "文件名与配置不符");
+                    throw new CommonAlertException(lineExtend + "文件名与配置不符");
                 }
                 // 按处理结果的层级排序（需要一层一层处理）
                 List<ApiAdapterResultFieldDTO> fieldConfigSortList = sortReturnConfigList(configDTO);
@@ -227,7 +232,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw new CommonException(e.getMessage());
+            throw new CommonAlertException(e.getMessage());
         }
     }
 
@@ -385,7 +390,6 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
             return null;
         }
         String requestURI = request.getRequestURI();
-        Pattern pattern = Pattern.compile("/\\d+$");
         Matcher matcher = pattern.matcher(requestURI);
         if (matcher.find()) {
             requestURI = requestURI.substring(0, requestURI.lastIndexOf("/"));
@@ -531,7 +535,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw new CommonException(e.getMessage());
+            throw new CommonAlertException(e.getMessage());
         }
     }
 
@@ -639,7 +643,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
             ((ReturnCommonDTO)((ResponseEntity)retVal).getBody()).setData(newRetData);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw new CommonException(e.getMessage());
+            throw new CommonAlertException(e.getMessage());
         }
     }
 
@@ -767,7 +771,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw new CommonException(e.getMessage());
+            throw new CommonAlertException(e.getMessage());
         }
     }
 

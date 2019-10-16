@@ -2,6 +2,7 @@ package ${packageName}.service.impl;
 
 import ${packageName}.config.Constants;
 import ${packageName}.domain.SystemPermission;
+import ${packageName}.domain.SystemRole;
 import ${packageName}.domain.SystemUser;
 import ${packageName}.dto.*;
 import ${packageName}.dto.criteria.SystemRoleResourceCriteria;
@@ -16,6 +17,8 @@ import ${packageName}.service.CommonUserService;
 import ${packageName}.service.SystemRoleResourceService;
 import ${packageName}.service.SystemUserService;
 import ${packageName}.util.MyBeanUtil;
+import ${packageName}.web.rest.errors.CommonAlertException;
+import ${packageName}.web.rest.errors.CommonException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +62,7 @@ public class AccountServiceImpl implements AccountService {
      * @return
      */
     @Transactional(readOnly = true)
+    @Override
     public EnhanceUserDTO getFullUserInfoByLogin(String login) {
         log.debug("Service ==> 获取用户全信息 {}", login);
         SystemUserCriteria systemUserCriteria = new SystemUserCriteria();
@@ -66,12 +70,17 @@ public class AccountServiceImpl implements AccountService {
         idFilter.setEquals(login);
         systemUserCriteria.setLogin(idFilter);
         systemUserCriteria.setAssociationNameList(Arrays.asList("systemOrganization",
-                "systemUserRoleList",
+                "systemUserRoleList", "systemUserRoleList.systemRole",
                 "systemUserResourceList", "systemUserResourceList.systemResource"));
         List<EnhanceUserDTO> userList = systemUserService.baseFindAll("SystemUser", systemUserCriteria, null)
                 .getData().stream().map(systemUserDTO -> {
             EnhanceUserDTO enhanceUserDTO = new EnhanceUserDTO();
             MyBeanUtil.copyNonNullProperties(systemUserDTO, enhanceUserDTO);
+            // 设置角色
+            enhanceUserDTO.setSystemRoleList(systemUserDTO.getSystemUserRoleList().stream().map(
+                    systemUserRoleDTO -> systemUserRoleDTO.getSystemRole()).collect(Collectors.toList()));
+            enhanceUserDTO.setSystemUserRoleList(null);
+            // 设置资源
             List<SystemResourceDTO> userResourceList = new ArrayList<>();
             List<SystemUserResourceDTO> userResourceDTOList = systemUserDTO.getSystemUserResourceList();
             if (userResourceDTOList != null) {
@@ -113,6 +122,7 @@ public class AccountServiceImpl implements AccountService {
      * @param newPassword
      * @return
      */
+    @Override
     public ReturnCommonDTO changePassword(String currentClearTextPassword, String newPassword) {
         log.debug("Service ==> 用户自己修改密码");
         SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
@@ -132,10 +142,35 @@ public class AccountServiceImpl implements AccountService {
     }
 
     /**
+     * 当前用户修改自己的信息（基本信息）
+     * @param userDTO
+     * @return
+     */
+    @Override
+    public ReturnCommonDTO changeSelfInfo(SystemUserDTO userDTO) {
+        log.debug("Service ==> 用户自己修改信息，密码除外");
+        SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
+        if (systemUserDTO == null) {
+            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "当前用户不存在");
+        }
+        // 不能修改账号、密码、账号状态
+        userDTO.setLogin(null);
+        userDTO.setPassword(null);
+        userDTO.setAccountStatus(null);
+        // 更新用户信息
+        SystemUser systemUserUpdate = new SystemUser();
+        MyBeanUtil.copyNonNullProperties(userDTO, systemUserUpdate);
+        systemUserUpdate.setId(systemUserDTO.getId());
+        systemUserMapper.updateById(systemUserUpdate);
+        return new ReturnCommonDTO();
+    }
+
+    /**
      * 当前用户验证密码
      * @param currentClearTextPassword
      * @return
      */
+    @Override
     public ReturnCommonDTO<Integer> validatePassword(String currentClearTextPassword) {
         log.debug("Service ==> 用户自己修改密码");
         SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
@@ -157,6 +192,7 @@ public class AccountServiceImpl implements AccountService {
      * @param userId
      * @return
      */
+    @Override
     public ReturnCommonDTO resetPassword(String userId) {
         log.debug("Service ==> 管理员重置别人的密码");
         SystemUser user = systemUserMapper.selectById(userId);

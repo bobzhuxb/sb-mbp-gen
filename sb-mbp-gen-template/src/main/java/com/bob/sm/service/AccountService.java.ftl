@@ -18,4 +18,8 @@ public interface AccountService {
 
     ReturnCommonDTO resetPassword(String userId);
 
+    ReturnCommonDTO validatePassword(String currentClearTextPassword);
+
+    ReturnCommonDTO resetPassword(String userId);
+
 }

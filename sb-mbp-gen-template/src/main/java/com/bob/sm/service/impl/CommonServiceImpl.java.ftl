@@ -6,6 +6,7 @@ import ${packageName}.dto.help.*;
 import ${packageName}.service.CommonService;
 import ${packageName}.util.ExcelUtil;
 import ${packageName}.util.FileUtil;
+import ${packageName}.web.rest.errors.CommonAlertException;
 import ${packageName}.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.poi.ss.usermodel.*;
@@ -35,6 +36,7 @@ import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -97,7 +99,7 @@ public class CommonServiceImpl implements CommonService {
             return new ReturnUploadCommonDTO<>(fileUploadDTO);
         } catch (Exception e) {
             log.error("文件上传失败：" + fileName, e);
-            throw new CommonException("文件上传失败：" + fileName + " -> " + e.getMessage());
+            return new ReturnUploadCommonDTO<>("文件上传失败：" + fileName);
         }
     }
 
@@ -271,7 +273,7 @@ public class CommonServiceImpl implements CommonService {
                     // 表头统一居中，背景为灰色，加边框
                     CellStyle titleNameStyle = workbook.createCellStyle();
                     ExcelUtil.setAlignment(titleNameStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-                    ExcelUtil.setBackgroundColor(titleNameStyle, IndexedColors.GREY_25_PERCENT.getIndex());
+                    ExcelUtil.setBackgroundColor(titleNameStyle, Constants.EXCEL_THEME_COLOR);
                     ExcelUtil.setBorder(titleNameStyle, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN);
                     // 设置表头信息
                     Map<String, Integer> titleNameMap = new HashMap<>();
@@ -362,7 +364,7 @@ public class CommonServiceImpl implements CommonService {
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw new CommonException("导出失败");
+            throw new CommonAlertException("导出失败");
         }
         return new ReturnCommonDTO();
     }
@@ -458,6 +460,56 @@ public class CommonServiceImpl implements CommonService {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件解析失败");
+        }
+    }
+
+    /**
+     * Controller中的异常共通处理
+     * @param supplier
+     * @param log
+     * @param <O>
+     * @return
+     */
+    @Override
+    public <O> ReturnCommonDTO<O> doWithExceptionHandle(Supplier<ReturnCommonDTO<O>> supplier, Logger log) {
+        ReturnCommonDTO<O> resultDTO = null;
+        try {
+            resultDTO = supplier.get();
+        } catch (CommonAlertException e) {
+            // 提示性异常
+            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
+        } catch (CommonException e) {
+            // 其他异常
+            log.error(e.getMessage(), e);
+            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
+        }
+        return resultDTO;
+    }
+
+    /**
+     * Controller中获取单条结果
+     * @param resultOfList 列表结果
+     * @return
+     */
+    @Override
+    public <O> ReturnCommonDTO<O> doGetSingleResult(ReturnCommonDTO<List<O>> resultOfList) {
+        if (Constants.commonReturnStatus.SUCCESS.getValue().equals(resultOfList.getResultCode())) {
+            if (resultOfList.getData() != null && resultOfList.getData().size() != 0) {
+                // 有数据
+                if (resultOfList.getData().size() == 1) {
+                    // 刚好一条数据
+                    return new ReturnCommonDTO<>(resultOfList.getData().get(0));
+                } else {
+                    // 多余一条数据
+                    throw new CommonAlertException("数据异常，超过一条");
+                }
+            } else {
+                // 没有数据
+                throw new CommonAlertException("没有数据");
+            }
+        } else {
+            // 查询操作异常
+            return new ReturnCommonDTO<>(resultOfList.getResultCode(), resultOfList.getErrMsg());
         }
     }
 

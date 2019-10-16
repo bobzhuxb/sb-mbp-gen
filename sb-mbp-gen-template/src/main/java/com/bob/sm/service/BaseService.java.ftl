@@ -18,6 +18,7 @@ import ${packageName}.dto.help.*;
 import ${packageName}.util.GenericsUtil;
 import ${packageName}.util.MyBeanUtil;
 import ${packageName}.util.MyStringUtil;
+import ${packageName}.web.rest.errors.CommonAlertException;
 import ${packageName}.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -32,6 +33,10 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * Service的共通方法实现
+ * @author Bob
+ */
 @EnableAspectJAutoProxy(exposeProxy = true)
 @Transactional
 public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O extends BaseDTO> extends IService<T> {
@@ -146,10 +151,10 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 put("id", ((BaseDomain) domain).getId());
             }}, appendMap);
             if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
-                throw new CommonException(returnCommonDTO.getErrMsg());
+                throw new CommonAlertException(returnCommonDTO.getErrMsg());
             }
         });
-            return new ReturnCommonDTO();
+        return new ReturnCommonDTO();
     }
 
     /**
@@ -607,7 +612,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                             normalCriteriaList);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 throw new CommonException(e.getMessage());
             }
         }
@@ -670,7 +674,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
             throw new CommonException(e.getMessage());
         }
     }
@@ -842,7 +845,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         ReturnCommonDTO<O> subDTORtn = GlobalCache.getServiceMap().get(relationDTO.getFromType()).baseFindOne(
                                 relationDTO.getFromType(), (String)relatedId, subCriteria, appendParamMap);
                         if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(subDTORtn.getResultCode())) {
-                            throw new CommonException(subDTORtn.getResultCode(), subDTORtn.getErrMsg());
+                            throw new CommonAlertException(subDTORtn.getResultCode(), subDTORtn.getErrMsg());
                         }
                         Object subDTO = subDTORtn.getData();
                         // 最终设置到主体dto的成员变量中
@@ -988,7 +991,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     try {
                         relationIdField.set(subDTO, dtoId);
                     } catch (Exception e) {
-                        e.printStackTrace();
                         throw new CommonException(e.getMessage());
                     }
                     if (subDTO.getId() == null) {
@@ -1002,7 +1004,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     GlobalCache.getServiceMap().get(relationDTO.getToType()).baseSave(relationDTO.getToType(), subDTO, new HashMap<>());
                 });
             } catch (Exception e) {
-                e.printStackTrace();
                 throw new CommonException(e.getMessage());
             }
         }
@@ -1043,7 +1044,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             ReturnCommonDTO returnCommonDTO = baseDeleteByMapCascade(entityTypeName,
                     new HashMap<String, Object>() {{put("id", id);}}, appendMap);
             if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
-                throw new CommonException(returnCommonDTO.getErrMsg());
+                throw new CommonAlertException(returnCommonDTO.getErrMsg());
             }
         }
         return new ReturnCommonDTO();
@@ -1073,7 +1074,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                                         new QueryWrapper<>().eq(entityConfigDicDTO.getColumnName(),
                                                 ((SystemDictionary) domain).getDicCode()));
                                 if (useCount > 0) {
-                                    throw new CommonException("有使用该数据字典的" + entityConfigDicDTO.getDicTypeName() + "信息，禁止删除。");
+                                    throw new CommonAlertException("有使用该数据字典的" + entityConfigDicDTO.getDicTypeName() + "信息，禁止删除。");
                                 }
                             }
                         }
@@ -1090,7 +1091,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         int subCount = GlobalCache.getMapperMap().get(relationDTO.getToType()).selectCount(
                                 new QueryWrapper<>().eq(relatedColumnName, domain.getId()));
                         if (subCount > 0) {
-                            throw new CommonException("有存在的" + relationDTO.getFromToComment() + "，禁止删除。");
+                            throw new CommonAlertException("有存在的" + relationDTO.getFromToComment() + "，禁止删除。");
                         }
                     } else if (Constants.cascadeDeleteType.NULL.getValue().equals(relationDTO.getCascadeDelete())) {
                         // 级联置空

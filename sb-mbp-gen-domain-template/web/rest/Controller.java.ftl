@@ -36,6 +36,9 @@ public class ${eentityName}Controller {
     private final static String DOMAIN_NAME = ${eentityName}.class.getSimpleName();
 
     @Autowired
+    private CommonService commonService;
+
+    @Autowired
     private ${eentityName}Service ${entityName}Service;
 
     /**
@@ -57,13 +60,8 @@ public class ${eentityName}Controller {
         if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
             return ResponseEntity.ok().headers(null).body(returnCommonDTO);
         }
-        ReturnCommonDTO resultDTO = null;
-        try {
-            resultDTO = ${entityName}Service.baseSave(DOMAIN_NAME, ${entityName}DTO, null);
-        } catch (CommonException e) {
-            log.error(e.getMessage(), e);
-            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
-        }
+		ReturnCommonDTO resultDTO = commonService.doWithExceptionHandle(
+                () -> ${entityName}Service.baseSave(DOMAIN_NAME, ${entityName}DTO, null), log);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -86,13 +84,8 @@ public class ${eentityName}Controller {
         if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
             return ResponseEntity.ok().headers(null).body(returnCommonDTO);
         }
-        ReturnCommonDTO resultDTO = null;
-        try {
-            resultDTO = ${entityName}Service.baseSave(DOMAIN_NAME, ${entityName}DTO, null);
-        } catch (CommonException e) {
-            log.error(e.getMessage(), e);
-            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
-        }
+		ReturnCommonDTO resultDTO = commonService.doWithExceptionHandle(
+                () -> ${entityName}Service.baseSave(DOMAIN_NAME, ${entityName}DTO, null), log);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -105,13 +98,8 @@ public class ${eentityName}Controller {
     @PreAuthorize("hasDelete('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO> delete${eentityName}(@PathVariable String id) {
         log.debug("Controller ==> 根据ID删除${eentityName} : {}", id);
-        ReturnCommonDTO resultDTO = null;
-        try {
-            resultDTO = ${entityName}Service.baseDeleteById(DOMAIN_NAME, id, null);
-        } catch (CommonException e) {
-            log.error(e.getMessage(), e);
-            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
-        }
+        ReturnCommonDTO resultDTO = commonService.doWithExceptionHandle(
+                () -> ${entityName}Service.baseDeleteById(DOMAIN_NAME, id, null), log);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -124,13 +112,8 @@ public class ${eentityName}Controller {
     @PreAuthorize("hasDelete('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO> delete${eentityName}s(@RequestBody List<String> idList) {
         log.debug("Controller ==> 批量删除${eentityName} : {}", idList);
-        ReturnCommonDTO resultDTO = null;
-        try {
-            resultDTO = ${entityName}Service.baseDeleteByIdList(DOMAIN_NAME, idList, null);
-        } catch (CommonException e) {
-            log.error(e.getMessage(), e);
-            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
-        }
+        ReturnCommonDTO resultDTO = commonService.doWithExceptionHandle(
+                () -> ${entityName}Service.baseDeleteByIdList(DOMAIN_NAME, idList, null), log);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -145,13 +128,8 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}(
             @PathVariable String primaryId, ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 根据ID查询${eentityName} : {}, {}", primaryId, criteria);
-        ReturnCommonDTO<${eentityName}DTO> resultDTO = null;
-        try {
-            resultDTO = ${entityName}Service.baseFindOne(DOMAIN_NAME, primaryId, criteria, null);
-        } catch (CommonException e) {
-            log.error(e.getMessage(), e);
-            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
-        }
+        ReturnCommonDTO<${eentityName}DTO> resultDTO = commonService.doWithExceptionHandle(
+                () -> ${entityName}Service.baseFindOne(DOMAIN_NAME, primaryId, criteria, null), log);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -165,13 +143,8 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<List<${eentityName}DTO>>> getAll${eentityName}s(
             ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询所有${eentityName} : {}", criteria);
-        ReturnCommonDTO<List<${eentityName}DTO>> resultDTO = null;
-        try {
-            resultDTO = ${entityName}Service.baseFindAll(DOMAIN_NAME, criteria, null);
-        } catch (CommonException e) {
-            log.error(e.getMessage(), e);
-            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
-        }
+        ReturnCommonDTO<List<${eentityName}DTO>> resultDTO = commonService.doWithExceptionHandle(
+                () -> ${entityName}Service.baseFindAll(DOMAIN_NAME, criteria, null), log);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -185,31 +158,10 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}One(
             ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询指定条件下单条${eentityName} : {}", criteria);
-        ReturnCommonDTO<${eentityName}DTO> resultDTO = null;
-        try {
-            ReturnCommonDTO<List<${eentityName}DTO>> resultTmp = ${entityName}Service.baseFindAll(DOMAIN_NAME, criteria, null);
-            if (Constants.commonReturnStatus.SUCCESS.getValue().equals(resultTmp.getResultCode())) {
-                if (resultTmp.getData() != null && resultTmp.getData().size() != 0) {
-                    // 有数据
-                    if (resultTmp.getData().size() == 1) {
-                        // 刚好一条数据
-                        resultDTO = new ReturnCommonDTO<>(resultTmp.getData().get(0));
-                    } else {
-                        // 多余一条数据
-                        throw new CommonException("数据异常，超过一条");
-                    }
-                } else {
-                    // 没有数据
-                    throw new CommonException("没有数据");
-                }
-            } else {
-                // 查询操作异常
-                resultDTO = new ReturnCommonDTO<>(resultTmp.getResultCode(), resultTmp.getErrMsg());
-            }
-        } catch (CommonException e) {
-            log.error(e.getMessage(), e);
-            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
-        }
+        ReturnCommonDTO<${eentityName}DTO> resultDTO = commonService.doWithExceptionHandle(() -> {
+            ReturnCommonDTO<List<${eentityName}DTO>> resultTmp
+                    = ${entityName}Service.baseFindAll(DOMAIN_NAME, criteria, null);
+            return commonService.doGetSingleResult(resultTmp);}, log);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -224,13 +176,8 @@ public class ${eentityName}Controller {
     public ResponseEntity<ReturnCommonDTO<IPage<${eentityName}DTO>>> getPage${eentityName}s(
             ${eentityName}Criteria criteria, MbpPage pageable) {
         log.debug("Controller ==> 分页查询${eentityName} : {}, {}", criteria, pageable);
-        ReturnCommonDTO<IPage<${eentityName}DTO>> resultDTO = null;
-        try {
-            resultDTO = ${entityName}Service.baseFindPage(DOMAIN_NAME, criteria, pageable, null);
-        } catch (CommonException e) {
-            log.error(e.getMessage(), e);
-            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
-        }
+        ReturnCommonDTO<IPage<${eentityName}DTO>> resultDTO = commonService.doWithExceptionHandle(
+                () -> ${entityName}Service.baseFindPage(DOMAIN_NAME, criteria, pageable, null), log);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -243,13 +190,8 @@ public class ${eentityName}Controller {
     @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<Integer>> get${eentityName}Count(${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询数量${eentityName} : {}", criteria);
-        ReturnCommonDTO<Integer> resultDTO = null;
-        try {
-            resultDTO = ${entityName}Service.baseFindCount(DOMAIN_NAME, criteria, null);
-        } catch (CommonException e) {
-            log.error(e.getMessage(), e);
-            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
-        }
+        ReturnCommonDTO<Integer> resultDTO = commonService.doWithExceptionHandle(
+                () -> ${entityName}Service.baseFindCount(DOMAIN_NAME, criteria, null), log);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 

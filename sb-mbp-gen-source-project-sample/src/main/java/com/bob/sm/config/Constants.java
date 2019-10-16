@@ -1,6 +1,7 @@
 package com.bob.sm.config;
 
 import com.bob.sm.dto.help.PageElementDTO;
+import org.apache.poi.ss.usermodel.IndexedColors;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +16,9 @@ public final class Constants {
     public static final String SPRING_PROFILE_DEVELOPMENT = "dev";
     public static final String SPRING_PROFILE_TEST = "test";
     public static final String SPRING_PROFILE_PRODUCTION = "prod";
+
+    // Excel导出中的主题色
+    public static final short EXCEL_THEME_COLOR = IndexedColors.GREY_25_PERCENT.getIndex();
 
     // 缓存配置
     public static final String USERS_BY_LOGIN_CACHE = "usersByLogin";

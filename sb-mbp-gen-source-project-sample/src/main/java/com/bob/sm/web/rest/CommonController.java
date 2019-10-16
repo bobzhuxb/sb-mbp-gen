@@ -1,23 +1,17 @@
 package com.bob.sm.web.rest;
 
-import com.bob.sm.annotation.validation.group.ValidateCreateGroup;
 import com.bob.sm.config.Constants;
 import com.bob.sm.config.YmlConfig;
-import com.bob.sm.dto.RdtsOperateRecordDTO;
 import com.bob.sm.dto.help.FileDownloadDTO;
 import com.bob.sm.dto.help.ReturnCommonDTO;
 import com.bob.sm.dto.help.ReturnFileUploadDTO;
 import com.bob.sm.service.CommonService;
 import com.bob.sm.util.ParamValidatorUtil;
-import com.bob.sm.web.rest.errors.BadRequestAlertException;
-import com.bob.sm.web.rest.errors.CommonException;
-import com.bob.sm.web.rest.errors.InternalServerErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,14 +39,8 @@ public class CommonController {
     public ResponseEntity<ReturnCommonDTO<ReturnFileUploadDTO>> uploadFile (
             @RequestParam(value = "file", required = false)MultipartFile file) {
         log.debug("REST request to upload file : {}", file.getOriginalFilename());
-        ReturnCommonDTO resultDTO = null;
-        try {
-            ReturnCommonDTO<ReturnFileUploadDTO> fileUploadDTO = commonService.uploadFile(file);
-            return ResponseEntity.ok().headers(null).body(fileUploadDTO);
-        } catch (CommonException e) {
-            log.error(e.getMessage(), e);
-            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
-        }
+        ReturnCommonDTO<ReturnFileUploadDTO> resultDTO = commonService.doWithExceptionHandle(
+                () -> commonService.uploadFile(file), log);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -70,14 +58,10 @@ public class CommonController {
         if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
             return ResponseEntity.ok().headers(null).body(returnCommonDTO);
         }
-        ReturnCommonDTO resultDTO = null;
-        try {
-            File downloadFile = new File(ymlConfig.getLocation() + fileDownloadDTO.getRelativePath());
-            resultDTO = commonService.downloadFile(response, downloadFile, fileDownloadDTO.getChangeFileName());
-        } catch (CommonException e) {
-            log.error(e.getMessage(), e);
-            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
-        }
+        ReturnCommonDTO resultDTO = commonService.doWithExceptionHandle(() -> {
+                File downloadFile = new File(ymlConfig.getLocation() + fileDownloadDTO.getRelativePath());
+                return commonService.downloadFile(response, downloadFile, fileDownloadDTO.getChangeFileName());
+            }, log);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
