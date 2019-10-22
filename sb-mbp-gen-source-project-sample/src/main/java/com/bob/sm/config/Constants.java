@@ -46,6 +46,9 @@ public final class Constants {
     // 地点关键字搜索
     public static String TXMAP_KEYWORD_SEARCH_URL = "https://apis.map.qq.com/ws/place/v1/suggestion";
 	
+    // 整数的正则
+    public static final String REGEX_INTEGER_ALL = "^[-\\+]?[\\d]*$";
+	
 	// 配置的页面和按钮
     public static final List<PageElementDTO> pageElementList = new ArrayList<>(Arrays.asList(
             new PageElementDTO("personal", "个人中心", "PAGE", Arrays.asList(

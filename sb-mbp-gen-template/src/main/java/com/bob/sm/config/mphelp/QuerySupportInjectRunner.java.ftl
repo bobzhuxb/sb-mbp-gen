@@ -5,6 +5,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
+/**
+ * MyBatis Plus查询注入支持
+ * @author Bob
+ */
 @Component
 public class QuerySupportInjectRunner implements CommandLineRunner {
 

@@ -1,4 +1,4 @@
-package ${packageName}.annotation.validation;
+package com.bob.sm.annotation.validation;
 
 import org.hibernate.validator.constraints.CompositionType;
 import org.hibernate.validator.constraints.ConstraintComposition;
@@ -17,11 +17,11 @@ import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * 1-100之间的数（包括小数）
+ * 最多两位小数（只能为正数）都验证通过，<br/>
  * @author Bob
  */
 @ConstraintComposition(CompositionType.OR)
-@Pattern(regexp = "^100|\\d{1,2}(.\\d)$")
+@Pattern(regexp = "^\\d+(\\.\\d{1,2})?$")
 @Null
 @Length(min = 0, max = 0)
 @Documented
@@ -29,8 +29,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target({ METHOD, FIELD, CONSTRUCTOR, PARAMETER })
 @Retention(RUNTIME)
 @ReportAsSingleViolation
-public @interface ValidZeroToHundred {
-    String message() default "0-100之间校验错误";
+public @interface Valid2BitDecimal {
+    String message() default "数量校验错误";
 
     Class<?>[] groups() default {};
 

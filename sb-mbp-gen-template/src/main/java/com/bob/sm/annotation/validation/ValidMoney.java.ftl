@@ -17,7 +17,7 @@ import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * 金额验证，为空和正确的金额都验证通过，<br/>
+ * 金额验证，为空和正确的金额都验证通过
  * 单位：元
  * @author Bob
  */

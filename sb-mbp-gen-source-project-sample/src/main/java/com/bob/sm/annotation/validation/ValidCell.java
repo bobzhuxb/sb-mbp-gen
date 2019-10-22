@@ -17,9 +17,9 @@ import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * 手机号验证，为空和正确的手机号都验证通过，<br/>
+ * 手机号验证，为空和正确的手机号都验证通过
  * 手机号为1开头的11位数字
- *
+ * @author Bob
  */
 @ConstraintComposition(CompositionType.OR)
 @Pattern(regexp = "^1[0-9]{10}$")

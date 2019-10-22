@@ -17,9 +17,9 @@ import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * 身份证号验证，为空和正确的身份证号都验证通过，<br/>
+ * 身份证号验证，为空和正确的身份证号都验证通过
  * 身份证长度15&18位，由14&17位数字加一位数字或Xx组成
- *
+ * @author Bob
  */
 @ConstraintComposition(CompositionType.OR)
 @Pattern(regexp = "(^[1-9]\\d{5}(19|([23]\\d))\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{3}[0-9Xx]$)|(^[1-9]\\d{5}\\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\\d{2}[0-9Xx]$)")

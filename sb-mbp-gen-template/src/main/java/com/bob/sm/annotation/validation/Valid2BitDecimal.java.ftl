@@ -17,11 +17,11 @@ import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * 0-1之间（可包括两位小数）
+ * 最多两位小数（只能为正数）都验证通过
  * @author Bob
  */
 @ConstraintComposition(CompositionType.OR)
-@Pattern(regexp = "^1|(0.\\d{1,2})$")
+@Pattern(regexp = "^\\d+(\\.\\d{1,2})?$")
 @Null
 @Length(min = 0, max = 0)
 @Documented
@@ -29,8 +29,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target({ METHOD, FIELD, CONSTRUCTOR, PARAMETER })
 @Retention(RUNTIME)
 @ReportAsSingleViolation
-public @interface ValidZeroToOne {
-    String message() default "0-1之间数据校验错误";
+public @interface Valid2BitDecimal {
+    String message() default "数量校验错误";
 
     Class<?>[] groups() default {};
 

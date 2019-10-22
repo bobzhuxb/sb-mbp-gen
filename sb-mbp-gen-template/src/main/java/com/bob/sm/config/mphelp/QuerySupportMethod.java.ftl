@@ -25,6 +25,7 @@ import java.util.*;
 
 /**
  * 用于支持自定义Wrapper查询
+ * @author Bob
  */
 @Component
 public class QuerySupportMethod extends AbstractMethod {

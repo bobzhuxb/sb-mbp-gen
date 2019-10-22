@@ -6,6 +6,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 默认属性配置
+ * @author Bob
+ */
 public class PropertiesDefaults {
 
     interface Async {

@@ -17,9 +17,9 @@ import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * 经纬度验证，为空和正确的经纬度都验证通过，<br/>
- * 三位以内整数 + 9位以内的小数 （可为负数）
- *
+ * 经纬度验证，为空和正确的经纬度都验证通过
+ * 3位以内整数 + 20位以内的小数 （可为负数）
+ * @author Bob
  */
 @ConstraintComposition(CompositionType.OR)
 @Pattern(regexp = "^(\\-)?\\d{1,3}(\\.\\d{1,20})?$")

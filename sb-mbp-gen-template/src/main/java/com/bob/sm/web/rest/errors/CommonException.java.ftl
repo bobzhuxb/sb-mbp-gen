@@ -3,7 +3,7 @@ package ${packageName}.web.rest.errors;
 import ${packageName}.config.Constants;
 
 /**
- * 共通异常类
+ * 共通异常类（运行时异常）
  * @author Bob
  */
 public class CommonException extends RuntimeException {

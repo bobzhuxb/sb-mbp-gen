@@ -21,13 +21,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
-/*
+/**
  * ${entityComment}
  * @author Bob
  */
 @Service
 @EnableAspectJAutoProxy(exposeProxy = true)
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper, ${eentityName}>
         implements ${eentityName}Service {
 

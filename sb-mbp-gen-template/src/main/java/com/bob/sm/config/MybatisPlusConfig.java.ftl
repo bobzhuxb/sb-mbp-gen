@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import java.util.Properties;
 
 /**
- * MyBatic Plus配置.
+ * Mybatis Plus配置
  * @author Bob
  */
 @EnableTransactionManagement

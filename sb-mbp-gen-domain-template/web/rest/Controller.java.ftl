@@ -32,7 +32,9 @@ public class ${eentityName}Controller {
 
     private final Logger log = LoggerFactory.getLogger(${eentityName}Controller.class);
 
-    // 注意：这个常量值不要修改
+    /**
+     * 对应的实体名（注意：这个常量值不要修改）
+     */
     private final static String DOMAIN_NAME = ${eentityName}.class.getSimpleName();
 
     @Autowired

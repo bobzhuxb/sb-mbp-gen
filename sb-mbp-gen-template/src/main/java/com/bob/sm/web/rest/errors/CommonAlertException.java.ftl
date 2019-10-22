@@ -3,7 +3,7 @@ package ${packageName}.web.rest.errors;
 import ${packageName}.config.Constants;
 
 /**
- * 提示性的异常
+ * 提示性的异常（运行时异常）
  * @author Bob
  */
 public class CommonAlertException extends CommonException {
@@ -20,6 +20,7 @@ public class CommonAlertException extends CommonException {
         this.code = code;
     }
     
+    @Override
     public String getCode() {
         return code;
     }

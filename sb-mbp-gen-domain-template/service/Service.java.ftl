@@ -11,7 +11,7 @@ import ${packageName}.dto.help.RolePageElementsDTO;
 import java.util.List;
 import java.util.Map;
 
-/*
+/**
  * ${entityComment}
  * @author Bob
  */

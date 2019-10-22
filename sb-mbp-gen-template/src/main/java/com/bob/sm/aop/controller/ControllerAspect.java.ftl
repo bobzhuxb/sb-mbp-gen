@@ -19,7 +19,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * Controller拦截器.
+ * Controller拦截器
  * @author Bob
  */
 @Component

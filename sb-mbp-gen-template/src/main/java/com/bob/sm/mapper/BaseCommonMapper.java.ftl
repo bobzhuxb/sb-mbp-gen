@@ -17,10 +17,23 @@ import java.util.List;
  */
 public interface BaseCommonMapper<T> extends BaseMapper<T> {
 
+    /**
+     * 置空关联字段
+     * @param tableName 数据表名
+     * @param relationColumnName 关联字段的列名
+     * @param relationId 关联字段的列的值
+     */
     @Update("UPDATE ${r'${tableName}'} SET ${r'${relationColumnName}'} = null WHERE ${r'${relationColumnName}'} = ${r'#{'}relationId}")
     void cascadeToNull(@Param("tableName") String tableName, @Param("relationColumnName") String relationColumnName,
                        @Param("relationId") String relationId);
 
+    /**
+     * 按条件查询列表
+     * @param queryMain 主查询条目
+     * @param wrapper 查询条件
+     * @param limit 限制查询结果数量
+     * @return 查询结果
+     */
     @Select("<script>"
             + "${r'${queryMain}'} ${r'${ew.customSqlSegment}'}"
             + "<if test='limit != null'>"
@@ -30,9 +43,22 @@ public interface BaseCommonMapper<T> extends BaseMapper<T> {
     List<T> joinSelectList(@Param("queryMain") String queryMain, @Param(Constants.WRAPPER) Wrapper<T> wrapper,
                            @Param("limit") Integer limit);
 
+    /**
+     * 按条件查询分页
+     * @param page 分页条件
+     * @param queryMain 主查询条目
+     * @param wrapper 查询条件
+     * @return 查询结果
+     */
     @Select("${r'${queryMain}'} ${r'${ew.customSqlSegment}'}")
     IPage<T> joinSelectPage(Page<T> page, @Param("queryMain") String queryMain, @Param(Constants.WRAPPER) Wrapper<T> wrapper);
 
+    /**
+     * 按条件查询数量
+     * @param queryMain 主查询条目
+     * @param wrapper 查询条件
+     * @return 查询结果
+     */
     @Select("${r'${queryMain}'} ${r'${ew.customSqlSegment}'}")
     Integer joinSelectCount(@Param("queryMain") String queryMain, @Param(Constants.WRAPPER) Wrapper<T> wrapper);
 

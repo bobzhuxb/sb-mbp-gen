@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 
 /**
- * 日志拦截配置.
+ * 日志拦截配置
  * @author Bob
  */
 @Configuration

@@ -20,7 +20,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
- * 异步配置.
+ * 异步配置
  * @author Bob
  */
 @Configuration

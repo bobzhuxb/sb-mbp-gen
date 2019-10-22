@@ -17,7 +17,7 @@ import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * 身份证号验证，为空和正确的身份证号都验证通过，<br/>
+ * 身份证号验证，为空和正确的身份证号都验证通过
  * 身份证长度15&18位，由14&17位数字加一位数字或Xx组成
  * @author Bob
  */

@@ -14,7 +14,10 @@ import java.lang.reflect.Method;
  */
 public class EnumValidator implements ConstraintValidator<ValidEnum, Object> {
 
-    Class<?>[] cls; //枚举类
+	/**
+     * 枚举类
+     */
+    Class<?>[] cls;
 
     @Override
     public void initialize(ValidEnum constraintAnnotation) {

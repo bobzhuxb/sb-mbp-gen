@@ -10,7 +10,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 /**
- * Spring Boot启动后的操作.
+ * Spring Boot启动后的操作
  * @author Bob
  */
 @Component

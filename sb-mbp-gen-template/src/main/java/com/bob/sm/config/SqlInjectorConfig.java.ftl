@@ -9,7 +9,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 /**
- * MyBatis Plus的SQL注入器配置.
+ * MyBatis Plus的SQL注入器配置
  * @author Bob
  */
 @Component

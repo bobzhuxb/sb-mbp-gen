@@ -14,14 +14,14 @@ import java.net.URL;
 public class Base64Utils {
 
     /**
-     * 本地图片转换成base64字符串
+     * 将本地图片文件转化为字节数组字符串，并对其进行Base64编码处理
      * @param imgFile	图片本地路径
      * @return
      *
      * @author ZHANGJL
      * @dateTime 2018-02-23 14:40:46
      */
-    public static String imageToBase64ByLocal(String imgFile) {// 将图片文件转化为字节数组字符串，并对其进行Base64编码处理
+    public static String imageToBase64ByLocal(String imgFile) {// 
 
         InputStream in = null;
         byte[] data = null;
@@ -38,8 +38,8 @@ public class Base64Utils {
         }
         // 对字节数组Base64编码
         BASE64Encoder encoder = new BASE64Encoder();
-
-        return encoder.encode(data);// 返回Base64编码过的字节数组字符串
+        // 返回Base64编码过的字节数组字符串
+        return encoder.encode(data);
     }
 
 
@@ -81,7 +81,7 @@ public class Base64Utils {
 
 
     /**
-     * base64字符串转换成图片
+     * 对字节数组字符串进行Base64解码并生成图片
      * @param imgStr		base64字符串
      * @param imgFilePath	图片存放路径
      * @return
@@ -89,7 +89,7 @@ public class Base64Utils {
      * @author ZHANGJL
      * @dateTime 2018-02-23 14:42:17
      */
-    public static boolean base64ToImage(String imgStr, String imgFilePath) { // 对字节数组字符串进行Base64解码并生成图片
+    public static boolean base64ToImage(String imgStr, String imgFilePath) {
 
         if (MyStringUtil.isEmpty(imgStr)) {
             // 图像数据为空
@@ -101,7 +101,8 @@ public class Base64Utils {
             // Base64解码
             byte[] b = decoder.decodeBuffer(imgStr);
             for (int i = 0; i < b.length; ++i) {
-                if (b[i] < 0) {// 调整异常数据
+                if (b[i] < 0) {
+                    // 调整异常数据
                     b[i] += 256;
                 }
             }
@@ -119,9 +120,9 @@ public class Base64Utils {
     }
 
     public static void main(String[] args) throws Exception {
-        //本地图片地址
+        // 本地图片地址
         String url = "D:/localFile/0.jpg";
-        //在线图片地址
+        // 在线图片地址
         String string = "http://bpic.588ku.com//element_origin_min_pic/17/03/03/7bf4480888f35addcf2ce942701c728a.jpg";
         String str = Base64Utils.imageToBase64ByLocal(url);
         String ste = Base64Utils.imageToBase64ByOnline(string);

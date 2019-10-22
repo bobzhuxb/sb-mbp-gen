@@ -40,6 +40,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * API适配器
+ * @author Bob
+ */
 @Service
 public class ApiAdapterServiceImpl implements ApiAdapterService {
 
@@ -351,6 +355,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
      * @param request HTTP请求
      * @param parameters Controller方法的参数
      */
+    @Override
     public void processQueryParam(HttpServletRequest request, Object[] parameters) {
         ApiAdapterConfigDTO apiAdapterConfigDTO = getApiAdapterConfigFromRequest(request);
         processCriteriaParam(apiAdapterConfigDTO, request, parameters);
@@ -364,6 +369,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
      * @param parameters Controller方法的参数
      * @param retVal Controller方法的返回值
      */
+    @Override
     public void processReturn(HttpServletRequest request, Object[] parameters, Object retVal) {
         ApiAdapterConfigDTO apiAdapterConfigDTO = getApiAdapterConfigFromRequest(request);
         if (apiAdapterConfigDTO == null || apiAdapterConfigDTO.getResult() == null

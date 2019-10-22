@@ -28,7 +28,7 @@ public class MyStringUtil {
      * @return
      */
     public static boolean isEmpty(String input) {
-        return input == null || "".equals(input) || input.trim().equals("");
+        return input == null || "".equals(input) || "".equals(input.trim());
     }
 
     /**

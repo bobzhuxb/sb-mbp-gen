@@ -20,6 +20,7 @@ public class CommonAlertException extends CommonException {
         this.code = code;
     }
     
+    @Override
     public String getCode() {
         return code;
     }

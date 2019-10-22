@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * @author Bob
  */
 @EnableAspectJAutoProxy(exposeProxy = true)
-@Transactional
+@Transactional(rollbackOn = Exception.class)
 public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O extends BaseDTO> extends IService<T> {
 
     /**
@@ -386,7 +386,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 获取传入的查询条件的类和域
         Class criteriaClazz = criteria.getClass();
         // 数字的判断
-        final Pattern digitalPattern = Pattern.compile("^[-\\+]?[\\d]*$");
+        Pattern digitalPattern = Pattern.compile(Constants.REGEX_INTEGER_ALL);
         // orderBy条件
         try {
             PropertyDescriptor pd = new PropertyDescriptor("orderBy", criteriaClazz);
