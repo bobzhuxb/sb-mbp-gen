@@ -107,6 +107,8 @@ dependencies {
 	compile "com.google.guava:guava:27.1-jre"
 	// 注解生成get/set方法
 	compile "org.projectlombok:lombok"
+	// 一系列Java工具集（https://www.hutool.cn/）
+	compile "cn.hutool:hutool-all:5.0.2"
 	// CGLIB
 //	compile "commons-beanutils:commons-beanutils:1.9.3"
 //	compile "cglib:cglib-nodep:3.2.4"
