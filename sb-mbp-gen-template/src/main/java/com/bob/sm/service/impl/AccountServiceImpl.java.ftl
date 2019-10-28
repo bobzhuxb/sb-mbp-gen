@@ -1,16 +1,12 @@
 package ${packageName}.service.impl;
 
 import ${packageName}.config.Constants;
-import ${packageName}.domain.SystemPermission;
-import ${packageName}.domain.SystemRole;
 import ${packageName}.domain.SystemUser;
 import ${packageName}.dto.*;
 import ${packageName}.dto.criteria.SystemRoleResourceCriteria;
 import ${packageName}.dto.criteria.SystemUserCriteria;
-import ${packageName}.dto.criteria.filter.LongFilter;
 import ${packageName}.dto.criteria.filter.StringFilter;
 import ${packageName}.dto.help.ReturnCommonDTO;
-import ${packageName}.mapper.SystemPermissionMapper;
 import ${packageName}.mapper.SystemUserMapper;
 import ${packageName}.service.AccountService;
 import ${packageName}.service.CommonUserService;
@@ -18,7 +14,6 @@ import ${packageName}.service.SystemRoleResourceService;
 import ${packageName}.service.SystemUserService;
 import ${packageName}.util.MyBeanUtil;
 import ${packageName}.web.rest.errors.CommonAlertException;
-import ${packageName}.web.rest.errors.CommonException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +22,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * 账户
- * @author Bob
- */
 @Service
 @EnableAspectJAutoProxy
 @Transactional
@@ -49,9 +42,6 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private CommonUserService commonUserService;
-
-    @Autowired
-    private SystemPermissionMapper systemPermissionMapper;
 
     @Autowired
     private SystemUserMapper systemUserMapper;
@@ -153,10 +143,11 @@ public class AccountServiceImpl implements AccountService {
         if (systemUserDTO == null) {
             return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "当前用户不存在");
         }
-        // 不能修改账号、密码、账号状态
+        // 不能修改账号、密码、账号状态、所属系统
         userDTO.setLogin(null);
         userDTO.setPassword(null);
         userDTO.setAccountStatus(null);
+        userDTO.setSystemCode(null);
         // 更新用户信息
         SystemUser systemUserUpdate = new SystemUser();
         MyBeanUtil.copyNonNullProperties(userDTO, systemUserUpdate);
@@ -170,7 +161,6 @@ public class AccountServiceImpl implements AccountService {
      * @param currentClearTextPassword
      * @return
      */
-    @Override
     public ReturnCommonDTO<Integer> validatePassword(String currentClearTextPassword) {
         log.debug("Service ==> 用户自己修改密码");
         SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
@@ -192,12 +182,24 @@ public class AccountServiceImpl implements AccountService {
      * @param userId
      * @return
      */
-    @Override
     public ReturnCommonDTO resetPassword(String userId) {
         log.debug("Service ==> 管理员重置别人的密码");
-        SystemUser user = systemUserMapper.selectById(userId);
-        if (user == null) {
-            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "用户不存在");
+        // 权限验证
+        SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
+        if (systemUserDTO == null) {
+            // 没有登录
+            throw new CommonAlertException("您尚未登录");
+        }
+        List<SystemRoleDTO> roleList = systemUserDTO.getSystemRoleList();
+        // 是否管理员
+        boolean isAdminRole = false;
+        for (SystemRoleDTO role : roleList) {
+            if (role.getName() != null && role.getName().equals(Constants.role.ROLE_ADMIN.getValue())) {
+                isAdminRole = true;
+            }
+        }
+        if (!isAdminRole) {
+            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "您没有权限重置密码");
         }
         String encryptedPassword = new BCryptPasswordEncoder().encode("123456");
         SystemUser userUpdate = new SystemUser();

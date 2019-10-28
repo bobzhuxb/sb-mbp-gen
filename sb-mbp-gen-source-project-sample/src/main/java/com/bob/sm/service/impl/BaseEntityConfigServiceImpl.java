@@ -39,7 +39,7 @@ public class BaseEntityConfigServiceImpl implements BaseEntityConfigService {
      * @param entityName 实体名
      * @param domainClass BaseDomain的子类的Class
      * @param childDomain BaseDomain的子类的对象
-     * @throws Exception
+     * @throws Exception 异常
      */
     private void setTableName(BaseEntityConfigDTO baseEntityConfigDTO, String entityName, Class domainClass,
                               BaseDomain childDomain) throws Exception {
