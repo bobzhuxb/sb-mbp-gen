@@ -161,6 +161,7 @@ public class ${eentityName}Controller {
             ${eentityName}Criteria criteria) {
         log.debug("Controller ==> 查询指定条件下单条${eentityName} : {}", criteria);
         ReturnCommonDTO<${eentityName}DTO> resultDTO = commonService.doWithExceptionHandle(() -> {
+            criteria.setLimit(1);
             ReturnCommonDTO<List<${eentityName}DTO>> resultTmp
                     = ${entityName}Service.baseFindAll(DOMAIN_NAME, criteria, null);
             return commonService.doGetSingleResult(resultTmp);}, log);
