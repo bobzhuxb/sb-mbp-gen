@@ -19,9 +19,6 @@ public class ParamValidatorUtil {
                 returnCommonDTO.setErrMsg(returnCommonDTO.getErrMsg() + fieldName + "："  + errorMsg + "。");
             }
         });
-        if (Constants.commonReturnStatus.SUCCESS.equals(returnCommonDTO.getResultCode())) {
-            return null;
-        }
         return returnCommonDTO;
     }
 

@@ -32,6 +32,11 @@ public class BaseDTO implements Serializable {
     @RestFieldAllow(allowSet = false)
     private SystemUserDTO operateUser;
 
+    ///////////////////////// 其他属性 /////////////////////////
+
+    @RestFieldAllow(allowSet = false)
+    private Integer cascadeSave;      // 是否在级联保存或删除（1：是  2或不填：否）
+
     public String getId() {
         return id;
     }
@@ -86,5 +91,13 @@ public class BaseDTO implements Serializable {
 
     public void setOperateUser(SystemUserDTO operateUser) {
         this.operateUser = operateUser;
+    }
+
+    public Integer getCascadeSave() {
+        return cascadeSave;
+    }
+
+    public void setCascadeSave(Integer cascadeSave) {
+        this.cascadeSave = cascadeSave;
     }
 }

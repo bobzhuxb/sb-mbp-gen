@@ -1,5 +1,6 @@
 package com.bob.sm.service;
 
+import cn.hutool.core.util.ReflectUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -702,7 +703,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         if (orderFieldName.contains(" ")) {
                             orderFieldName = orderFieldName.split(" ")[0];
                         }
-                        Field orderByKeyField = criteriaIter.getClass().getDeclaredField(orderFieldName);
+                        Field orderByKeyField = ReflectUtil.getField(criteriaIter.getClass(), orderFieldName);
                         orderByKeyField.setAccessible(true);
                         Object fieldValue = orderByKeyField.get(criteriaIter);
                         // 前面的都是BaseCriteria的子类对象
@@ -1001,6 +1002,9 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     // 新增或修改：设置最新修改人和最新修改时间
                     subDTO.setOperateUserId(nowUserId);
                     subDTO.setUpdateTime(nowTime);
+                    // 设置级联保存中
+                    subDTO.setCascadeSave(Constants.yesNo.YES.getValue());
+                    // 级联保存
                     GlobalCache.getServiceMap().get(relationDTO.getToType()).baseSave(relationDTO.getToType(), subDTO, new HashMap<>());
                 });
             } catch (Exception e) {
