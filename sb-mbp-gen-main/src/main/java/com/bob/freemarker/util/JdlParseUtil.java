@@ -159,10 +159,10 @@ public class JdlParseUtil {
                 if (entityDTO != null) {
                     // entity结束行
                     // 最后，默认加上insertTime和updateTime和insertUserId和operateUserId字段
-                    entityDTO.getFieldList().add(new EntityFieldDTO("insertUserId", "String", "char(50)", "创建者用户ID"));
-                    entityDTO.getFieldList().add(new EntityFieldDTO("operateUserId", "String", "char(50)", "操作者用户ID"));
-                    entityDTO.getFieldList().add(new EntityFieldDTO("insertTime", "String", "varchar(255)", "插入时间"));
-                    entityDTO.getFieldList().add(new EntityFieldDTO("updateTime", "String", "varchar(255)", "更新时间"));
+                    entityDTO.getFieldList().add(new EntityFieldDTO("insertUserId", "String", "char(50)", "", "创建者用户ID"));
+                    entityDTO.getFieldList().add(new EntityFieldDTO("operateUserId", "String", "char(50)", "", "操作者用户ID"));
+                    entityDTO.getFieldList().add(new EntityFieldDTO("insertTime", "String", "varchar(255)", "", "插入时间"));
+                    entityDTO.getFieldList().add(new EntityFieldDTO("updateTime", "String", "varchar(255)", "", "更新时间"));
                     entityDTOList.add(entityDTO);
                     entityDTO = null;
                 } else if (relationshipDTO != null) {
@@ -175,18 +175,24 @@ public class JdlParseUtil {
                     String camelName = null;
                     String javaType = null;
                     String columnType = null;
-                    Pattern pattern = Pattern.compile("(\\w+)\\s+(\\w+)(\\s+(\\S+))?");  // 匹配的模式
+                    String columnDefaultValue = null;
+                    // 匹配的模式
+                    Pattern pattern = Pattern.compile("(\\w+)\\s+(\\w+)(\\s+([\\w\\(\\)\\,]+))?(\\s+\\-\\-default=(\\S*))?");
                     Matcher matcher = pattern.matcher(jdlLine);
                     if (matcher.find()) {
                         // relationship的注释行匹配验证成功
                         camelName = matcher.group(1);
                         javaType = matcher.group(2);
                         columnType = matcher.group(4);
+                        columnDefaultValue = matcher.group(6);
                     } else {
                         throw new Exception("第" + (lineIndex + 1) + "行格式不正确。");
                     }
                     if (columnType == null || "".equals(columnType.trim())) {
                         columnType = null;
+                    }
+                    if (columnDefaultValue == null || "".equals(columnDefaultValue.trim())) {
+                        columnDefaultValue = null;
                     }
                     // 找到filedName行上面的注释
                     String fieldComment = currentComment.substring(2).trim();
@@ -202,7 +208,7 @@ public class JdlParseUtil {
                         // 生成entity的field
                         EntityFieldDTO entityFieldDTO = null;
                         if (dictionaryType == null) {
-                            entityFieldDTO = new EntityFieldDTO(camelName, javaType, columnType, fieldComment);
+                            entityFieldDTO = new EntityFieldDTO(camelName, javaType, columnType, columnDefaultValue, fieldComment);
                         } else {
                             String camelNameDic = null;
                             if (camelName.endsWith("Code")) {
@@ -216,7 +222,7 @@ public class JdlParseUtil {
                             } else {
                                 commentDic = fieldComment + "值";
                             }
-                            entityFieldDTO = new EntityFieldDTO(camelName, javaType, "varchar(255)", fieldComment, camelNameDic,
+                            entityFieldDTO = new EntityFieldDTO(camelName, javaType, "varchar(255)", "", fieldComment, camelNameDic,
                                     dictionaryType, commentDic);
                             // 设置使用数据字典的实体及字段
                             EntityDTO nowUseDictionary = null;

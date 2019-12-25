@@ -77,6 +77,7 @@ public class AfterInitRunner implements CommandLineRunner {
                         "    --db-password\t\t数据库密码（默认值：123456）\n" +
                         "    --allow-change-table\t是否允许本工具修改数据库（默认值：no，为了防止修改表结构导致数据错乱，所以默认为否）\n" +
                         "    --delete-table-name-start\t允许删除的表名开头（JDL文件指定的表名开头，如果有多个，以英文逗号隔开，默认值：Sm）\n" +
+                        "    --default-column-value\t数据库列的默认值（取值范围：null和notnull，默认值：null，取值notnull时字符串默认空串，int默认-1，可修改）\n" +
                         "\n\n====> 示例：\n\n" +
                         "1、只生成模板：\n" +
                         "java -jar codeGenerate.jar --generate-template only --template-path 模板所在路径 --template-name " +
@@ -139,6 +140,8 @@ public class AfterInitRunner implements CommandLineRunner {
         String allowChangeTable = "no";
         // 允许删除的表名开头（JDL文件指定的表名开头，如果有多个，以英文逗号隔开）
         String deleteTableNameStartStr = "Sm";
+        // 数据库列的默认值（null或者notnull）
+        String defaultColumnValue = "null";
         // ================参数默认值 end================
 
         boolean fromProjectPathExist = false;
@@ -197,6 +200,8 @@ public class AfterInitRunner implements CommandLineRunner {
                     allowChangeTable = args[i + 1];
                 } else if (arg.equals("--delete-table-name-start")) {
                     deleteTableNameStartStr = args[i + 1];
+                } else if (arg.equals("--default-column-value")) {
+                    defaultColumnValue = args[i + 1];
                 } else {
                     // 未识别的参数名
                 }
@@ -257,6 +262,10 @@ public class AfterInitRunner implements CommandLineRunner {
                 System.out.println("--entity-template-path指定的路径或--entity-jdl-file指定的文件不存在");
                 return;
             }
+        }
+        if (!"notnull".equals(defaultColumnValue)) {
+            // 默认为null
+            defaultColumnValue = "null";
         }
 
         ///////////////////读取配置并初始化参数////////////////////////
@@ -323,7 +332,7 @@ public class AfterInitRunner implements CommandLineRunner {
             log.info("=======> 生成实体 end");
             // 操作数据库
             log.info("=======> 修改数据库 start");
-            DbModule.createEntityTables(erdto);
+            DbModule.createEntityTables(erdto, defaultColumnValue);
             log.info("=======> 修改数据库 end");
         }
     }

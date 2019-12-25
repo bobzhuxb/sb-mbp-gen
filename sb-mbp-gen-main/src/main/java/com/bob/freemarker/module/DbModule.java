@@ -9,10 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -90,12 +87,13 @@ public class DbModule {
     /**
      * 根据实体创建或更新表（同时处理数据库连接资源）
      * @param erdto
+     * @param defaultColumnValue 数据库列的默认值的设定方式
      * @throws Exception
      */
-    public static void createEntityTables(ERDTO erdto) throws Exception {
+    public static void createEntityTables(ERDTO erdto, String defaultColumnValue) throws Exception {
         try {
             getConnection();
-            createEntityTablesDirect(erdto);
+            createEntityTablesDirect(erdto, defaultColumnValue);
             initDbData();
         } finally {
             if (connection != null) {
@@ -108,9 +106,10 @@ public class DbModule {
     /**
      * 根据实体创建或更新表
      * @param erdto
+     * @param defaultColumnValue 数据库列的默认值的设定方式
      * @throws Exception
      */
-    public static void createEntityTablesDirect(ERDTO erdto) throws Exception {
+    public static void createEntityTablesDirect(ERDTO erdto, String defaultColumnValue) throws Exception {
         List<EntityDTO> entityDTOList = erdto.getEntityDTOList();
         List<RelationshipDTO> relationshipDTOList = erdto.getRelationshipDTOList();
         Statement statement = connection.createStatement();
@@ -181,6 +180,11 @@ public class DbModule {
                         continue;
                     } else {
                         createSql += "`" + columnName + "` " + fieldDTO.getColumnType() + " comment '" + fieldDTO.getComment() + "'";
+                        // 数据库列的默认值设定
+                        String defaultAppend = appendDefaultValue(defaultColumnValue, fieldDTO);
+                        if (defaultAppend != null) {
+                            createSql += " default " + defaultAppend;
+                        }
                     }
                     if (i < entityDTO.getFieldList().size() - 1) {
                         createSql += ", ";
@@ -193,6 +197,10 @@ public class DbModule {
                         String relationColumnName = StringUtil.camelToUnderline(relationColumn.getToFromEntityName()) + "_id";
                         String relationComment = relationColumn.getToFromComment() + "ID";
                         createSql += ", `" + relationColumnName + "` char(50) comment '" + relationComment + "'";
+                        // 数据库列的默认值设定
+                        if ("notnull".equals(defaultColumnValue)) {
+                            createSql += " default ''";
+                        }
                     }
                 }
                 createSql += ") COMMENT='" + entityDTO.getEntityComment() + "'";
@@ -202,12 +210,6 @@ public class DbModule {
                 if (!"yes".equalsIgnoreCase(allowChangeTable)) {
                     // 若禁止程序修改表，则跳过
                     continue;
-                }
-                // 表存在，更新表信息和字段信息
-                if (!entityDTO.getEntityComment().equals(dbTableExist.getTableComment())) {
-                    // 表注释不同，更新注释
-                    statement.executeUpdate("alter table `" + tableName + "` comment '"
-                            + entityDTO.getEntityComment() + "'");
                 }
                 // 获取现有的字段
                 List<String> toDeleteColumnNameList = dbTableExist.getColumnList().stream()
@@ -220,16 +222,28 @@ public class DbModule {
                     String newColumnType = fieldDTO.getColumnType();
                     String newColumnComment = fieldDTO.getComment();
                     if (!toDeleteColumnNameList.contains(newColumnName)) {
-                        // 列不存在，新增列
-                        statement.executeUpdate("alter table `" + tableName + "` add `" + newColumnName + "` "
-                                + newColumnType + " comment '" + newColumnComment + "'");
+                        // 列不存在，新增列（列名、类型、注释、默认值）
+                        String alterSql = "alter table `" + tableName + "` add `" + newColumnName + "` "
+                                + newColumnType + " comment '" + newColumnComment + "'";
+                        // 数据库列的默认值设定
+                        String defaultAppend = appendDefaultValue(defaultColumnValue, fieldDTO);
+                        if (defaultAppend != null) {
+                            alterSql += " default " + defaultAppend;
+                        }
+                        statement.executeUpdate(alterSql);
                     } else {
                         // 列已经存在
                         for (DbColumnDTO dbColumnExist : dbTableExist.getColumnList()) {
                             if (dbColumnExist.getColumnName().equals(newColumnName)) {
-                                // 直接更新列类型和注释
-                                statement.executeUpdate("alter table `" + tableName + "` modify column `"
-                                        + newColumnName + "` " + newColumnType + " comment '" + newColumnComment + "'");
+                                // 直接更新列（类型、注释、默认值）
+                                String alterSql = "alter table `" + tableName + "` modify column `"
+                                        + newColumnName + "` " + newColumnType + " comment '" + newColumnComment + "'";
+                                // 数据库列的默认值设定
+                                String defaultAppend = appendDefaultValue(defaultColumnValue, fieldDTO);
+                                if (defaultAppend != null) {
+                                    alterSql += " default " + defaultAppend;
+                                }
+                                statement.executeUpdate(alterSql);
                                 break;
                             }
                         }
@@ -245,15 +259,25 @@ public class DbModule {
                         String relationComment = relationColumn.getToFromComment() + "ID";
                         if (!toDeleteColumnNameList.contains(relationColumnName)) {
                             // 列不存在，新增列
-                            statement.executeUpdate("alter table `" + tableName + "` add `" + relationColumnName
-                                    + "` char(50) comment '" + relationComment + "'");
+                            String alterSql = "alter table `" + tableName + "` add `" + relationColumnName
+                                    + "` char(50) comment '" + relationComment + "'";
+                            // 数据库列的默认值设定
+                            if ("notnull".equals(defaultColumnValue)) {
+                                alterSql += " default ''";
+                            }
+                            statement.executeUpdate(alterSql);
                         } else {
                             // 列已经存在
                             for (DbColumnDTO dbColumnExist : dbTableExist.getColumnList()) {
                                 if (dbColumnExist.getColumnName().equals(relationColumnName)) {
                                     // 直接更新列类型和注释
-                                    statement.executeUpdate("alter table `" + tableName + "` modify column `"
-                                            + relationColumnName + "` char(50) comment '" + relationComment + "'");
+                                    String alterSql = "alter table `" + tableName + "` modify column `"
+                                            + relationColumnName + "` char(50) comment '" + relationComment + "'";
+                                    // 数据库列的默认值设定
+                                    if ("notnull".equals(defaultColumnValue)) {
+                                        alterSql += " default ''";
+                                    }
+                                    statement.executeUpdate(alterSql);
                                     break;
                                 }
                             }
@@ -286,20 +310,56 @@ public class DbModule {
                 statement.execute("truncate table system_user");
                 statement.execute("truncate table system_role");
                 statement.execute("truncate table system_user_role");
-                statement.execute("INSERT INTO system_user(id, login, password, name, cell, contract_info, " +
-                        "identify_no, email, img_relative_path, memo, insert_user_id, operate_user_id, insert_time, " +
-                        "update_time, system_organization_id) VALUES ('1', 'admin', " +
+                statement.execute("INSERT INTO system_user(id, login, password, name, cell, " +
+                        "identify_no, memo, insert_time) VALUES ('1', 'admin', " +
                         "'$2a$10$PQkBezu.nvPOSenQXu/WxOMQtKj1j5ybjELKRfxr8uLeU8NCRBhDq', '超级管理员', '12345678901', " +
-                        "null, '123456789012345678', null, null, '仅供开发人员使用', null, null, " +
-                        "'" + nowTimeStr + "', null, null)");
-                statement.execute("INSERT INTO system_role(id, name, chinese_name, description, insert_user_id, " +
-                        "operate_user_id, insert_time, update_time) VALUES ('1', 'ROLE_ADMIN', '管理员', null, " +
-                        "'1', '1', '" + nowTimeStr + "', null)");
+                        "'123456789012345678', '仅供开发人员使用', '" + nowTimeStr + "')");
+                statement.execute("INSERT INTO system_role(id, name, chinese_name, insert_user_id, " +
+                        "operate_user_id, insert_time) VALUES ('1', 'ROLE_ADMIN', '管理员', " +
+                        "'1', '1', '" + nowTimeStr + "')");
                 statement.execute("INSERT INTO system_user_role(id, insert_user_id, operate_user_id, insert_time, " +
-                        "update_time, system_user_id, system_role_id) VALUES ('1', '1', '1', '" + nowTimeStr +
-                        "', null, '1', '1')");
+                        "system_user_id, system_role_id) VALUES ('1', '1', '1', '" + nowTimeStr +
+                        "', '1', '1')");
             }
             break;
+        }
+    }
+
+    /**
+     * 获取数据库列的默认值
+     * @param defaultColumnValue
+     * @param fieldDTO
+     * @return
+     */
+    private static String appendDefaultValue(String defaultColumnValue, EntityFieldDTO fieldDTO) {
+        if ("notnull".equals(defaultColumnValue)) {
+            // 配置项：数据库列要使用默认值
+            // 不允许有默认值的字段类型
+            List<String> columnTypeNoDefaultList = new ArrayList<>(Arrays.asList("blob", "text", "geometry", "json"));
+            if (columnTypeNoDefaultList.contains(fieldDTO.getColumnType().toLowerCase())) {
+                return null;
+            }
+            if (fieldDTO.getColumnDefaultValue() != null) {
+                // 字段填写了默认值的
+                String columnDefaultValue = fieldDTO.getColumnDefaultValue();
+                if ("String".equals(fieldDTO.getJavaType())) {
+                    // 字符串需加上引号
+                    columnDefaultValue = "'" + columnDefaultValue + "'";
+                }
+                return columnDefaultValue;
+            } else {
+                // 字段没有填写默认值的
+                if ("Integer".equals(fieldDTO.getJavaType()) || "Long".equals(fieldDTO.getJavaType())) {
+                    return "0";
+                } else if ("Double".equals(fieldDTO.getJavaType())) {
+                    return "0.0";
+                } else {
+                    // String或其他
+                    return "''";
+                }
+            }
+        } else {
+            return null;
         }
     }
 

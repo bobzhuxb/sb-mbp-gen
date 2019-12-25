@@ -1,10 +1,8 @@
 package ${packageName}.service;
 
 import ${packageName}.dto.EnhanceUserDTO;
-import ${packageName}.dto.SystemPermissionDTO;
+import ${packageName}.dto.SystemUserDTO;
 import ${packageName}.dto.help.ReturnCommonDTO;
-
-import java.util.List;
 
 /**
  * 账户
@@ -16,7 +14,7 @@ public interface AccountService {
 
     ReturnCommonDTO changePassword(String currentClearTextPassword, String newPassword);
 
-    ReturnCommonDTO resetPassword(String userId);
+    ReturnCommonDTO changeSelfInfo(SystemUserDTO userDTO);
 
     ReturnCommonDTO validatePassword(String currentClearTextPassword);
 

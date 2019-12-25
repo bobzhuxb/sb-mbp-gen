@@ -201,6 +201,7 @@ public class AccountServiceImpl implements AccountService {
         if (!isAdminRole) {
             return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "您没有权限重置密码");
         }
+        SystemUser user = systemUserMapper.selectById(userId);
         String encryptedPassword = new BCryptPasswordEncoder().encode("123456");
         SystemUser userUpdate = new SystemUser();
         userUpdate.setId(user.getId());

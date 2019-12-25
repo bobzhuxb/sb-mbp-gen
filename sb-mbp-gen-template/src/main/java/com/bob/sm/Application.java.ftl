@@ -21,10 +21,10 @@ import java.net.UnknownHostException;
 @EnableAsync
 public class ${ProjectName}Application {
 
-	private static final Logger log = LoggerFactory.getLogger(TorontoApplication.class);
+	private static final Logger log = LoggerFactory.getLogger(${ProjectName}Application.class);
 
 	public static void main(String[] args) {
-		SpringApplication app = new SpringApplication(TorontoApplication.class);
+		SpringApplication app = new SpringApplication(${ProjectName}Application.class);
 		Environment env = app.run(args).getEnvironment();
 		logApplicationStartup(env);
 	}
