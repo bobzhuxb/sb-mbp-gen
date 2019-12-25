@@ -39,6 +39,10 @@ public class ReturnCommonDTO<T> {
         this(Constants.commonReturnStatus.SUCCESS.getValue(), null, data);
     }
 
+    public static ReturnCommonDTO commonErrorReturn(String errMsg) {
+        return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), errMsg);
+    }
+
     public String getResultCode() {
         return resultCode;
     }

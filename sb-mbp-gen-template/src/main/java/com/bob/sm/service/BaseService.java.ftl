@@ -43,6 +43,12 @@ import java.util.stream.Collectors;
 public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O extends BaseDTO> extends IService<T> {
 
     /**
+     * 记录日志用
+     * @return
+     */
+    Logger getLog();
+
+    /**
      * 新增修改验证（具体子类实现）
      * @param dto 主实体
      * @param appendMap 附加的参数

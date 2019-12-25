@@ -32,6 +32,15 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
         implements ${eentityName}Service {
 
     private final Logger log = LoggerFactory.getLogger(${eentityName}ServiceImpl.class);
+
+    /**
+     * 获取日志
+     * @return
+     */
+    @Override
+    public Logger getLog() {
+        return log;
+    }
 	
 	<#if eentityName == 'SystemPermission'>
     @Autowired
