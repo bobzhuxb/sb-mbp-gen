@@ -51,6 +51,9 @@ jhipster:
 api-pdf:
     generate: true
 
+mybatis-plus-config:
+    log-way: console
+
 wx:
     app-id: xxxxxxx
     app-secret: yyyyyyy

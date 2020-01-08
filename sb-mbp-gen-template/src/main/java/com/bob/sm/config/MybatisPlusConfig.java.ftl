@@ -3,11 +3,10 @@ package ${packageName}.config;
 import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.PerformanceInterceptor;
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-
-import java.util.Properties;
 
 /**
  * Mybatis Plus配置
@@ -18,13 +17,16 @@ import java.util.Properties;
 @MapperScan("${packageName}.mapper")
 public class MybatisPlusConfig {
 
+    @Autowired
+    private YmlConfig ymlConfig;
+
     @Bean
     public PerformanceInterceptor performanceInterceptor(){
         PerformanceInterceptor interceptor = new PerformanceInterceptor();
-//        //格式化sql语句
-//        Properties properties = new Properties();
-//        properties.setProperty("format", "true");
-//        interceptor.setProperties(properties);
+        if ("log".equals(ymlConfig.getMybatisPlusLogWay())) {
+            // 设置写入日志（不设置此句则只会输出到控制台）
+            interceptor.setWriteInLog(true);
+        }
         return interceptor;
     }
 
