@@ -18,4 +18,4 @@ codeGenerate.jar：代码生成器
 
  · jdl文件可以在 https://start.jhipster.tech/jdl-studio 上编辑和查看ER图
  
- · 代码生成并启动后，swagger文档可在 http://[your-ip]:[your-port]/swagger-ui.html 查看
+ · 代码生成并启动后，swagger文档可在 http://[your-ip]:[your-port]/swagger-ui.html  查看
