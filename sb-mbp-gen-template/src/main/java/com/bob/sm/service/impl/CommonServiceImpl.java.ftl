@@ -260,10 +260,13 @@ public class CommonServiceImpl implements CommonService {
                 SXSSFSheet sheet = workbook.createSheet(sheetName);
                 // 存储最大列宽，用于处理中文不能自动调整列宽的问题
                 Map<Integer, Integer> maxWidthMap = new HashMap<>();
+                // 预处理合并单元格（以防出现Attempting to write ... that is already written to disk.）
+                // Key：要合并的单元格的最后一行  Value：最后一行是该数值的所有合并单元格
+                Map<Integer, List<ExcelCellRangeDTO>> lastRowToMergeMap = ExcelUtil.mergeCellGroup(cellRangeList);
                 // 在实际表格上方的单元格
                 if (beforeDataCellList != null) {
                     // key：relativeRow相对行数，value：该行的单元格数据
-                    ExcelUtil.addDataToExcel(beforeDataCellList, 0, maxWidthMap, workbook, sheet);
+                    ExcelUtil.addDataToExcel(beforeDataCellList, 0, maxWidthMap, lastRowToMergeMap, workbook, sheet);
                 }
                 if (tableStartRow >= 0 && titleList != null && titleList.size() > 0
                         && dataList != null && dataList.size() > 0) {
@@ -283,16 +286,26 @@ public class CommonServiceImpl implements CommonService {
                         SXSSFCell cell = headRow.createCell(column);
                         cell.setCellValue(titleDTO.getTitleContent());
                         cell.setCellStyle(titleNameStyle);
-                        // 设置该列的最大宽度
+                        // 每处理一行都要设置该列的最大宽度
                         ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, column, null);
                     }
                     // 表数据统一居中，加边框
                     CellStyle dataStyle = workbook.createCellStyle();
                     ExcelUtil.setAlignment(dataStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
                     ExcelUtil.setBorder(dataStyle, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN);
+                    // 判断是否有合并单元格，有的话就合并（此时所在行为tableStartRow）
+                    List<ExcelCellRangeDTO> tableStartMergeList = lastRowToMergeMap.get(tableStartRow);
+                    if (tableStartMergeList != null && tableStartMergeList.size() > 0) {
+                        for (ExcelCellRangeDTO cellRangeDTO : tableStartMergeList) {
+                            // 合并单元格
+                            ExcelUtil.doMergeCell(sheet, cellRangeDTO);
+                        }
+                    }
                     // 填入表数据
                     for (int dataRowCount = 0; dataRowCount < dataList.size(); dataRowCount++) {
-                        SXSSFRow dataRow = sheet.createRow(tableStartRow + dataRowCount + 1);
+                        // 当前行
+                        int nowRow = tableStartRow + dataRowCount + 1;
+                        SXSSFRow dataRow = sheet.createRow(nowRow);
                         Object dataObject = dataList.get(dataRowCount);
                         if (dataObject instanceof Map) {
                             // Map获取数据
@@ -318,9 +331,17 @@ public class CommonServiceImpl implements CommonService {
                                     SXSSFCell cell = dataRow.createCell(column);
                                     cell.setCellValue(data == null ? "" : data.toString());
                                     cell.setCellStyle(dataStyle);
-                                    // 设置该列的最大宽度
+                                    // 每处理一行都要设置该列的最大宽度
                                     ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, column, null);
                                 }
+                            }
+                        }
+                        // 每处理一行都要判断是否有合并单元格，有的话就合并（此时所在行为nowRow）
+                        List<ExcelCellRangeDTO> dataRowMergeList = lastRowToMergeMap.get(nowRow);
+                        if (dataRowMergeList != null && dataRowMergeList.size() > 0) {
+                            for (ExcelCellRangeDTO cellRangeDTO : dataRowMergeList) {
+                                // 合并单元格
+                                ExcelUtil.doMergeCell(sheet, cellRangeDTO);
                             }
                         }
                     }
@@ -328,19 +349,8 @@ public class CommonServiceImpl implements CommonService {
                 // 在实际表格下方的单元格
                 if (afterDataCellList != null) {
                     // key：relativeRow相对行数，value：该行的单元格数据
-                    ExcelUtil.addDataToExcel(afterDataCellList, tableStartRow + dataList.size() + 1, maxWidthMap, workbook, sheet);
-                }
-                // 合并单元格
-                if (cellRangeList != null) {
-                    for (ExcelCellRangeDTO cellRangeDTO : cellRangeList) {
-                        // 合并单元格参数：起始行、终止行、起始列、终止列
-                        CellRangeAddress totalTitleRegion = new CellRangeAddress(cellRangeDTO.getFromRow(),
-                                cellRangeDTO.getToRow(), cellRangeDTO.getFromColumn(), cellRangeDTO.getToColumn());
-                        sheet.addMergedRegion(totalTitleRegion);
-                        // 合并单元格加边框
-                        ExcelUtil.setRegionBorder(sheet, totalTitleRegion, cellRangeDTO.getBorderTop(),
-                                cellRangeDTO.getBorderBottom(), cellRangeDTO.getBorderLeft(), cellRangeDTO.getBorderRight());
-                    }
+                    ExcelUtil.addDataToExcel(afterDataCellList, tableStartRow + dataList.size() + 1, maxWidthMap,
+                            lastRowToMergeMap, workbook, sheet);
                 }
                 // 设置为根据内容自动调整列宽，必须在单元格设值以后进行
                 sheet.trackAllColumnsForAutoSizing();

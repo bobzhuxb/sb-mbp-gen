@@ -191,10 +191,12 @@ public class ExcelUtil {
      * @param dataCellList 数据
      * @param appendRow 绝对开始行（每个单元格的相对行加上该参数，得到该单元格的实际行）
      * @param maxWidthMap 存储的最大列宽（Key：列序号  Value：列宽）
+     * @param lastRowToMergeMap 要合并的单元格（Key：要合并的单元格的最后一行  Value：最后一行是该数值的所有合并单元格）
      * @param workbook Excel工作簿
      * @param sheet Excel的sheet
      */
     public static void addDataToExcel(List<ExcelCellDTO> dataCellList, int appendRow, Map<Integer, Integer> maxWidthMap,
+                                      Map<Integer, List<ExcelCellRangeDTO>> lastRowToMergeMap,
                                       SXSSFWorkbook workbook, SXSSFSheet sheet) {
         Map<Integer, List<ExcelCellDTO>> rowDataMap = dataCellList.stream()
                 .reduce(new HashMap<>(), (map, cellDTO) -> {
@@ -208,8 +210,8 @@ public class ExcelUtil {
                 }, (map1, map2) -> map2);
         for (Map.Entry<Integer, List<ExcelCellDTO>> entry : rowDataMap.entrySet()) {
             // 创建行
-            int row = entry.getKey();
-            SXSSFRow dataRow = sheet.createRow(row);
+            int nowRow = entry.getKey();
+            SXSSFRow dataRow = sheet.createRow(nowRow);
             // 填充内容
             List<ExcelCellDTO> rowDataList = entry.getValue();
             for (ExcelCellDTO excelCellDTO : rowDataList) {
@@ -225,8 +227,16 @@ public class ExcelUtil {
                 SXSSFCell cell = dataRow.createCell(excelCellDTO.getColumn());
                 cell.setCellValue(excelCellDTO.getValue());
                 cell.setCellStyle(dataStyle);
-                // 设置该列的最大宽度
+                // 每处理一行都要设置该列的最大宽度
                 ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, excelCellDTO.getColumn(), null);
+                // 每处理一行都要判断是否有合并单元格，有的话就合并（此时所在行为nowRow）
+                List<ExcelCellRangeDTO> dataRowMergeList = lastRowToMergeMap.get(nowRow);
+                if (dataRowMergeList != null && dataRowMergeList.size() > 0) {
+                    for (ExcelCellRangeDTO cellRangeDTO : dataRowMergeList) {
+                        // 合并单元格
+                        ExcelUtil.doMergeCell(sheet, cellRangeDTO);
+                    }
+                }
             }
         }
     }
@@ -255,6 +265,42 @@ public class ExcelUtil {
         } else {
             maxWidthMap.put(column, Math.max(length, maxWidthMap.get(column)));
         }
+    }
+
+    /**
+     * 预处理合并单元格（以防出现Attempting to write ... that is already written to disk.）
+     * @param cellRangeList
+     * @return Map（Key：要合并的单元格的最后一行  Value：最后一行是该数值的所有合并单元格）
+     */
+    public static Map<Integer, List<ExcelCellRangeDTO>> mergeCellGroup(List<ExcelCellRangeDTO> cellRangeList) {
+        Map<Integer, List<ExcelCellRangeDTO>> lastRowToMergeMap = new HashMap<>();
+        if (cellRangeList != null) {
+            for (ExcelCellRangeDTO cellRangeDTO : cellRangeList) {
+                int toRow = cellRangeDTO.getToRow();
+                List<ExcelCellRangeDTO> lastRowCellRangeList = lastRowToMergeMap.get(toRow);
+                if (lastRowCellRangeList == null) {
+                    lastRowCellRangeList = new ArrayList<>();
+                    lastRowToMergeMap.put(toRow, lastRowCellRangeList);
+                }
+                lastRowCellRangeList.add(cellRangeDTO);
+            }
+        }
+        return lastRowToMergeMap;
+    }
+
+    /**
+     * 合并单元格
+     * @param sheet Excel工作表
+     * @param cellRangeDTO Excel单元格范围DTO（要合并的单元格范围）
+     */
+    public static void doMergeCell(SXSSFSheet sheet, ExcelCellRangeDTO cellRangeDTO) {
+        // 合并单元格参数：起始行、终止行、起始列、终止列
+        CellRangeAddress totalTitleRegion = new CellRangeAddress(cellRangeDTO.getFromRow(),
+                cellRangeDTO.getToRow(), cellRangeDTO.getFromColumn(), cellRangeDTO.getToColumn());
+        sheet.addMergedRegion(totalTitleRegion);
+        // 合并单元格加边框
+        ExcelUtil.setRegionBorder(sheet, totalTitleRegion, cellRangeDTO.getBorderTop(),
+                cellRangeDTO.getBorderBottom(), cellRangeDTO.getBorderLeft(), cellRangeDTO.getBorderRight());
     }
 
 }
