@@ -266,7 +266,8 @@ public class CommonServiceImpl implements CommonService {
                 // 在实际表格上方的单元格
                 if (beforeDataCellList != null) {
                     // key：relativeRow相对行数，value：该行的单元格数据
-                    ExcelUtil.addDataToExcel(beforeDataCellList, 0, maxWidthMap, lastRowToMergeMap, workbook, sheet);
+                    ExcelUtil.addDataToExcel(beforeDataCellList, 0, maxWidthMap, lastRowToMergeMap, cellRangeList,
+                            workbook, sheet);
                 }
                 if (tableStartRow >= 0 && titleList != null && titleList.size() > 0
                         && dataList != null && dataList.size() > 0) {
@@ -286,8 +287,8 @@ public class CommonServiceImpl implements CommonService {
                         SXSSFCell cell = headRow.createCell(column);
                         cell.setCellValue(titleDTO.getTitleContent());
                         cell.setCellStyle(titleNameStyle);
-                        // 每处理一行都要设置该列的最大宽度
-                        ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, column, null);
+                        // 每处理一行都要计算该列的最大宽度
+                        ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, tableStartRow, column, null, cellRangeList);
                     }
                     // 表数据统一居中，加边框
                     CellStyle dataStyle = workbook.createCellStyle();
@@ -315,8 +316,8 @@ public class CommonServiceImpl implements CommonService {
                                 SXSSFCell cell = dataRow.createCell(column);
                                 cell.setCellValue(data == null ? "" : data.toString());
                                 cell.setCellStyle(dataStyle);
-                                // 设置该列的最大宽度
-                                ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, column, null);
+                                // 每处理一行都要计算该列的最大宽度
+                                ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, nowRow, column, null, cellRangeList);
                             }
                         } else {
                             // 反射获取对象属性
@@ -331,8 +332,8 @@ public class CommonServiceImpl implements CommonService {
                                     SXSSFCell cell = dataRow.createCell(column);
                                     cell.setCellValue(data == null ? "" : data.toString());
                                     cell.setCellStyle(dataStyle);
-                                    // 每处理一行都要设置该列的最大宽度
-                                    ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, column, null);
+                                    // 每处理一行都要计算该列的最大宽度
+                                    ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, nowRow, column, null, cellRangeList);
                                 }
                             }
                         }
@@ -350,7 +351,7 @@ public class CommonServiceImpl implements CommonService {
                 if (afterDataCellList != null) {
                     // key：relativeRow相对行数，value：该行的单元格数据
                     ExcelUtil.addDataToExcel(afterDataCellList, tableStartRow + dataList.size() + 1, maxWidthMap,
-                            lastRowToMergeMap, workbook, sheet);
+                            lastRowToMergeMap, cellRangeList, workbook, sheet);
                 }
                 // 设置为根据内容自动调整列宽，必须在单元格设值以后进行
                 sheet.trackAllColumnsForAutoSizing();

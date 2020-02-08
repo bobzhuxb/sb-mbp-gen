@@ -1,7 +1,8 @@
 package ${packageName}.util;
 
 import ${packageName}.dto.help.ExcelCellDTO;
-import org.apache.poi.hssf.usermodel.HSSFFont;
+import ${packageName}.dto.help.ExcelCellRangeDTO;
+import ${packageName}.dto.help.ExcelRowCellsDTO;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.RegionUtil;
@@ -14,6 +15,7 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Excel工具类
@@ -192,14 +194,17 @@ public class ExcelUtil {
      * @param appendRow 绝对开始行（每个单元格的相对行加上该参数，得到该单元格的实际行）
      * @param maxWidthMap 存储的最大列宽（Key：列序号  Value：列宽）
      * @param lastRowToMergeMap 要合并的单元格（Key：要合并的单元格的最后一行  Value：最后一行是该数值的所有合并单元格）
+     * @param cellRangeList 要合并的单元格
      * @param workbook Excel工作簿
      * @param sheet Excel的sheet
      */
     public static void addDataToExcel(List<ExcelCellDTO> dataCellList, int appendRow, Map<Integer, Integer> maxWidthMap,
                                       Map<Integer, List<ExcelCellRangeDTO>> lastRowToMergeMap,
+                                      List<ExcelCellRangeDTO> cellRangeList,
                                       SXSSFWorkbook workbook, SXSSFSheet sheet) {
-        Map<Integer, List<ExcelCellDTO>> rowDataMap = dataCellList.stream()
-                .reduce(new HashMap<>(), (map, cellDTO) -> {
+        List<ExcelRowCellsDTO> rowDataCellsList = new ArrayList<>(dataCellList.stream()
+                // 按所在列分组
+                .reduce(new HashMap<Integer, List<ExcelCellDTO>>(), (map, cellDTO) -> {
                     List<ExcelCellDTO> rowCellList = map.get(appendRow + cellDTO.getRelativeRow());
                     if (rowCellList == null) {
                         rowCellList = new ArrayList<>();
@@ -207,14 +212,22 @@ public class ExcelUtil {
                     }
                     rowCellList.add(cellDTO);
                     return map;
-                }, (map1, map2) -> map2);
-        for (Map.Entry<Integer, List<ExcelCellDTO>> entry : rowDataMap.entrySet()) {
+                }, (map1, map2) -> map2).entrySet()).stream()
+                // 类型转换
+                .map(rowDataEntry -> new ExcelRowCellsDTO(rowDataEntry.getKey(), rowDataEntry.getValue()))
+                // 按列排序（避免顺序错乱导致Attempting to write ... that is already written to disk）
+                .sorted(Comparator.comparing(ExcelRowCellsDTO::getRow))
+                // 返回
+                .collect(Collectors.toList());
+        for (ExcelRowCellsDTO rowDataCell : rowDataCellsList) {
             // 创建行
-            int nowRow = entry.getKey();
+            int nowRow = rowDataCell.getRow();
             SXSSFRow dataRow = sheet.createRow(nowRow);
             // 填充内容
-            List<ExcelCellDTO> rowDataList = entry.getValue();
-            for (ExcelCellDTO excelCellDTO : rowDataList) {
+            List<ExcelCellDTO> rowCellList = rowDataCell.getCellList();
+            // 每列的单元格Map（Key：列号  Value：单元格）
+            Map<Integer, SXSSFCell> cellMapOfRow = new HashMap<>();
+            for (ExcelCellDTO excelCellDTO : rowCellList) {
                 // 单元格格式设定（背景色、位置、边框、字体）
                 CellStyle dataStyle = workbook.createCellStyle();
                 setAlignment(dataStyle, excelCellDTO.getHorizontal(), excelCellDTO.getVertical());
@@ -225,10 +238,11 @@ public class ExcelUtil {
                         excelCellDTO.getFontItalic(), excelCellDTO.getFontBold(), excelCellDTO.getFontColor());
                 // 创建单元格，填入数据，设置格式
                 SXSSFCell cell = dataRow.createCell(excelCellDTO.getColumn());
+                cellMapOfRow.put(excelCellDTO.getColumn(), cell);
                 cell.setCellValue(excelCellDTO.getValue());
                 cell.setCellStyle(dataStyle);
-                // 每处理一行都要设置该列的最大宽度
-                ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, excelCellDTO.getColumn(), null);
+                // 每处理一行都要计算每列的最大宽度
+                ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, nowRow, excelCellDTO.getColumn(), null, cellRangeList);
             }
             // 每处理一行都要判断是否有合并单元格，有的话就合并（此时所在行为nowRow）
             List<ExcelCellRangeDTO> dataRowMergeList = lastRowToMergeMap.get(nowRow);
@@ -242,14 +256,31 @@ public class ExcelUtil {
     }
 
     /**
-     * 计算并设置最大列宽
+     * 计算非跨列的合并单元格的最大列宽
      * @param maxWidthMap 存储的最大列宽（Key：列序号  Value：列宽）
      * @param cell 单元格
+     * @param row 当前行序号
      * @param column 当前列序号
      * @param columnLengthLimit 限制的最大列宽
+     * @param cellRangeList 合并单元格列表
      */
-    public static void computeMaxColumnWith(Map<Integer, Integer> maxWidthMap, SXSSFCell cell,
-                                            int column, Integer columnLengthLimit) {
+    public static void computeMaxColumnWith(Map<Integer, Integer> maxWidthMap, SXSSFCell cell, int row,
+                                            int column, Integer columnLengthLimit, List<ExcelCellRangeDTO> cellRangeList) {
+        if (cell == null) {
+            return;
+        }
+        // 是否在跨列合并单元格范围内
+        if (cellRangeList != null && cellRangeList.size() > 0) {
+            for (ExcelCellRangeDTO cellRangeDTO : cellRangeList) {
+                if (cellRangeDTO.getFromColumn() != cellRangeDTO.getToColumn()
+                        && row >= cellRangeDTO.getFromRow() && row <= cellRangeDTO.getToRow()
+                        && column >= cellRangeDTO.getFromColumn() && column <= cellRangeDTO.getToColumn()) {
+                    // 在跨列的合并单元格范围内不计算最大列宽
+                    return;
+                }
+            }
+        }
+        // 剔除合并单元格
         if (columnLengthLimit == null) {
             // 这里把宽度最大限制到15000
             columnLengthLimit = 15000;
