@@ -229,13 +229,13 @@ public class ExcelUtil {
                 cell.setCellStyle(dataStyle);
                 // 每处理一行都要设置该列的最大宽度
                 ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, excelCellDTO.getColumn(), null);
-                // 每处理一行都要判断是否有合并单元格，有的话就合并（此时所在行为nowRow）
-                List<ExcelCellRangeDTO> dataRowMergeList = lastRowToMergeMap.get(nowRow);
-                if (dataRowMergeList != null && dataRowMergeList.size() > 0) {
-                    for (ExcelCellRangeDTO cellRangeDTO : dataRowMergeList) {
-                        // 合并单元格
-                        ExcelUtil.doMergeCell(sheet, cellRangeDTO);
-                    }
+            }
+            // 每处理一行都要判断是否有合并单元格，有的话就合并（此时所在行为nowRow）
+            List<ExcelCellRangeDTO> dataRowMergeList = lastRowToMergeMap.get(nowRow);
+            if (dataRowMergeList != null && dataRowMergeList.size() > 0) {
+                for (ExcelCellRangeDTO cellRangeDTO : dataRowMergeList) {
+                    // 合并单元格
+                    ExcelUtil.doMergeCell(sheet, cellRangeDTO);
                 }
             }
         }

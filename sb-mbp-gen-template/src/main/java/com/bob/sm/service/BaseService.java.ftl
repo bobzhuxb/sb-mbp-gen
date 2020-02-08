@@ -848,6 +848,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         Class subCriteriaClass = Class.forName("${packageName}.dto.criteria." + relationDTO.getFromType() + "Criteria");
                         BaseCriteria subCriteria = (BaseCriteria) subCriteriaClass.newInstance();
                         subCriteria.setAssociationNameList(subAssociationNameList);
+                        // 前面已经验证过权限了，以后不用再次验证权限
+                        subCriteria.setAuthorityPass(Constants.yesNo.YES.getValue());
                         // 调用级联的Service的方法进行查询
                         ReturnCommonDTO<O> subDTORtn = GlobalCache.getServiceMap().get(relationDTO.getFromType()).baseFindOne(
                                 relationDTO.getFromType(), (String)relatedId, subCriteria, appendParamMap);
