@@ -58,7 +58,10 @@ public class JdlParseUtil {
                 // 排除空行
                 continue;
             }
-            if (jdlLine.startsWith("//")) {
+            if (jdlLine.startsWith("#")) {
+                // jdl注释行
+                continue;
+            } else if (jdlLine.startsWith("//")) {
                 // 注释开始行，获取注释行内容
                 if (jdlLine.startsWith("//#DIC_TYPE:")) {
                     // 关联的数据字典类型行
