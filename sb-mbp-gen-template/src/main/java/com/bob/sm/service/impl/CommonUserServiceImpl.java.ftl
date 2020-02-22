@@ -26,7 +26,6 @@ import ${packageName}.util.MyBeanUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,8 +39,6 @@ import java.util.stream.Collectors;
  * @author Bob
  */
 @Service
-@EnableAspectJAutoProxy
-@Transactional
 public class CommonUserServiceImpl implements CommonUserService {
 
     private final Logger log = LoggerFactory.getLogger(CommonUserServiceImpl.class);
@@ -59,6 +56,8 @@ public class CommonUserServiceImpl implements CommonUserService {
      * 获取当前用户的用户ID
      * @return
      */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public String getCurrentUserId() {
         return SecurityUtils.getCurrentUserLogin().map(login -> findUserIdByLogin(login)).orElse(null);
     }
@@ -68,6 +67,8 @@ public class CommonUserServiceImpl implements CommonUserService {
      * @param login
      * @return
      */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public String findUserIdByLogin(String login) {
         return Optional.ofNullable(findUserByLogin(login, false)).map(user -> user.getId()).get();
     }
@@ -76,6 +77,8 @@ public class CommonUserServiceImpl implements CommonUserService {
      * 获取当前用户
      * @return
      */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public SystemUserDTO getCurrentUser() {
         return SecurityUtils.getCurrentUserLogin().map(login -> findUserByLogin(login, true)).orElse(null);
     }
@@ -85,6 +88,8 @@ public class CommonUserServiceImpl implements CommonUserService {
      * @param login
      * @return
      */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public SystemUserDTO findUserByLogin(String login, boolean withRole) {
         List<SystemUser> userList = systemUserMapper.selectList(new QueryWrapper<SystemUser>().eq("login", login));
         if (userList != null && userList.size() > 0) {

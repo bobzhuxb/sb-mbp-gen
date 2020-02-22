@@ -24,7 +24,6 @@ import java.util.*;
  * @author Bob
  */
 @Service
-@Transactional
 public class WxServiceImpl implements WxService {
 
     private final Logger log = LoggerFactory.getLogger(WxServiceImpl.class);
@@ -37,6 +36,7 @@ public class WxServiceImpl implements WxService {
      * @param wxOpenIdParamDTO 微信验证标识
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public WxLoginStatusDTO getOpenIdAndLogin(ParamWxOpenIdDTO wxOpenIdParamDTO) {
         log.debug("微信登录验证 : {}", wxOpenIdParamDTO);
         String nowTimeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
@@ -89,6 +89,7 @@ public class WxServiceImpl implements WxService {
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean refreshAccessTokenSingle() {
         // 获取请求URL
         String requestUrl = Constants.WXAPP_GET_TOKEN_URL + "?grant_type=client_credential&appid="
@@ -121,6 +122,8 @@ public class WxServiceImpl implements WxService {
      * @param totalTimes 总次数
      * @return
      */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean refreshAccessToken(int totalTimes) {
         boolean result = false;
         int times = 0;
@@ -152,6 +155,7 @@ public class WxServiceImpl implements WxService {
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<ReturnWxJsapiInfoDTO> getJsapiInfoByCurrentAccessToken(String publicPageUrl) {
         if ("".equals(Constants.WX_ACCESS_TOKEN_NOW)) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "等待启动");
@@ -198,6 +202,8 @@ public class WxServiceImpl implements WxService {
      * @param logLatDTO
      * @return
      */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<ReturnMapAddressDTO> getAddressByLogLat(ParamLogLatDTO logLatDTO) {
         // 获取请求URL
         String requestUrl = Constants.TXMAP_REVERSE_ADDRESS_PARSE_URL + "?key=" + ymlConfig.getTxMapKey()
@@ -231,6 +237,8 @@ public class WxServiceImpl implements WxService {
      * @param mapKeywordSearchDTO
      * @return
      */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<IPage<ReturnMapSearchResultDTO>> getAddressByKeyword(
             ParamMapKeywordSearchDTO mapKeywordSearchDTO) {
         // 默认在苏州查找

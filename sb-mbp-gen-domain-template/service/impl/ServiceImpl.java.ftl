@@ -15,7 +15,6 @@ import ${packageName}.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +25,6 @@ import java.util.*;
  * @author Bob
  */
 @Service
-@EnableAspectJAutoProxy(exposeProxy = true)
 public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper, ${eentityName}>
         implements ${eentityName}Service {
 
@@ -69,6 +67,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 保存角色的页面和元素权限
      * @param rolePageElementsDTO
      */
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveRolePermissions(RolePageElementsDTO rolePageElementsDTO) {
         if (rolePageElementsDTO.getRoleId() == null
@@ -125,6 +124,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @param roleId id of role
      * @return
      */
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public List<PageElementDTO> getPageElementTree(String roleId) {
         if (roleId == null || "0".equals(roleId)) {
@@ -149,7 +149,6 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @param hasPageElementList 已选中的元素
      * @return 0：未选  1：全选  2：部分选择
      */
-    @Transactional(rollbackFor = Exception.class)
     private int formPageElement(List<PageElementDTO> originList, List<PageElementDTO> destList,
                                 List<String> hasPageElementList) {
         double childTotalCount = (double)originList.size();
@@ -195,6 +194,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 获取当前用户的页面元素树
      * @return
      */
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public List<PageElementDTO> getPageElementOfCurrentUser() {
         // 用户当前的页面元素（第三层级）

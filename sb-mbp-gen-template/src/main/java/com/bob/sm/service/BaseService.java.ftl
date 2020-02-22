@@ -22,7 +22,7 @@ import ${packageName}.util.MyStringUtil;
 import ${packageName}.web.rest.errors.CommonAlertException;
 import ${packageName}.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.aop.framework.AopContext;
 
 import org.springframework.transaction.annotation.Transactional;
 import java.beans.PropertyDescriptor;
@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
  * Service的共通方法实现
  * @author Bob
  */
-@EnableAspectJAutoProxy(exposeProxy = true)
 public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O extends BaseDTO> extends IService<T> {
 
     /**
@@ -47,7 +46,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param appendMap 附加的参数
      * @return 是否继续执行保存
      */
-    @Transactional(rollbackFor = Exception.class)
     default boolean baseSaveValidator(O dto, Map<String, Object> appendMap) {
         // TODO: 新增修改验证写在这里（由具体实现覆盖）
         return true;
@@ -58,7 +56,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param dto 主实体
      * @param appendMap 附加的参数（前面处理过的结果）
      */
-    @Transactional(rollbackFor = Exception.class)
     default void baseDoAfterSave(O dto, Map<String, Object> appendMap) {
         // TODO: 新增修改之后的操作写在这里（由具体实现覆盖）
     }
@@ -68,7 +65,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param dto 主实体
      * @param appendMap 附加的参数（前面处理过的结果）
      */
-    @Transactional(rollbackFor = Exception.class)
     default void baseDoBeforeSaveReturn(O dto, Map<String, Object> appendMap) {
         // TODO: 新增修改之后的操作写在这里（由具体实现覆盖）
     }
@@ -78,7 +74,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param domain 数据库中查询出的实体数据内容
      * @param appendMap 附加的传递参数
      */
-    @Transactional(rollbackFor = Exception.class)
     default void baseDeleteValidator(T domain, Map<String, Object> appendMap) {
         // TODO: 删除验证写在这里（由具体实现覆盖）
     }
@@ -92,7 +87,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param revertTableIndexMap 根据表别名反向查条件名的Map
      * @return 增强后的Wrapper条件
      */
-    @Transactional(rollbackFor = Exception.class)
     default Wrapper<T> baseWrapperEnhance(QueryWrapper<T> wrapper, C criteria, Map<String, Object> appendParamMap,
                                           List<NormalCriteriaDTO> normalCriteriaList, Map<String, String> revertTableIndexMap) {
         // TODO: 附加的条件查询写在这里（由具体实现覆盖）
@@ -106,7 +100,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param interceptReturnInfo 拦截的返回信息
      * @return 是否有权限（true：有权限  false：无权限）
      */
-    @Transactional(rollbackFor = Exception.class)
     default boolean baseDataAuthorityFilter(C criteria, Map<String, Object> appendParamMap, ReturnCommonDTO interceptReturnInfo) {
         // TODO: 数据权限的过滤写在这里（由具体实现覆盖）
         return true;
@@ -119,7 +112,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param appendParamMap 附加的查询参数条件
      * @return 带关联属性的主实体
      */
-    @Transactional(rollbackFor = Exception.class)
     default O baseGetAssociationsPrev(O dto, C criteria, Map<String, Object> appendParamMap) {
         // TODO: 获取其他的关联属性写在这里（由具体实现覆盖）
         return dto;
@@ -132,7 +124,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param appendParamMap 附加的查询参数条件
      * @return 带关联属性的主实体
      */
-    @Transactional(rollbackFor = Exception.class)
     default O baseGetAssociationsNext(O dto, C criteria, Map<String, Object> appendParamMap) {
         // TODO: 获取其他的关联属性写在这里（由具体实现覆盖）
         return dto;
@@ -156,7 +147,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 new QueryWrapper<T>().select("id").eq(relatedColumnName, relatedId).notIn(
                         idList != null && idList.size() > 0, "id", idList))
         ).get().stream().forEach(domain -> {
-            ReturnCommonDTO returnCommonDTO = baseDeleteByMapCascade(entityTypeName, new HashMap<String, Object>() {{
+            ReturnCommonDTO returnCommonDTO = ((BaseService)AopContext.currentProxy()).baseDeleteByMapCascade(
+                    entityTypeName, new HashMap<String, Object>() {{
                 put("id", ((BaseDomain) domain).getId());
             }}, appendMap);
             if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
@@ -174,7 +166,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param appendParamMap 附加的传递参数
      * @return 查询通用Wrapper
      */
-    @Transactional(rollbackFor = Exception.class)
     default Wrapper<T> baseIdEqualsPrepare(String entityTypeName, String id, BaseCriteria baseCriteria,
                                            Map<String, Object> appendParamMap) {
         if (appendParamMap == null) {
@@ -201,7 +192,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
      * @return
      */
-    @Transactional(rollbackFor = Exception.class)
     default String baseGetDataQuerySql(String entityTypeName, C criteria, Map<String, String> tableIndexMap) {
         // 获取实体配置
         BaseEntityConfigDTO entityConfig = GlobalCache.getEntityConfigMap().get(entityTypeName);
@@ -233,7 +223,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
      * @return
      */
-    @Transactional(rollbackFor = Exception.class)
     default String baseGetCountQuerySql(String entityTypeName, C criteria, Map<String, String> tableIndexMap) {
         int tableCount = 0;
         int fromTableCount = tableCount;
@@ -250,7 +239,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
      * @return
      */
-    @Transactional(rollbackFor = Exception.class)
     default String baseGetFromAndJoinSql(String entityTypeName, C criteria, int tableCount, int fromTableCount,
                                          Map<String, String> tableIndexMap) {
         // 获取实体配置
@@ -270,7 +258,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
      * @return
      */
-    @Transactional(rollbackFor = Exception.class)
     default String baseGetJoinSql(String entityTypeName, C criteria, int tableCount, int fromTableCount, String lastFieldName,
                                   Map<String, String> tableIndexMap) {
         String joinSubSql = "";
@@ -368,7 +355,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param normalCriteriaList 其他非框架的条件
      * @return 转换后的wrapper
      */
-    @Transactional(rollbackFor = Exception.class)
     default Wrapper<T> baseGetWrapper(String entityTypeName, QueryWrapper<T> wrapper, C criteria,
                                       Map<String, Object> appendParamMap, String lastFieldName,
                                       Map<String, String> tableIndexMap, List<NormalCriteriaDTO> normalCriteriaList) {
@@ -658,7 +644,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param tableIndexMap 表index的Map
      * @return
      */
-    @Transactional(rollbackFor = Exception.class)
     default void basePreOrderBy(Object criteria, Map<String, String> tableIndexMap) {
         try {
             // 无任何条件的过滤器，占位用
@@ -702,7 +687,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param nothingFilter
      * @throws Exception
      */
-    @Transactional(rollbackFor = Exception.class)
     default void baseProcessOrderBy(Map<String, String> tableIndexMap, Object result,
                                     Object criteriaIter, NothingFilter nothingFilter) throws Exception {
         // 通过处理设置orderBy
@@ -748,7 +732,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param tableIndexMap 表index的Map
      * @return
      */
-    @Transactional(rollbackFor = Exception.class)
     default String baseGetChangedTableName(String cascadeEntityAndField, Map<String, String> tableIndexMap) {
         String changedTableName = null;
         String key = cascadeEntityAndField.substring(0, cascadeEntityAndField.lastIndexOf("."));
@@ -932,7 +915,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @return
      */
     default ReturnCommonDTO baseSave(String entityTypeName, O dto, Map<String, Object> appendMap) {
-        ReturnCommonDTO result = baseSaveInTrans(entityTypeName, dto, appendMap);
+        ReturnCommonDTO result = ((BaseService)AopContext.currentProxy()).baseSaveInTrans(entityTypeName, dto, appendMap);
         baseDoAfterSaveOutTrans(appendMap);
         return result;
     }
@@ -968,7 +951,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             appendMap = new HashMap<>();
         }
         // 新增修改验证
-        boolean continueSave = baseSaveValidator(dto, appendMap);
+        boolean continueSave = ((BaseService)AopContext.currentProxy()).baseSaveValidator(dto, appendMap);
         if (!continueSave) {
             // 不继续保存,在此处终止
             return new ReturnCommonDTO();
@@ -988,7 +971,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         String dtoId = entity.getId();
         dto.setId(dtoId);
         // 新增或更新之后的操作
-        baseDoAfterSave(dto, appendMap);
+        ((BaseService)AopContext.currentProxy()).baseDoAfterSave(dto, appendMap);
         // 级联新增或修改
         List<BaseEntityConfigRelationDTO> relationList = GlobalCache.getEntityRelationsMap().get(entityTypeName);
         if (relationList == null || relationList.size() == 0) {
@@ -1054,7 +1037,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             }
         }
         // 所有保存完成后的操作
-        baseDoBeforeSaveReturn(dto, appendMap);
+        ((BaseService)AopContext.currentProxy()).baseDoBeforeSaveReturn(dto, appendMap);
         return result ? new ReturnCommonDTO(Constants.commonReturnStatus.SUCCESS.getValue(), null, dtoId)
                 : new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "保存失败");
     }
@@ -1072,7 +1055,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         if (appendMap == null) {
             appendMap = new HashMap<>();
         }
-        return baseDeleteByMapCascade(entityTypeName, new HashMap<String, Object>() {{put("id", id);}}, appendMap);
+        return ((BaseService)AopContext.currentProxy()).baseDeleteByMapCascade(
+                entityTypeName, new HashMap<String, Object>() {{put("id", id);}}, appendMap);
     }
 
     /**
@@ -1089,8 +1073,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             appendMap = new HashMap<>();
         }
         for (String id : idList) {
-            ReturnCommonDTO returnCommonDTO = baseDeleteByMapCascade(entityTypeName,
-                    new HashMap<String, Object>() {{put("id", id);}}, appendMap);
+            ReturnCommonDTO returnCommonDTO = ((BaseService)AopContext.currentProxy()).baseDeleteByMapCascade(
+                    entityTypeName, new HashMap<String, Object>() {{put("id", id);}}, appendMap);
             if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
                 throw new CommonAlertException(returnCommonDTO.getErrMsg());
             }
@@ -1132,7 +1116,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 // 数据库表的关联列字段名。注意：这里先限制为不能随意修改关联字段的数据库字段名，留待以后优化
                 String relatedColumnName = MyStringUtil.camelToUnderline(relationDTO.getToName()) + "_id";
                 // 删除验证（例如权限验证等）
-                baseDeleteValidator(domain, appendMap);
+                ((BaseService)AopContext.currentProxy()).baseDeleteValidator(domain, appendMap);
                 if ("from".equals(relationDTO.getFromOrTo())) {
                     // 级联删除是本体作为主，所以此处是from
                     if (Constants.cascadeDeleteType.FORBIDDEN.getValue().equals(relationDTO.getCascadeDelete())) {
@@ -1181,7 +1165,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
         interceptReturnInfo.setResultCode(null);        // 初始化数据
-        boolean dataFilterPass = baseDataAuthorityFilter(criteria, appendParamMap, interceptReturnInfo);
+        boolean dataFilterPass = ((BaseService)AopContext.currentProxy()).baseDataAuthorityFilter(
+                criteria, appendParamMap, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该查询权限");
         }
@@ -1191,7 +1176,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 执行查询并返回结果
         Map<String, Object> appendParamMapFinal = appendParamMap;
         return Optional.ofNullable(getOne(wrapper)).map(entity ->
-                new ReturnCommonDTO(baseDoConvert(entityTypeName, entity, criteria, appendParamMapFinal)))
+                new ReturnCommonDTO(((BaseService)AopContext.currentProxy()).baseDoConvert(
+                        entityTypeName, entity, criteria, appendParamMapFinal)))
                 .orElse(new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "没有该数据"));
     }
 
@@ -1212,7 +1198,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
         interceptReturnInfo.setResultCode(null);        // 初始化数据
-        boolean dataFilterPass = baseDataAuthorityFilter(criteria, appendParamMap, interceptReturnInfo);
+        boolean dataFilterPass = ((BaseService)AopContext.currentProxy()).baseDataAuthorityFilter(
+                criteria, appendParamMap, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该查询权限");
         }
@@ -1229,7 +1216,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         Map<String, Object> appendParamMapFinal = appendParamMap;
         return new ReturnCommonDTO(GlobalCache.getMapperMap().get(entityTypeName)
                 .joinSelectList(dataQuerySql, wrapper, criteria.getLimit()).stream()
-                .map(entity -> baseDoConvert(entityTypeName, (T)entity, criteria, appendParamMapFinal))
+                .map(entity -> ((BaseService)AopContext.currentProxy()).baseDoConvert(
+                        entityTypeName, (T)entity, criteria, appendParamMapFinal))
                 .collect(Collectors.toList()));
     }
 
@@ -1253,7 +1241,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
         interceptReturnInfo.setResultCode(null);        // 初始化数据
-        boolean dataFilterPass = baseDataAuthorityFilter(criteria, appendParamMap, interceptReturnInfo);
+        boolean dataFilterPass = ((BaseService)AopContext.currentProxy()).baseDataAuthorityFilter(
+                criteria, appendParamMap, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该查询权限");
         }
@@ -1271,7 +1260,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         Map<String, Object> appendParamMapFinal = appendParamMap;
         IPage<O> pageResult = GlobalCache.getMapperMap().get(entityTypeName).joinSelectPage(
                 pageQuery, dataQuerySql, wrapper)
-                .convert(entity -> baseDoConvert(entityTypeName, (T)entity, criteria, appendParamMapFinal));
+                .convert(entity -> ((BaseService)AopContext.currentProxy()).baseDoConvert(
+                        entityTypeName, (T)entity, criteria, appendParamMapFinal));
         int totalCount = GlobalCache.getMapperMap().get(entityTypeName).joinSelectCount(countQuerySql, wrapper);
         pageResult.setTotal((long)totalCount);
         return new ReturnCommonDTO(pageResult);
@@ -1294,7 +1284,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
         interceptReturnInfo.setResultCode(null);        // 初始化数据
-        boolean dataFilterPass = baseDataAuthorityFilter(criteria, appendParamMap, interceptReturnInfo);
+        boolean dataFilterPass = ((BaseService)AopContext.currentProxy()).baseDataAuthorityFilter(
+                criteria, appendParamMap, interceptReturnInfo);
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该查询权限");
         }
@@ -1331,7 +1322,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             throw new CommonException(e.getMessage());
         }
         MyBeanUtil.copyNonNullProperties(entity, dto);
-        baseGetAssociationsAll(entityTypeName, dto, criteria, appendParamMap);
+        ((BaseService)AopContext.currentProxy()).baseGetAssociationsAll(entityTypeName, dto, criteria, appendParamMap);
         return dto;
     }
 
@@ -1352,12 +1343,12 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             appendParamMap = new HashMap<>();
         }
         // 处理关联属性（自定义）
-        baseGetAssociationsPrev(dto, criteria, appendParamMap);
+        ((BaseService)AopContext.currentProxy()).baseGetAssociationsPrev(dto, criteria, appendParamMap);
         // 处理关联属性（共通）
-        baseGetAssociations(entityTypeName, dto, criteria, appendParamMap);
+        ((BaseService)AopContext.currentProxy()).baseGetAssociations(entityTypeName, dto, criteria, appendParamMap);
         // 处理关联属性（自定义）
-        baseGetAssociationsNext(dto, criteria, appendParamMap);
-
+        ((BaseService)AopContext.currentProxy()).baseGetAssociationsNext(dto, criteria, appendParamMap);
+        // 返回数据
         return dto;
     }
 

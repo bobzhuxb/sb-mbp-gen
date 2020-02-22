@@ -17,7 +17,6 @@ import ${packageName}.web.rest.errors.CommonAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +27,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@EnableAspectJAutoProxy
-@Transactional
 public class AccountServiceImpl implements AccountService {
 
     private final Logger log = LoggerFactory.getLogger(AccountServiceImpl.class);
@@ -51,8 +48,8 @@ public class AccountServiceImpl implements AccountService {
      * @param login
      * @return
      */
-    @Transactional(readOnly = true)
     @Override
+    @Transactional(readOnly = true, rollbackFor = Exception.class)
     public EnhanceUserDTO getFullUserInfoByLogin(String login) {
         log.debug("Service ==> 获取用户全信息 {}", login);
         SystemUserCriteria systemUserCriteria = new SystemUserCriteria();
@@ -113,6 +110,7 @@ public class AccountServiceImpl implements AccountService {
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO changePassword(String currentClearTextPassword, String newPassword) {
         log.debug("Service ==> 用户自己修改密码");
         SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
@@ -137,6 +135,7 @@ public class AccountServiceImpl implements AccountService {
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO changeSelfInfo(SystemUserDTO userDTO) {
         log.debug("Service ==> 用户自己修改信息，密码除外");
         SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
@@ -161,6 +160,8 @@ public class AccountServiceImpl implements AccountService {
      * @param currentClearTextPassword
      * @return
      */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<Integer> validatePassword(String currentClearTextPassword) {
         log.debug("Service ==> 用户自己修改密码");
         SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
@@ -182,6 +183,8 @@ public class AccountServiceImpl implements AccountService {
      * @param userId
      * @return
      */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO resetPassword(String userId) {
         log.debug("Service ==> 管理员重置别人的密码");
         // 权限验证
