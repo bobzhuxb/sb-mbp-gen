@@ -27,7 +27,6 @@ import java.util.*;
  */
 @Service
 @EnableAspectJAutoProxy(exposeProxy = true)
-@Transactional(rollbackFor = Exception.class)
 public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper, ${eentityName}>
         implements ${eentityName}Service {
 
@@ -57,6 +56,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @param roleId id of role
      * @return result page elements
      */
+    @Transactional(rollbackFor = Exception.class)
     public List<SystemRolePageElement> getPageElementsByRole(String roleId) {
         List<SystemRolePageElement> rolePageElementList = systemRolePageElementMapper.selectByMap(
                 new HashMap<String, Object>(){{
@@ -69,6 +69,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 保存角色的页面和元素权限
      * @param rolePageElementsDTO
      */
+    @Transactional(rollbackFor = Exception.class)
     public void saveRolePermissions(RolePageElementsDTO rolePageElementsDTO) {
         if (rolePageElementsDTO.getRoleId() == null
                 || rolePageElementsDTO.getPageElementCodeList() == null) {
@@ -124,6 +125,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @param roleId id of role
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     public List<PageElementDTO> getPageElementTree(String roleId) {
         if (roleId == null || "0".equals(roleId)) {
             return Constants.pageElementList;
@@ -147,6 +149,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * @param hasPageElementList 已选中的元素
      * @return 0：未选  1：全选  2：部分选择
      */
+    @Transactional(rollbackFor = Exception.class)
     private int formPageElement(List<PageElementDTO> originList, List<PageElementDTO> destList,
                                 List<String> hasPageElementList) {
         double childTotalCount = (double)originList.size();
@@ -192,6 +195,7 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
      * 获取当前用户的页面元素树
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     public List<PageElementDTO> getPageElementOfCurrentUser() {
         // 用户当前的页面元素（第三层级）
         List<String> hasPageElementList = new ArrayList<>();
