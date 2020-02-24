@@ -70,6 +70,23 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     }
 
     /**
+     * 单条删除执行完毕之后，在事务外做的非事务操作
+     * @param id 删除的数据的主键ID
+     * @param appendMap 附加的参数（前面处理过的结果）
+     */
+    default void baseDoAfterDeleteByIdOutTrans(String id, Map<String, Object> appendMap) {
+        // TODO: 单条删除之后的外部非事务操作写在这里（由具体实现覆盖）
+    }
+
+    /**
+     * 新增或修改操作执行完毕之后，在事务外做的非事务操作
+     * @param appendMap 附加的参数（前面处理过的结果）
+     */
+    default void baseDoAfterSaveOutTrans(Map<String, Object> appendMap) {
+        // TODO: 新增修改之后的外部非事务操作写在这里（由具体实现覆盖）
+    }
+
+    /**
      * 删除验证（具体子类实现）
      * @param domain 数据库中查询出的实体数据内容
      * @param appendMap 附加的传递参数
@@ -915,21 +932,16 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @return
      */
     default ReturnCommonDTO baseSave(String entityTypeName, O dto, Map<String, Object> appendMap) {
+        if (appendMap == null) {
+            appendMap = new HashMap<>();
+        }
         ReturnCommonDTO result = ((BaseService)AopContext.currentProxy()).baseSaveInTrans(entityTypeName, dto, appendMap);
         baseDoAfterSaveOutTrans(appendMap);
         return result;
     }
 
     /**
-     * 新增或修改操作执行完毕之后，在事务外做的非事务操作
-     * @param appendMap
-     */
-    default void baseDoAfterSaveOutTrans(Map<String, Object> appendMap) {
-        // TODO: 新增修改之后的外部非事务操作写在这里（由具体实现覆盖）
-    }
-
-    /**
-     * 新增或修改
+     * 新增或修改（事务操作）
      * @param entityTypeName 实体类型名
      * @param dto 主实体
      * @param appendMap 附加的传递参数
@@ -1043,7 +1055,23 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     }
 
     /**
-     * 根据ID删除数据（同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
+     * 根据ID删除数据
+     * @param entityTypeName 实体类型名
+     * @param id 主键ID
+     * @param appendMap 附加的传递参数
+     * @return
+     */
+    default ReturnCommonDTO baseDeleteById(String entityTypeName, String id, Map<String, Object> appendMap) {
+        if (appendMap == null) {
+            appendMap = new HashMap<>();
+        }
+        ReturnCommonDTO result = ((BaseService)AopContext.currentProxy()).baseDeleteById(entityTypeName, id, appendMap);
+        baseDoAfterDeleteByIdOutTrans(id, appendMap);
+        return result;
+    }
+
+    /**
+     * 根据ID删除数据（事务操作，同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
      * @param entityTypeName 实体类型名
      * @param id 主键ID
      * @param appendMap 附加的传递参数
@@ -1051,7 +1079,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事务的一致性
      */
     @Transactional(rollbackFor = Exception.class)
-    default ReturnCommonDTO baseDeleteById(String entityTypeName, String id, Map<String, Object> appendMap) {
+    default ReturnCommonDTO baseDeleteByIdTrans(String entityTypeName, String id, Map<String, Object> appendMap) {
         if (appendMap == null) {
             appendMap = new HashMap<>();
         }
