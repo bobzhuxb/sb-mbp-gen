@@ -1065,7 +1065,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         if (appendMap == null) {
             appendMap = new HashMap<>();
         }
-        ReturnCommonDTO result = ((BaseService)AopContext.currentProxy()).baseDeleteById(entityTypeName, id, appendMap);
+        ReturnCommonDTO result = ((BaseService)AopContext.currentProxy()).baseDeleteByIdTrans(entityTypeName, id, appendMap);
         baseDoAfterDeleteByIdOutTrans(id, appendMap);
         return result;
     }
