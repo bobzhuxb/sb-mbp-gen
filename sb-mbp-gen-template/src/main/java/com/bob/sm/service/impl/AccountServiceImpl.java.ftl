@@ -26,6 +26,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 账户信息相关
+ * @author Bob
+ */
 @Service
 public class AccountServiceImpl implements AccountService {
 
