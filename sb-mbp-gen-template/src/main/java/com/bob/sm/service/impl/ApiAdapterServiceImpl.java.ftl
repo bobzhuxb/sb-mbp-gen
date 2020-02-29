@@ -361,6 +361,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
         processCriteriaParam(apiAdapterConfigDTO, request, parameters);
         processAssociationNameList(apiAdapterConfigDTO, request, parameters);
         processDictionaryNameList(apiAdapterConfigDTO, request, parameters);
+        processOrderByParam(apiAdapterConfigDTO, request, parameters);
     }
 
     /**
@@ -579,6 +580,27 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
             if (parameter instanceof BaseCriteria) {
                 // 正常情况下，该if分支只会进来一次
                 ((BaseCriteria)parameter).setDictionaryNameList(configDTO.getParam().getDictionaryNameList());
+            }
+        }
+    }
+
+    /**
+     * 处理排序参数
+     * @param configDTO 配置
+     * @param request HTTP请求
+     * @param parameters 处理前/后的参数
+     */
+    private void processOrderByParam(ApiAdapterConfigDTO configDTO, HttpServletRequest request, Object[] parameters) {
+        // 验证该request的配置
+        if (configDTO == null || configDTO.getParam() == null || configDTO.getParam().getOrderBy() == null) {
+            return;
+        }
+        // 遍历所有参数
+        for (int i = 0; i < parameters.length; i++) {
+            Object parameter = parameters[i];
+            if (parameter instanceof BaseCriteria) {
+                // 正常情况下，该if分支只会进来一次
+                ((BaseCriteria)parameter).setOrderBy(configDTO.getParam().getOrderBy());
             }
         }
     }

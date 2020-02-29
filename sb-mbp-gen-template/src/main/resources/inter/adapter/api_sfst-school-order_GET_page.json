@@ -35,7 +35,8 @@
         ],
         "dictionaryNameList":[
             "categoryValue"
-        ]
+        ],
+        "orderBy": "sfstSchool.code desc"
     },
     "result":{
         "fieldList":[
