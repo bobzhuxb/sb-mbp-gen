@@ -14,7 +14,6 @@ public class ApiAdapterConfigDTO {
     private String interDescr;  // 接口描述
     private ApiAdapterParamDTO param;       // 接口参数配置
     private ApiAdapterResultDTO result;     // 接口返回数据配置
-    private List<String> sqlColumnList;     // SQL查询的字段
 
     private List<ApiAdapterResultFieldDTO> returnConfigTreeList;    // 将返回配置处理成树状结构的结果
 
@@ -64,14 +63,6 @@ public class ApiAdapterConfigDTO {
 
     public void setResult(ApiAdapterResultDTO result) {
         this.result = result;
-    }
-
-    public List<String> getSqlColumnList() {
-        return sqlColumnList;
-    }
-
-    public void setSqlColumnList(List<String> sqlColumnList) {
-        this.sqlColumnList = sqlColumnList;
     }
 
     public List<ApiAdapterResultFieldDTO> getReturnConfigTreeList() {

@@ -36,6 +36,8 @@ public class BaseCriteria {
 
     private List<String> dictionaryNameList;    // 关联数据字典值获取（列出的属性都会关联查询）
 
+    private List<String> sqlColumnList;         // 需要查询的表的列
+
     private SystemUserCriteria insertUser;    // 创建者用户
 
     private SystemUserCriteria operateUser;    // 操作者用户
@@ -137,6 +139,14 @@ public class BaseCriteria {
 
     public void setDictionaryNameList(List<String> dictionaryNameList) {
         this.dictionaryNameList = dictionaryNameList;
+    }
+
+    public List<String> getSqlColumnList() {
+        return sqlColumnList;
+    }
+
+    public void setSqlColumnList(List<String> sqlColumnList) {
+        this.sqlColumnList = sqlColumnList;
     }
 
     public SystemUserCriteria getInsertUser() {

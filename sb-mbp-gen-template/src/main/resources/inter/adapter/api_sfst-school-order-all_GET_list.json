@@ -36,7 +36,11 @@
         "dictionaryNameList":[
             "categoryValue"
         ],
-        "orderBy": "sfstSchool.code desc"
+        "orderBy": "rdtsSaleOrder.insertTime",
+        "sqlColumnList": ["unitPrice", "saleNumber",
+			"rdtsSaleOrderId",
+			"rdtsStockBatchId", "rdtsStockBatch.batchNo",
+            "rdtsStockBatch.rdtsDragId", "rdtsStockBatch.rdtsDrag.name"]
     },
     "result":{
         "fieldList":[

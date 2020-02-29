@@ -203,18 +203,80 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     }
 
     /**
+     * 获取最终的查询列
+     * @param criteria 查询条件
+     * @param entityPath 实体的上层路径
+     */
+    default List<String> baseGetFinalQueryColumnList(C criteria, String entityPath) {
+        if (entityPath == null) {
+            entityPath = "";
+        }
+        // 最终查询的列，存放的内容是数据库中表的列名
+        List<String> finalQueryColumnList = new ArrayList<>();
+        // 名称为sqlColumn，实际上存放的仍然是Java的实体名
+        // 此处只会被baseFindAll和baseFindPage直接使用，所以此处用的是第一层级的sqlColumn
+        List<String> sqlColumnList = criteria.getSqlColumnList();
+        if (sqlColumnList != null && sqlColumnList.size() > 0) {
+            for (String sqlColumn : sqlColumnList) {
+                if ("".equals(entityPath)) {
+                    // 第一层级，列名不包含.
+                    if (!sqlColumn.contains(".")) {
+                        finalQueryColumnList.add(MyStringUtil.camelToUnderline(sqlColumn));
+                    }
+                } else {
+                    // 其他层级，列名以entityPath开头，且之后不包含.符号
+                    if (sqlColumn.startsWith(entityPath)) {
+                        String lastColumn = sqlColumn.substring(entityPath.length());
+                        if (!lastColumn.contains(".")) {
+                            finalQueryColumnList.add(MyStringUtil.camelToUnderline(lastColumn));
+                        }
+                    }
+                }
+            }
+        }
+        return finalQueryColumnList;
+    }
+
+    /**
      * 获取查询数据的SQL
      * @param entityTypeName 实体类型简称
      * @param criteria 查询条件
      * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
+     * @param entityPath 实体的上层路径
      * @return
      */
-    default String baseGetDataQuerySql(String entityTypeName, C criteria, Map<String, String> tableIndexMap) {
+    default String baseGetDataQuerySql(String entityTypeName, C criteria, Map<String, String> tableIndexMap,
+                                       String entityPath) {
         // 获取实体配置
         BaseEntityConfigDTO entityConfig = GlobalCache.getEntityConfigMap().get(entityTypeName);
         int tableCount = 0;
         int fromTableCount = tableCount;
-        String joinDataSql = "SELECT " + entityConfig.getTableName() + "_" + tableCount + ".*";
+        // 获取当前表的别名
+        String currentFullTableAlias = entityConfig.getTableName() + "_" + tableCount;
+        // 开始生成SQL语句
+        String joinDataSql = "SELECT ";
+        // 最终查询的列，存放的内容是数据库中表的列名
+        List<String> finalQueryColumnList = baseGetFinalQueryColumnList(criteria, entityPath);
+        if (finalQueryColumnList.size() == 0) {
+            // 如果不设置，默认查询全部列
+            joinDataSql += currentFullTableAlias + ".*";
+        } else {
+            StringBuffer columnSb = new StringBuffer();
+            boolean idColumnExist = false;
+            for (String finalQueryColumn : finalQueryColumnList) {
+                if ("id".equals(finalQueryColumn)) {
+                    idColumnExist = true;
+                }
+                columnSb.append(currentFullTableAlias + "." + finalQueryColumn + ", ");
+            }
+            String columnStr = columnSb.toString().trim();
+            if (!idColumnExist) {
+                // 主键ID必须存在
+                columnStr = currentFullTableAlias + ".id, " + columnStr;
+            }
+            joinDataSql += columnStr.substring(0, columnStr.length() - 1);
+        }
+        // 获取其他配置
         List<BaseEntityConfigDicDTO> entityConfigDicList = GlobalCache.getEntityDicNameMap().get(entityTypeName);
         if (entityConfigDicList != null) {
             // 处理关联数据字典值
@@ -770,11 +832,13 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param entityTypeName 实体类型名
      * @param dto 主实体
      * @param criteria 关联属性的条件
+     * @param entityPath 实体的上层路径
      * @param appendParamMap 附加的查询参数条件
      * @return 带关联属性的主实体
      */
     @Transactional(rollbackFor = Exception.class)
-    default O baseGetAssociations(String entityTypeName, O dto, BaseCriteria criteria, Map<String, Object> appendParamMap) {
+    default O baseGetAssociations(String entityTypeName, O dto, BaseCriteria criteria, String entityPath,
+                                  Map<String, Object> appendParamMap) {
         if (dto.getId() == null) {
             return dto;
         }
@@ -819,12 +883,16 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         Field relatedIdField = FieldUtils.getField(subCriteriaClass, relationDTO.getToName() + "Id", true);
                         relatedIdField.setAccessible(true);
                         relatedIdField.set(subCriteria, relatedIdFilter);
-                        subCriteria.setAssociationNameList(subAssociationNameList);
                         // 前面已经验证过权限了，以后不用再次验证权限
                         subCriteria.setAuthorityPass(Constants.yesNo.YES.getValue());
+                        // 设置级联查询
+                        subCriteria.setAssociationNameList(subAssociationNameList);
+                        // 设置查询列
+                        subCriteria.setSqlColumnList(criteria.getSqlColumnList());
                         // 调用级联的Service的方法进行查询
                         Object subDTOList = GlobalCache.getServiceMap().get(relationDTO.getToType())
-                                .baseFindAll(relationDTO.getToType(), subCriteria, appendParamMap).getData();
+                                .baseFindAllEntityPath(relationDTO.getToType(), subCriteria,
+                                        entityPath + relationDTO.getFromName() + ".", appendParamMap).getData();
                         // 最终设置到主体dto的成员变量中
                         if ("OneToOne".equals(relationDTO.getRelationType())) {
                             // 一对一
@@ -859,12 +927,16 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         // 设置级联查询的查询条件
                         Class subCriteriaClass = Class.forName("${packageName}.dto.criteria." + relationDTO.getFromType() + "Criteria");
                         BaseCriteria subCriteria = (BaseCriteria) subCriteriaClass.newInstance();
-                        subCriteria.setAssociationNameList(subAssociationNameList);
                         // 前面已经验证过权限了，以后不用再次验证权限
                         subCriteria.setAuthorityPass(Constants.yesNo.YES.getValue());
+                        // 设置级联查询
+                        subCriteria.setAssociationNameList(subAssociationNameList);
+                        // 设置查询列
+                        subCriteria.setSqlColumnList(criteria.getSqlColumnList());
                         // 调用级联的Service的方法进行查询
-                        ReturnCommonDTO<O> subDTORtn = GlobalCache.getServiceMap().get(relationDTO.getFromType()).baseFindOne(
-                                relationDTO.getFromType(), (String)relatedId, subCriteria, appendParamMap);
+                        ReturnCommonDTO<O> subDTORtn = GlobalCache.getServiceMap().get(relationDTO.getFromType())
+                                .baseFindOneEntityPath(relationDTO.getFromType(), (String)relatedId, subCriteria,
+                                        entityPath + relationDTO.getToName() + ".", appendParamMap);
                         if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(subDTORtn.getResultCode())) {
                             throw new CommonAlertException(subDTORtn.getResultCode(), subDTORtn.getErrMsg());
                         }
@@ -894,9 +966,13 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 SystemUserCriteria insertUserCriteria = new SystemUserCriteria();
                 // 此处不用再验证权限
                 insertUserCriteria.setAuthorityPass(Constants.yesNo.YES.getValue());
+                // 设置级联查询
                 insertUserCriteria.setAssociationNameList(associationName2List);
+                // 设置查询列
+                insertUserCriteria.setSqlColumnList(criteria.getSqlColumnList());
                 ReturnCommonDTO<SystemUserDTO> insertUserRtn = GlobalCache.getServiceMap().get("SystemUser")
-                        .baseFindOne("SystemUser", insertUserId, insertUserCriteria, appendParamMap);
+                        .baseFindOneEntityPath("SystemUser", insertUserId, insertUserCriteria,
+                                entityPath + "insertUser.", appendParamMap);
                 dto.setInsertUser(insertUserRtn.getData());
             }
             if ("operateUser".equals(associationName)) {
@@ -915,9 +991,13 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 SystemUserCriteria operateUserCriteria = new SystemUserCriteria();
                 // 此处不用再验证权限
                 operateUserCriteria.setAuthorityPass(Constants.yesNo.YES.getValue());
+                // 设置级联查询
                 operateUserCriteria.setAssociationNameList(associationName2List);
+                // 设置查询列
+                operateUserCriteria.setSqlColumnList(criteria.getSqlColumnList());
                 ReturnCommonDTO<SystemUserDTO> operateUserRtn = GlobalCache.getServiceMap().get("SystemUser")
-                        .baseFindOne("SystemUser", operateUserId, operateUserCriteria, appendParamMap);
+                        .baseFindOneEntityPath("SystemUser", operateUserId, operateUserCriteria,
+                                entityPath + "operateUser.", appendParamMap);
                 dto.setOperateUser(operateUserRtn.getData());
             }
         }
@@ -1123,6 +1203,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                                                    Map<String, Object> appendMap) {
         // 删除级联实体或置空关联字段或禁止删除
         listByMap(columnMap).forEach(domain -> {
+            // 删除验证（例如权限验证等）
+            ((BaseService)AopContext.currentProxy()).baseDeleteValidator(domain, appendMap);
             Optional.ofNullable(GlobalCache.getEntityRelationsMap().get(entityTypeName)).get().forEach(relationDTO -> {
                 if ("SystemDictionary".equals(entityTypeName)) {
                     // 数据字典需要判断是否有使用该数据字典的信息
@@ -1143,8 +1225,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 }
                 // 数据库表的关联列字段名。注意：这里先限制为不能随意修改关联字段的数据库字段名，留待以后优化
                 String relatedColumnName = MyStringUtil.camelToUnderline(relationDTO.getToName()) + "_id";
-                // 删除验证（例如权限验证等）
-                ((BaseService)AopContext.currentProxy()).baseDeleteValidator(domain, appendMap);
                 if ("from".equals(relationDTO.getFromOrTo())) {
                     // 级联删除是本体作为主，所以此处是from
                     if (Constants.cascadeDeleteType.FORBIDDEN.getValue().equals(relationDTO.getCascadeDelete())) {
@@ -1183,10 +1263,53 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @return 单条数据内容
      */
     @Transactional(rollbackFor = Exception.class)
-    default ReturnCommonDTO<O> baseFindOne(String entityTypeName, String id, C criteria,
-                                           Map<String, Object> appendParamMap) {
+    default ReturnCommonDTO<O> baseFindOne(String entityTypeName, String id, C criteria, Map<String, Object> appendParamMap) {
+        return baseFindOneEntityPath(entityTypeName, id, criteria, null, appendParamMap);
+    }
+
+    /**
+     * 分页查询
+     * @param entityTypeName 实体类型名
+     * @param criteria 查询条件
+     * @param pageable 分页条件
+     * @param appendParamMap 附加参数
+     * @return 分页列表
+     */
+    @Transactional(rollbackFor = Exception.class)
+    default ReturnCommonDTO<IPage<O>> baseFindPage(String entityTypeName, C criteria, MbpPage pageable,
+                                                   Map<String, Object> appendParamMap) {
+        return baseFindPageEntityPath(entityTypeName, criteria, pageable, null, appendParamMap);
+    }
+
+    /**
+     * 查询所有
+     * @param entityTypeName 实体类型名
+     * @param criteria 查询条件
+     * @param appendParamMap 附加参数
+     * @return 数据列表
+     */
+    @Transactional(rollbackFor = Exception.class)
+    default ReturnCommonDTO<List<O>> baseFindAll(String entityTypeName, C criteria, Map<String, Object> appendParamMap) {
+        return baseFindAllEntityPath(entityTypeName, criteria, null, appendParamMap);
+    }
+
+    /**
+     * 查询单条数据
+     * @param entityTypeName 实体类型名
+     * @param id 主键ID
+     * @param criteria 附加条件
+     * @param entityPath 实体的上层路径
+     * @param appendParamMap 附加参数
+     * @return 单条数据内容
+     */
+    @Transactional(rollbackFor = Exception.class)
+    default ReturnCommonDTO<O> baseFindOneEntityPath(String entityTypeName, String id, C criteria, String entityPath,
+                                                     Map<String, Object> appendParamMap) {
         if (appendParamMap == null) {
             appendParamMap = new HashMap<>();
+        }
+        if (entityPath == null) {
+            entityPath = "";
         }
         // ID条件设定
         Wrapper<T> wrapper = baseIdEqualsPrepare(entityTypeName, id, criteria, appendParamMap);
@@ -1203,23 +1326,53 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         }
         // 执行查询并返回结果
         Map<String, Object> appendParamMapFinal = appendParamMap;
-        return Optional.ofNullable(getOne(wrapper)).map(entity ->
+        String entityPathFinal = entityPath;
+        return Optional.ofNullable(baseFindOneSimple(wrapper, criteria, entityPath)).map(entity ->
                 new ReturnCommonDTO(((BaseService)AopContext.currentProxy()).baseDoConvert(
-                        entityTypeName, entity, criteria, appendParamMapFinal)))
+                        entityTypeName, entity, criteria, entityPathFinal, appendParamMapFinal)))
                 .orElse(new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "没有该数据"));
+    }
+
+    /**
+     * 查询单条数据
+     * @param queryWrapper 查询条件
+     * @param criteria 附加条件
+     * @param entityPath 实体的上层路径
+     * @return
+     */
+    default T baseFindOneSimple(Wrapper<T> queryWrapper, C criteria, String entityPath) {
+        // 最终查询的列，存放的内容是数据库中表的列名
+        List<String> finalQueryColumnList = baseGetFinalQueryColumnList(criteria, entityPath);
+        if (finalQueryColumnList.size() == 0) {
+            // 如果不设置，默认查询全部列
+            return getOne(queryWrapper);
+        } else {
+            // 主键id必须存在
+            if (!finalQueryColumnList.contains("id")) {
+                finalQueryColumnList.add(0, "id");
+            }
+            String[] finalQueryColumnArr = new String[finalQueryColumnList.size()];
+            finalQueryColumnList.toArray(finalQueryColumnArr);
+            return getOne(((QueryWrapper<T>) queryWrapper).select(finalQueryColumnArr));
+        }
     }
 
     /**
      * 查询所有
      * @param entityTypeName 实体类型名
      * @param criteria 查询条件
+     * @param entityPath 实体的上层路径
      * @param appendParamMap 附加参数
      * @return 数据列表
      */
     @Transactional(rollbackFor = Exception.class)
-    default ReturnCommonDTO<List<O>> baseFindAll(String entityTypeName, C criteria, Map<String, Object> appendParamMap) {
+    default ReturnCommonDTO<List<O>> baseFindAllEntityPath(String entityTypeName, C criteria, String entityPath,
+                                                           Map<String, Object> appendParamMap) {
         if (appendParamMap == null) {
             appendParamMap = new HashMap<>();
+        }
+        if (entityPath == null) {
+            entityPath = "";
         }
         // 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
         Map<String, String> tableIndexMap = new HashMap<>();
@@ -1237,15 +1390,16 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 预处理orderBy的内容
         basePreOrderBy(criteria, tableIndexMap);
         // 获取查询SQL（select和join）
-        String dataQuerySql = baseGetDataQuerySql(entityTypeName, criteria, tableIndexMap);
+        String dataQuerySql = baseGetDataQuerySql(entityTypeName, criteria, tableIndexMap, entityPath);
         // 处理where条件
         Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, appendParamMap, null, tableIndexMap, null);
         // 执行查询并返回结果
         Map<String, Object> appendParamMapFinal = appendParamMap;
+        String entityPathFinal = entityPath;
         return new ReturnCommonDTO(GlobalCache.getMapperMap().get(entityTypeName)
                 .joinSelectList(dataQuerySql, wrapper, criteria.getLimit()).stream()
                 .map(entity -> ((BaseService)AopContext.currentProxy()).baseDoConvert(
-                        entityTypeName, (T)entity, criteria, appendParamMapFinal))
+                        entityTypeName, (T)entity, criteria, entityPathFinal, appendParamMapFinal))
                 .collect(Collectors.toList()));
     }
 
@@ -1254,14 +1408,18 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param entityTypeName 实体类型名
      * @param criteria 查询条件
      * @param pageable 分页条件
+     * @param entityPath 实体的上层路径
      * @param appendParamMap 附加参数
      * @return 分页列表
      */
     @Transactional(rollbackFor = Exception.class)
-    default ReturnCommonDTO<IPage<O>> baseFindPage(String entityTypeName, C criteria, MbpPage pageable,
-                                                   Map<String, Object> appendParamMap) {
+    default ReturnCommonDTO<IPage<O>> baseFindPageEntityPath(String entityTypeName, C criteria, MbpPage pageable,
+                                                             String entityPath, Map<String, Object> appendParamMap) {
         if (appendParamMap == null) {
             appendParamMap = new HashMap<>();
+        }
+        if (entityPath == null) {
+            entityPath = "";
         }
         Page<T> pageQuery = new Page<>(pageable.getPage(), pageable.getSize());
         // 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
@@ -1280,16 +1438,17 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 预处理orderBy的内容
         basePreOrderBy(criteria, tableIndexMap);
         // 获取查询SQL（select和join）
-        String dataQuerySql = baseGetDataQuerySql(entityTypeName, criteria, tableIndexMap);
+        String dataQuerySql = baseGetDataQuerySql(entityTypeName, criteria, tableIndexMap, entityPath);
         // 处理where条件
         String countQuerySql = baseGetCountQuerySql(entityTypeName, criteria, tableIndexMap);
         Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, appendParamMap, null, tableIndexMap, null);
         // 执行查询并返回结果
         Map<String, Object> appendParamMapFinal = appendParamMap;
+        String entityPathFinal = entityPath;
         IPage<O> pageResult = GlobalCache.getMapperMap().get(entityTypeName).joinSelectPage(
                 pageQuery, dataQuerySql, wrapper)
                 .convert(entity -> ((BaseService)AopContext.currentProxy()).baseDoConvert(
-                        entityTypeName, (T)entity, criteria, appendParamMapFinal));
+                        entityTypeName, (T)entity, criteria, entityPathFinal, appendParamMapFinal));
         int totalCount = GlobalCache.getMapperMap().get(entityTypeName).joinSelectCount(countQuerySql, wrapper);
         pageResult.setTotal((long)totalCount);
         return new ReturnCommonDTO(pageResult);
@@ -1333,11 +1492,13 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param entityTypeName 实体类型名
      * @param entity 原始Entity实体
      * @param criteria 查询条件
+     * @param entityPath 实体的上层路径
      * @param appendParamMap 附加的查询参数条件
      * @return 转换后的DTO
      */
     @Transactional(rollbackFor = Exception.class)
-    default O baseDoConvert(String entityTypeName, T entity, C criteria, Map<String, Object> appendParamMap) {
+    default O baseDoConvert(String entityTypeName, T entity, C criteria, String entityPath,
+                            Map<String, Object> appendParamMap) {
         if (appendParamMap == null) {
             appendParamMap = new HashMap<>();
         }
@@ -1350,7 +1511,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             throw new CommonException(e.getMessage());
         }
         MyBeanUtil.copyNonNullProperties(entity, dto);
-        ((BaseService)AopContext.currentProxy()).baseGetAssociationsAll(entityTypeName, dto, criteria, appendParamMap);
+        ((BaseService)AopContext.currentProxy()).baseGetAssociationsAll(entityTypeName, dto, criteria,
+                entityPath, appendParamMap);
         return dto;
     }
 
@@ -1359,11 +1521,13 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param entityTypeName 实体类型名
      * @param dto 主实体
      * @param criteria 关联属性的条件
+     * @param entityPath 实体的上层路径
      * @param appendParamMap 附加的查询参数条件
      * @return 带关联属性的主实体
      */
     @Transactional(rollbackFor = Exception.class)
-    default O baseGetAssociationsAll(String entityTypeName, O dto, C criteria, Map<String, Object> appendParamMap) {
+    default O baseGetAssociationsAll(String entityTypeName, O dto, C criteria, String entityPath,
+                                     Map<String, Object> appendParamMap) {
         if (dto.getId() == null) {
             return dto;
         }
@@ -1373,7 +1537,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 处理关联属性（自定义）
         ((BaseService)AopContext.currentProxy()).baseGetAssociationsPrev(dto, criteria, appendParamMap);
         // 处理关联属性（共通）
-        ((BaseService)AopContext.currentProxy()).baseGetAssociations(entityTypeName, dto, criteria, appendParamMap);
+        ((BaseService)AopContext.currentProxy()).baseGetAssociations(entityTypeName, dto, criteria, entityPath, appendParamMap);
         // 处理关联属性（自定义）
         ((BaseService)AopContext.currentProxy()).baseGetAssociationsNext(dto, criteria, appendParamMap);
         // 返回数据
