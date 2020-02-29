@@ -622,7 +622,10 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
             Object parameter = parameters[i];
             if (parameter instanceof BaseCriteria) {
                 // 正常情况下，该if分支只会进来一次
-                ((BaseCriteria)parameter).setOrderBy(configDTO.getParam().getOrderBy());
+                if (((BaseCriteria)parameter).getOrderBy() == null) {
+                    // 默认选择接口传过来的orderBy，如果不存在，则设置为配置中的orderBy
+                    ((BaseCriteria) parameter).setOrderBy(configDTO.getParam().getOrderBy());
+                }
             }
         }
     }
