@@ -13,7 +13,7 @@ import java.util.Map;
  * 系统属性配置工具类
  * @author Bob
  */
-@ConfigurationProperties(prefix = "jhipster", ignoreUnknownFields = false)
+@ConfigurationProperties(prefix = "tools", ignoreUnknownFields = false)
 @PropertySources({
         @PropertySource(value = "classpath:git.properties", ignoreResourceNotFound = true),
         @PropertySource(value = "classpath:META-INF/build-info.properties", ignoreResourceNotFound = true)

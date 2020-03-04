@@ -41,7 +41,7 @@ mybatis-plus:
             id-type: id_worker_str
     mapper-locations: classpath:/mapper/*Mapper.xml
 
-jhipster:
+tools:
     async:
         core-pool-size: 2
         max-pool-size: 50

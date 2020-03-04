@@ -39,7 +39,7 @@ public class CacheConfiguration {
     public JCacheManagerCustomizer cacheManagerCustomizer() {
         return cm -> {
             cm.createCache(Constants.USERS_BY_LOGIN_CACHE, jcacheConfiguration);
-            // jhipster-needle-ehcache-add-entry
+            // tools-needle-ehcache-add-entry
         };
     }
 }

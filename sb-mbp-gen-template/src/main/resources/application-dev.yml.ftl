@@ -29,7 +29,7 @@ spring:
 server:
     port: 8080
 
-jhipster:
+tools:
     http:
         version: V_1_1 # To use HTTP/2 you will need to activate TLS (see application-tls.yml)
     cache: # Cache configuration
