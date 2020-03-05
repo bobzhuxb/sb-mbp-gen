@@ -41,4 +41,10 @@ public interface CommonService {
 
     <O> ReturnCommonDTO<O> doGetSingleResult(ReturnCommonDTO<List<O>> resultOfList);
 
+    ReturnCommonDTO<String> getDataFromCache(String cacheName, String key);
+
+    ReturnCommonDTO<String> getDataFromLocalCache(String key);
+
+    ReturnCommonDTO<Integer> getTtlFromLocalCache(String key);
+
 }

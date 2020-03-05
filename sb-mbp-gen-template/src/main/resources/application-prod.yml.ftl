@@ -25,6 +25,8 @@ spring:
                 max-idle: 8   # 连接池中的最大空闲连接
                 min-idle: 0  # 连接池中的最小空闲连接
         timeout: 1s  # 连接超时时间
+    cache:
+        type: ehcache
 
 server:
     port: 8080

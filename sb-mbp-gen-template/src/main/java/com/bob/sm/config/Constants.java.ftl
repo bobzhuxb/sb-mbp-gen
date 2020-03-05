@@ -33,6 +33,14 @@ public final class Constants {
      * 用户权限
      */
     public static final String EHCACHE_USER_PERMISSION = "systemUserPermission";
+	
+    // ================ 缓存 start ========================
+    /**
+     * 缓存实现的Service名
+     * 取值范围：cacheRedisService/cacheLocalService
+     * 不使用cacheRedisService时，请将CacheRedisServiceImpl.java的@Service注解去掉
+     */
+    public static final String SERVICE_CACHE_NAME = "cacheRedisService";
 
     /************ 微信登录配置 *************/
     /**

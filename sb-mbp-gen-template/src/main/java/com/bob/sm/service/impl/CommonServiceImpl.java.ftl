@@ -1,11 +1,14 @@
 package ${packageName}.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import ${packageName}.config.Constants;
 import ${packageName}.config.YmlConfig;
 import ${packageName}.dto.help.*;
 import ${packageName}.service.CommonService;
 import ${packageName}.util.ExcelUtil;
 import ${packageName}.util.FileUtil;
+import ${packageName}.util.LocalCache;
+import ${packageName}.util.LocalCacheEntity;
 import ${packageName}.web.rest.errors.CommonAlertException;
 import ${packageName}.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -23,6 +26,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,7 +46,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 共通处理类
+ * 共通方法
  * @author Bob
  */
 @Service
@@ -51,6 +56,9 @@ public class CommonServiceImpl implements CommonService {
 
     @Autowired
     private YmlConfig ymlConfig;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     /**
      * 上传文件到服务器
@@ -516,12 +524,73 @@ public class CommonServiceImpl implements CommonService {
                 }
             } else {
                 // 没有数据
-                throw new CommonAlertException("没有数据");
+                return new ReturnCommonDTO<>();
             }
         } else {
             // 查询操作异常
             return new ReturnCommonDTO<>(resultOfList.getResultCode(), resultOfList.getErrMsg());
         }
+    }
+
+    /**
+     * 从缓存获取数据
+     * @param cacheName
+     * @param key
+     * @return
+     */
+    @Override
+    public ReturnCommonDTO<String> getDataFromCache(String cacheName, String key) {
+        Cache cache = cacheManager.getCache(cacheName);
+        if (cache == null) {
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "cacheName不存在");
+        }
+        Cache.ValueWrapper valueWrapper = cache.get(key);
+        if (valueWrapper == null) {
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "key不存在");
+        }
+        Object value = valueWrapper.get();
+        if (value == null) {
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "value为空");
+        }
+        return new ReturnCommonDTO<>(Constants.commonReturnStatus.SUCCESS.getValue(), null, JSON.toJSONString(value));
+    }
+
+    /**
+     * 从LocalCache获取数据
+     * @param key
+     * @return
+     */
+    @Override
+    public ReturnCommonDTO<String> getDataFromLocalCache(String key) {
+        LocalCacheEntity cacheEntity = LocalCache.getValue(key);
+        if (cacheEntity == null) {
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "key不存在");
+        }
+        LocalCacheEntity cacheEntityClone = LocalCache.clone(cacheEntity);
+        Object value = cacheEntityClone.getObj();
+        if (value == null) {
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "value为空");
+        }
+        return new ReturnCommonDTO<>(Constants.commonReturnStatus.SUCCESS.getValue(), null, JSON.toJSONString(value));
+    }
+
+    /**
+     * 从LocalCache获取数据
+     * @param key
+     * @return
+     */
+    @Override
+    public ReturnCommonDTO<Integer> getTtlFromLocalCache(String key) {
+        LocalCacheEntity cacheEntity = LocalCache.getValue(key);
+        if (cacheEntity == null) {
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "key不存在");
+        }
+        LocalCacheEntity cacheEntityClone = LocalCache.clone(cacheEntity);
+        Object value = cacheEntityClone.getObj();
+        if (value == null) {
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "value为空");
+        }
+        return new ReturnCommonDTO<>(Constants.commonReturnStatus.SUCCESS.getValue(), null, cacheEntityClone.getExpireTime());
     }
 
 }

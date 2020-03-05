@@ -1,12 +1,13 @@
-package ${packageName}.util;
+package ${packageName}.servicehelp;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,15 +17,28 @@ import java.util.concurrent.TimeUnit;
  * Redis工具类
  * @author Bob
  */
-@Component
-public class RedisUtil {
+@Service("cacheRedisService")
+public class CacheRedisServiceImpl implements CacheService {
 
-    private final Logger log = LoggerFactory.getLogger(RedisUtil.class);
+    private final Logger log = LoggerFactory.getLogger(CacheRedisServiceImpl.class);
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
     // =============================common============================
+    /**
+     * Redis连接是否有效
+     * @return
+     */
+    @Override
+    public boolean connectionValid() {
+        try {
+            return !redisTemplate.getConnectionFactory().getConnection().isClosed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     /**
      * 指定缓存失效时间
      * @param key 键
@@ -76,6 +90,7 @@ public class RedisUtil {
      * @param key 可以传一个值 或多个
      */
     @SuppressWarnings("unchecked")
+    @Override
     public void del(String... key) {
         try {
             if (key != null && key.length > 0) {
@@ -97,6 +112,7 @@ public class RedisUtil {
      * @param key 键
      * @return 值
      */
+    @Override
     public Object get(String key) {
         try {
             return key == null ? null : redisTemplate.opsForValue().get(key);
@@ -112,6 +128,7 @@ public class RedisUtil {
      * @param value 值
      * @return true成功 false失败
      */
+    @Override
     public boolean set(String key, Object value) {
         try {
             redisTemplate.opsForValue().set(key, value);
@@ -166,6 +183,7 @@ public class RedisUtil {
      * @param time 时间(秒) time要大于0 如果time小于等于0 将设置无限期
      * @return true成功 false 失败
      */
+    @Override
     public boolean setIfAbsent(String key, Object value, long time) {
         try {
             boolean result = false;
@@ -187,6 +205,7 @@ public class RedisUtil {
      * @param delta 要增加几(大于0)
      * @return
      */
+    @Override
     public long incr(String key, long delta) {
         if (delta < 0) {
             throw new RuntimeException("递增因子必须大于0");
@@ -529,7 +548,8 @@ public class RedisUtil {
      * @param value 值
      * @return
      */
-    public boolean lSet(String key, Object value) {
+    @Override
+    public <T extends Serializable> boolean lSet(String key, T value) {
         try {
             redisTemplate.opsForList().rightPush(key, value);
             return true;
@@ -634,6 +654,7 @@ public class RedisUtil {
      * @param key 键
      * @return 移除的数据
      */
+    @Override
     public Object lPop(String key) {
         try {
             return redisTemplate.opsForList().leftPop(key);

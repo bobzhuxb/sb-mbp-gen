@@ -26,7 +26,8 @@ configurations {
 }
 
 repositories {
-	mavenCentral()
+//	mavenCentral()
+	maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/' }
 }
 
 
@@ -83,7 +84,7 @@ dependencies {
 	// 缓存API
 	compile "javax.cache:cache-api"
 	// Ehcache
-	compile "org.ehcache:ehcache"
+	compile "net.sf.ehcache:ehcache"
 	// Redis
 	compile "org.springframework.boot:spring-boot-starter-data-redis"
 

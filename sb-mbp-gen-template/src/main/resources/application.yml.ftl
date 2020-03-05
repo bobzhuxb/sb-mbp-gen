@@ -9,6 +9,11 @@ spring:
         multipart:
             max-request-size: -1
             max-file-size: -1
+    cache:
+        type: ehcache   # （redis/ehcache）
+        # 不使用Redis时，请将RedisConfig.java的@Configuration注解去掉
+        ehcache:
+            config: classpath:ehcache.xml
 
 server:
     compression:
