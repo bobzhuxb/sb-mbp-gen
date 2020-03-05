@@ -28,6 +28,9 @@ public final class SecurityUtils {
                     UserDetails springSecurityUser = (UserDetails) authentication.getPrincipal();
                     return springSecurityUser.getUsername();
                 } else if (authentication.getPrincipal() instanceof String) {
+                    if ("anonymousUser".equals(authentication.getPrincipal())) {
+                        return null;
+                    }
                     return (String) authentication.getPrincipal();
                 }
                 return null;

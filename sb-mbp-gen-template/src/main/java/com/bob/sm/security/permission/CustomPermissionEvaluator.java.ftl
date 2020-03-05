@@ -38,11 +38,15 @@ public class CustomPermissionEvaluator implements PermissionEvaluator {
     }
 
     private boolean hasPrivilege(Authentication auth, String targetType, String permission) {
-        for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
-            if (grantedAuth.getAuthority().equalsIgnoreCase(targetType + "_" + permission)) {
-                return true;
-            }
-        }
-        return false;
+
+    private boolean hasPrivilege(Authentication auth, String targetType, String permission) {
+        return true;
+//        for (GrantedAuthority grantedAuth : auth.getAuthorities()) {
+//            if (grantedAuth.getAuthority().equalsIgnoreCase(targetType + "_" + permission)) {
+//                return true;
+//            }
+//        }
+//        return false;
+    }
     }
 }
