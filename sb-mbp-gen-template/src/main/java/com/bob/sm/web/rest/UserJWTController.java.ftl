@@ -1,12 +1,11 @@
 package ${packageName}.web.rest;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import ${packageName}.config.Constants;
-import ${packageName}.domain.SystemUser;
+import ${packageName}.dto.SystemUserDTO;
 import ${packageName}.dto.help.ReturnCommonDTO;
-import ${packageName}.mapper.SystemUserMapper;
 import ${packageName}.security.jwt.JWTFilter;
 import ${packageName}.security.jwt.TokenProvider;
+import ${packageName}.service.CommonUserService;
 import ${packageName}.util.ParamValidatorUtil;
 import ${packageName}.web.rest.vm.LoginVM;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * 用户登录认证Controller.
@@ -64,9 +65,10 @@ public class UserJWTController {
             String jwt = tokenProvider.createToken(authentication, rememberMe);
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
-            SystemUser systemUser = systemUserMapper.selectList(
-                    new QueryWrapper<SystemUser>().eq("login", loginVM.getUsername())).get(0);
-            resultDTO = new ReturnCommonDTO(new JWTToken(jwt, systemUser.getLogin(), systemUser.getName()));
+            // 获取登录用户信息
+            SystemUserDTO systemUserDTO = commonUserService.findForceCacheUserByLogin(loginVM.getUsername());
+            // 设置返回数据
+            resultDTO = new ReturnCommonDTO(new JWTToken(jwt, systemUserDTO.getLogin(), systemUserDTO.getName());
         } catch (AuthenticationException ex) {
             resultDTO = new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "用户名或密码错误");
         }

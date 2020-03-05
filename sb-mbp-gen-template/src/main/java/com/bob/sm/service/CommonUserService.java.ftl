@@ -12,5 +12,7 @@ public interface CommonUserService {
     SystemUserDTO getCurrentUser();
     String findUserIdByLogin(String login);
     SystemUserDTO findUserByLogin(String login);
+    SystemUserDTO findForceCacheUserByLogin(String login);
+    SystemUserDTO findCachedUserByLogin(String login);
 
 }

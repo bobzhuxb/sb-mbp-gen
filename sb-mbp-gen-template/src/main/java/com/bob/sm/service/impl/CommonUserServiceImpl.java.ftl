@@ -16,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +60,7 @@ public class CommonUserServiceImpl implements CommonUserService {
      */
     @Override
     public String findUserIdByLogin(String login) {
-        return Optional.ofNullable(((CommonUserService)AopContext.currentProxy()).findUserByLogin(login))
+        return Optional.ofNullable(((CommonUserService)AopContext.currentProxy()).findCachedUserByLogin(login))
                 .map(user -> user.getId()).get();
     }
 
@@ -69,7 +71,29 @@ public class CommonUserServiceImpl implements CommonUserService {
     @Override
     public SystemUserDTO getCurrentUser() {
         return SecurityUtils.getCurrentUserLogin().map(login ->
-                ((CommonUserService)AopContext.currentProxy()).findUserByLogin(login)).orElse(null);
+                ((CommonUserService)AopContext.currentProxy()).findCachedUserByLogin(login)).orElse(null);
+    }
+
+    /**
+     * 根据login获取用户（缓存存在时读缓存，缓存不存在时读库并将返回值设置到缓存中）
+     * @param login
+     * @return
+     */
+    @Override
+    @Cacheable(cacheNames = Constants.CACHE_USER_INFO, key = "#login")
+    public SystemUserDTO findCachedUserByLogin(String login) {
+        return ((CommonUserService)AopContext.currentProxy()).findUserByLogin(login);
+    }
+
+    /**
+     * 根据login获取用户（强制读库，并将返回值设置到缓存中）
+     * @param login
+     * @return
+     */
+    @Override
+    @CachePut(cacheNames = Constants.CACHE_USER_INFO, key = "#login")
+    public SystemUserDTO findForceCacheUserByLogin(String login) {
+        return ((CommonUserService)AopContext.currentProxy()).findUserByLogin(login);
     }
 
     /**
@@ -78,7 +102,6 @@ public class CommonUserServiceImpl implements CommonUserService {
      * @return
      */
     @Override
-    @Cacheable(cacheNames = Constants.CACHE_USER_INFO, key = "#login")
     @Transactional(rollbackFor = Exception.class)
     public SystemUserDTO findUserByLogin(String login) {
         List<SystemUser> userList = systemUserMapper.selectList(new QueryWrapper<SystemUser>().eq("login", login));
