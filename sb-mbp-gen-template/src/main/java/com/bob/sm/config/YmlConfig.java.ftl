@@ -25,12 +25,6 @@ public class YmlConfig {
     private String apiPdfGenerate;
 
     /**
-     * MyBatis Plus日志输出方式
-     */
-    @Value("${r'${mybatis-plus-config.log-way}'}")
-    private String mybatisPlusLogWay;
-
-    /**
      * 启动或关闭图片压缩
      */
     @Value("${r'${app.pic-compress-switch}'}")
@@ -98,14 +92,6 @@ public class YmlConfig {
 
     public void setApiPdfGenerate(String apiPdfGenerate) {
         this.apiPdfGenerate = apiPdfGenerate;
-    }
-
-    public String getMybatisPlusLogWay() {
-        return mybatisPlusLogWay;
-    }
-
-    public void setMybatisPlusLogWay(String mybatisPlusLogWay) {
-        this.mybatisPlusLogWay = mybatisPlusLogWay;
     }
 
     public String getPicCompressSwitch() {

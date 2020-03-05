@@ -23,10 +23,12 @@ public class MybatisPlusConfig {
     @Bean
     public PerformanceInterceptor performanceInterceptor(){
         PerformanceInterceptor interceptor = new PerformanceInterceptor();
-        if ("log".equals(ymlConfig.getMybatisPlusLogWay())) {
-            // 设置写入日志（不设置此句则只会输出到控制台）
-            interceptor.setWriteInLog(true);
-        }
+//        //格式化sql语句
+//        Properties properties = new Properties();
+//        properties.setProperty("format", "true");
+//        interceptor.setProperties(properties);
+//        // 设置输出日志到文件
+//        interceptor.setWriteInLog(true);
         return interceptor;
     }
 

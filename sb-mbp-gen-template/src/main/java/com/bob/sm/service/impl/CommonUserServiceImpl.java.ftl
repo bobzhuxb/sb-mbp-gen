@@ -67,16 +67,6 @@ public class CommonUserServiceImpl implements CommonUserService {
      * @return
      */
     @Override
-    public SystemUserDTO getCurrentUserWithoutRole() {
-        return SecurityUtils.getCurrentUserLogin().map(login ->
-                ((CommonUserService)AopContext.currentProxy()).findUserByLogin(login)).orElse(null);
-    }
-
-    /**
-     * 获取当前用户
-     * @return
-     */
-    @Override
     public SystemUserDTO getCurrentUser() {
         return SecurityUtils.getCurrentUserLogin().map(login ->
                 ((CommonUserService)AopContext.currentProxy()).findUserByLogin(login)).orElse(null);

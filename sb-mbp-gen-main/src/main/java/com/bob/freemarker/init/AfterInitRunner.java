@@ -70,6 +70,7 @@ public class AfterInitRunner implements CommandLineRunner {
                         "    --entity-template-path\t实体模板路径（如果generate-template不是only，则此参数必填）\n" +
                         "    --entity-jdl-file\t\t实体的jdl文件名（包含路径，如果generate-template不是only，则此参数必填）\n" +
                         "    --entity-jdl-file-encode\t实体的jdl文件编码格式（默认值：GB2312）\n" +
+                        "    --change-db\t\t是否操作数据库（默认值：yes，no的情况适用于共用数据库，只要一个应用配置来修改数据库即可）\n" +
                         "    --db-ip\t\t\t数据库IP地址（默认值：localhost）\n" +
                         "    --db-port\t\t\t数据库端口号（默认值：3306）\n" +
                         "    --db-name\t\t\t数据库名（默认值与参数to-project-name相同）\n" +
@@ -126,6 +127,8 @@ public class AfterInitRunner implements CommandLineRunner {
         String projectName = "sbmbp";
         // 最终生成的项目包名（默认与模板包名相同）
         String packageName = "com.bob.sm";
+        // 是否修改数据库（默认修改）
+        String changeDb = "yes";
         // 数据库IP
         String dbIp = "localhost";
         // 数据库Port
@@ -186,6 +189,8 @@ public class AfterInitRunner implements CommandLineRunner {
                     umlFileName = args[i + 1];
                 } else if (arg.equals("--entity-jdl-file-encode")) {
                     umlFileCharsetName = args[i + 1];
+                } else if (arg.equals("--change-db")) {
+                    changeDb = args[i + 1];
                 } else if (arg.equals("--db-ip")) {
                     dbIp = args[i + 1];
                 } else if (arg.equals("--db-port")) {
@@ -306,10 +311,12 @@ public class AfterInitRunner implements CommandLineRunner {
         cfg.setDefaultEncoding("UTF-8");
 
         ///////////////////生成项目////////////////////////
-        // 初始化数据库参数
-        log.info("=======> 初始化数据库 start");
-        DbModule.initDbParam(dbIp, dbPort, dbName, dbUsername, dbPassword, allowChangeTable, deleteTableNameStartList);
-        log.info("=======> 初始化数据库 end");
+        if ("yes".equals(changeDb)) {
+            // 初始化数据库参数
+            log.info("=======> 初始化数据库 start");
+            DbModule.initDbParam(dbIp, dbPort, dbName, dbUsername, dbPassword, allowChangeTable, deleteTableNameStartList);
+            log.info("=======> 初始化数据库 end");
+        }
         if ("yes".equals(generateTemplate) || "only".equals(generateTemplate)) {
             // 生成模板
             log.info("=======> 生成模板 start");
@@ -330,10 +337,12 @@ public class AfterInitRunner implements CommandLineRunner {
             ERDTO erdto = EntityModule.generateEntities(umlFileName, umlFileCharsetName, projectPath,
                     projectName, packageName, entityTemplatePath, cfg);
             log.info("=======> 生成实体 end");
-            // 操作数据库
-            log.info("=======> 修改数据库 start");
-            DbModule.createEntityTables(erdto, defaultColumnValue);
-            log.info("=======> 修改数据库 end");
+            if ("yes".equals(changeDb)) {
+                // 操作数据库
+                log.info("=======> 修改数据库 start");
+                DbModule.createEntityTables(erdto, defaultColumnValue);
+                log.info("=======> 修改数据库 end");
+            }
         }
     }
 

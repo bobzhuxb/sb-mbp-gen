@@ -22,6 +22,7 @@ import ${packageName}.util.MyStringUtil;
 import ${packageName}.web.rest.errors.CommonAlertException;
 import ${packageName}.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.slf4j.Logger;
 import org.springframework.aop.framework.AopContext;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,12 @@ import java.util.stream.Collectors;
  * @author Bob
  */
 public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O extends BaseDTO> extends IService<T> {
+
+    /**
+     * 记录日志用
+     * @return
+     */
+    Logger getLog();
 
     /**
      * 新增修改验证（具体子类实现）

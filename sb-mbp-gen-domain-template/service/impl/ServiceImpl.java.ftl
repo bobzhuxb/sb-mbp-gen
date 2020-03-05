@@ -38,8 +38,8 @@ public class ${eentityName}ServiceImpl extends ServiceImpl<${eentityName}Mapper,
     public Logger getLog() {
         return log;
     }
-	
 	<#if eentityName == 'SystemPermission'>
+	
     @Autowired
     private SystemRoleMapper systemRoleMapper;
 
