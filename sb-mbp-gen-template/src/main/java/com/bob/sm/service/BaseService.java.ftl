@@ -1452,11 +1452,52 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 执行查询并返回结果
         Map<String, Object> appendParamMapFinal = appendParamMap;
         String entityPathFinal = entityPath;
-        IPage<O> pageResult = GlobalCache.getMapperMap().get(entityTypeName).joinSelectPage(
-                pageQuery, dataQuerySql, wrapper)
-                .convert(entity -> ((BaseService)AopContext.currentProxy()).baseDoConvert(
-                        entityTypeName, (T)entity, criteria, entityPathFinal, appendParamMapFinal));
+        // 查数量
         int totalCount = GlobalCache.getMapperMap().get(entityTypeName).joinSelectCount(countQuerySql, wrapper);
+        IPage<O> pageResult = null;
+        if (totalCount == 0) {
+            // count为0就没必要再去查一遍具体数据了
+            pageResult = new IPage<O>() {
+                @Override
+                public List<O> getRecords() {
+                    return new ArrayList<>();
+                }
+                @Override
+                public IPage<O> setRecords(List<O> records) {
+                    return null;
+                }
+                @Override
+                public long getTotal() {
+                    return 0;
+                }
+                @Override
+                public IPage<O> setTotal(long total) {
+                    return null;
+                }
+                @Override
+                public long getSize() {
+                    return pageable.getSize();
+                }
+                @Override
+                public IPage<O> setSize(long size) {
+                    return null;
+                }
+                @Override
+                public long getCurrent() {
+                    return pageable.getPage();
+                }
+                @Override
+                public IPage<O> setCurrent(long current) {
+                    return null;
+                }
+            };
+        } else {
+            // 查分页
+            pageResult = GlobalCache.getMapperMap().get(entityTypeName).joinSelectPage(
+                    pageQuery, dataQuerySql, wrapper)
+                    .convert(entity -> ((BaseService) AopContext.currentProxy()).baseDoConvert(
+                            entityTypeName, (T) entity, criteria, entityPathFinal, appendParamMapFinal));
+        }
         pageResult.setTotal((long)totalCount);
         return new ReturnCommonDTO(pageResult);
     }
