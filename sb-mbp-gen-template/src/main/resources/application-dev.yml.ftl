@@ -26,7 +26,10 @@ spring:
                 min-idle: 0  # 连接池中的最小空闲连接
         timeout: 1s  # 连接超时时间
     cache:
-        type: ehcache
+        type: ehcache	# ehcache/redis
+
+scheduling:
+    enabled: true   # 定时任务开关
 
 server:
     port: 8080
