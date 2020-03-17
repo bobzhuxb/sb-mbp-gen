@@ -180,7 +180,10 @@ public class JdlParseUtil {
                     String columnType = null;
                     String columnDefaultValue = null;
                     // 匹配的模式
-                    Pattern pattern = Pattern.compile("(\\w+)\\s+(\\w+)(\\s+([\\w\\(\\)\\,]+))?(\\s+\\-\\-default=(\\S*))?");
+                    Pattern pattern = Pattern.compile("(\\w+)\\s+(\\w+)" +
+                            "(\\s+\\-\\-column-type=\"([^\"]*)\")?" +
+                            //"(\\s+([\\w\\(\\)\\,]+))?" +
+                            "(\\s+\\-\\-default=\"([^\"]*)\")?");
                     Matcher matcher = pattern.matcher(jdlLine);
                     if (matcher.find()) {
                         // relationship的注释行匹配验证成功
@@ -188,6 +191,12 @@ public class JdlParseUtil {
                         javaType = matcher.group(2);
                         columnType = matcher.group(4);
                         columnDefaultValue = matcher.group(6);
+                        if (camelName.equals("dataType")) {
+                            System.out.println(camelName + "===" + javaType + "===" + columnType + "===" + columnDefaultValue);
+                        }
+                        if (camelName.equals("dataValue")) {
+                            System.out.println(camelName + "===" + javaType + "===" + columnType + "===" + columnDefaultValue);
+                        }
                     } else {
                         throw new Exception("第" + (lineIndex + 1) + "行格式不正确。");
                     }

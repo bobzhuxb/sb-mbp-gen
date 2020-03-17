@@ -335,7 +335,7 @@ public class DbModule {
         if ("notnull".equals(defaultColumnValue)) {
             // 配置项：数据库列要使用默认值
             // 不允许有默认值的字段类型
-            List<String> columnTypeNoDefaultList = new ArrayList<>(Arrays.asList("blob", "text", "geometry", "json"));
+            List<String> columnTypeNoDefaultList = new ArrayList<>(Arrays.asList("blob", "text", "longtext", "geometry", "json"));
             if (columnTypeNoDefaultList.contains(fieldDTO.getColumnType().toLowerCase())) {
                 return null;
             }
