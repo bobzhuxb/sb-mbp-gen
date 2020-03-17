@@ -1,8 +1,8 @@
 package ${packageName}.util;
 
+import cn.hutool.core.util.ReflectUtil;
 import ${packageName}.annotation.RestClassAllow;
 import ${packageName}.annotation.RestFieldAllow;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -68,7 +68,9 @@ public class MyBeanUtil {
                     continue;
                 }
                 Object srcValue = src.getPropertyValue(propertyName);
-                if (srcValue != null) notEmptyNames.add(propertyName);
+                if (srcValue != null) {
+                    notEmptyNames.add(propertyName);
+                }
             } catch (Exception e) {
                 continue;
             }
@@ -90,7 +92,9 @@ public class MyBeanUtil {
         for(java.beans.PropertyDescriptor pd : pds) {
             try {
                 Object srcValue = src.getPropertyValue(pd.getName());
-                if (srcValue == null) emptyNames.add(pd.getName());
+                if (srcValue == null) {
+                    emptyNames.add(pd.getName());
+                }
             } catch (Exception e) {
                 continue;
             }
@@ -247,7 +251,7 @@ public class MyBeanUtil {
     }
 
     /**
-     * 部分字段置空
+     * 部分字段置空（反向）
      * @param object 数据实体
      * @param exceptFieldNameList 不置空的字段名
      * @return
@@ -266,6 +270,70 @@ public class MyBeanUtil {
             }
         } catch (Exception e) {
             // 异常不处理
+        }
+    }
+
+    /**
+     * 部分字段置空（正向）
+     * @param object 数据实体
+     * @param toNullFileNameList 置空的字段名
+     * @return
+     */
+    public static void setSomeFieldToNull(Object object, List<String> toNullFileNameList) {
+        Field[] fields = object.getClass().getDeclaredFields();
+        try {
+            for (Field field : fields) {
+                String fieldName = field.getName();
+                if (toNullFileNameList.contains(fieldName)) {
+                    // 设置对象的访问权限，保证对private的属性的访问
+                    field.setAccessible(true);
+                    // 获取外部传入的值
+                    field.set(object, null);
+                }
+            }
+        } catch (Exception e) {
+            // 异常不处理
+        }
+    }
+
+    /**
+     * 设置实体的属性
+     * @param object 指定实体
+     * @param propertyNameFull 要设置的属性名，以.分隔属性层级
+     * @param value 要设置的最终属性值
+     */
+    public static void setObjectProperty(Object object, String propertyNameFull, Object value) throws RuntimeException {
+        // 属性切割
+        String[] propertyNameArr = propertyNameFull.split("\\.");
+        // 属性迭代
+        Object propIter = object;
+        try {
+            for (int i = 0; i < propertyNameArr.length; i++) {
+                BeanWrapper beanWrapper = new BeanWrapperImpl(propIter);
+                java.beans.PropertyDescriptor[] pds = beanWrapper.getPropertyDescriptors();
+                for (java.beans.PropertyDescriptor pd : pds) {
+                    // 属性名称验证，只留下指定的属性
+                    String propertyName = pd.getName();
+                    if (!propertyNameArr[i].equals(propertyName)) {
+                        continue;
+                    }
+                    if (i < propertyNameArr.length - 1) {
+                        // 前面的一连串属性
+                        Object innerObj = beanWrapper.getPropertyValue(propertyName);
+                        if (innerObj == null) {
+                            Class wrappedClass = pd.getPropertyType();
+                            innerObj = ReflectUtil.newInstance(wrappedClass);
+                            propIter = innerObj;
+                            beanWrapper.setPropertyValue(propertyName, innerObj);
+                        }
+                    } else {
+                        // 最后一层的属性（要设置值的属性）
+                        beanWrapper.setPropertyValue(propertyName, value);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 

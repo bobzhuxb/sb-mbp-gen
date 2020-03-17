@@ -87,9 +87,10 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
 
     /**
      * 新增或修改操作执行完毕之后，在事务外做的非事务操作
+     * @param dto 操作的数据
      * @param appendMap 附加的参数（前面处理过的结果）
      */
-    default void baseDoAfterSaveOutTrans(Map<String, Object> appendMap) {
+    default void baseDoAfterSaveOutTrans(O dto, Map<String, Object> appendMap) {
         // TODO: 新增修改之后的外部非事务操作写在这里（由具体实现覆盖）
     }
 
@@ -173,8 +174,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         ).get().stream().forEach(domain -> {
             ReturnCommonDTO returnCommonDTO = ((BaseService)AopContext.currentProxy()).baseDeleteByMapCascade(
                     entityTypeName, new HashMap<String, Object>() {{
-                put("id", ((BaseDomain) domain).getId());
-            }}, appendMap);
+                        put("id", ((BaseDomain) domain).getId());
+                    }}, appendMap);
             if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
                 throw new CommonAlertException(returnCommonDTO.getErrMsg());
             }
@@ -1023,7 +1024,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             appendMap = new HashMap<>();
         }
         ReturnCommonDTO result = ((BaseService)AopContext.currentProxy()).baseSaveInTrans(entityTypeName, dto, appendMap);
-        baseDoAfterSaveOutTrans(appendMap);
+        baseDoAfterSaveOutTrans(dto, appendMap);
         return result;
     }
 
