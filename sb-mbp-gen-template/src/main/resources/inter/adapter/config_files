@@ -1,5 +1,0 @@
-# 这里填写此目录下的json文件，每行一条
-api_sfst-school-order-all_GET_list.json
-api_sfst-school-order_GET_one.json
-api_sfst-school-order_GET_page.json
-api_sfst-school-order_POST_create.json

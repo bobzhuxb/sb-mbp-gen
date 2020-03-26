@@ -26,6 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -64,23 +67,18 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
         apiAdapterConfigDTOMap = new HashMap<>();
         try {
             // 获取资源目录apiAdapter下的所有json配置文件
-            ClassPathResource configFileNameResource = new ClassPathResource("inter/adapter/config_files");
-            if (!configFileNameResource.exists()) {
+            ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+            Resource[] resources = resolver.getResources("classpath:inter/adapter/*.json");
+            if (resources == null || resources.length == 0) {
                 return;
             }
-            BufferedReader reader = new BufferedReader(new InputStreamReader(configFileNameResource.getInputStream()));
-            String line = null;
             List<ApiAdapterConfigDTO> configList = new ArrayList<>();
-            while ((line = reader.readLine()) != null) {
-                if (!line.endsWith(".json")) {
-                    continue;
-                }
-                ClassPathResource configFileResource = new ClassPathResource("inter/adapter/" + line);
-                if (!configFileResource.exists()) {
-                    continue;
-                }
+            for (Resource resource : resources) {
+                // 文件名
+                String jsonFileName = resource.getFilename();
+                // 读取配置
                 ApiAdapterConfigDTO configDTO =
-                        JSON.parseObject(configFileResource.getInputStream(), StandardCharsets.UTF_8, ApiAdapterConfigDTO.class,
+                        JSON.parseObject(resource.getInputStream(), StandardCharsets.UTF_8, ApiAdapterConfigDTO.class,
                                 // 自动关闭流
                                 Feature.AutoCloseSource,
                                 // 允许注释
@@ -91,8 +89,8 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                                 Feature.UseBigDecimal);
                 String key = configDTO.getHttpUrl().substring(1).replace("/", "_")
                         + "_" + configDTO.getHttpMethod() + "_" + configDTO.getInterNo();
-                if (line.startsWith("#") || !line.equals(key + ".json")) {
-                    throw new CommonAlertException(line + "文件名与配置不符");
+                if (jsonFileName.startsWith("#") || !jsonFileName.equals(key + ".json")) {
+                    throw new CommonAlertException(jsonFileName + "文件名与配置不符");
                 }
                 // 按处理结果的层级排序（需要一层一层处理）
                 List<ApiAdapterResultFieldDTO> fieldConfigSortList = sortReturnConfigList(configDTO);
@@ -134,24 +132,18 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
     @Override
     public void initApiDocBase() {
         try {
-            // 获取资源目录apiAdapter下的所有json配置文件
-            ClassPathResource configFileNameResource = new ClassPathResource("inter/base/config_files");
-            if (!configFileNameResource.exists()) {
+            ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+            // 获取资源目录base下的所有json配置文件
+            Resource[] baseResources = resolver.getResources("classpath:inter/base/*.json");
+            if (baseResources == null || baseResources.length == 0) {
                 return;
             }
-            BufferedReader reader = new BufferedReader(new InputStreamReader(configFileNameResource.getInputStream()));
-            String line = null;
             List<ApiAdapterConfigDTO> configList = new ArrayList<>();
-            while ((line = reader.readLine()) != null) {
-                if (!line.endsWith(".json")) {
-                    continue;
-                }
-                ClassPathResource configFileResource = new ClassPathResource("inter/base/" + line);
-                if (!configFileResource.exists()) {
-                    continue;
-                }
+            for (Resource resource : baseResources) {
+                // 文件名
+                String jsonFileName = resource.getFilename();
                 ApiAdapterConfigDTO configDTO =
-                        JSON.parseObject(configFileResource.getInputStream(), StandardCharsets.UTF_8, ApiAdapterConfigDTO.class,
+                        JSON.parseObject(resource.getInputStream(), StandardCharsets.UTF_8, ApiAdapterConfigDTO.class,
                                 // 自动关闭流
                                 Feature.AutoCloseSource,
                                 // 允许注释
@@ -162,8 +154,8 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                                 Feature.UseBigDecimal);
                 String key = configDTO.getHttpUrl().substring(1).replace("/", "_")
                         + "_" + configDTO.getHttpMethod();
-                if (line.startsWith("#") || !line.equals(key + ".json")) {
-                    throw new CommonAlertException(line + "文件名与配置不符");
+                if (jsonFileName.startsWith("#") || !jsonFileName.equals(key + ".json")) {
+                    throw new CommonAlertException(jsonFileName + "文件名与配置不符");
                 }
                 // 按处理结果的层级排序（需要一层一层处理）
                 List<ApiAdapterResultFieldDTO> fieldConfigSortList = sortReturnConfigList(configDTO);
@@ -174,23 +166,16 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                 configDTO.setReturnConfigTreeList(fieldConfigTreeList);
                 configList.add(configDTO);
             }
-            // 获取资源目录apiAdapter下的所有json配置文件
-            ClassPathResource configFileNameExtendResource = new ClassPathResource("inter/extend/config_files");
-            if (!configFileNameResource.exists()) {
+            // 获取资源目录extend下的所有json配置文件
+            Resource[] extendResources = resolver.getResources("classpath:inter/extend/*.json");
+            if (extendResources == null || extendResources.length == 0) {
                 return;
             }
-            BufferedReader readerExtend = new BufferedReader(new InputStreamReader(configFileNameExtendResource.getInputStream()));
-            String lineExtend = null;
-            while ((lineExtend = readerExtend.readLine()) != null) {
-                if (lineExtend.startsWith("#") || !lineExtend.endsWith(".json")) {
-                    continue;
-                }
-                ClassPathResource configFileResource = new ClassPathResource("inter/extend/" + lineExtend);
-                if (!configFileResource.exists()) {
-                    continue;
-                }
+            for (Resource resource : extendResources) {
+                // 文件名
+                String jsonFileName = resource.getFilename();
                 ApiAdapterConfigDTO configDTO =
-                        JSON.parseObject(configFileResource.getInputStream(), StandardCharsets.UTF_8, ApiAdapterConfigDTO.class,
+                        JSON.parseObject(resource.getInputStream(), StandardCharsets.UTF_8, ApiAdapterConfigDTO.class,
                                 // 自动关闭流
                                 Feature.AutoCloseSource,
                                 // 允许注释
@@ -201,8 +186,8 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                                 Feature.UseBigDecimal);
                 String key = configDTO.getHttpUrl().substring(1).replace("/", "_")
                         + "_" + configDTO.getHttpMethod();
-                if (!lineExtend.equals(key + ".json")) {
-                    throw new CommonAlertException(lineExtend + "文件名与配置不符");
+                if (!jsonFileName.equals(key + ".json")) {
+                    throw new CommonAlertException(jsonFileName + "文件名与配置不符");
                 }
                 // 按处理结果的层级排序（需要一层一层处理）
                 List<ApiAdapterResultFieldDTO> fieldConfigSortList = sortReturnConfigList(configDTO);
