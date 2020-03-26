@@ -69,7 +69,8 @@ public class DbModule {
         }
         Class.forName("com.mysql.cj.jdbc.Driver");
         String connectionUrl = "jdbc:mysql://" + dbIp + ":" + dbPort + "/" + dbName
-                + "?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false";
+                + "?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false"
+                + "&allowPublicKeyRetrieval=true";
         connection = DriverManager.getConnection(connectionUrl, dbUsername, dbPassword);
         return connection;
     }
@@ -199,7 +200,7 @@ public class DbModule {
                         createSql += ", `" + relationColumnName + "` char(50) comment '" + relationComment + "'";
                         // 数据库列的默认值设定
                         if ("notnull".equals(defaultColumnValue)) {
-                            createSql += " default ''";
+                            createSql += "not null default ''";
                         }
                     }
                 }
@@ -207,6 +208,7 @@ public class DbModule {
                 int infectLines = statement.executeUpdate(createSql);
                 log.info("表" + entityDTO.getTableName() + "创建完成。");
             } else {
+                // 表存在，修改
                 if (!"yes".equalsIgnoreCase(allowChangeTable)) {
                     // 若禁止程序修改表，则跳过
                     continue;
@@ -222,26 +224,26 @@ public class DbModule {
                     String newColumnType = fieldDTO.getColumnType();
                     String newColumnComment = fieldDTO.getComment();
                     if (!toDeleteColumnNameList.contains(newColumnName)) {
-                        // 列不存在，新增列（列名、类型、注释、默认值）
+                        // 列不存在，新增列（类型、注释、是否允许空、默认值）
                         String alterSql = "alter table `" + tableName + "` add `" + newColumnName + "` "
                                 + newColumnType + " comment '" + newColumnComment + "'";
                         // 数据库列的默认值设定
                         String defaultAppend = appendDefaultValue(defaultColumnValue, fieldDTO);
                         if (defaultAppend != null) {
-                            alterSql += " default " + defaultAppend;
+                            alterSql += " not null default " + defaultAppend;
                         }
                         statement.executeUpdate(alterSql);
                     } else {
                         // 列已经存在
                         for (DbColumnDTO dbColumnExist : dbTableExist.getColumnList()) {
                             if (dbColumnExist.getColumnName().equals(newColumnName)) {
-                                // 直接更新列（类型、注释、默认值）
+                                // 直接更新列（类型、注释、是否允许空、默认值）
                                 String alterSql = "alter table `" + tableName + "` modify column `"
                                         + newColumnName + "` " + newColumnType + " comment '" + newColumnComment + "'";
                                 // 数据库列的默认值设定
                                 String defaultAppend = appendDefaultValue(defaultColumnValue, fieldDTO);
                                 if (defaultAppend != null) {
-                                    alterSql += " default " + defaultAppend;
+                                    alterSql += " not null default " + defaultAppend;
                                 }
                                 statement.executeUpdate(alterSql);
                                 break;

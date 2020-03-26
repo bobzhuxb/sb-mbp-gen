@@ -174,8 +174,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         ).get().stream().forEach(domain -> {
             ReturnCommonDTO returnCommonDTO = ((BaseService)AopContext.currentProxy()).baseDeleteByMapCascade(
                     entityTypeName, new HashMap<String, Object>() {{
-                        put("id", ((BaseDomain) domain).getId());
-                    }}, appendMap);
+                put("id", ((BaseDomain) domain).getId());
+            }}, appendMap);
             if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
                 throw new CommonAlertException(returnCommonDTO.getErrMsg());
             }
@@ -1323,9 +1323,16 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         Wrapper<T> wrapper = baseIdEqualsPrepare(entityTypeName, id, criteria, appendParamMap);
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
+        interceptReturnInfo.setDataType(Constants.returnDataType.OBJECT.getValue());  // 设置返回类型为object
         interceptReturnInfo.setResultCode(null);        // 初始化数据
-        boolean dataFilterPass = ((BaseService)AopContext.currentProxy()).baseDataAuthorityFilter(
-                criteria, appendParamMap, interceptReturnInfo);
+        boolean dataFilterPass = false;
+        try {
+            dataFilterPass = ((BaseService) AopContext.currentProxy()).baseDataAuthorityFilter(
+                    criteria, appendParamMap, interceptReturnInfo);
+        } catch (Exception e) {
+            getLog().error(e.getMessage(), e);
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "权限验证异常");
+        }
         if (!dataFilterPass) {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "没有该查询权限");
         }
@@ -1386,6 +1393,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
+        interceptReturnInfo.setDataType(Constants.returnDataType.LIST.getValue());  // 设置返回类型为list
         interceptReturnInfo.setResultCode(null);        // 初始化数据
         boolean dataFilterPass = ((BaseService)AopContext.currentProxy()).baseDataAuthorityFilter(
                 criteria, appendParamMap, interceptReturnInfo);
@@ -1434,6 +1442,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
+        interceptReturnInfo.setDataType(Constants.returnDataType.PAGE.getValue());  // 设置返回类型为page
         interceptReturnInfo.setResultCode(null);        // 初始化数据
         boolean dataFilterPass = ((BaseService)AopContext.currentProxy()).baseDataAuthorityFilter(
                 criteria, appendParamMap, interceptReturnInfo);
@@ -1519,6 +1528,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         Map<String, String> tableIndexMap = new HashMap<>();
         // 数据权限过滤
         ReturnCommonDTO interceptReturnInfo = new ReturnCommonDTO();   // 拦截的返回信息
+        interceptReturnInfo.setDataType(Constants.returnDataType.INTEGER.getValue());  // 设置返回类型为integer
         interceptReturnInfo.setResultCode(null);        // 初始化数据
         boolean dataFilterPass = ((BaseService)AopContext.currentProxy()).baseDataAuthorityFilter(
                 criteria, appendParamMap, interceptReturnInfo);

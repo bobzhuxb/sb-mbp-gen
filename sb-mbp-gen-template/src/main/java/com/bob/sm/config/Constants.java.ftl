@@ -160,6 +160,28 @@ public final class Constants {
     }
 
     /**
+     * 返回的数据类型
+     */
+    public enum returnDataType implements EnumInter {
+        OBJECT("object", "普通对象"), LIST("list", "数组对象"), PAGE("page", "分页对象"),
+        INTEGER("integer", "整数");
+        private String value;
+        private String name;
+        private returnDataType(String value, String name) {
+            this.value = value;
+            this.name = name;
+        }
+        @Override
+        public String getValue(){
+            return value;
+        }
+        @Override
+        public String getName(){
+            return name;
+        }
+    }
+
+    /**
      * 微信登录认证返回状态
      */
     public enum wxLoginResultStatus implements EnumInter {

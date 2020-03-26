@@ -8,6 +8,11 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.Serializable;
 
+/**
+ * 进程内的缓存
+ * 用于自测及测试环境暂时没有Redis的情况
+ * @author Bob
+ */
 @Service("cacheLocalService")
 public class CacheLocalServiceImpl implements CacheService {
 

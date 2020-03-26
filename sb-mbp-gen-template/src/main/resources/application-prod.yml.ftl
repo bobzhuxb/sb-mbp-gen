@@ -7,7 +7,7 @@ logging:
 spring:
     datasource:
         driverClassName: com.mysql.cj.jdbc.Driver
-        url: jdbc:mysql://${dbIp}:${dbPort}/${dbName}?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false
+        url: jdbc:mysql://${dbIp}:${dbPort}/${dbName}?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&allowPublicKeyRetrieval=true
         username: ${dbUsername}
         password: ${dbPassword}
     http:

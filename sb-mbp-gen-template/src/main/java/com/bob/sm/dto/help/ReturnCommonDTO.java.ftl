@@ -3,7 +3,7 @@ package ${packageName}.dto.help;
 import ${packageName}.config.Constants;
 
 /**
- * 数据返回的共通类
+ * 共通返回DTO
  * @author Bob
  */
 public class ReturnCommonDTO<T> {
@@ -16,6 +16,9 @@ public class ReturnCommonDTO<T> {
 
     // 返回数据
     private T data;
+
+    // 返回数据的类型（object、list、page）
+    private String dataType;
 
     public ReturnCommonDTO() {
         this(Constants.commonReturnStatus.SUCCESS.getValue());
@@ -37,10 +40,6 @@ public class ReturnCommonDTO<T> {
 
     public ReturnCommonDTO(T data) {
         this(Constants.commonReturnStatus.SUCCESS.getValue(), null, data);
-    }
-
-    public static ReturnCommonDTO commonErrorReturn(String errMsg) {
-        return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), errMsg);
     }
 
     public String getResultCode() {
@@ -65,5 +64,13 @@ public class ReturnCommonDTO<T> {
 
     public void setData(T data) {
         this.data = data;
+    }
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
     }
 }
