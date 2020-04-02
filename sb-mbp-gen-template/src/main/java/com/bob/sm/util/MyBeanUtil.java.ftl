@@ -321,11 +321,13 @@ public class MyBeanUtil {
                         // 前面的一连串属性
                         Object innerObj = beanWrapper.getPropertyValue(propertyName);
                         if (innerObj == null) {
+                            // 如果为空，新建一个实例设置进对应属性中
                             Class wrappedClass = pd.getPropertyType();
                             innerObj = ReflectUtil.newInstance(wrappedClass);
-                            propIter = innerObj;
                             beanWrapper.setPropertyValue(propertyName, innerObj);
                         }
+                        // 继续迭代
+                        propIter = innerObj;
                     } else {
                         // 最后一层的属性（要设置值的属性）
                         beanWrapper.setPropertyValue(propertyName, value);
