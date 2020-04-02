@@ -98,16 +98,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .authorizeRequests()
             // ==================需要关闭的Rest接口写在这里 start======================
-            .antMatchers(HttpMethod.POST, "/api/sample-urls").denyAll()
+            .antMatchers(HttpMethod.POST, "${urlPrefix}/sample-urls").denyAll()
             // ==================需要关闭的Rest接口写在这里 end======================
 
             // ==================需要放开认证的Rest接口写在这里 start======================
-            .antMatchers("/api/authenticate").permitAll()
-            .antMatchers("/api/get-open-id").permitAll()
+            .antMatchers("${urlPrefix}/authenticate").permitAll()
+            .antMatchers("${urlPrefix}/get-open-id").permitAll()
             // ==================需要放开认证的Rest接口写在这里 end======================
 
             // ==================需要认证的接口范围写在这里 start======================
-            .antMatchers("/api/**").authenticated()
+            .antMatchers("${urlPrefix}/**").authenticated()
             // ==================需要认证的接口范围写在这里 end======================
 
             // ==================系统健康检查 start======================

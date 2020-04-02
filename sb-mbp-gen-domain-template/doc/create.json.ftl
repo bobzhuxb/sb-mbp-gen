@@ -1,6 +1,6 @@
 {
     "httpMethod": "POST",
-    "httpUrl": "/api/${entityUrl}",
+    "httpUrl": "${urlPrefix}/${entityUrl}",
     "interDescr": "新增${entityComment}",
     "param": {
         "jsonBody": {

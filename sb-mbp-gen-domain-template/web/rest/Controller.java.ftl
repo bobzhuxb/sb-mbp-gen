@@ -27,7 +27,7 @@ import java.util.List;
  * @author Bob
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("${urlPrefix}")
 public class ${eentityName}Controller {
 
     private final Logger log = LoggerFactory.getLogger(${eentityName}Controller.class);

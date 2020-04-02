@@ -64,6 +64,7 @@ public class AfterInitRunner implements CommandLineRunner {
                         "    --template-path\t\t指定的模板路径及生成的模板路径（generate-template为only或no或update-entity，" +
                         "则此参数必填。generate-template为yes，则忽略该参数。）\n" +
                         "    --template-name\t\t模板名称（默认值：sbmbptemplate）\n" +
+                        "    --url-prefix\t\tURL前缀（默认值：/api）\n" +
                         "    --to-project-path\t\t最终生成的项目路径（如果generate-template不是only，则此参数必填）\n" +
                         "    --to-project-name\t\t最终生成的项目名（默认值：sbmbp）\n" +
                         "    --to-project-package\t最终生成的项目包名（默认值：com.bob.sm）\n" +
@@ -115,6 +116,8 @@ public class AfterInitRunner implements CommandLineRunner {
         String templatePath = "D:\\IdeaWorkspace\\CodeAutoGenerate\\";
         // 框架模板的默认名称（文件夹名）
         String templateName = "sbmbptemplate";
+        // URL前缀
+        String urlPrefix = "/api";
         // 生成的最终项目所在路径（此参数必填，无默认值）
         String projectPath = null;
         // 实体模板的默认总路径
@@ -174,6 +177,8 @@ public class AfterInitRunner implements CommandLineRunner {
                     templatePath = args[i + 1] + "\\";
                 } else if (arg.equals("--template-name")) {
                     templateName = args[i + 1] + "\\";
+                } else if (arg.equals("--url-prefix")) {
+                    urlPrefix = args[i + 1];
                 } else if (arg.equals("--to-project-path")) {
                     toProjectPathExist = true;
                     projectPath = args[i + 1] + "\\";
@@ -302,6 +307,7 @@ public class AfterInitRunner implements CommandLineRunner {
         root.put("dbName", dbName);
         root.put("dbUsername", dbUsername);
         root.put("dbPassword", dbPassword);
+        root.put("urlPrefix", urlPrefix);
 
         // FreeMarker配置文件
         cfg = new Configuration(Configuration.VERSION_2_3_23);
@@ -335,7 +341,7 @@ public class AfterInitRunner implements CommandLineRunner {
             // 生成实体
             log.info("=======> 生成实体 start");
             ERDTO erdto = EntityModule.generateEntities(umlFileName, umlFileCharsetName, projectPath,
-                    projectName, packageName, entityTemplatePath, cfg);
+                    projectName, packageName, entityTemplatePath, cfg, urlPrefix);
             log.info("=======> 生成实体 end");
             if ("yes".equals(changeDb)) {
                 // 操作数据库

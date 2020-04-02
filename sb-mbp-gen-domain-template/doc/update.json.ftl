@@ -1,6 +1,6 @@
 {
     "httpMethod": "PUT",
-    "httpUrl": "/api/${entityUrl}",
+    "httpUrl": "${urlPrefix}/${entityUrl}",
     "interDescr": "修改${entityComment}",
     "param": {
         "jsonBody": {

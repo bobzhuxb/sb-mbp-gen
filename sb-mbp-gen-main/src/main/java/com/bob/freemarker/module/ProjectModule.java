@@ -75,8 +75,7 @@ public class ProjectModule {
         }
         File templateBootFile = new File(bootPath + "Application.java");
         File toBootFile = new File(bootPath + ProjectName + "Application.java");
-        boolean aaa = templateBootFile.renameTo(toBootFile);
-        System.out.println(aaa);
+        templateBootFile.renameTo(toBootFile);
     }
 
 }

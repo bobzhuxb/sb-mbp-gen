@@ -1,6 +1,6 @@
 {
     "httpMethod": "GET",
-    "httpUrl": "/api/${entityUrl}-all",
+    "httpUrl": "${urlPrefix}/${entityUrl}-all",
     "interDescr": "获取所有-${entityComment}",
     "param": {
         "criteriaList": [

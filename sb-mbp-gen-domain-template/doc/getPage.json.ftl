@@ -1,6 +1,6 @@
 {
     "httpMethod": "GET",
-    "httpUrl": "/api/${entityUrl}",
+    "httpUrl": "${urlPrefix}/${entityUrl}",
     "interDescr": "获取分页-${entityComment}",
     "param": {
         "criteriaList": [
