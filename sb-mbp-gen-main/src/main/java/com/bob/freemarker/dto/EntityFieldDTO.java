@@ -39,7 +39,7 @@ public class EntityFieldDTO {
     public EntityFieldDTO(String camelName, String javaType, String columnType, String columnDefaultValue, String comment) {
         this.comment = comment;
         this.javaType = javaType;
-        this.columnType = DbModule.convertJavaTypeToColumnType(javaType, columnType);
+        this.columnType = DbModule.convertJavaTypeToColumnType(camelName, javaType, columnType);
         this.columnDefaultValue = columnDefaultValue;
         this.camelName = camelName;
         this.ccamelName = camelName.substring(0, 1).toUpperCase() + camelName.substring(1);

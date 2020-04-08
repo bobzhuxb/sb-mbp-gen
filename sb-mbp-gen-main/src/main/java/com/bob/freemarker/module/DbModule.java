@@ -89,12 +89,13 @@ public class DbModule {
      * 根据实体创建或更新表（同时处理数据库连接资源）
      * @param erdto
      * @param defaultColumnValue 数据库列的默认值的设定方式
+     * @param changeColumnSingle 数据库是否一列一列修改（yes：是 no：否）
      * @throws Exception
      */
-    public static void createEntityTables(ERDTO erdto, String defaultColumnValue) throws Exception {
+    public static void createEntityTables(ERDTO erdto, String defaultColumnValue, String changeColumnSingle) throws Exception {
         try {
             getConnection();
-            createEntityTablesDirect(erdto, defaultColumnValue);
+            createEntityTablesDirect(erdto, defaultColumnValue, changeColumnSingle);
             initDbData();
         } finally {
             if (connection != null) {
@@ -108,9 +109,10 @@ public class DbModule {
      * 根据实体创建或更新表
      * @param erdto
      * @param defaultColumnValue 数据库列的默认值的设定方式
+     * @param changeColumnSingle 数据库是否一列一列修改（yes：是 no：否）
      * @throws Exception
      */
-    public static void createEntityTablesDirect(ERDTO erdto, String defaultColumnValue) throws Exception {
+    public static void createEntityTablesDirect(ERDTO erdto, String defaultColumnValue, String changeColumnSingle) throws Exception {
         List<EntityDTO> entityDTOList = erdto.getEntityDTOList();
         List<RelationshipDTO> relationshipDTOList = erdto.getRelationshipDTOList();
         Statement statement = connection.createStatement();
@@ -218,6 +220,9 @@ public class DbModule {
                         .map(DbColumnDTO::getColumnName).collect(Collectors.toList());
                 // 主键ID不允许变更
                 toDeleteColumnNameList.remove("id");
+                // 共通的alter table
+                String alterTablePrefix = "alter table `" + tableName + "`";
+                StringJoiner alterColumnSb = new StringJoiner(",");
                 // entity自带字段
                 for (EntityFieldDTO fieldDTO : entityDTO.getFieldList()) {
                     String newColumnName = StringUtil.camelToUnderline(fieldDTO.getCamelName());
@@ -225,31 +230,46 @@ public class DbModule {
                     String newColumnComment = fieldDTO.getComment();
                     if (!toDeleteColumnNameList.contains(newColumnName)) {
                         // 列不存在，新增列（类型、注释、是否允许空、默认值）
-                        String alterSql = "alter table `" + tableName + "` add `" + newColumnName + "` "
+                        String alterColumnStr = " add `" + newColumnName + "` "
                                 + newColumnType + " comment '" + newColumnComment + "'";
                         // 数据库列的默认值设定
                         String defaultAppend = appendDefaultValue(defaultColumnValue, fieldDTO);
                         if (defaultAppend != null) {
-                            alterSql += " not null default " + defaultAppend;
+                            alterColumnStr += " not null default " + defaultAppend;
                         }
-                        statement.executeUpdate(alterSql);
+                        // 为整表改表做准备
+                        alterColumnSb.add(alterColumnStr);
+                        // 单列改表
+                        if ("yes".equals(changeColumnSingle)) {
+                            statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                        }
                     } else {
                         // 列已经存在
                         for (DbColumnDTO dbColumnExist : dbTableExist.getColumnList()) {
                             if (dbColumnExist.getColumnName().equals(newColumnName)) {
                                 // 直接更新列（类型、注释、是否允许空、默认值）
-                                String alterSql = "alter table `" + tableName + "` modify column `"
+                                String alterColumnStr = " modify column `"
                                         + newColumnName + "` " + newColumnType + " comment '" + newColumnComment + "'";
                                 // 数据库列的默认值设定
                                 String defaultAppend = appendDefaultValue(defaultColumnValue, fieldDTO);
                                 if (defaultAppend != null) {
-                                    alterSql += " not null default " + defaultAppend;
+                                    alterColumnStr += " not null default " + defaultAppend;
                                 }
-                                statement.executeUpdate(alterSql);
+                                // 为整表改表做准备
+                                alterColumnSb.add(alterColumnStr);
+                                if ("yes".equals(changeColumnSingle)) {
+                                    try {
+                                        // 单列改表
+                                        statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                    } catch (Exception e) {
+                                        System.out.println("【SQL改库错误】：" + alterTablePrefix + alterColumnStr);
+                                        throw e;
+                                    }
+                                }
                                 break;
                             }
                         }
-                        // 从列表中移除
+                        // 从待删除字段列表中移除
                         toDeleteColumnNameList.remove(newColumnName);
                     }
                 }
@@ -261,25 +281,35 @@ public class DbModule {
                         String relationComment = relationColumn.getToFromComment() + "ID";
                         if (!toDeleteColumnNameList.contains(relationColumnName)) {
                             // 列不存在，新增列
-                            String alterSql = "alter table `" + tableName + "` add `" + relationColumnName
+                            String alterColumnStr = " add `" + relationColumnName
                                     + "` char(50) comment '" + relationComment + "'";
                             // 数据库列的默认值设定
                             if ("notnull".equals(defaultColumnValue)) {
-                                alterSql += " default ''";
+                                alterColumnStr += " default ''";
                             }
-                            statement.executeUpdate(alterSql);
+                            // 为整表改表做准备
+                            alterColumnSb.add(alterColumnStr);
+                            // 单列改表
+                            if ("yes".equals(changeColumnSingle)) {
+                                statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                            }
                         } else {
                             // 列已经存在
                             for (DbColumnDTO dbColumnExist : dbTableExist.getColumnList()) {
                                 if (dbColumnExist.getColumnName().equals(relationColumnName)) {
                                     // 直接更新列类型和注释
-                                    String alterSql = "alter table `" + tableName + "` modify column `"
+                                    String alterColumnStr = " modify column `"
                                             + relationColumnName + "` char(50) comment '" + relationComment + "'";
                                     // 数据库列的默认值设定
                                     if ("notnull".equals(defaultColumnValue)) {
-                                        alterSql += " default ''";
+                                        alterColumnStr += " default ''";
                                     }
-                                    statement.executeUpdate(alterSql);
+                                    // 为整表改表做准备
+                                    alterColumnSb.add(alterColumnStr);
+                                    // 单列改表
+                                    if ("yes".equals(changeColumnSingle)) {
+                                        statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                    }
                                     break;
                                 }
                             }
@@ -290,7 +320,19 @@ public class DbModule {
                 }
                 for (String toDeleteColumn : toDeleteColumnNameList) {
                     // 移除已经去掉的列
-                    statement.executeUpdate("alter table `" + tableName + "` drop column `" + toDeleteColumn + "`");
+                    String alterColumnStr = " drop column `" + toDeleteColumn + "`";
+                    // 为整表改表做准备
+                    alterColumnSb.add(alterColumnStr);
+                    // 单列改表
+                    if ("yes".equals(changeColumnSingle)) {
+                        statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                    }
+                }
+                if ("no".equals(changeColumnSingle)) {
+                    // 整体改表
+                    if (alterColumnSb.length() > 0) {
+                        statement.executeUpdate(alterTablePrefix + alterColumnSb.toString());
+                    }
                 }
                 log.info("表" + entityDTO.getTableName() + "修改完成。");
             }
@@ -367,12 +409,18 @@ public class DbModule {
 
     /**
      * 将Java类型转换为数据库列的类型
-     * @param javaType
+     * @param camelName 字段名称
+     * @param javaType Java类型
+     * @param columnType 列类型
      * @return
      */
-    public static String convertJavaTypeToColumnType(String javaType, String columnType) {
+    public static String convertJavaTypeToColumnType(String camelName, String javaType, String columnType) {
         if (columnType != null) {
             return columnType;
+        }
+        // 系统添加的默认的时间字段
+        if ("insertTime".equals(camelName) || "updateTime".equals(camelName)) {
+            return "varchar(20)";
         }
         columnType = "varchar(255)";
         if ("Integer".equals(javaType)) {

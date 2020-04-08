@@ -72,6 +72,7 @@ public class AfterInitRunner implements CommandLineRunner {
                         "    --entity-jdl-file\t\t实体的jdl文件名（包含路径，如果generate-template不是only，则此参数必填）\n" +
                         "    --entity-jdl-file-encode\t实体的jdl文件编码格式（默认值：GB2312）\n" +
                         "    --change-db\t\t是否操作数据库（默认值：yes，no的情况适用于共用数据库，只要一个应用配置来修改数据库即可）\n" +
+                        "    --change-column-single\t\t\t数据库是否一列一列修改（默认值：no，表示一张表改一次）\n" +
                         "    --db-ip\t\t\t数据库IP地址（默认值：localhost）\n" +
                         "    --db-port\t\t\t数据库端口号（默认值：3306）\n" +
                         "    --db-name\t\t\t数据库名（默认值与参数to-project-name相同）\n" +
@@ -132,6 +133,8 @@ public class AfterInitRunner implements CommandLineRunner {
         String packageName = "com.bob.sm";
         // 是否修改数据库（默认修改）
         String changeDb = "yes";
+        // 数据库是否一列一列修改（默认否）
+        String changeColumnSingle = "no";
         // 数据库IP
         String dbIp = "localhost";
         // 数据库Port
@@ -196,6 +199,8 @@ public class AfterInitRunner implements CommandLineRunner {
                     umlFileCharsetName = args[i + 1];
                 } else if (arg.equals("--change-db")) {
                     changeDb = args[i + 1];
+                } else if (arg.equals("--change-column-single")) {
+                    changeColumnSingle = args[i + 1];
                 } else if (arg.equals("--db-ip")) {
                     dbIp = args[i + 1];
                 } else if (arg.equals("--db-port")) {
@@ -346,7 +351,7 @@ public class AfterInitRunner implements CommandLineRunner {
             if ("yes".equals(changeDb)) {
                 // 操作数据库
                 log.info("=======> 修改数据库 start");
-                DbModule.createEntityTables(erdto, defaultColumnValue);
+                DbModule.createEntityTables(erdto, defaultColumnValue, changeColumnSingle);
                 log.info("=======> 修改数据库 end");
             }
         }
