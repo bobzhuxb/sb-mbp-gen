@@ -6,6 +6,9 @@ import com.bob.freemarker.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -117,224 +120,270 @@ public class DbModule {
         List<RelationshipDTO> relationshipDTOList = erdto.getRelationshipDTOList();
         Statement statement = connection.createStatement();
         List<DbTableDTO> tableExistList = getAllTables();
-        // 删除已经不用的表
-        if ("yes".equalsIgnoreCase(allowChangeTable) && deleteTableNameStartList != null
-                && deleteTableNameStartList.size() > 0) {
-            // 若允许修改表，则可进行删除表操作
-            // 不删除允许范围（指定表名的开头）外的表
-            List<String> toDeleteTableNameList = new ArrayList<>();
-            for (DbTableDTO tableDTOExist : tableExistList) {
-                // 表名开头是否符合要求，不符合要求的表不要删除
-                boolean tableNameStartFix = false;
-                for (String deleteTableNameStart : deleteTableNameStartList) {
-                    if (tableDTOExist.getTableName().toLowerCase().startsWith(deleteTableNameStart.toLowerCase())) {
-                        tableNameStartFix = true;
-                        break;
-                    }
-                }
-                if (tableNameStartFix) {
-                    // 本次仍然存在的表就不用删除了
-                    boolean tableStillExist = false;
-                    for (EntityDTO entityDTO: entityDTOList) {
-                        if (entityDTO.getTableName().equalsIgnoreCase(tableDTOExist.getTableName())) {
-                            tableStillExist = true;
+        // 输出SQL脚本
+        OutputStreamWriter outSqlOsw = null;
+        try {
+            // 输出SQL脚本
+            File outSqlFile = new File("changeTable.sql");
+            FileOutputStream outSqlFos = null;
+            if (!outSqlFile.exists()) {
+                // 如果文件不存在，就创建该文件
+                outSqlFile.createNewFile();
+                // 首次写入获取
+                outSqlFos = new FileOutputStream(outSqlFile);
+            } else {
+                // 如果文件已存在，那么就在文件末尾追加写入
+                outSqlFos = new FileOutputStream(outSqlFile, true);
+            }
+            // 指定以UTF-8格式写入文件
+            outSqlOsw = new OutputStreamWriter(outSqlFos, "UTF-8");
+            // 删除已经不用的表
+            if ("yes".equalsIgnoreCase(allowChangeTable) && deleteTableNameStartList != null
+                    && deleteTableNameStartList.size() > 0) {
+                // 若允许修改表，则可进行删除表操作
+                // 不删除允许范围（指定表名的开头）外的表
+                List<String> toDeleteTableNameList = new ArrayList<>();
+                for (DbTableDTO tableDTOExist : tableExistList) {
+                    // 表名开头是否符合要求，不符合要求的表不要删除
+                    boolean tableNameStartFix = false;
+                    for (String deleteTableNameStart : deleteTableNameStartList) {
+                        if (tableDTOExist.getTableName().toLowerCase().startsWith(deleteTableNameStart.toLowerCase())) {
+                            tableNameStartFix = true;
                             break;
                         }
                     }
-                    if (!tableStillExist) {
-                        // 本次不存在的表要删除
-                        toDeleteTableNameList.add(tableDTOExist.getTableName());
-                    }
-                }
-            }
-            for (String toDeleteTableName : toDeleteTableNameList) {
-                statement.executeUpdate("drop table `" + toDeleteTableName + "`");
-            }
-        }
-        // 附加的关联字段
-        Map<String, List<RelationshipDTO>> relationColumnMap = new HashMap<>();
-        for (RelationshipDTO relationshipDTO : relationshipDTOList) {
-            String fromToEntityType = relationshipDTO.getFromToEntityType();
-            List<RelationshipDTO> relationColumnList = relationColumnMap.get(fromToEntityType);
-            if (relationColumnList == null) {
-                relationColumnList = new ArrayList<>();
-                relationColumnMap.put(fromToEntityType, relationColumnList);
-            }
-            relationColumnList.add(relationshipDTO);
-        }
-        for (EntityDTO entityDTO : entityDTOList) {
-            String tableName = entityDTO.getTableName();
-            // 判断是否已经存在表
-            DbTableDTO dbTableExist = null;
-            for (DbTableDTO tableExist : tableExistList) {
-                if (tableName.equals(tableExist.getTableName())) {
-                    dbTableExist = tableExist;
-                    break;
-                }
-            }
-            if (dbTableExist == null) {
-                // 表不存在，新建
-                String createSql = "create table " + tableName + "(";
-                createSql += "`id` char(50) not null primary key comment '主键', ";
-                for (int i = 0; i < entityDTO.getFieldList().size(); i++) {
-                    EntityFieldDTO fieldDTO = entityDTO.getFieldList().get(i);
-                    String columnName = StringUtil.camelToUnderline(fieldDTO.getCamelName());
-                    if ("id".equals(fieldDTO.getCamelName())) {
-                        continue;
-                    } else {
-                        createSql += "`" + columnName + "` " + fieldDTO.getColumnType() + " comment '" + fieldDTO.getComment() + "'";
-                        // 数据库列的默认值设定
-                        String defaultAppend = appendDefaultValue(defaultColumnValue, fieldDTO);
-                        if (defaultAppend != null) {
-                            createSql += " default " + defaultAppend;
-                        }
-                    }
-                    if (i < entityDTO.getFieldList().size() - 1) {
-                        createSql += ", ";
-                    }
-                }
-                // 附加的关联字段
-                List<RelationshipDTO> relationColumnList = relationColumnMap.get(entityDTO.getEentityName());
-                if (relationColumnList != null && relationColumnList.size() > 0) {
-                    for (RelationshipDTO relationColumn : relationColumnList) {
-                        String relationColumnName = StringUtil.camelToUnderline(relationColumn.getToFromEntityName()) + "_id";
-                        String relationComment = relationColumn.getToFromComment() + "ID";
-                        createSql += ", `" + relationColumnName + "` char(50) comment '" + relationComment + "'";
-                        // 数据库列的默认值设定
-                        if ("notnull".equals(defaultColumnValue)) {
-                            createSql += "not null default ''";
-                        }
-                    }
-                }
-                createSql += ") COMMENT='" + entityDTO.getEntityComment() + "'";
-                int infectLines = statement.executeUpdate(createSql);
-                log.info("表" + entityDTO.getTableName() + "创建完成。");
-            } else {
-                // 表存在，修改
-                if (!"yes".equalsIgnoreCase(allowChangeTable)) {
-                    // 若禁止程序修改表，则跳过
-                    continue;
-                }
-                // 获取现有的字段
-                List<String> toDeleteColumnNameList = dbTableExist.getColumnList().stream()
-                        .map(DbColumnDTO::getColumnName).collect(Collectors.toList());
-                // 主键ID不允许变更
-                toDeleteColumnNameList.remove("id");
-                // 共通的alter table
-                String alterTablePrefix = "alter table `" + tableName + "`";
-                StringJoiner alterColumnSb = new StringJoiner(",");
-                // entity自带字段
-                for (EntityFieldDTO fieldDTO : entityDTO.getFieldList()) {
-                    String newColumnName = StringUtil.camelToUnderline(fieldDTO.getCamelName());
-                    String newColumnType = fieldDTO.getColumnType();
-                    String newColumnComment = fieldDTO.getComment();
-                    if (!toDeleteColumnNameList.contains(newColumnName)) {
-                        // 列不存在，新增列（类型、注释、是否允许空、默认值）
-                        String alterColumnStr = " add `" + newColumnName + "` "
-                                + newColumnType + " comment '" + newColumnComment + "'";
-                        // 数据库列的默认值设定
-                        String defaultAppend = appendDefaultValue(defaultColumnValue, fieldDTO);
-                        if (defaultAppend != null) {
-                            alterColumnStr += " not null default " + defaultAppend;
-                        }
-                        // 为整表改表做准备
-                        alterColumnSb.add(alterColumnStr);
-                        // 单列改表
-                        if ("yes".equals(changeColumnSingle)) {
-                            statement.executeUpdate(alterTablePrefix + alterColumnStr);
-                        }
-                    } else {
-                        // 列已经存在
-                        for (DbColumnDTO dbColumnExist : dbTableExist.getColumnList()) {
-                            if (dbColumnExist.getColumnName().equals(newColumnName)) {
-                                // 直接更新列（类型、注释、是否允许空、默认值）
-                                String alterColumnStr = " modify column `"
-                                        + newColumnName + "` " + newColumnType + " comment '" + newColumnComment + "'";
-                                // 数据库列的默认值设定
-                                String defaultAppend = appendDefaultValue(defaultColumnValue, fieldDTO);
-                                if (defaultAppend != null) {
-                                    alterColumnStr += " not null default " + defaultAppend;
-                                }
-                                // 为整表改表做准备
-                                alterColumnSb.add(alterColumnStr);
-                                if ("yes".equals(changeColumnSingle)) {
-                                    try {
-                                        // 单列改表
-                                        statement.executeUpdate(alterTablePrefix + alterColumnStr);
-                                    } catch (Exception e) {
-                                        System.out.println("【SQL改库错误】：" + alterTablePrefix + alterColumnStr);
-                                        throw e;
-                                    }
-                                }
+                    if (tableNameStartFix) {
+                        // 本次仍然存在的表就不用删除了
+                        boolean tableStillExist = false;
+                        for (EntityDTO entityDTO : entityDTOList) {
+                            if (entityDTO.getTableName().equalsIgnoreCase(tableDTOExist.getTableName())) {
+                                tableStillExist = true;
                                 break;
                             }
                         }
-                        // 从待删除字段列表中移除
-                        toDeleteColumnNameList.remove(newColumnName);
+                        if (!tableStillExist) {
+                            // 本次不存在的表要删除
+                            toDeleteTableNameList.add(tableDTOExist.getTableName());
+                        }
                     }
                 }
-                // 附加的关联字段
-                List<RelationshipDTO> relationColumnList = relationColumnMap.get(entityDTO.getEentityName());
-                if (relationColumnList != null && relationColumnList.size() > 0) {
-                    for (RelationshipDTO relationColumn : relationColumnList) {
-                        String relationColumnName = StringUtil.camelToUnderline(relationColumn.getToFromEntityName()) + "_id";
-                        String relationComment = relationColumn.getToFromComment() + "ID";
-                        if (!toDeleteColumnNameList.contains(relationColumnName)) {
-                            // 列不存在，新增列
-                            String alterColumnStr = " add `" + relationColumnName
-                                    + "` char(50) comment '" + relationComment + "'";
+                for (String toDeleteTableName : toDeleteTableNameList) {
+                    String deleteSql = "drop table `" + toDeleteTableName + "`";
+                    // 输出SQL脚本
+                    outSqlOsw.write(deleteSql + ";\r\n");
+                    // 执行SQL
+                    statement.executeUpdate(deleteSql);
+                }
+            }
+            // 附加的关联字段
+            Map<String, List<RelationshipDTO>> relationColumnMap = new HashMap<>();
+            for (RelationshipDTO relationshipDTO : relationshipDTOList) {
+                String fromToEntityType = relationshipDTO.getFromToEntityType();
+                List<RelationshipDTO> relationColumnList = relationColumnMap.get(fromToEntityType);
+                if (relationColumnList == null) {
+                    relationColumnList = new ArrayList<>();
+                    relationColumnMap.put(fromToEntityType, relationColumnList);
+                }
+                relationColumnList.add(relationshipDTO);
+            }
+            for (EntityDTO entityDTO : entityDTOList) {
+                String tableName = entityDTO.getTableName();
+                // 判断是否已经存在表
+                DbTableDTO dbTableExist = null;
+                for (DbTableDTO tableExist : tableExistList) {
+                    if (tableName.equals(tableExist.getTableName())) {
+                        dbTableExist = tableExist;
+                        break;
+                    }
+                }
+                if (dbTableExist == null) {
+                    // 表不存在，新建
+                    String createSql = "create table " + tableName + "(";
+                    createSql += "`id` char(50) not null primary key comment '主键', ";
+                    for (int i = 0; i < entityDTO.getFieldList().size(); i++) {
+                        EntityFieldDTO fieldDTO = entityDTO.getFieldList().get(i);
+                        String columnName = StringUtil.camelToUnderline(fieldDTO.getCamelName());
+                        if ("id".equals(fieldDTO.getCamelName())) {
+                            continue;
+                        } else {
+                            createSql += "`" + columnName + "` " + fieldDTO.getColumnType() + " comment '" + fieldDTO.getComment() + "'";
+                            // 数据库列的默认值设定
+                            String defaultAppend = appendDefaultValue(defaultColumnValue, fieldDTO);
+                            if (defaultAppend != null) {
+                                createSql += " default " + defaultAppend;
+                            }
+                        }
+                        if (i < entityDTO.getFieldList().size() - 1) {
+                            createSql += ", ";
+                        }
+                    }
+                    // 附加的关联字段
+                    List<RelationshipDTO> relationColumnList = relationColumnMap.get(entityDTO.getEentityName());
+                    if (relationColumnList != null && relationColumnList.size() > 0) {
+                        for (RelationshipDTO relationColumn : relationColumnList) {
+                            String relationColumnName = StringUtil.camelToUnderline(relationColumn.getToFromEntityName()) + "_id";
+                            String relationComment = relationColumn.getToFromComment() + "ID";
+                            createSql += ", `" + relationColumnName + "` char(50) comment '" + relationComment + "'";
                             // 数据库列的默认值设定
                             if ("notnull".equals(defaultColumnValue)) {
-                                alterColumnStr += " default ''";
+                                createSql += "not null default ''";
+                            }
+                        }
+                    }
+                    createSql += ") COMMENT='" + entityDTO.getEntityComment() + "'";
+                    // 输出SQL脚本
+                    outSqlOsw.write(createSql + ";\r\n");
+                    // 执行SQL
+                    int infectLines = statement.executeUpdate(createSql);
+                    log.info("表" + entityDTO.getTableName() + "创建完成。");
+                } else {
+                    // 表存在，修改
+                    if (!"yes".equalsIgnoreCase(allowChangeTable)) {
+                        // 若禁止程序修改表，则跳过
+                        continue;
+                    }
+                    // 获取现有的字段
+                    List<String> toDeleteColumnNameList = dbTableExist.getColumnList().stream()
+                            .map(DbColumnDTO::getColumnName).collect(Collectors.toList());
+                    // 主键ID不允许变更
+                    toDeleteColumnNameList.remove("id");
+                    // 共通的alter table
+                    String alterTablePrefix = "alter table `" + tableName + "`";
+                    StringJoiner alterColumnSb = new StringJoiner(",");
+                    // entity自带字段
+                    for (EntityFieldDTO fieldDTO : entityDTO.getFieldList()) {
+                        String newColumnName = StringUtil.camelToUnderline(fieldDTO.getCamelName());
+                        String newColumnType = fieldDTO.getColumnType();
+                        String newColumnComment = fieldDTO.getComment();
+                        if (!toDeleteColumnNameList.contains(newColumnName)) {
+                            // 列不存在，新增列（类型、注释、是否允许空、默认值）
+                            String alterColumnStr = " add `" + newColumnName + "` "
+                                    + newColumnType + " comment '" + newColumnComment + "'";
+                            // 数据库列的默认值设定
+                            String defaultAppend = appendDefaultValue(defaultColumnValue, fieldDTO);
+                            if (defaultAppend != null) {
+                                alterColumnStr += " not null default " + defaultAppend;
                             }
                             // 为整表改表做准备
                             alterColumnSb.add(alterColumnStr);
                             // 单列改表
                             if ("yes".equals(changeColumnSingle)) {
+                                // 输出SQL脚本
+                                outSqlOsw.write(alterTablePrefix + alterColumnStr + ";\r\n");
+                                // 执行SQL
                                 statement.executeUpdate(alterTablePrefix + alterColumnStr);
                             }
                         } else {
                             // 列已经存在
                             for (DbColumnDTO dbColumnExist : dbTableExist.getColumnList()) {
-                                if (dbColumnExist.getColumnName().equals(relationColumnName)) {
-                                    // 直接更新列类型和注释
+                                if (dbColumnExist.getColumnName().equals(newColumnName)) {
+                                    // 直接更新列（类型、注释、是否允许空、默认值）
                                     String alterColumnStr = " modify column `"
-                                            + relationColumnName + "` char(50) comment '" + relationComment + "'";
+                                            + newColumnName + "` " + newColumnType + " comment '" + newColumnComment + "'";
                                     // 数据库列的默认值设定
-                                    if ("notnull".equals(defaultColumnValue)) {
-                                        alterColumnStr += " default ''";
+                                    String defaultAppend = appendDefaultValue(defaultColumnValue, fieldDTO);
+                                    if (defaultAppend != null) {
+                                        alterColumnStr += " not null default " + defaultAppend;
                                     }
                                     // 为整表改表做准备
                                     alterColumnSb.add(alterColumnStr);
-                                    // 单列改表
                                     if ("yes".equals(changeColumnSingle)) {
-                                        statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                        try {
+                                            // 输出SQL脚本
+                                            outSqlOsw.write(alterTablePrefix + alterColumnStr + ";\r\n");
+                                            // 执行SQL，单列改表
+                                            statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                        } catch (Exception e) {
+                                            System.out.println("【SQL改库错误】：" + alterTablePrefix + alterColumnStr);
+                                            throw e;
+                                        }
                                     }
                                     break;
                                 }
                             }
-                            // 从列表中移除
-                            toDeleteColumnNameList.remove(relationColumnName);
+                            // 从待删除字段列表中移除
+                            toDeleteColumnNameList.remove(newColumnName);
                         }
                     }
-                }
-                for (String toDeleteColumn : toDeleteColumnNameList) {
-                    // 移除已经去掉的列
-                    String alterColumnStr = " drop column `" + toDeleteColumn + "`";
-                    // 为整表改表做准备
-                    alterColumnSb.add(alterColumnStr);
-                    // 单列改表
-                    if ("yes".equals(changeColumnSingle)) {
-                        statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                    // 附加的关联字段
+                    List<RelationshipDTO> relationColumnList = relationColumnMap.get(entityDTO.getEentityName());
+                    if (relationColumnList != null && relationColumnList.size() > 0) {
+                        for (RelationshipDTO relationColumn : relationColumnList) {
+                            String relationColumnName = StringUtil.camelToUnderline(relationColumn.getToFromEntityName()) + "_id";
+                            String relationComment = relationColumn.getToFromComment() + "ID";
+                            if (!toDeleteColumnNameList.contains(relationColumnName)) {
+                                // 列不存在，新增列
+                                String alterColumnStr = " add `" + relationColumnName
+                                        + "` char(50) comment '" + relationComment + "'";
+                                // 数据库列的默认值设定
+                                if ("notnull".equals(defaultColumnValue)) {
+                                    alterColumnStr += " default ''";
+                                }
+                                // 为整表改表做准备
+                                alterColumnSb.add(alterColumnStr);
+                                // 单列改表
+                                if ("yes".equals(changeColumnSingle)) {
+                                    // 输出SQL脚本
+                                    outSqlOsw.write(alterTablePrefix + alterColumnStr + ";\r\n");
+                                    // 执行SQL
+                                    statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                }
+                            } else {
+                                // 列已经存在
+                                for (DbColumnDTO dbColumnExist : dbTableExist.getColumnList()) {
+                                    if (dbColumnExist.getColumnName().equals(relationColumnName)) {
+                                        // 直接更新列类型和注释
+                                        String alterColumnStr = " modify column `"
+                                                + relationColumnName + "` char(50) comment '" + relationComment + "'";
+                                        // 数据库列的默认值设定
+                                        if ("notnull".equals(defaultColumnValue)) {
+                                            alterColumnStr += " default ''";
+                                        }
+                                        // 为整表改表做准备
+                                        alterColumnSb.add(alterColumnStr);
+                                        // 单列改表
+                                        if ("yes".equals(changeColumnSingle)) {
+                                            // 输出SQL脚本
+                                            outSqlOsw.write(alterTablePrefix + alterColumnStr + ";\r\n");
+                                            // 执行SQL
+                                            statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                        }
+                                        break;
+                                    }
+                                }
+                                // 从列表中移除
+                                toDeleteColumnNameList.remove(relationColumnName);
+                            }
+                        }
                     }
-                }
-                if ("no".equals(changeColumnSingle)) {
-                    // 整体改表
-                    if (alterColumnSb.length() > 0) {
-                        statement.executeUpdate(alterTablePrefix + alterColumnSb.toString());
+                    for (String toDeleteColumn : toDeleteColumnNameList) {
+                        // 移除已经去掉的列
+                        String alterColumnStr = " drop column `" + toDeleteColumn + "`";
+                        // 为整表改表做准备
+                        alterColumnSb.add(alterColumnStr);
+                        // 单列改表
+                        if ("yes".equals(changeColumnSingle)) {
+                            // 输出SQL脚本
+                            outSqlOsw.write(alterTablePrefix + alterColumnStr + ";\r\n");
+                            // 执行SQL
+                            statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                        }
                     }
+                    if ("no".equals(changeColumnSingle)) {
+                        // 整体改表
+                        if (alterColumnSb.length() > 0) {
+                            // 输出SQL脚本
+                            outSqlOsw.write(alterTablePrefix + alterColumnSb.toString() + ";\r\n");
+                            // 执行SQL
+                            statement.executeUpdate(alterTablePrefix + alterColumnSb.toString());
+                        }
+                    }
+                    log.info("表" + entityDTO.getTableName() + "修改完成。");
                 }
-                log.info("表" + entityDTO.getTableName() + "修改完成。");
+            }
+        } finally {
+            if (null != outSqlOsw) {
+                outSqlOsw.close();
             }
         }
     }

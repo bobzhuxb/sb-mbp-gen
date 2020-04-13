@@ -228,7 +228,7 @@ public class JdlParseUtil {
                             } else {
                                 commentDic = fieldComment + "值";
                             }
-                            entityFieldDTO = new EntityFieldDTO(camelName, javaType, "varchar(255)", "", fieldComment, camelNameDic,
+                            entityFieldDTO = new EntityFieldDTO(camelName, javaType, columnType, "", fieldComment, camelNameDic,
                                     dictionaryType, commentDic);
                             // 设置使用数据字典的实体及字段
                             EntityDTO nowUseDictionary = null;
