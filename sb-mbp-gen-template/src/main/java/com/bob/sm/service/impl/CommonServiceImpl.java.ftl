@@ -400,7 +400,8 @@ public class CommonServiceImpl implements CommonService {
      */
     @Override
     public ReturnCommonDTO<List<Map<String, String>>> importParseExcel(String fullFileName, int columnCount,
-                                                                       List<String> columnNameList, List<String> columnKeyList, List<String> regexList, List<Boolean> allowNullList) {
+                                                                       List<String> columnNameList, List<String> columnKeyList,
+                                                                       List<String> regexList, List<Boolean> allowNullList) {
         if (fullFileName == null || "".equals(fullFileName)) {
             return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件名为空");
         }
@@ -408,9 +409,30 @@ public class CommonServiceImpl implements CommonService {
             return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件名后缀不正确，必须为.xlsx");
         }
         try {
+            InputStream fileInputStream = new FileInputStream(fullFileName);
+            return importParseExcel(fileInputStream, columnCount, columnNameList, columnKeyList, regexList, allowNullList);
+        } catch (IOException e) {
+            return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "文件读取失败");
+        }
+    }
+
+    /**
+     * 通用解析Excel文件
+     * @param fileInputStream 文件输入流
+     * @param columnCount 指定的列数
+     * @param columnNameList Excel列名列表
+     * @param columnKeyList Excel列的Key列表（与返回的数据中Map的key一致）
+     * @param regexList 数据的正则验证
+     * @param allowNullList 每一列是否允许为空
+     * @return 解析后的数据列表
+     */
+    @Override
+    public ReturnCommonDTO<List<Map<String, String>>> importParseExcel(InputStream fileInputStream, int columnCount,
+                                                                       List<String> columnNameList, List<String> columnKeyList,
+                                                                       List<String> regexList, List<Boolean> allowNullList) {
+        try {
             List<Map<String, String>> dataList = new ArrayList<>();
-            InputStream is = new FileInputStream(fullFileName);
-            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
             XSSFSheet sheet = workbook.getSheetAt(0);
             // 第一行（列名）
             XSSFRow firstRow = sheet.getRow(0);
