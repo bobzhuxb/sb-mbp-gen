@@ -13,6 +13,7 @@ public class ReturnUploadCommonDTO<T> extends ReturnCommonDTO<T> {
 
     public ReturnUploadCommonDTO(String code) {
         this.code = String.valueOf(Integer.parseInt(code) - 1);
+        super.setResultCode(code);
     }
 
     public ReturnUploadCommonDTO(String code, String errMsg) {
