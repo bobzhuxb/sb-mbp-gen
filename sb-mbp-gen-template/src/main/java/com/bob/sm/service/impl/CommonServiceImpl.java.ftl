@@ -97,6 +97,7 @@ public class CommonServiceImpl implements CommonService {
         try {
             file.transferTo(targetFile);
             ReturnFileUploadDTO fileUploadDTO = new ReturnFileUploadDTO();
+            fileUploadDTO.setOriginalFileName(fileName);
             if ("open".equals(ymlConfig.getPicCompressSwitch())) {
                 // 启动压缩
                 int compressCount = FileUtil.compressPic(ymlConfig, localFileName, localCompressFileName);

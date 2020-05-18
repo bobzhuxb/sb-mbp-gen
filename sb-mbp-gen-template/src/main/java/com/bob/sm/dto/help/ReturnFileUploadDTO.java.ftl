@@ -6,11 +6,21 @@ package ${packageName}.dto.help;
  */
 public class ReturnFileUploadDTO {
 
+    private String originalFileName;            // 文件原始名称
+
     private String relativePath;                // 文件相对路径
 
     private String compressedRelativePath;      // 压缩后文件相对路径
 
     private String uploadTime;                  // 文件上传时间
+
+    public String getOriginalFileName() {
+        return originalFileName;
+    }
+
+    public void setOriginalFileName(String originalFileName) {
+        this.originalFileName = originalFileName;
+    }
 
     public String getRelativePath() {
         return relativePath;
