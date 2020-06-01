@@ -62,8 +62,13 @@ public class CommonController {
         if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
             return ResponseEntity.ok().headers(null).body(returnCommonDTO);
         }
+        String relativePath = fileDownloadDTO.getRelativePath();
+        if (!relativePath.startsWith(File.separator)) {
+            relativePath = File.separator + relativePath;
+        }
+        String relativePathFinal = relativePath;
         ReturnCommonDTO resultDTO = commonService.doWithExceptionHandle(() -> {
-                File downloadFile = new File(ymlConfig.getLocation() + fileDownloadDTO.getRelativePath());
+                File downloadFile = new File(ymlConfig.getLocation() + relativePathFinal);
                 return commonService.downloadFile(response, downloadFile, fileDownloadDTO.getChangeFileName());
             }, log);
         return ResponseEntity.ok().headers(null).body(resultDTO);

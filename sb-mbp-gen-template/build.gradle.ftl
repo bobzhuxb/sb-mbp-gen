@@ -116,7 +116,7 @@ dependencies {
 	// apache的http客户端
 	compile "org.apache.httpcomponents:httpclient"
 	// Alibaba的FastJson
-	compile "com.alibaba:fastjson:1.2.60"
+	compile "com.alibaba:fastjson:1.2.69"
 	// POI操作Office
 	compile "org.apache.poi:poi:3.17"
 	compile "org.apache.poi:poi-ooxml:3.17"
