@@ -28,10 +28,7 @@ public interface CommonService {
     ReturnCommonDTO downloadFileBase(HttpServletResponse response, InputStream inputStream, String oriFileName,
                                      String changeFileName);
 
-    ReturnCommonDTO exportExcel(HttpServletResponse response, String fileName, String sheetName,
-                                int maxColumn, int tableStartRow, List<ExcelCellDTO> beforeDataCellList,
-                                List<ExcelCellDTO> afterDataCellList, List<ExcelTitleDTO> titleList, List<?> dataList,
-                                List<ExcelCellRangeDTO> cellRangeList);
+    ReturnCommonDTO exportExcel(HttpServletResponse response, ExcelExportDTO excelExportDTO);
 
     ReturnCommonDTO<List<Map<String, String>>> importParseExcel(String fullFileName, int columnCount,
                                                                 List<String> columnNameList, List<String> columnKeyList,

@@ -233,24 +233,37 @@ public class CommonServiceImpl implements CommonService {
     /**
      * 导出Excel
      * @param response HTTP Response
-     * @param fileName Excel文件名（不包含后缀）
-     * @param sheetName sheet名
-     * @param maxColumn 最大列数（用于自适应列宽）
-     * @param tableStartRow 实际表格（包括标题行）的开始行
-     * @param beforeDataCellList 在实际表格前面部分的单元格
-     * @param afterDataCellList 在实际表格后面部分的单元格
-     * @param titleList 标题行
-     * @param dataList 数据
-     * @param cellRangeList 要合并的单元格
+     * @param excelExportDTO 导出的Excel相关数据
      * @return 导出结果
      * @throws Exception
      */
     @Override
-    public ReturnCommonDTO exportExcel(HttpServletResponse response, String fileName, String sheetName,
-                                       int maxColumn, int tableStartRow, List<ExcelCellDTO> beforeDataCellList,
-                                       List<ExcelCellDTO> afterDataCellList, List<ExcelTitleDTO> titleList,
-                                       List<?> dataList, List<ExcelCellRangeDTO> cellRangeList) {
+    public ReturnCommonDTO exportExcel(HttpServletResponse response, ExcelExportDTO excelExportDTO) {
         try {
+            // ==================== 获取相关参数 ==========================
+            // Excel文件名（不包含后缀）
+            String fileName = excelExportDTO.getFileName();
+            // sheet名
+            String sheetName = excelExportDTO.getSheetName();
+            if (sheetName == null || "".equals(sheetName)) {
+                sheetName = fileName;
+            }
+            // 最大列数（用于自适应列宽）
+            int maxColumn = excelExportDTO.getMaxColumn();
+            // 实际表格（包括标题行）的开始行
+            int tableStartRow = excelExportDTO.getTableStartRow();
+            // 在实际表格前面部分的单元格
+            List<ExcelCellDTO> beforeDataCellList = excelExportDTO.getBeforeDataCellList();
+            // 在实际表格后面部分的单元格
+            List<ExcelCellDTO> afterDataCellList = excelExportDTO.getAfterDataCellList();
+            // 标题行
+            List<ExcelTitleDTO> titleList = excelExportDTO.getTitleList();
+            // 数据
+            List<?> dataList = excelExportDTO.getDataList();
+            // 要合并的单元格
+            List<ExcelCellRangeDTO> cellRangeList = excelExportDTO.getCellRangeList();
+
+            // ==================== 开始生成Excel ==========================
             // 创建Excel工作簿
             SXSSFWorkbook workbook = new SXSSFWorkbook();
             // 设置头信息
