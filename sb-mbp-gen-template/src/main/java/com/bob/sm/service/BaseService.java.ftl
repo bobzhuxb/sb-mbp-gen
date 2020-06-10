@@ -922,7 +922,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         // 继续设置上级的级联查询
                         Field relatedIdField = FieldUtils.getField(dto.getClass(), relationDTO.getToName() + "Id", true);
                         Object relatedId = relatedIdField.get(dto);
-                        if (relatedId == null) {
+                        if (relatedId == null || "".equals(relatedId.toString().trim())) {
                             break;
                         }
                         List<String> subAssociationNameList = new ArrayList<>();
