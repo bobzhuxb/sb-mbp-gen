@@ -6,7 +6,6 @@ import ${packageName}.dto.SystemUserDTO;
 import ${packageName}.dto.help.*;
 import ${packageName}.security.SecurityUtils;
 import ${packageName}.service.AccountService;
-import ${packageName}.service.CommonService;
 import ${packageName}.util.ParamValidatorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,9 +29,6 @@ import java.util.Optional;
 public class AccountController {
 
     private final Logger log = LoggerFactory.getLogger(AccountController.class);
-
-    @Autowired
-    private CommonService commonService;
 
     @Autowired
     private AccountService accountService;
@@ -73,9 +69,8 @@ public class AccountController {
         if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
             return ResponseEntity.ok().headers(null).body(returnCommonDTO);
         }
-        ReturnCommonDTO resultDTO = commonService.doWithExceptionHandle(
-                () -> accountService.changePassword(passwordChangeDto.getCurrentPassword(),
-                        passwordChangeDto.getNewPassword()), log);
+        ReturnCommonDTO resultDTO = accountService.changePassword(passwordChangeDto.getCurrentPassword(),
+                        passwordChangeDto.getNewPassword());
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -91,8 +86,7 @@ public class AccountController {
         if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
             return ResponseEntity.ok().headers(null).body(returnCommonDTO);
         }
-        ReturnCommonDTO resultDTO = commonService.doWithExceptionHandle(
-                () -> accountService.changeSelfInfo(systemUserDTO), log);
+        ReturnCommonDTO resultDTO = accountService.changeSelfInfo(systemUserDTO);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -108,8 +102,7 @@ public class AccountController {
         if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
             return ResponseEntity.ok().headers(null).body(returnCommonDTO);
         }
-        ReturnCommonDTO resultDTO = commonService.doWithExceptionHandle(
-                () -> accountService.validatePassword(passwordValidateDto.getCurrentPassword()), log);
+        ReturnCommonDTO resultDTO = accountService.validatePassword(passwordValidateDto.getCurrentPassword());
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -126,8 +119,7 @@ public class AccountController {
         if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
             return ResponseEntity.ok().headers(null).body(returnCommonDTO);
         }
-        ReturnCommonDTO resultDTO = commonService.doWithExceptionHandle(
-                () -> accountService.resetPassword(passwordResetDTO.getUserId()), log);
+        ReturnCommonDTO resultDTO = accountService.resetPassword(passwordResetDTO.getUserId());
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 

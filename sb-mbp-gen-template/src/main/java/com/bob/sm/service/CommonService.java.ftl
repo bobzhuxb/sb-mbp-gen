@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 /**
  * 共通处理类
@@ -37,8 +36,6 @@ public interface CommonService {
     ReturnCommonDTO<List<Map<String, String>>> importParseExcel(InputStream fileInputStream, int columnCount,
                                                                 List<String> columnNameList, List<String> columnKeyList,
                                                                 List<String> regexList, List<Boolean> allowNullList);
-
-    <O> ReturnCommonDTO<O> doWithExceptionHandle(Supplier<ReturnCommonDTO<O>> supplier, Logger log);
 
     <O> ReturnCommonDTO<O> doGetSingleResult(ReturnCommonDTO<List<O>> resultOfList);
 

@@ -43,8 +43,7 @@ public class CommonController {
     public ResponseEntity<ReturnCommonDTO<ReturnFileUploadDTO>> uploadFile (
             @RequestParam(value = "file", required = false)MultipartFile file) {
         log.debug("REST request to upload file : {}", file.getOriginalFilename());
-        ReturnCommonDTO<ReturnFileUploadDTO> resultDTO = commonService.doWithExceptionHandle(
-                () -> commonService.uploadFile(file), log);
+        ReturnCommonDTO<ReturnFileUploadDTO> resultDTO = commonService.uploadFile(file);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -66,11 +65,8 @@ public class CommonController {
         if (!relativePath.startsWith(File.separator)) {
             relativePath = File.separator + relativePath;
         }
-        String relativePathFinal = relativePath;
-        ReturnCommonDTO resultDTO = commonService.doWithExceptionHandle(() -> {
-                File downloadFile = new File(ymlConfig.getLocation() + relativePathFinal);
-                return commonService.downloadFile(response, downloadFile, fileDownloadDTO.getChangeFileName());
-            }, log);
+        File downloadFile = new File(ymlConfig.getLocation() + relativePath);
+        ReturnCommonDTO resultDTO = commonService.downloadFile(response, downloadFile, fileDownloadDTO.getChangeFileName());
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 

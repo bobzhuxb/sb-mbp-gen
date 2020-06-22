@@ -41,7 +41,6 @@ import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -517,29 +516,6 @@ public class CommonServiceImpl implements CommonService {
             log.error(e.getMessage(), e);
             return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件解析失败");
         }
-    }
-
-    /**
-     * Controller中的异常共通处理
-     * @param supplier
-     * @param log
-     * @param <O>
-     * @return
-     */
-    @Override
-    public <O> ReturnCommonDTO<O> doWithExceptionHandle(Supplier<ReturnCommonDTO<O>> supplier, Logger log) {
-        ReturnCommonDTO<O> resultDTO = null;
-        try {
-            resultDTO = supplier.get();
-        } catch (CommonAlertException e) {
-            // 提示性异常
-            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
-        } catch (CommonException e) {
-            // 其他异常
-            log.error(e.getMessage(), e);
-            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
-        }
-        return resultDTO;
     }
 
     /**
