@@ -71,8 +71,9 @@ public class CommonServiceImpl implements CommonService {
         Date nowDate = new Date();
         // 获取上传文件名
         String fileName = file.getOriginalFilename();
-        // 获取扩展名
-        String extension = fileName.substring(fileName.lastIndexOf("."));
+        // 获取扩展名（注意扩展名可能不存在的情况）
+        int lastPointPosition = fileName.lastIndexOf(".");
+        String extension = lastPointPosition < 0 ? "" : fileName.substring(lastPointPosition);
         // 相对路径
         String relativePath = new SimpleDateFormat("yyyyMMdd").format(nowDate);
         int fileRandomInt = new Random().nextInt(1000);
