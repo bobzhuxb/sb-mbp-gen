@@ -360,7 +360,7 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
     public void processReturn(HttpServletRequest request, Object[] parameters, Object retVal) {
         ApiAdapterConfigDTO apiAdapterConfigDTO = getApiAdapterConfigFromRequest(request);
         if (apiAdapterConfigDTO == null || apiAdapterConfigDTO.getResult() == null
-                || apiAdapterConfigDTO.getResult().getFieldList() != null
+                || apiAdapterConfigDTO.getResult().getFieldList() == null
                 || apiAdapterConfigDTO.getResult().getFieldList().size() == 0
                 || apiAdapterConfigDTO.getResult().getFieldList().get(0).getFromName() == null) {
             // 不需要特殊处理的返回
