@@ -1,6 +1,7 @@
 package ${packageName}.web.rest;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import ${packageName}.annotation.IdNullValidate;
 import ${packageName}.annotation.validation.group.*;
 import ${packageName}.config.Constants;
 import ${packageName}.domain.*;
@@ -51,11 +52,8 @@ public class ${eentityName}Controller {
      */
     @PostMapping("/${entityUrl}")
     @PreAuthorize("hasCreate('${lowerName}')")
-    public ResponseEntity<ReturnCommonDTO> create${eentityName}(
+    public ResponseEntity<ReturnCommonDTO> create${eentityName}(@IdNullValidate(mustNull = true)
         @RequestBody @Validated(value = {ValidateCreateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
-        if (${entityName}DTO.getId() != null) {
-            throw new BadRequestAlertException("id必须为空", null, "idexists");
-        }
 		ReturnCommonDTO resultDTO = ${entityName}Service.baseSave(DOMAIN_NAME, ${entityName}DTO, null);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
@@ -68,11 +66,8 @@ public class ${eentityName}Controller {
      */
     @PutMapping("/${entityUrl}")
     @PreAuthorize("hasUpdate('${lowerName}')")
-    public ResponseEntity<ReturnCommonDTO> update${eentityName}(
+    public ResponseEntity<ReturnCommonDTO> update${eentityName}(@IdNullValidate(mustNotNull = true)
         @RequestBody @Validated(value = {ValidateUpdateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
-        if (${entityName}DTO.getId() == null) {
-            throw new BadRequestAlertException("id不得为空", null, "idnotexists");
-        }
 		ReturnCommonDTO resultDTO = ${entityName}Service.baseSave(DOMAIN_NAME, ${entityName}DTO, null);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }

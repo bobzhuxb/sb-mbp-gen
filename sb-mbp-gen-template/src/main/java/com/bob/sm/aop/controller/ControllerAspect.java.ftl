@@ -1,14 +1,19 @@
 package ${packageName}.aop.controller;
 
 import ${packageName}.annotation.CreateInitValue;
+import ${packageName}.annotation.IdNullValidate;
+import ${packageName}.dto.BaseDTO;
 import ${packageName}.dto.help.ReturnCommonDTO;
 import ${packageName}.service.ApiAdapterService;
 import ${packageName}.util.MyBeanUtil;
 import ${packageName}.util.ParamValidatorUtil;
+import ${packageName}.web.rest.errors.BadRequestAlertException;
+import org.apache.commons.lang.ArrayUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +26,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 
 /**
  * Controller拦截器
@@ -54,6 +61,34 @@ public class ControllerAspect {
         // 方法参数
         Object[] parameters = pjp.getArgs();
         Object retVal = null;
+        // 获取注解
+        MethodSignature signature = (MethodSignature) pjp.getSignature();
+        // 获取方法上的注解
+        // XXX xxAnnotation = signature.getMethod().getAnnotation(XXX.class);
+        // 获取所有参数上的注解
+        Annotation[][] paramAnnotations = signature.getMethod().getParameterAnnotations();
+        // ID是否要为空的验证
+        for (Annotation[] paramAnnotation : paramAnnotations) {
+            int paramIndex = ArrayUtils.indexOf(paramAnnotations, paramAnnotation);
+            for (Annotation annotation : paramAnnotation) {
+                if (annotation instanceof IdNullValidate){
+                    Object parameter = parameters[paramIndex];
+                    if (parameter instanceof BaseDTO) {
+                        if (((IdNullValidate) annotation).mustNull()) {
+                            if (((BaseDTO) parameter).getId() != null) {
+                                throw new BadRequestAlertException("id必须为空", null, "idexists");
+                            }
+                        }
+                        if (((IdNullValidate) annotation).mustNotNull()) {
+                            if (((BaseDTO) parameter).getId() == null) {
+                                throw new BadRequestAlertException("id不得为空", null, "idnotexists");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // 分析参数
         for (Object parameter : parameters) {
             // 统一参数验证
             if (parameter instanceof BindingResult) {
