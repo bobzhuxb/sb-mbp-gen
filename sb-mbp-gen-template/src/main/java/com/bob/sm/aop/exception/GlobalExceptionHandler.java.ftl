@@ -1,6 +1,7 @@
 package ${packageName}.aop.exception;
 
 import ${packageName}.dto.help.ReturnCommonDTO;
+import ${packageName}.web.rest.errors.BadRequestAlertException;
 import ${packageName}.web.rest.errors.CommonAlertException;
 import ${packageName}.web.rest.errors.CommonException;
 import org.slf4j.Logger;
@@ -30,19 +31,19 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
-    public ReturnCommonDTO handleBusinessFault(NoSuchElementException ex) {
+    public ReturnCommonDTO handleNoDataFault(NoSuchElementException ex) {
         String message = ex.getMessage();
         return new ReturnCommonDTO("-997", "不存在的数据：" + message);
     }
 
     /**
-     * 拦截业务错误（不记录错误日志）
+     * 拦截请求错误（不记录错误日志）
      * @param ex
      * @return
      */
-    @ExceptionHandler(CommonAlertException.class)
+    @ExceptionHandler(BadRequestAlertException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    public ReturnCommonDTO handleBusinessFault(BadRequestAlertException ex) {
+    public ReturnCommonDTO handleRequestFault(BadRequestAlertException ex) {
         String message = ex.getDefaultMessage();
         return new ReturnCommonDTO("-996", message);
     }

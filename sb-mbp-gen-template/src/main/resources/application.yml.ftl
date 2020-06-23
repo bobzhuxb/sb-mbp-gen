@@ -21,24 +21,6 @@ server:
         mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript
         min-response-size: 2048
 
-management:
-    endpoints:
-        web:
-            base-path: /management
-            exposure:
-                include: ["configprops", "env", "health", "info", "threaddump", "logfile" ]
-    endpoint:
-        health:
-            show-details: when_authorized
-    info:
-        git:
-            mode: full
-    health:
-        mail:
-            enabled: false
-    metrics:
-        enabled: false
-
 # mybatis plus配置
 mybatis-plus:
     global-config:
@@ -51,8 +33,6 @@ tools:
         core-pool-size: 2
         max-pool-size: 50
         queue-capacity: 10000
-    mail:
-        from: base@localhost
 
 app:
     pic-compress-switch: close  # 启动或关闭图片压缩

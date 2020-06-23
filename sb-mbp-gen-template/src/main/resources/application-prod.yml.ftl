@@ -36,12 +36,6 @@ server:
     port: 8080
 
 tools:
-    http:
-        version: V_1_1 # To use HTTP/2 you will need to activate TLS (see application-tls.yml)
-    cache: # Cache configuration
-        ehcache: # Ehcache configuration
-            time-to-live-seconds: 3600 # By default objects stay 1 hour in the cache
-            max-entries: 100 # Number of objects in each cache entry
     security:
         authentication:
             jwt:
@@ -50,9 +44,6 @@ tools:
                 # Token is valid 24 hours
                 token-validity-in-seconds: 86400
                 token-validity-in-seconds-for-remember-me: 2592000
-    mail: # specific JHipster mail property, for standard properties see MailProperties
-        from: 1234567890@qq.com
-        base-url: http://127.0.0.1:8080
 
 api-pdf:
     generate: false
@@ -64,4 +55,4 @@ wx:
     app-id: xxxxxxx
     app-secret: yyyyyyy
     access-token-switch: close
-    tx-map-key: HKHBZ-7SWKD-PSW4N-HOSX2-AKQA3-ICBNR
+    tx-map-key: XXXXX-XXXXX-XXXXX-XXXXX-XXXXX-XXXXX

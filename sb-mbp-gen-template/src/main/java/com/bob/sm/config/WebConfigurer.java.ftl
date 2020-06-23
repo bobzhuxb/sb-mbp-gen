@@ -1,31 +1,23 @@
 package ${packageName}.config;
 
-//import com.codahale.metrics.MetricRegistry;
-//import com.codahale.metrics.servlet.InstrumentedFilter;
-//import com.codahale.metrics.servlets.MetricsServlet;
 import ${packageName}.aop.filter.CachingHttpHeadersFilter;
 import ${packageName}.config.help.PropertiesHelp;
-//import io.prometheus.client.exporter.MetricsServlet;
-import io.undertow.UndertowOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactory;
 import org.springframework.boot.web.server.MimeMappings;
 import org.springframework.boot.web.server.WebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
-import javax.servlet.*;
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -77,20 +69,6 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
         setMimeMappings(server);
         // When running in an IDE or with ./gradlew bootRun, set location of the static web assets.
         setLocationForStaticAssets(server);
-
-        /*
-         * Enable HTTP/2 for Undertow - https://twitter.com/ankinson/status/829256167700492288
-         * HTTP/2 requires HTTPS, so HTTP requests will fallback to HTTP/1.1.
-         * See the PropertiesHelp class and your application-*.yml configuration files
-         * for more information.
-         */
-        if (propertiesHelp.getHttp().getVersion().equals(PropertiesHelp.Http.Version.V_2_0) &&
-            server instanceof UndertowServletWebServerFactory) {
-
-            ((UndertowServletWebServerFactory) server)
-                .addBuilderCustomizers(builder ->
-                    builder.setServerOption(UndertowOptions.ENABLE_HTTP2, true));
-        }
     }
 
     private void setMimeMappings(WebServerFactory server) {
@@ -148,6 +126,7 @@ public class WebConfigurer implements ServletContextInitializer, WebServerFactor
                 new CachingHttpHeadersFilter(propertiesHelp));
 
         cachingHttpHeadersFilter.addMappingForUrlPatterns(disps, true, "/static/*");
+        cachingHttpHeadersFilter.addMappingForUrlPatterns(disps, true, "/test/*");
         cachingHttpHeadersFilter.setAsyncSupported(true);
     }
 
