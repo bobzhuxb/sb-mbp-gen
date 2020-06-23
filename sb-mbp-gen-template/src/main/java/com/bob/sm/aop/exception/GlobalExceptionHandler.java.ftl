@@ -41,6 +41,18 @@ public class GlobalExceptionHandler {
      * @return
      */
     @ExceptionHandler(CommonAlertException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ReturnCommonDTO handleBusinessFault(BadRequestAlertException ex) {
+        String message = ex.getDefaultMessage();
+        return new ReturnCommonDTO("-996", message);
+    }
+
+    /**
+     * 拦截业务错误（不记录错误日志）
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(CommonAlertException.class)
     @ResponseStatus(value = HttpStatus.OK)
     public ReturnCommonDTO handleBusinessFault(CommonAlertException ex) {
         String code = ex.getCode();
