@@ -1,8 +1,10 @@
 package ${packageName}.aop.controller;
 
 import ${packageName}.annotation.CreateInitValue;
+import ${packageName}.dto.help.ReturnCommonDTO;
 import ${packageName}.service.ApiAdapterService;
 import ${packageName}.util.MyBeanUtil;
+import ${packageName}.util.ParamValidatorUtil;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -11,7 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -32,8 +36,8 @@ public class ControllerAspect {
     @Autowired
     private ApiAdapterService apiAdapterService;
 
-//    @Pointcut("execution(* ${packageName}.web.rest.*Controller.*(..))")
-//    public void pointCutAll(){}
+    @Pointcut("execution(* ${packageName}.web.rest.*Controller.*(..))")
+    public void pointCutAll(){}
 
     @Pointcut("execution(* ${packageName}.web.rest.*Controller.get*(..))")
     public void pointCutGet(){}
@@ -43,6 +47,30 @@ public class ControllerAspect {
 
     @Pointcut("execution(* ${packageName}.web.rest.*Controller.update*(..))")
     public void pointCutUpdate(){}
+
+    @Around("pointCutAll()")
+    public Object allAround(ProceedingJoinPoint pjp) throws Throwable {
+        log.debug("AOP Aronud controller before...");
+        // 方法参数
+        Object[] parameters = pjp.getArgs();
+        Object retVal = null;
+        for (Object parameter : parameters) {
+            // 统一参数验证
+            if (parameter instanceof BindingResult) {
+                ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields((BindingResult)parameter);
+                if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
+                    retVal = ResponseEntity.ok().headers(null).body(returnCommonDTO);
+                }
+                break;
+            }
+        }
+        if (retVal == null) {
+            // 没有被参数验证拦截返回的，继续执行后续的操作
+            retVal = pjp.proceed(parameters);
+        }
+        log.debug("AOP Aronud controller after...");
+        return retVal;
+    }
 
     @Around("pointCutGet()")
     public Object getAround(ProceedingJoinPoint pjp) throws Throwable {

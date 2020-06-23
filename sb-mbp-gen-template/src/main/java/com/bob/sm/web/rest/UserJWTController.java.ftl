@@ -50,11 +50,6 @@ public class UserJWTController {
 
     @PostMapping("/authenticate")
     public ResponseEntity<ReturnCommonDTO<JWTToken>> authorize(@Valid @RequestBody LoginVM loginVM, BindingResult bindingResult) {
-        // 参数验证
-        ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields(bindingResult);
-        if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
-            return ResponseEntity.ok().headers(null).body(returnCommonDTO);
-        }
         // 验证用户名和密码
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginVM.getUsername(), loginVM.getPassword());

@@ -56,11 +56,6 @@ public class ${eentityName}Controller {
         if (${entityName}DTO.getId() != null) {
             throw new BadRequestAlertException("id必须为空", null, "idexists");
         }
-        // 参数验证
-        ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields(bindingResult);
-        if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
-            return ResponseEntity.ok().headers(null).body(returnCommonDTO);
-        }
 		ReturnCommonDTO resultDTO = ${entityName}Service.baseSave(DOMAIN_NAME, ${entityName}DTO, null);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
@@ -77,11 +72,6 @@ public class ${eentityName}Controller {
         @RequestBody @Validated(value = {ValidateUpdateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
         if (${entityName}DTO.getId() == null) {
             throw new BadRequestAlertException("id不得为空", null, "idnotexists");
-        }
-        // 参数验证
-        ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields(bindingResult);
-        if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
-            return ResponseEntity.ok().headers(null).body(returnCommonDTO);
         }
 		ReturnCommonDTO resultDTO = ${entityName}Service.baseSave(DOMAIN_NAME, ${entityName}DTO, null);
         return ResponseEntity.ok().headers(null).body(resultDTO);

@@ -63,11 +63,6 @@ public class AccountController {
     @PostMapping("/change-password")
     public ResponseEntity<ReturnCommonDTO> changePassword(
             @RequestBody @Validated PasswordChangeDTO passwordChangeDto, BindingResult bindingResult) {
-        // 参数验证
-        ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields(bindingResult);
-        if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
-            return ResponseEntity.ok().headers(null).body(returnCommonDTO);
-        }
         ReturnCommonDTO resultDTO = accountService.changePassword(passwordChangeDto.getCurrentPassword(),
                         passwordChangeDto.getNewPassword());
         return ResponseEntity.ok().headers(null).body(resultDTO);
@@ -80,11 +75,6 @@ public class AccountController {
     @PostMapping("/change-self-info")
     public ResponseEntity<ReturnCommonDTO> changeSelfInfo(
             @RequestBody @Validated SystemUserDTO systemUserDTO, BindingResult bindingResult) {
-        // 参数验证
-        ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields(bindingResult);
-        if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
-            return ResponseEntity.ok().headers(null).body(returnCommonDTO);
-        }
         ReturnCommonDTO resultDTO = accountService.changeSelfInfo(systemUserDTO);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
@@ -96,11 +86,6 @@ public class AccountController {
     @PostMapping("/validate-password")
     public ResponseEntity<ReturnCommonDTO> validatePassword(
             @RequestBody @Validated PasswordValidateDTO passwordValidateDto, BindingResult bindingResult) {
-        // 参数验证
-        ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields(bindingResult);
-        if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
-            return ResponseEntity.ok().headers(null).body(returnCommonDTO);
-        }
         ReturnCommonDTO resultDTO = accountService.validatePassword(passwordValidateDto.getCurrentPassword());
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
@@ -113,11 +98,6 @@ public class AccountController {
     @PreAuthorize("hasUpdate('account')")
     public ResponseEntity<ReturnCommonDTO> resetPassword(
             @RequestBody PasswordResetDTO passwordResetDTO, BindingResult bindingResult) {
-        // 参数验证
-        ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields(bindingResult);
-        if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
-            return ResponseEntity.ok().headers(null).body(returnCommonDTO);
-        }
         ReturnCommonDTO resultDTO = accountService.resetPassword(passwordResetDTO.getUserId());
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }

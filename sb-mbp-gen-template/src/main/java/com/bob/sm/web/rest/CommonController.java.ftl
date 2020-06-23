@@ -54,11 +54,6 @@ public class CommonController {
     @PostMapping("/file-download")
     public ResponseEntity<ReturnCommonDTO> downloadFile (HttpServletResponse response,
             @RequestBody FileDownloadDTO fileDownloadDTO, BindingResult bindingResult) {
-        // 参数验证
-        ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields(bindingResult);
-        if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
-            return ResponseEntity.ok().headers(null).body(returnCommonDTO);
-        }
         String relativePath = fileDownloadDTO.getRelativePath();
         if (!relativePath.startsWith(File.separator)) {
             relativePath = File.separator + relativePath;
