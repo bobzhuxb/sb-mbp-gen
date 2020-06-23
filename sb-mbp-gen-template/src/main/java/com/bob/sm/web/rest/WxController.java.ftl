@@ -37,7 +37,6 @@ public class WxController {
     @PostMapping("/public/get-wx-open-id")
     public ResponseEntity<WxLoginStatusDTO> getOpenId(
             @RequestBody @Valid ParamWxOpenIdDTO wxOpenIdParamDTO) {
-        log.debug("REST request to get openId : {}", wxOpenIdParamDTO);
         WxLoginStatusDTO wxLoginStatusDTO = wxService.getOpenIdAndLogin(wxOpenIdParamDTO);
         return new ResponseEntity<>(wxLoginStatusDTO, null, HttpStatus.OK);
     }
@@ -49,7 +48,6 @@ public class WxController {
      */
     @PostMapping("/public/get-wx-js-api-info")
     public ResponseEntity<ReturnCommonDTO<ReturnWxJsapiInfoDTO>> getJsApiInfo(@RequestBody @Valid ParamWxJsApiDTO wxJsApiDTO) {
-        log.debug("REST request to get jsApi Info : {}", wxJsApiDTO);
         ReturnCommonDTO<ReturnWxJsapiInfoDTO> rtn = wxService.getJsapiInfoByCurrentAccessToken(wxJsApiDTO.getUrl());
         return new ResponseEntity<>(rtn, null, HttpStatus.OK);
     }
@@ -62,7 +60,6 @@ public class WxController {
     @PostMapping("/public/get-address-by-loglat")
     public ResponseEntity<ReturnCommonDTO<ReturnMapAddressDTO>> getAddressByLogLat(
             @RequestBody @Valid ParamLogLatDTO logLatDTO) {
-        log.debug("REST request to get address by longitude and latitude Info : {}", logLatDTO);
         ReturnCommonDTO<ReturnMapAddressDTO> rtn = wxService.getAddressByLogLat(logLatDTO);
         return new ResponseEntity<>(rtn, null, HttpStatus.OK);
     }
@@ -75,7 +72,6 @@ public class WxController {
     @PostMapping("/public/get-address-by-keyword")
     public ResponseEntity<ReturnCommonDTO<IPage<ReturnMapSearchResultDTO>>> getAddressByKeyword(
             @RequestBody @Valid ParamMapKeywordSearchDTO mapKeywordSearchDTO) {
-        log.debug("REST request to get address/longitude/latitude by keyword Info : {}", mapKeywordSearchDTO);
         ReturnCommonDTO<IPage<ReturnMapSearchResultDTO>> rtn = wxService.getAddressByKeyword(mapKeywordSearchDTO);
         return new ResponseEntity<>(rtn, null, HttpStatus.OK);
     }

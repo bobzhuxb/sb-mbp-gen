@@ -7,6 +7,7 @@ import ${packageName}.security.jwt.JWTFilter;
 import ${packageName}.security.jwt.TokenProvider;
 import ${packageName}.service.CommonUserService;
 import ${packageName}.util.ParamValidatorUtil;
+import ${packageName}.web.rest.errors.CommonAlertException;
 import ${packageName}.web.rest.vm.LoginVM;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -71,6 +72,11 @@ public class UserJWTController {
             resultDTO = new ReturnCommonDTO(new JWTToken(jwt, systemUserDTO.getLogin(), systemUserDTO.getName());
         } catch (AuthenticationException ex) {
             resultDTO = new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "用户名或密码错误");
+        } catch (CommonAlertException e) {
+            resultDTO = new ReturnCommonDTO(e.getCode(), e.getMessage());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            resultDTO = new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "登录异常");
         }
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }

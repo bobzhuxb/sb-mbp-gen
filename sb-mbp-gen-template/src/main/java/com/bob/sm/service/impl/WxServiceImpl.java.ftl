@@ -38,7 +38,6 @@ public class WxServiceImpl implements WxService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public WxLoginStatusDTO getOpenIdAndLogin(ParamWxOpenIdDTO wxOpenIdParamDTO) {
-        log.debug("微信登录验证 : {}", wxOpenIdParamDTO);
         String nowTimeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         // 获取请求URL
         String requestUrl = Constants.WXAPP_OPEN_ID_URL + "?appid=" + ymlConfig.getWxAppId()

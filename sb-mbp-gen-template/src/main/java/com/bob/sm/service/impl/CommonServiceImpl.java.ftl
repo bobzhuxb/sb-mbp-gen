@@ -66,7 +66,6 @@ public class CommonServiceImpl implements CommonService {
      */
     @Override
     public ReturnCommonDTO<ReturnFileUploadDTO> uploadFile(MultipartFile file) {
-        log.debug("上传文件 : {}", file.getOriginalFilename());
         Date nowDate = new Date();
         // 获取上传文件名
         String fileName = file.getOriginalFilename();
@@ -136,7 +135,6 @@ public class CommonServiceImpl implements CommonService {
      */
     @Override
     public ReturnCommonDTO downloadFile(HttpServletResponse response, File file, String changeFileName) {
-        log.debug("下载文件 : {}", file.getAbsolutePath());
         String fullFileName = file.getAbsolutePath();
         FileInputStream fis = null;
         try {

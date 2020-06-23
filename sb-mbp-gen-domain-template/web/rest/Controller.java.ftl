@@ -53,7 +53,6 @@ public class ${eentityName}Controller {
     @PreAuthorize("hasCreate('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO> create${eentityName}(
         @RequestBody @Validated(value = {ValidateCreateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
-        log.debug("Controller ==> 新增${eentityName} : {}", ${entityName}DTO);
         if (${entityName}DTO.getId() != null) {
             throw new BadRequestAlertException("id必须为空", null, "idexists");
         }
@@ -76,7 +75,6 @@ public class ${eentityName}Controller {
     @PreAuthorize("hasUpdate('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO> update${eentityName}(
         @RequestBody @Validated(value = {ValidateUpdateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
-        log.debug("Controller ==> 修改${eentityName} : {}", ${entityName}DTO);
         if (${entityName}DTO.getId() == null) {
             throw new BadRequestAlertException("id不得为空", null, "idnotexists");
         }
@@ -97,7 +95,6 @@ public class ${eentityName}Controller {
     @DeleteMapping("/${entityUrl}/{id}")
     @PreAuthorize("hasDelete('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO> delete${eentityName}(@PathVariable String id) {
-        log.debug("Controller ==> 根据ID删除${eentityName} : {}", id);
         ReturnCommonDTO resultDTO = ${entityName}Service.baseDeleteById(DOMAIN_NAME, id, null);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
@@ -110,7 +107,6 @@ public class ${eentityName}Controller {
     @DeleteMapping("/${entityUrl}")
     @PreAuthorize("hasDelete('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO> delete${eentityName}s(@RequestBody List<String> idList) {
-        log.debug("Controller ==> 批量删除${eentityName} : {}", idList);
         ReturnCommonDTO resultDTO = ${entityName}Service.baseDeleteByIdList(DOMAIN_NAME, idList, null);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
@@ -125,7 +121,6 @@ public class ${eentityName}Controller {
     @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}(
             @PathVariable String primaryId, ${eentityName}Criteria criteria) {
-        log.debug("Controller ==> 根据ID查询${eentityName} : {}, {}", primaryId, criteria);
         ReturnCommonDTO<${eentityName}DTO> resultDTO = ${entityName}Service.baseFindOne(DOMAIN_NAME, primaryId, criteria, null);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
@@ -139,7 +134,6 @@ public class ${eentityName}Controller {
     @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<List<${eentityName}DTO>>> getAll${eentityName}s(
             ${eentityName}Criteria criteria) {
-        log.debug("Controller ==> 查询所有${eentityName} : {}", criteria);
         ReturnCommonDTO<List<${eentityName}DTO>> resultDTO = ${entityName}Service.baseFindAll(DOMAIN_NAME, criteria, null);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
@@ -153,7 +147,6 @@ public class ${eentityName}Controller {
     @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}One(
             ${eentityName}Criteria criteria) {
-        log.debug("Controller ==> 查询指定条件下单条${eentityName} : {}", criteria);
         criteria.setLimit(1);
 		ReturnCommonDTO<List<${eentityName}DTO>> resultTmp = ${entityName}Service.baseFindAll(DOMAIN_NAME, criteria, null);
 		ReturnCommonDTO<${eentityName}DTO> resultDTO = commonService.doGetSingleResult(resultTmp);
@@ -170,7 +163,6 @@ public class ${eentityName}Controller {
     @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<IPage<${eentityName}DTO>>> getPage${eentityName}s(
             ${eentityName}Criteria criteria, MbpPage pageable) {
-        log.debug("Controller ==> 分页查询${eentityName} : {}, {}", criteria, pageable);
         ReturnCommonDTO<IPage<${eentityName}DTO>> resultDTO = ${entityName}Service.baseFindPage(DOMAIN_NAME, criteria, pageable, null);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
@@ -183,7 +175,6 @@ public class ${eentityName}Controller {
     @GetMapping("/${entityUrl}-count")
     @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<Integer>> get${eentityName}Count(${eentityName}Criteria criteria) {
-        log.debug("Controller ==> 查询数量${eentityName} : {}", criteria);
         ReturnCommonDTO<Integer> resultDTO = ${entityName}Service.baseFindCount(DOMAIN_NAME, criteria, null);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }

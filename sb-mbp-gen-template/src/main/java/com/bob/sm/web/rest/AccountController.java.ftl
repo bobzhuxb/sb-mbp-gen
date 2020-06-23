@@ -39,7 +39,6 @@ public class AccountController {
      */
     @GetMapping("/authenticate")
     public ResponseEntity<String> isAuthenticated(HttpServletRequest request) {
-        log.debug("Controller ==> 判断当前请求是否已登录 : {}", request);
         return ResponseEntity.ok().headers(null).body(request.getRemoteUser());
     }
 

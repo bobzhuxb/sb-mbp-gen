@@ -55,7 +55,6 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public EnhanceUserDTO getFullUserInfoByLogin(String login) {
-        log.debug("Service ==> 获取用户全信息 {}", login);
         SystemUserCriteria systemUserCriteria = new SystemUserCriteria();
         StringFilter idFilter = new StringFilter();
         idFilter.setEquals(login);
@@ -116,7 +115,6 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO changePassword(String currentClearTextPassword, String newPassword) {
-        log.debug("Service ==> 用户自己修改密码");
         SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
         if (systemUserDTO == null) {
             return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "当前用户不存在");
@@ -141,7 +139,6 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO changeSelfInfo(SystemUserDTO userDTO) {
-        log.debug("Service ==> 用户自己修改信息，密码除外");
         SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
         if (systemUserDTO == null) {
             return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "当前用户不存在");
@@ -167,7 +164,6 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<Integer> validatePassword(String currentClearTextPassword) {
-        log.debug("Service ==> 用户自己修改密码");
         SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
         if (systemUserDTO == null) {
             return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "当前用户不存在");
@@ -190,7 +186,6 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO resetPassword(String userId) {
-        log.debug("Service ==> 管理员重置别人的密码");
         // 权限验证
         SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
         if (systemUserDTO == null) {

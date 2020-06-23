@@ -42,7 +42,6 @@ public class CommonController {
     @PostMapping("/file-upload")
     public ResponseEntity<ReturnCommonDTO<ReturnFileUploadDTO>> uploadFile (
             @RequestParam(value = "file", required = false)MultipartFile file) {
-        log.debug("REST request to upload file : {}", file.getOriginalFilename());
         ReturnCommonDTO<ReturnFileUploadDTO> resultDTO = commonService.uploadFile(file);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
@@ -55,7 +54,6 @@ public class CommonController {
     @PostMapping("/file-download")
     public ResponseEntity<ReturnCommonDTO> downloadFile (HttpServletResponse response,
             @RequestBody FileDownloadDTO fileDownloadDTO, BindingResult bindingResult) {
-        log.debug("REST request to download file : {}", fileDownloadDTO);
         // 参数验证
         ReturnCommonDTO returnCommonDTO = ParamValidatorUtil.validateFields(bindingResult);
         if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
