@@ -1,7 +1,6 @@
 package ${packageName}.domain;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import lombok.Data;
 
 import java.util.Objects;
 
@@ -9,7 +8,6 @@ import java.util.Objects;
  * ${entityComment}
  * @author Bob
  */
-@Data
 public class ${eentityName} extends BaseDomain {
 
     private static final long serialVersionUID = 1L;
