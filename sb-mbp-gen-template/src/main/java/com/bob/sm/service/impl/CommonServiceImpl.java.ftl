@@ -408,12 +408,15 @@ public class CommonServiceImpl implements CommonService {
      * @param columnKeyList Excel列的Key列表（与返回的数据中Map的key一致）
      * @param regexList 数据的正则验证
      * @param allowNullList 每一列是否允许为空
+     * @param optionList 该列的数值范围
+     * @param dateFormatList 日期格式
      * @return 解析后的数据列表
      */
     @Override
     public ReturnCommonDTO<List<Map<String, String>>> importParseExcel(String fullFileName, int columnCount,
                                                                        List<String> columnNameList, List<String> columnKeyList,
-                                                                       List<String> regexList, List<Boolean> allowNullList) {
+                                                                       List<String> regexList, List<Boolean> allowNullList,
+                                                                       List<List<String>> optionList, List<String> dateFormatList) {
         if (fullFileName == null || "".equals(fullFileName)) {
             return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件名为空");
         }
@@ -422,7 +425,8 @@ public class CommonServiceImpl implements CommonService {
         }
         try {
             InputStream fileInputStream = new FileInputStream(fullFileName);
-            return importParseExcel(fileInputStream, columnCount, columnNameList, columnKeyList, regexList, allowNullList);
+            return importParseExcel(fileInputStream, columnCount, columnNameList, columnKeyList, regexList,
+                    allowNullList, optionList, dateFormatList);
         } catch (IOException e) {
             return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "文件读取失败");
         }
@@ -436,12 +440,15 @@ public class CommonServiceImpl implements CommonService {
      * @param columnKeyList Excel列的Key列表（与返回的数据中Map的key一致）
      * @param regexList 数据的正则验证
      * @param allowNullList 每一列是否允许为空
+     * @param optionList 该列的数值范围
+     * @param dateFormatList 日期格式
      * @return 解析后的数据列表
      */
     @Override
     public ReturnCommonDTO<List<Map<String, String>>> importParseExcel(InputStream fileInputStream, int columnCount,
                                                                        List<String> columnNameList, List<String> columnKeyList,
-                                                                       List<String> regexList, List<Boolean> allowNullList) {
+                                                                       List<String> regexList, List<Boolean> allowNullList,
+                                                                       List<List<String>> optionList, List<String> dateFormatList) {
         try {
             List<Map<String, String>> dataList = new ArrayList<>();
             XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
@@ -455,10 +462,10 @@ public class CommonServiceImpl implements CommonService {
             }
             // 验证第一行是否正确
             for (int j = 0; j < firstMaxCell; j++) {
-                String cellValue = ExcelUtil.getCellValueOfExcel(firstRow.getCell(j));
+                String cellValue = ExcelUtil.getCellValueOfExcel(firstRow.getCell(j), null);
                 if (cellValue == null || !cellValue.trim().equals(columnNameList.get(j))) {
                     return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第1行第" + (j + 1)
-                        + "列的列名不正确，请参照模板修改（注意列顺序不能错乱）");
+                            + "列的列名不正确，请参照模板修改（注意列顺序不能错乱）");
                 }
             }
             // 数据验证的正则初始化
@@ -481,7 +488,7 @@ public class CommonServiceImpl implements CommonService {
                 }
                 // 遍历这一行的每一列
                 for (int j = 0; j < dataMaxCell; j++) {
-                    String cellValue = ExcelUtil.getCellValueOfExcel(dataRow.getCell(j));
+                    String cellValue = ExcelUtil.getCellValueOfExcel(dataRow.getCell(j), dateFormatList.get(j));
                     if (cellValue == null || "".equals(cellValue.trim())) {
                         if (!allowNullList.get(j)) {
                             return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
@@ -491,18 +498,23 @@ public class CommonServiceImpl implements CommonService {
                             data.put(columnKeyList.get(j), "");
                         }
                     } else {
-                        if (regexList.get(j) != null) {
+                        if (optionList != null && optionList.get(j) != null && optionList.get(j).size() > 0) {
+                            // 指定选项范围
+                            if (!optionList.get(j).contains(cellValue.trim())) {
+                                return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
+                                        "行第" + (j + 1) + "列数据范围不正确");
+                            }
+                        } else if (regexList.get(j) != null) {
                             // 有校验的列
                             Matcher matcher = patternList.get(j).matcher(cellValue.trim());
                             if (!matcher.matches()) {
                                 return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
                                         "行第" + (j + 1) + "列数据格式不正确");
                             }
-                            data.put(columnKeyList.get(j), cellValue.trim());
                         } else {
                             // 没有校验的列
-                            data.put(columnKeyList.get(j), cellValue.trim());
                         }
+                        data.put(columnKeyList.get(j), cellValue.trim());
                     }
                 }
                 // 将解析出的这一行的数据添加到列表中

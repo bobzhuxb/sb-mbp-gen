@@ -31,11 +31,13 @@ public interface CommonService {
 
     ReturnCommonDTO<List<Map<String, String>>> importParseExcel(String fullFileName, int columnCount,
                                                                 List<String> columnNameList, List<String> columnKeyList,
-                                                                List<String> regexList, List<Boolean> allowNullList);
+                                                                List<String> regexList, List<Boolean> allowNullList,
+                                                                List<List<String>> optionList, List<String> dateFormatList);
 
     ReturnCommonDTO<List<Map<String, String>>> importParseExcel(InputStream fileInputStream, int columnCount,
                                                                 List<String> columnNameList, List<String> columnKeyList,
-                                                                List<String> regexList, List<Boolean> allowNullList);
+                                                                List<String> regexList, List<Boolean> allowNullList,
+                                                                List<List<String>> optionList, List<String> dateFormatList);
 
     <O> ReturnCommonDTO<O> doGetSingleResult(ReturnCommonDTO<List<O>> resultOfList);
 

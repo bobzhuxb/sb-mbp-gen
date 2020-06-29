@@ -3,6 +3,8 @@ package ${packageName}.util;
 import ${packageName}.dto.help.ExcelCellDTO;
 import ${packageName}.dto.help.ExcelCellRangeDTO;
 import ${packageName}.dto.help.ExcelRowCellsDTO;
+import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.RegionUtil;
@@ -12,8 +14,7 @@ import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,41 +27,32 @@ public class ExcelUtil {
     /**
      * 获取Excel的XSSFCell的值
      * @param cell 传入的cell
+     * @param dateFormat 指定的日期格式
      * @return cell的值
      */
-    public static String getCellValueOfExcel(XSSFCell cell) {
-        if (cell != null) {
-//            if (xssfRow != null) {
-//                xssfRow.setCellType(xssfRow.CELL_TYPE_STRING);
-//            }
-            if (cell.getCellType() == XSSFCell.CELL_TYPE_BOOLEAN) {
-                return String.valueOf(cell.getBooleanCellValue());
-            } else if (cell.getCellType() == XSSFCell.CELL_TYPE_NUMERIC) {
-                String result = "";
-                if (cell.getCellStyle().getDataFormat() == 22) {
-                    // 处理自定义日期格式：m月d日(通过判断单元格的格式id解决，id的值是58)
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    double value = cell.getNumericCellValue();
-                    Date date = org.apache.poi.ss.usermodel.DateUtil.getJavaDate(value);
-                    result = sdf.format(date);
-                } else {
-                    double value = cell.getNumericCellValue();
-                    CellStyle style = cell.getCellStyle();
-                    DecimalFormat format = new DecimalFormat();
-                    String temp = style.getDataFormatString();
-                    // 单元格设置成常规
-                    if ("General".equals(temp)) {
-                        format.applyPattern("#");
-                    }
-                    result = format.format(value);
+    public static String getCellValueOfExcel(XSSFCell cell, String dateFormat) {
+        String cellValue = "";
+        if (cell.getCellTypeEnum() == CellType.NUMERIC) {
+            if (HSSFDateUtil.isCellDateFormatted(cell)) {
+                if (dateFormat == null) {
+                    // 默认的日期格式
+                    dateFormat = "yyyy-MM-dd";
                 }
-                return result;
+                cellValue = DateFormatUtils.format(cell.getDateCellValue(), dateFormat);
             } else {
-                return String.valueOf(cell.getStringCellValue());
+                NumberFormat nf = NumberFormat.getInstance();
+                cellValue = String.valueOf(nf.format(cell.getNumericCellValue())).replace(",", "");
             }
+        } else if (cell.getCellTypeEnum() == CellType.STRING) {
+            cellValue = String.valueOf(cell.getStringCellValue());
+        } else if(cell.getCellTypeEnum() == CellType.BOOLEAN) {
+            cellValue = String.valueOf(cell.getBooleanCellValue());
+        } else if (cell.getCellTypeEnum() == CellType.ERROR) {
+            cellValue = null;
         } else {
-            return null;
+            cellValue = "";
         }
+        return cellValue;
     }
 
     /**
