@@ -7,6 +7,7 @@ import ${packageName}.web.rest.errors.CommonException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -23,6 +24,19 @@ import java.util.NoSuchElementException;
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    /**
+     * 拦截业务异常（Session过期或无效）
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
+    public ReturnCommonDTO handleSessionTimeout(AuthenticationException ex) {
+        String message = ex.getMessage();
+        log.error(ex.getMessage(), ex);
+        return new ReturnCommonDTO("-998", message);
+    }
 
     /**
      * 没有对应的数据（不记录错误日志）
