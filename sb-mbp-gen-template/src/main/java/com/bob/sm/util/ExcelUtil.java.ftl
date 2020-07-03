@@ -1,9 +1,10 @@
 package ${packageName}.util;
 
+import ${packageName}.annotation.ExcelProperty;
 import ${packageName}.dto.help.ExcelCellDTO;
 import ${packageName}.dto.help.ExcelCellRangeDTO;
 import ${packageName}.dto.help.ExcelRowCellsDTO;
-import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -324,6 +325,21 @@ public class ExcelUtil {
         // 合并单元格加边框
         ExcelUtil.setRegionBorder(sheet, totalTitleRegion, cellRangeDTO.getBorderTop(),
                 cellRangeDTO.getBorderBottom(), cellRangeDTO.getBorderLeft(), cellRangeDTO.getBorderRight());
+    }
+
+    /**
+     * 修改指定字段的ExcelProperty注解的optionList值
+     * @param objClass 指定类
+     * @param fieldName 指定字段名
+     * @param optionList 可选范围列表
+     * @throws NoSuchFieldException
+     * @throws IllegalAccessException
+     */
+    public static void changeOptionListOfExcelProperty(Class<?> objClass, String fieldName,
+                                                       List<String> optionList) throws NoSuchFieldException, IllegalAccessException {
+        String[] optionArray = new String[optionList.size()];
+        optionList.toArray(optionArray);
+        MyBeanUtil.changeStaticAnnotationOfField(objClass, fieldName, ExcelProperty.class, "optionList", optionArray);
     }
 
 }

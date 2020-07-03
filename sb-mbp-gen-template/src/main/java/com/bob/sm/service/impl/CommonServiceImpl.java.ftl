@@ -1,6 +1,8 @@
 package ${packageName}.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
+import ${packageName}.annotation.ExcelProperty;
 import ${packageName}.config.Constants;
 import ${packageName}.config.YmlConfig;
 import ${packageName}.dto.help.*;
@@ -10,16 +12,15 @@ import ${packageName}.util.FileUtil;
 import ${packageName}.util.LocalCache;
 import ${packageName}.util.LocalCacheEntity;
 import ${packageName}.web.rest.errors.CommonAlertException;
-import ${packageName}.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.RegionUtil;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.xssf.streaming.SXSSFCell;
 import org.apache.poi.xssf.streaming.SXSSFRow;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -29,16 +30,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URLEncoder;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -403,20 +402,11 @@ public class CommonServiceImpl implements CommonService {
     /**
      * 通用解析Excel文件
      * @param fullFileName 本地全路径的文件名
-     * @param columnCount 指定的列数
-     * @param columnNameList Excel列名列表
-     * @param columnKeyList Excel列的Key列表（与返回的数据中Map的key一致）
-     * @param regexList 数据的正则验证
-     * @param allowNullList 每一列是否允许为空
-     * @param optionList 该列的数值范围
-     * @param dateFormatList 日期格式
+     * @param excelParseClass 解析用Class
      * @return 解析后的数据列表
      */
     @Override
-    public ReturnCommonDTO<List<Map<String, String>>> importParseExcel(String fullFileName, int columnCount,
-                                                                       List<String> columnNameList, List<String> columnKeyList,
-                                                                       List<String> regexList, List<Boolean> allowNullList,
-                                                                       List<List<String>> optionList, List<String> dateFormatList) {
+    public <T> ReturnCommonDTO<List<T>> importParseExcel(String fullFileName, Class<T> excelParseClass) {
         if (fullFileName == null || "".equals(fullFileName)) {
             return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件名为空");
         }
@@ -425,8 +415,7 @@ public class CommonServiceImpl implements CommonService {
         }
         try {
             InputStream fileInputStream = new FileInputStream(fullFileName);
-            return importParseExcel(fileInputStream, columnCount, columnNameList, columnKeyList, regexList,
-                    allowNullList, optionList, dateFormatList);
+            return importParseExcel(fileInputStream, excelParseClass);
         } catch (IOException e) {
             return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "文件读取失败");
         }
@@ -435,44 +424,95 @@ public class CommonServiceImpl implements CommonService {
     /**
      * 通用解析Excel文件
      * @param fileInputStream 文件输入流
-     * @param columnCount 指定的列数
-     * @param columnNameList Excel列名列表
-     * @param columnKeyList Excel列的Key列表（与返回的数据中Map的key一致）
-     * @param regexList 数据的正则验证
-     * @param allowNullList 每一列是否允许为空
-     * @param optionList 该列的数值范围
-     * @param dateFormatList 日期格式
+     * @param excelParseClass 解析用Class
      * @return 解析后的数据列表
      */
     @Override
-    public ReturnCommonDTO<List<Map<String, String>>> importParseExcel(InputStream fileInputStream, int columnCount,
-                                                                       List<String> columnNameList, List<String> columnKeyList,
-                                                                       List<String> regexList, List<Boolean> allowNullList,
-                                                                       List<List<String>> optionList, List<String> dateFormatList) {
+    public <T> ReturnCommonDTO<List<T>> importParseExcel(InputStream fileInputStream, Class<T> excelParseClass) {
         try {
-            List<Map<String, String>> dataList = new ArrayList<>();
+            // 解析传入的DTO，分别获取每个属性
+            Field[] excelParseFields = excelParseClass.getDeclaredFields();
+            Field[] excelPropertyFields = ExcelPropertyDataDTO.class.getDeclaredFields();
+            // Excel列属性列表
+            List<ExcelPropertyDataDTO> excelPropertyDataList = new ArrayList<>();
+            for (Field excelParseField : excelParseFields) {
+                // 根据注解ExcelProperty的属性（一一映射）反射设置ExcelPropertyDataDTO的属性
+                ExcelPropertyDataDTO excelPropertyDataDTO = new ExcelPropertyDataDTO();
+                String excelParseFieldName = excelParseField.getName();
+                // 设置属性名
+                excelPropertyDataDTO.setPropertyName(excelParseFieldName);
+                // 解析注解内容
+                ExcelProperty excelPropertyAnnotation = excelParseField.getAnnotation(ExcelProperty.class);
+                if (excelPropertyAnnotation != null) {
+                    for (Field excelPropertyField : excelPropertyFields) {
+                        String excelPropertyFieldName = excelPropertyField.getName();
+                        Method annotationMethod = null;
+                        try {
+                            annotationMethod = excelPropertyAnnotation.annotationType().getDeclaredMethod(excelPropertyFieldName);
+                        } catch (Exception e) {
+                            // 说明是ExcelPropertyDataDTO多出来的属性，不匹配，直接跳过
+                            continue;
+                        }
+                        Field excelPropertyDataField = excelPropertyDataDTO.getClass().getDeclaredField(excelPropertyFieldName);
+                        if (annotationMethod == null || excelPropertyDataField == null) {
+                            // 非共通属性，跳过
+                            continue;
+                        }
+                        Object annotationValue = annotationMethod.invoke(excelPropertyAnnotation);
+                        if (annotationValue != null) {
+                            // 设置对象的访问权限，保证对private的属性的访问
+                            excelPropertyDataField.setAccessible(true);
+                            excelPropertyDataField.set(excelPropertyDataDTO, annotationValue);
+                        }
+                    }
+                }
+                // 追加到Excel列属性列表中
+                excelPropertyDataList.add(excelPropertyDataDTO);
+            }
+            // 转换成Map（Key：列序号   Value：ExcelPropertyDataDTO值）
+            Map<Integer, ExcelPropertyDataDTO> excelPropertyDataMap = new HashMap<>();
+            int maxColumn = 0;
+            for (int j = 0; j < excelPropertyDataList.size(); j++) {
+                ExcelPropertyDataDTO excelPropertyDataDTO = excelPropertyDataList.get(j);
+                int index = excelPropertyDataDTO.getIndex();
+                ExcelPropertyDataDTO existProperty = excelPropertyDataMap.get(index);
+                // 验证列序号重复
+                if (existProperty != null) {
+                    return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (j + 1)
+                            + "列序号重复");
+                }
+                // 设置最大列
+                if (index > maxColumn) {
+                    maxColumn = index;
+                }
+                // 初始化验证正则
+                if (excelPropertyDataDTO.getRegex() != null) {
+                    Pattern pattern = Pattern.compile(excelPropertyDataDTO.getRegex());
+                    excelPropertyDataDTO.setPattern(pattern);
+                }
+                excelPropertyDataMap.put(excelPropertyDataDTO.getIndex(), excelPropertyDataDTO);
+            }
+            if (maxColumn != excelPropertyDataList.size()) {
+                return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "列序号必须从1开始且递增幅度为1");
+            }
+
+            List<T> dataList = new ArrayList<>();
             XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream);
             XSSFSheet sheet = workbook.getSheetAt(0);
             // 第一行（列名）
             XSSFRow firstRow = sheet.getRow(0);
-            int firstMinCell = firstRow.getFirstCellNum();
             int firstMaxCell = firstRow.getLastCellNum();
-            if (firstMaxCell != columnCount) {
-                return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第1行列数不是" + columnCount);
+            if (firstMaxCell != maxColumn) {
+                return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第1行列数不是" + maxColumn);
             }
+
             // 验证第一行是否正确
-            for (int j = 0; j < firstMaxCell; j++) {
-                String cellValue = ExcelUtil.getCellValueOfExcel(firstRow.getCell(j), null);
-                if (cellValue == null || !cellValue.trim().equals(columnNameList.get(j))) {
-                    return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第1行第" + (j + 1)
+            for (int col = 1; col <= firstMaxCell; col++) {
+                String cellValue = ExcelUtil.getCellValueOfExcel(firstRow.getCell(col - 1), null);
+                if (cellValue == null || !cellValue.trim().equals(excelPropertyDataMap.get(col).getValue())) {
+                    return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第1行第" + col
                             + "列的列名不正确，请参照模板修改（注意列顺序不能错乱）");
                 }
-            }
-            // 数据验证的正则初始化
-            List<Pattern> patternList = new ArrayList<>();
-            for (int j = 0; j < firstMaxCell; j++) {
-                Pattern pattern = Pattern.compile(regexList.get(j));
-                patternList.add(pattern);
             }
             // 读取数据行的每一行内容进行解析
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
@@ -480,45 +520,59 @@ public class CommonServiceImpl implements CommonService {
                 Map<String, String> data = new HashMap<>();
                 // 获取这一行
                 XSSFRow dataRow = sheet.getRow(i);
-                int dataMinCell = dataRow.getFirstCellNum();
                 int dataMaxCell = dataRow.getLastCellNum();
-                if (dataMaxCell != columnCount) {
+                if (dataMaxCell != maxColumn) {
                     return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
-                            "行列数不是" + columnCount);
+                            "行列数不是" + maxColumn);
                 }
                 // 遍历这一行的每一列
-                for (int j = 0; j < dataMaxCell; j++) {
-                    String cellValue = ExcelUtil.getCellValueOfExcel(dataRow.getCell(j), dateFormatList.get(j));
+                for (int col = 1; col < dataMaxCell + 1; col++) {
+                    // 属性数据
+                    ExcelPropertyDataDTO excelPropertyDataDTO = excelPropertyDataMap.get(col);
+                    // 属性名
+                    String propertyName = excelPropertyDataDTO.getPropertyName();
+                    // 获取单元格中填入的值
+                    String cellValue = ExcelUtil.getCellValueOfExcel(dataRow.getCell(col - 1), excelPropertyDataDTO.getDateFormat());
                     if (cellValue == null || "".equals(cellValue.trim())) {
-                        if (!allowNullList.get(j)) {
+                        if (!excelPropertyDataDTO.getNullable()) {
                             return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
-                                    "行第" + (j + 1) + "列数据为空");
+                                    "行第" + col + "列数据为空");
                         } else {
                             // 空数据直接设置空字符串
-                            data.put(columnKeyList.get(j), "");
+                            data.put(propertyName, "");
                         }
                     } else {
-                        if (optionList != null && optionList.get(j) != null && optionList.get(j).size() > 0) {
+                        String[] optionList = excelPropertyDataDTO.getOptionList();
+                        if (optionList != null && optionList.length > 0) {
                             // 指定选项范围
-                            if (!optionList.get(j).contains(cellValue.trim())) {
-                                return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
-                                        "行第" + (j + 1) + "列数据范围不正确");
+                            boolean inOption = false;
+                            for (String option : optionList) {
+                                if (option.equals(cellValue.trim())) {
+                                    inOption = true;
+                                    break;
+                                }
                             }
-                        } else if (regexList.get(j) != null) {
+                            if (!inOption) {
+                                return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
+                                        "行第" + col + "列数据范围不正确");
+                            }
+                        } else if (excelPropertyDataDTO.getPattern() != null) {
                             // 有校验的列
-                            Matcher matcher = patternList.get(j).matcher(cellValue.trim());
+                            Matcher matcher = excelPropertyDataDTO.getPattern().matcher(cellValue.trim());
                             if (!matcher.matches()) {
                                 return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
-                                        "行第" + (j + 1) + "列数据格式不正确");
+                                        "行第" + col + "列数据格式不正确");
                             }
                         } else {
                             // 没有校验的列
                         }
-                        data.put(columnKeyList.get(j), cellValue.trim());
+                        data.put(propertyName, cellValue.trim());
                     }
                 }
+                // 将Map转为Bean
+                T dataT = BeanUtil.mapToBean(data, excelParseClass, true);
                 // 将解析出的这一行的数据添加到列表中
-                dataList.add(data);
+                dataList.add(dataT);
             }
             // 返回解析后的全部数据
             return new ReturnUploadCommonDTO(dataList);

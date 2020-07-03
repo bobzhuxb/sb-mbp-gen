@@ -1,17 +1,15 @@
 package ${packageName}.service;
 
 import ${packageName}.dto.help.*;
-import org.slf4j.Logger;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
 /**
- * 共通处理类
+ * 共通方法
  * @author Bob
  */
 public interface CommonService {
@@ -29,15 +27,9 @@ public interface CommonService {
 
     ReturnCommonDTO exportExcel(HttpServletResponse response, ExcelExportDTO excelExportDTO);
 
-    ReturnCommonDTO<List<Map<String, String>>> importParseExcel(String fullFileName, int columnCount,
-                                                                List<String> columnNameList, List<String> columnKeyList,
-                                                                List<String> regexList, List<Boolean> allowNullList,
-                                                                List<List<String>> optionList, List<String> dateFormatList);
+    <T> ReturnCommonDTO<List<T>> importParseExcel(String fullFileName, Class<T> excelParseClass);
 
-    ReturnCommonDTO<List<Map<String, String>>> importParseExcel(InputStream fileInputStream, int columnCount,
-                                                                List<String> columnNameList, List<String> columnKeyList,
-                                                                List<String> regexList, List<Boolean> allowNullList,
-                                                                List<List<String>> optionList, List<String> dateFormatList);
+    <T> ReturnCommonDTO<List<T>> importParseExcel(InputStream fileInputStream, Class<T> excelParseClass);
 
     <O> ReturnCommonDTO<O> doGetSingleResult(ReturnCommonDTO<List<O>> resultOfList);
 

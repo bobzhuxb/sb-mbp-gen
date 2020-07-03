@@ -9,11 +9,10 @@ import org.springframework.beans.BeanWrapperImpl;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.lang.reflect.Proxy;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -337,6 +336,34 @@ public class MyBeanUtil {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * 修改指定字段的Annotation的指定属性值（固定属性，不随实例而变化）
+     * @param objClass 指定类
+     * @param fieldName 指定字段名
+     * @param annotationClass 注解类
+     * @param annotationPropertyName 注解属性名
+     * @param value 要设置的注解属性的值
+     * @throws NoSuchFieldException
+     * @throws IllegalAccessException
+     */
+    public static void changeStaticAnnotationOfField(Class<?> objClass, String fieldName, Class<? extends Annotation> annotationClass,
+                                                     String annotationPropertyName, Object value) throws NoSuchFieldException, IllegalAccessException {
+        // 获取指定字段
+        Field field = objClass.getDeclaredField(fieldName);
+        // 获取指定字段上的ExcelProperty注解实例
+        Annotation annotation = field.getAnnotation(annotationClass);
+        // 获取注解的代理实例所持有的 InvocationHandler
+        InvocationHandler h = Proxy.getInvocationHandler(annotation);
+        // 获取 AnnotationInvocationHandler 的 memberValues 字段
+        Field hField = h.getClass().getDeclaredField("memberValues");
+        // 设置访问权限
+        hField.setAccessible(true);
+        // 获取 memberValues
+        Map memberValues = (Map) hField.get(h);
+        // 修改annotationPropertyName对应的属性值
+        memberValues.put(annotationPropertyName, value);
     }
 
 }
