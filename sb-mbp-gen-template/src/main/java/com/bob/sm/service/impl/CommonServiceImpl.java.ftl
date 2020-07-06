@@ -403,10 +403,12 @@ public class CommonServiceImpl implements CommonService {
      * 通用解析Excel文件
      * @param fullFileName 本地全路径的文件名
      * @param excelParseClass 解析用Class
+     * @param maxErrHintCount 最大错误提示数
      * @return 解析后的数据列表
      */
     @Override
-    public <T> ReturnCommonDTO<List<T>> importParseExcel(String fullFileName, Class<T> excelParseClass) {
+    public <T> ReturnCommonDTO<List<T>> importParseExcel(String fullFileName, Class<T> excelParseClass,
+                                                         Integer maxErrHintCount) {
         if (fullFileName == null || "".equals(fullFileName)) {
             return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "导入文件名为空");
         }
@@ -415,7 +417,7 @@ public class CommonServiceImpl implements CommonService {
         }
         try {
             InputStream fileInputStream = new FileInputStream(fullFileName);
-            return importParseExcel(fileInputStream, excelParseClass);
+            return importParseExcel(fileInputStream, excelParseClass, maxErrHintCount);
         } catch (IOException e) {
             return new ReturnUploadCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "文件读取失败");
         }
@@ -425,10 +427,12 @@ public class CommonServiceImpl implements CommonService {
      * 通用解析Excel文件
      * @param fileInputStream 文件输入流
      * @param excelParseClass 解析用Class
+     * @param maxErrHintCount 最大错误提示数
      * @return 解析后的数据列表
      */
     @Override
-    public <T> ReturnCommonDTO<List<T>> importParseExcel(InputStream fileInputStream, Class<T> excelParseClass) {
+    public <T> ReturnCommonDTO<List<T>> importParseExcel(InputStream fileInputStream, Class<T> excelParseClass,
+                                                         Integer maxErrHintCount) {
         try {
             // 解析传入的DTO，分别获取每个属性
             Field[] excelParseFields = excelParseClass.getDeclaredFields();
@@ -514,6 +518,9 @@ public class CommonServiceImpl implements CommonService {
                             + "列的列名不正确，请参照模板修改（注意列顺序不能错乱）");
                 }
             }
+            // 统计错误提示数，不超过最大提示数
+            int errHintCount = 0;
+            StringJoiner errInfoSj = new StringJoiner("、");
             // 读取数据行的每一行内容进行解析
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 // 初始化该行的返回数据
@@ -522,8 +529,12 @@ public class CommonServiceImpl implements CommonService {
                 XSSFRow dataRow = sheet.getRow(i);
                 int dataMaxCell = dataRow.getLastCellNum();
                 if (dataMaxCell != maxColumn) {
-                    return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
-                            "行列数不是" + maxColumn);
+                    errInfoSj.add("第" + (i + 1) + "行列数不是" + maxColumn);
+                    errHintCount++;
+                    if (maxErrHintCount != null && errHintCount >= maxErrHintCount) {
+                        return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), errInfoSj.toString());
+                    }
+                    continue;
                 }
                 // 遍历这一行的每一列
                 for (int col = 1; col < dataMaxCell + 1; col++) {
@@ -535,8 +546,12 @@ public class CommonServiceImpl implements CommonService {
                     String cellValue = ExcelUtil.getCellValueOfExcel(dataRow.getCell(col - 1), excelPropertyDataDTO.getDateFormat());
                     if (cellValue == null || "".equals(cellValue.trim())) {
                         if (!excelPropertyDataDTO.getNullable()) {
-                            return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
-                                    "行第" + col + "列数据为空");
+                            errInfoSj.add("第" + (i + 1) + "行第" + col + "列数据为空");
+                            errHintCount++;
+                            if (maxErrHintCount != null && errHintCount >= maxErrHintCount) {
+                                return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), errInfoSj.toString());
+                            }
+                            continue;
                         } else {
                             // 空数据直接设置空字符串
                             data.put(propertyName, "");
@@ -553,15 +568,23 @@ public class CommonServiceImpl implements CommonService {
                                 }
                             }
                             if (!inOption) {
-                                return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
-                                        "行第" + col + "列数据范围不正确");
+                                errInfoSj.add("第" + (i + 1) + "行第" + col + "列数据范围不正确");
+                                errHintCount++;
+                                if (maxErrHintCount != null && errHintCount >= maxErrHintCount) {
+                                    return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), errInfoSj.toString());
+                                }
+                                continue;
                             }
                         } else if (excelPropertyDataDTO.getPattern() != null) {
                             // 有校验的列
                             Matcher matcher = excelPropertyDataDTO.getPattern().matcher(cellValue.trim());
                             if (!matcher.matches()) {
-                                return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (i + 1) +
-                                        "行第" + col + "列数据格式不正确");
+                                errInfoSj.add("第" + (i + 1) + "行第" + col + "列数据格式不正确");
+                                errHintCount++;
+                                if (maxErrHintCount != null && errHintCount >= maxErrHintCount) {
+                                    return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), errInfoSj.toString());
+                                }
+                                continue;
                             }
                         } else {
                             // 没有校验的列
@@ -573,6 +596,10 @@ public class CommonServiceImpl implements CommonService {
                 T dataT = BeanUtil.mapToBean(data, excelParseClass, true);
                 // 将解析出的这一行的数据添加到列表中
                 dataList.add(dataT);
+            }
+            // 错误信息整体返回
+            if (errInfoSj.length() > 0) {
+                return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), errInfoSj.toString());
             }
             // 返回解析后的全部数据
             return new ReturnUploadCommonDTO(dataList);
