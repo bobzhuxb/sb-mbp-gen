@@ -41,6 +41,10 @@ public final class Constants {
      * 不使用cacheRedisService时，请将CacheRedisServiceImpl.java的@Service注解去掉
      */
     public static final String SERVICE_CACHE_NAME = "cacheRedisService";
+    /**
+     * 用户信息缓存
+     */
+    public static final String CACHE_USER_INFO = "userInfo";
 
     /************ 微信登录配置 *************/
     /**

@@ -40,7 +40,7 @@ public class UserJWTController {
     private final AuthenticationManager authenticationManager;
 
     @Autowired
-    private SystemUserMapper systemUserMapper;
+    private CommonUserService commonUserService;
 
     public UserJWTController(TokenProvider tokenProvider,
                              AuthenticationManager authenticationManager) {
@@ -64,7 +64,7 @@ public class UserJWTController {
             // 获取登录用户信息
             SystemUserDTO systemUserDTO = commonUserService.findForceCacheUserByLogin(loginVM.getUsername());
             // 设置返回数据
-            resultDTO = new ReturnCommonDTO(new JWTToken(jwt, systemUserDTO.getLogin(), systemUserDTO.getName());
+            resultDTO = new ReturnCommonDTO(new JWTToken(jwt, systemUserDTO.getLogin(), systemUserDTO.getName()));
         } catch (AuthenticationException ex) {
             resultDTO = new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "用户名或密码错误");
         } catch (CommonAlertException e) {

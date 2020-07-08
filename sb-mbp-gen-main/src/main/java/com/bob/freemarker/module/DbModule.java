@@ -172,7 +172,12 @@ public class DbModule {
                     // 输出SQL脚本
                     outSqlOsw.write(deleteSql + ";\r\n");
                     // 执行SQL
-                    statement.executeUpdate(deleteSql);
+                    try {
+                        statement.executeUpdate(deleteSql);
+                    } catch (Exception e) {
+                        System.out.println("【SQL改库错误】：" + deleteSql);
+                        throw e;
+                    }
                 }
             }
             // 附加的关联字段
@@ -234,7 +239,12 @@ public class DbModule {
                     // 输出SQL脚本
                     outSqlOsw.write(createSql + ";\r\n");
                     // 执行SQL
-                    int infectLines = statement.executeUpdate(createSql);
+                    try {
+                        int infectLines = statement.executeUpdate(createSql);
+                    } catch (Exception e) {
+                        System.out.println("【SQL改库错误】：" + createSql);
+                        throw e;
+                    }
                     log.info("表" + entityDTO.getTableName() + "创建完成。");
                 } else {
                     // 表存在，修改
@@ -271,7 +281,12 @@ public class DbModule {
                                 // 输出SQL脚本
                                 outSqlOsw.write(alterTablePrefix + alterColumnStr + ";\r\n");
                                 // 执行SQL
-                                statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                try {
+                                    statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                } catch (Exception e) {
+                                    System.out.println("【SQL改库错误】：" + alterTablePrefix + alterColumnStr);
+                                    throw e;
+                                }
                             }
                         } else {
                             // 列已经存在
@@ -292,7 +307,12 @@ public class DbModule {
                                             // 输出SQL脚本
                                             outSqlOsw.write(alterTablePrefix + alterColumnStr + ";\r\n");
                                             // 执行SQL，单列改表
-                                            statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                            try {
+                                                statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                            } catch (Exception e) {
+                                                System.out.println("【SQL改库错误】：" + alterTablePrefix + alterColumnStr);
+                                                throw e;
+                                            }
                                         } catch (Exception e) {
                                             System.out.println("【SQL改库错误】：" + alterTablePrefix + alterColumnStr);
                                             throw e;
@@ -326,7 +346,12 @@ public class DbModule {
                                     // 输出SQL脚本
                                     outSqlOsw.write(alterTablePrefix + alterColumnStr + ";\r\n");
                                     // 执行SQL
-                                    statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                    try {
+                                        statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                    } catch (Exception e) {
+                                        System.out.println("【SQL改库错误】：" + alterTablePrefix + alterColumnStr);
+                                        throw e;
+                                    }
                                 }
                             } else {
                                 // 列已经存在
@@ -346,7 +371,12 @@ public class DbModule {
                                             // 输出SQL脚本
                                             outSqlOsw.write(alterTablePrefix + alterColumnStr + ";\r\n");
                                             // 执行SQL
-                                            statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                            try {
+                                                statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                            } catch (Exception e) {
+                                                System.out.println("【SQL改库错误】：" + alterTablePrefix + alterColumnStr);
+                                                throw e;
+                                            }
                                         }
                                         break;
                                     }
@@ -366,7 +396,12 @@ public class DbModule {
                             // 输出SQL脚本
                             outSqlOsw.write(alterTablePrefix + alterColumnStr + ";\r\n");
                             // 执行SQL
-                            statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                            try {
+                                statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                            } catch (Exception e) {
+                                System.out.println("【SQL改库错误】：" + alterTablePrefix + alterColumnStr);
+                                throw e;
+                            }
                         }
                     }
                     if ("no".equals(changeColumnSingle)) {
@@ -375,7 +410,12 @@ public class DbModule {
                             // 输出SQL脚本
                             outSqlOsw.write(alterTablePrefix + alterColumnSb.toString() + ";\r\n");
                             // 执行SQL
-                            statement.executeUpdate(alterTablePrefix + alterColumnSb.toString());
+                            try {
+                                statement.executeUpdate(alterTablePrefix + alterColumnSb.toString());
+                            } catch (Exception e) {
+                                System.out.println("【SQL改库错误】：" + alterTablePrefix + alterColumnSb.toString());
+                                throw e;
+                            }
                         }
                     }
                     log.info("表" + entityDTO.getTableName() + "修改完成。");
@@ -403,10 +443,9 @@ public class DbModule {
                 statement.execute("truncate table system_user");
                 statement.execute("truncate table system_role");
                 statement.execute("truncate table system_user_role");
-                statement.execute("INSERT INTO system_user(id, login, password, name, cell, " +
-                        "identify_no, memo, insert_time) VALUES ('1', 'admin', " +
-                        "'$2a$10$PQkBezu.nvPOSenQXu/WxOMQtKj1j5ybjELKRfxr8uLeU8NCRBhDq', '超级管理员', '12345678901', " +
-                        "'123456789012345678', '仅供开发人员使用', '" + nowTimeStr + "')");
+                statement.execute("INSERT INTO system_user(id, login, password, name, memo, insert_time) " +
+                        "VALUES ('1', 'admin', '$2a$10$PQkBezu.nvPOSenQXu/WxOMQtKj1j5ybjELKRfxr8uLeU8NCRBhDq', " +
+                        "'超级管理员', '仅供开发人员使用', '" + nowTimeStr + "')");
                 statement.execute("INSERT INTO system_role(id, name, chinese_name, insert_user_id, " +
                         "operate_user_id, insert_time) VALUES ('1', 'ROLE_ADMIN', '管理员', " +
                         "'1', '1', '" + nowTimeStr + "')");

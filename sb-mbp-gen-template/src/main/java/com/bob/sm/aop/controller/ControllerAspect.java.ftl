@@ -8,7 +8,6 @@ import ${packageName}.service.ApiAdapterService;
 import ${packageName}.util.MyBeanUtil;
 import ${packageName}.util.ParamValidatorUtil;
 import ${packageName}.web.rest.errors.BadRequestAlertException;
-import org.apache.commons.lang.ArrayUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

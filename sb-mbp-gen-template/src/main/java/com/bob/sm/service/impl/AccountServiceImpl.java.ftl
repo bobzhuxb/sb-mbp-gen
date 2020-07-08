@@ -2,15 +2,15 @@ package ${packageName}.service.impl;
 
 import ${packageName}.config.Constants;
 import ${packageName}.domain.SystemUser;
-import ${packageName}.dto.*;
-import ${packageName}.dto.criteria.SystemRoleResourceCriteria;
+import ${packageName}.dto.EnhanceUserDTO;
+import ${packageName}.dto.SystemRoleDTO;
+import ${packageName}.dto.SystemUserDTO;
 import ${packageName}.dto.criteria.SystemUserCriteria;
 import ${packageName}.dto.criteria.filter.StringFilter;
 import ${packageName}.dto.help.ReturnCommonDTO;
 import ${packageName}.mapper.SystemUserMapper;
 import ${packageName}.service.AccountService;
 import ${packageName}.service.CommonUserService;
-import ${packageName}.service.SystemRoleResourceService;
 import ${packageName}.service.SystemUserService;
 import ${packageName}.util.MyBeanUtil;
 import ${packageName}.web.rest.errors.CommonAlertException;
@@ -21,7 +21,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,9 +36,6 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private SystemUserService systemUserService;
-
-    @Autowired
-    private SystemRoleResourceService systemRoleResourceService;
 
     @Autowired
     private CommonUserService commonUserService;
@@ -70,34 +66,6 @@ public class AccountServiceImpl implements AccountService {
             enhanceUserDTO.setSystemRoleList(systemUserDTO.getSystemUserRoleList().stream().map(
                     systemUserRoleDTO -> systemUserRoleDTO.getSystemRole()).collect(Collectors.toList()));
             enhanceUserDTO.setSystemUserRoleList(null);
-            // 设置资源
-            List<SystemResourceDTO> userResourceList = new ArrayList<>();
-            List<SystemUserResourceDTO> userResourceDTOList = systemUserDTO.getSystemUserResourceList();
-            if (userResourceDTOList != null) {
-                userResourceList = systemUserDTO.getSystemUserResourceList().stream()
-                        .map(systemUserResourceDTO -> systemUserResourceDTO.getSystemResource()).collect(Collectors.toList());
-            }
-            List<SystemResourceDTO> roleResourceListDup = systemUserDTO.getSystemUserRoleList().stream()
-                    .flatMap(systemUserRoleDTO -> {
-                        SystemRoleResourceCriteria systemRoleResourceCriteria = new SystemRoleResourceCriteria();
-                        StringFilter roleIdFilter = new StringFilter();
-                        roleIdFilter.setEquals(systemUserRoleDTO.getSystemRoleId());
-                        systemRoleResourceCriteria.setSystemRoleId(roleIdFilter);
-                        systemRoleResourceCriteria.setAssociationNameList(Arrays.asList("systemResource"));
-                        return systemRoleResourceService.baseFindAll("SystemRoleResource", systemRoleResourceCriteria, null)
-                                .getData().stream().map(systemRoleResourceDTO -> systemRoleResourceDTO.getSystemResource());
-                    }).collect(Collectors.toList());
-            // 角色的资源去重
-            List<SystemResourceDTO> roleResourceList = new ArrayList<>();
-            resourceUnDuplicate(roleResourceListDup, roleResourceList);
-            // 合并资源并去重
-            List<SystemResourceDTO> resourceList = new ArrayList<>();
-            resourceList.addAll(userResourceList);
-            resourceUnDuplicate(roleResourceList, resourceList);
-            // 设置值
-            enhanceUserDTO.setResourcesFromUser(userResourceList);
-            enhanceUserDTO.setResourcesFromRole(roleResourceList);
-            enhanceUserDTO.setResources(resourceList);
             return enhanceUserDTO;
         }).collect(Collectors.toList());
         if (userList != null && userList.size() > 0) {
@@ -210,21 +178,6 @@ public class AccountServiceImpl implements AccountService {
         userUpdate.setPassword(encryptedPassword);
         systemUserMapper.updateById(userUpdate);
         return new ReturnCommonDTO();
-    }
-
-    private void resourceUnDuplicate(List<SystemResourceDTO> newResourceList, List<SystemResourceDTO> toResourceList) {
-        for (SystemResourceDTO roleResourceDTO : newResourceList) {
-            boolean resourceExist = false;
-            for (SystemResourceDTO systemResourceDTOExist : toResourceList) {
-                if (systemResourceDTOExist.getId().equals(roleResourceDTO)) {
-                    resourceExist = true;
-                    break;
-                }
-            }
-            if (!resourceExist) {
-                toResourceList.add(roleResourceDTO);
-            }
-        }
     }
 
 }

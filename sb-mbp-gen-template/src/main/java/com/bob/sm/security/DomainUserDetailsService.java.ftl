@@ -1,13 +1,9 @@
 package ${packageName}.security;
 
-import ${packageName}.dto.*;
-import ${packageName}.dto.criteria.SystemResourcePermissionCriteria;
+import ${packageName}.dto.SystemUserDTO;
+import ${packageName}.dto.SystemUserRoleDTO;
 import ${packageName}.dto.criteria.SystemUserCriteria;
-import ${packageName}.dto.criteria.filter.LongFilter;
 import ${packageName}.dto.criteria.filter.StringFilter;
-import ${packageName}.mapper.SystemPermissionMapper;
-import ${packageName}.service.AccountService;
-import ${packageName}.service.SystemResourcePermissionService;
 import ${packageName}.service.SystemUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +16,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -34,9 +32,6 @@ public class DomainUserDetailsService implements UserDetailsService {
 
     @Autowired
     private SystemUserService systemUserService;
-
-    @Autowired
-    private SystemPermissionMapper systemPermissionMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -63,14 +58,6 @@ public class DomainUserDetailsService implements UserDetailsService {
                             new SimpleGrantedAuthority(systemUserRoleDTO.getSystemRole().getName()))
                     .collect(Collectors.toList());
             grantedAuthorities.addAll(grantedRoleNames);
-        }
-        // 动态权限
-        List<String> permissionIdentifyList = systemPermissionMapper.findPermissionIdentifyByLogin(login);
-        if (permissionIdentifyList != null && permissionIdentifyList.size() > 0) {
-            List<GrantedAuthority> grantedPermissions = permissionIdentifyList.stream()
-                    .map(permissionIdentify -> new SimpleGrantedAuthority(permissionIdentify))
-                    .collect(Collectors.toList());
-            grantedAuthorities.addAll(grantedPermissions);
         }
 
         return new org.springframework.security.core.userdetails.User(userDTO.getLogin(),
