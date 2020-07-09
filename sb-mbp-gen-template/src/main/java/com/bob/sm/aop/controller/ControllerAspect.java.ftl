@@ -8,6 +8,7 @@ import ${packageName}.service.ApiAdapterService;
 import ${packageName}.util.MyBeanUtil;
 import ${packageName}.util.ParamValidatorUtil;
 import ${packageName}.web.rest.errors.BadRequestAlertException;
+import org.apache.commons.lang3.ArrayUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -26,7 +27,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 
 /**
  * Controller拦截器

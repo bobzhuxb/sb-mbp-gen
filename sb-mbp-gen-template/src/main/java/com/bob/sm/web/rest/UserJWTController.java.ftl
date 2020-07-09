@@ -35,6 +35,8 @@ import java.time.format.DateTimeFormatter;
 @RequestMapping("/api")
 public class UserJWTController {
 
+    private final Logger log = LoggerFactory.getLogger(UserJWTController.class);
+
     private final TokenProvider tokenProvider;
 
     private final AuthenticationManager authenticationManager;

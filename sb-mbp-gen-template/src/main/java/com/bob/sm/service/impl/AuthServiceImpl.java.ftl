@@ -55,14 +55,14 @@ public class AuthServiceImpl implements AuthService {
      * @param baseCriteria 过滤条件
      * @param appendParamMap 附加条件
      * @param interceptReturnInfo 拦截返回
-     * @param dragStoreIdFilterStr 药店ID的过滤字符串
+     * @param organizationIdFilterStr 组织架构ID的过滤字符串
      * @param operateList 特例操作
      * @return
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean commonDataAuthorityFilter(BaseCriteria baseCriteria, Map<String, Object> appendParamMap,
-                                             ReturnCommonDTO interceptReturnInfo, String dragStoreIdFilterStr,
+                                             ReturnCommonDTO interceptReturnInfo, String organizationIdFilterStr,
                                              List<InnerAuthFilterOperateDTO> operateList) {
 		// TODO: 以下根据实际情况调整 
         // 操作结果
@@ -85,40 +85,39 @@ public class AuthServiceImpl implements AuthService {
             appendParamMap.put("systemUserDTO", systemUserDTO);
             // 角色分析
             List<SystemRoleDTO> roleList = systemUserDTO.getSystemRoleList();
-            // 是否监管用户
-            boolean isSuperviseRole = false;
-            // 是否药店用户
-            boolean isDragStoreRole = false;
+            // 是否总角色
+            boolean isFatherRole = false;
+            // 是否子角色
+            boolean isChildRole = false;
             for (SystemRoleDTO role : roleList) {
-                if (role.getName() != null && role.getName().startsWith(Constants.ROLE_SUPERVISE_START)) {
-                    isSuperviseRole = true;
+                if (role.getName() != null && role.getName().startsWith(Constants.ROLE_FATHER_START)) {
+                    isFatherRole = true;
                 }
-                if (role.getName() != null && role.getName().startsWith(Constants.ROLE_DRAG_STORE_START)) {
-                    isDragStoreRole = true;
+                if (role.getName() != null && role.getName().startsWith(Constants.ROLE_CHILD_START)) {
+                    isChildRole = true;
                 }
             }
             // 追加前、中、后的特殊操作，如果不覆盖，则中间步骤走正常操作
-            if (isSuperviseRole) {
+            if (isFatherRole) {
                 // xx角色
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_SUPERVISE_START, OPERATE_BEFORE))
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_FATHER_START, OPERATE_BEFORE))
                         .orElse(map -> true).test(appendParamMap);
                 if (!result) {
                     return result;
                 }
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_SUPERVISE_START, OPERATE_OVERWRITE))
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_FATHER_START, OPERATE_OVERWRITE))
                         .orElse(map -> {
                             // 正常操作
-                            // 监管角色能看到指定权限下的数据
+                            // 总角色能看到指定权限下的数据
                             String organizationId = systemUserDTO.getSystemOrganizationId();
                             if (organizationId == null) {
                                 throw new CommonAlertException("当前用户没有配置所属部门");
                             }
-                            // 获取对应的药店ID列表
-                            List<String> dragStoreIdList = systemOrganizationService
-                                    .getCachedDragStoreIdByOrganization(organizationId);
+                            // 获取对应的组织架构ID列表（请根据实际需求修改）
+                            List<String> dragStoreIdList = new ArrayList<>();
                             if (dragStoreIdList != null && dragStoreIdList.size() > 0) {
                                 // 指定药店范围内的数据
-                                MyBeanUtil.setObjectProperty(baseCriteria, dragStoreIdFilterStr + ".in",
+                                MyBeanUtil.setObjectProperty(baseCriteria, organizationIdFilterStr + ".in",
                                         dragStoreIdList);
                             } else {
                                 // 没有对应的药店，返回空数据（此处拦截返回）
@@ -135,42 +134,42 @@ public class AuthServiceImpl implements AuthService {
                                     interceptReturnInfo.setData(null);
                                 }
                             }
-                            appendParamMap.put(Constants.AUTH_FILTER_IS_SUPERVISE, true);
+                            appendParamMap.put(Constants.KEY_ROLE_NAME, Constants.role.ROLE_FATHER.getValue());
                             return true;
                         }).test(appendParamMap);
                 if (!result) {
                     return result;
                 }
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_SUPERVISE_START, OPERATE_AFTER))
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_FATHER_START, OPERATE_AFTER))
                         .orElse(map -> true).test(appendParamMap);
                 if (!result) {
                     return result;
                 }
-            } else if (isDragStoreRole) {
-                // 药店角色
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_DRAG_STORE_START, OPERATE_BEFORE))
+            } else if (isChildRole) {
+                // 子角色
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_CHILD_START, OPERATE_BEFORE))
                         .orElse(map -> true).test(appendParamMap);
                 if (!result) {
                     return result;
                 }
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_DRAG_STORE_START, OPERATE_OVERWRITE))
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_CHILD_START, OPERATE_OVERWRITE))
                         .orElse(map -> {
                             // 正常操作
-                            // 用户所属药店ID
-                            String dragStoreId = systemUserDTO.getRdtsDragStoreId();
-                            if (dragStoreId == null) {
-                                throw new CommonAlertException("当前用户没有配置所属的药店");
+                            // 用户所属组织机构ID
+                            String organizationId = systemUserDTO.getSystemOrganizationId();
+                            if (organizationId == null) {
+                                throw new CommonAlertException("当前用户没有配置所属的组织机构");
                             }
-                            appendParamMap.put(Constants.AUTH_FILTER_IS_DRAG_STORE, true);
-                            appendParamMap.put(Constants.AUTH_FILTER_DRAG_STORE_ID, dragStoreId);
-                            // 药店可看到自己的数据
-                            MyBeanUtil.setObjectProperty(baseCriteria, dragStoreIdFilterStr + ".equals", dragStoreId);
+                            appendParamMap.put(Constants.KEY_ROLE_NAME, Constants.role.ROLE_CHILD.getValue());
+                            appendParamMap.put(Constants.KEY_ORGAN_ID, organizationId);
+                            // 子角色可看到自己的数据
+                            MyBeanUtil.setObjectProperty(baseCriteria, organizationIdFilterStr + ".equals", organizationId);
                             return true;
                         }).test(appendParamMap);
                 if (!result) {
                     return result;
                 }
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_DRAG_STORE_START, OPERATE_AFTER))
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_CHILD_START, OPERATE_AFTER))
                         .orElse(map -> true).test(appendParamMap);
                 if (!result) {
                     return result;
@@ -216,8 +215,8 @@ public class AuthServiceImpl implements AuthService {
                 if (operate.getRoleName() != null) {
                     // 找到指定角色的操作
                     boolean rightRole = false;
-                    if (Constants.ROLE_SUPERVISE_START.equals(roleNameStart)
-                            || Constants.ROLE_DRAG_STORE_START.equals(roleNameStart)) {
+                    if (Constants.ROLE_FATHER_START.equals(roleNameStart)
+                            || Constants.ROLE_CHILD_START.equals(roleNameStart)) {
                         rightRole = operate.getRoleName().startsWith(roleNameStart);
                     } else {
                         if (Constants.ROLE_OTHER.equals(roleNameStart)) {

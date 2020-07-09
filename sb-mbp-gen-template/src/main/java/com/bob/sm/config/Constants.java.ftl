@@ -23,16 +23,23 @@ public final class Constants {
      */
     public static final short EXCEL_THEME_COLOR = IndexedColors.GREY_25_PERCENT.getIndex();
 
+    // ================ 角色 start ========================
     /**
-     * 缓存配置
+     * 总角色起始标识
      */
-    public static final String USERS_BY_LOGIN_CACHE = "usersByLogin";
-
-    /************ ehcache 配置 *************/
+    public static final String ROLE_FATHER_START = "ROLE_FATHER";
     /**
-     * 用户权限
+     * 子角色起始标识
      */
-    public static final String EHCACHE_USER_PERMISSION = "systemUserPermission";
+    public static final String ROLE_CHILD_START = "ROLE_CHILD";
+    /**
+     * 其他角色标识
+     */
+    public static final String ROLE_OTHER = "ROLE_OTHER";
+    /**
+     * 无角色（未登录用户）标识
+     */
+    public static final String ROLE_NONE = "ROLE_NONE";
 	
     // ================ 缓存 start ========================
     /**
@@ -86,17 +93,11 @@ public final class Constants {
      */
     public static final String REGEX_INTEGER_ALL = "^[-\\+]?[\\d]*$";
 
+    // ================ 其他常量 start ========================
     /**
-     * 配置的页面和按钮
+     * 角色名称Key
      */
-    public static final List<PageElementDTO> pageElementList = new ArrayList<>(Arrays.asList(
-            new PageElementDTO("personal", "个人中心", "PAGE", Arrays.asList(
-                    new PageElementDTO("personal_personal", "个人中心", "PAGE", Arrays.asList(
-                            new PageElementDTO("personal_personal_read", "查询", "ELEMENT", null),
-                            new PageElementDTO("personal_personal_update", "修改", "ELEMENT", null)
-                    ))
-            ))
-    ));
+    public static final String KEY_ROLE_NAME = "roleName";
 
     /**
      * 通用Enum接口
@@ -117,9 +118,11 @@ public final class Constants {
             this.value = value;
             this.name = name;
         }
+        @Override
         public Integer getValue(){
             return value;
         }
+        @Override
         public String getName(){
             return name;
         }
@@ -129,16 +132,18 @@ public final class Constants {
      * 系统中的角色
      */
     public enum role implements EnumInter {
-        ROLE_ADMIN("ROLE_ADMIN", "管理员"), ROLE_USER("ROLE_USER", "普通用户");
+        ROLE_ADMIN("ROLE_ADMIN", "管理员"), ROLE_FATHER("ROLE_FATHER", "父角色"), ROLE_CHILD("ROLE_CHILD", "子角色");
         private String value;
         private String name;
         private role(String value, String name) {
             this.value = value;
             this.name = name;
         }
+        @Override
         public String getValue(){
             return value;
         }
+        @Override
         public String getName(){
             return name;
         }
@@ -155,9 +160,11 @@ public final class Constants {
             this.value = value;
             this.name = name;
         }
+        @Override
         public String getValue(){
             return value;
         }
+        @Override
         public String getName(){
             return name;
         }
@@ -197,9 +204,11 @@ public final class Constants {
             this.value = value;
             this.name = name;
         }
+        @Override
         public String getValue(){
             return value;
         }
+        @Override
         public String getName(){
             return name;
         }
@@ -216,9 +225,11 @@ public final class Constants {
             this.value = value;
             this.name = name;
         }
+        @Override
         public String getValue(){
             return value;
         }
+        @Override
         public String getName(){
             return name;
         }
