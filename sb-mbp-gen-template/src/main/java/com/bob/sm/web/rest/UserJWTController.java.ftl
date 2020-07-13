@@ -50,6 +50,12 @@ public class UserJWTController {
         this.authenticationManager = authenticationManager;
     }
 
+    /**
+     * 登录认证
+     * @param loginVM 用户名和密码
+     * @param bindingResult 验证（AOP处理时需要用到该参数，不得删除）
+     * @return
+     */
     @PostMapping("/authenticate")
     public ResponseEntity<ReturnCommonDTO<JWTToken>> authorize(@Valid @RequestBody LoginVM loginVM, BindingResult bindingResult) {
         // 验证用户名和密码

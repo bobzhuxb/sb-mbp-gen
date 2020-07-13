@@ -5,7 +5,7 @@ import ${packageName}.dto.SystemRoleDTO;
 import ${packageName}.dto.SystemUserDTO;
 import ${packageName}.dto.criteria.BaseCriteria;
 import ${packageName}.dto.help.InnerAuthFilterOperateDTO;
-import ${packageName}.dto.help.MbpPage;
+import ${packageName}.dto.help.InnerUserInfoDetailDTO;
 import ${packageName}.dto.help.ReturnCommonDTO;
 import ${packageName}.service.AuthService;
 import ${packageName}.service.CommonUserService;
@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -51,6 +50,39 @@ public class AuthServiceImpl implements AuthService {
     private CommonUserService commonUserService;
 
     /**
+     * 获取当前用户明细及角色分析信息
+     * @return 用户信息
+     */
+    @Override
+    public InnerUserInfoDetailDTO commonGetCurrentUser() {
+        // 用户信息明细返回
+        InnerUserInfoDetailDTO userInfoDetailDTO = new InnerUserInfoDetailDTO();
+        // 获取当前用户信息
+        SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
+        if (systemUserDTO == null) {
+            return null;
+        }
+        // 角色分析
+        List<SystemRoleDTO> roleList = systemUserDTO.getSystemRoleList();
+        // 是否局端人员
+        boolean isBureauRole = false;
+        // 是否街道人员
+        boolean isStreetRole = false;
+        for (SystemRoleDTO role : roleList) {
+            if (role.getName() != null && role.getName().startsWith(Constants.ROLE_BUREAU_START)) {
+                isBureauRole = true;
+            }
+            if (role.getName() != null && role.getName().startsWith(Constants.ROLE_STREET_START)) {
+                isStreetRole = true;
+            }
+        }
+        userInfoDetailDTO.setSystemUserDTO(systemUserDTO);
+        userInfoDetailDTO.setBureauRole(isBureauRole);
+        userInfoDetailDTO.setStreetRole(isStreetRole);
+        return userInfoDetailDTO;
+    }
+
+    /**
      * 共通的权限过滤
      * @param baseCriteria 过滤条件
      * @param appendParamMap 附加条件
@@ -64,13 +96,12 @@ public class AuthServiceImpl implements AuthService {
     public boolean commonDataAuthorityFilter(BaseCriteria baseCriteria, Map<String, Object> appendParamMap,
                                              ReturnCommonDTO interceptReturnInfo, String organizationIdFilterStr,
                                              List<InnerAuthFilterOperateDTO> operateList) {
-		// TODO: 以下根据实际情况调整 
         // 操作结果
         boolean result = false;
         if (!Constants.yesNo.YES.getValue().equals(baseCriteria.getAuthorityPass())) {
             // 之前未验证过权限的，才需要初次验证权限
-            SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
-            if (systemUserDTO == null) {
+            InnerUserInfoDetailDTO userInfoDetailDTO = commonGetCurrentUser();
+            if (userInfoDetailDTO == null) {
                 // 没有登录，没有权限查看数据
                 result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_NONE, OPERATE_OVERWRITE))
                         .orElse(map -> {
@@ -82,94 +113,60 @@ public class AuthServiceImpl implements AuthService {
                 }
             }
             // 追加结果systemUserDTO
-            appendParamMap.put("systemUserDTO", systemUserDTO);
-            // 角色分析
-            List<SystemRoleDTO> roleList = systemUserDTO.getSystemRoleList();
-            // 是否总角色
-            boolean isFatherRole = false;
-            // 是否子角色
-            boolean isChildRole = false;
-            for (SystemRoleDTO role : roleList) {
-                if (role.getName() != null && role.getName().startsWith(Constants.ROLE_FATHER_START)) {
-                    isFatherRole = true;
-                }
-                if (role.getName() != null && role.getName().startsWith(Constants.ROLE_CHILD_START)) {
-                    isChildRole = true;
-                }
+            SystemUserDTO systemUserDTO = userInfoDetailDTO.getSystemUserDTO();
+            appendParamMap.put(Constants.appendParamMapKey.USER_INFO_DETAIL.getValue(), userInfoDetailDTO);
+            // 所属分局ID（分局ID为1表示区局，可以查看所有数据，其他只能查看自己分局的数据）
+            String organId = systemUserDTO.getSystemOrganizationId();
+            if (organId == null) {
+                throw new CommonAlertException("当前用户没有配置所属分局");
             }
             // 追加前、中、后的特殊操作，如果不覆盖，则中间步骤走正常操作
-            if (isFatherRole) {
-                // xx角色
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_FATHER_START, OPERATE_BEFORE))
+            if (userInfoDetailDTO.getBureauRole()) {
+                // 局端角色
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_BUREAU_START, OPERATE_BEFORE))
                         .orElse(map -> true).test(appendParamMap);
                 if (!result) {
                     return result;
                 }
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_FATHER_START, OPERATE_OVERWRITE))
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_BUREAU_START, OPERATE_OVERWRITE))
                         .orElse(map -> {
                             // 正常操作
-                            // 总角色能看到指定权限下的数据
-                            String organizationId = systemUserDTO.getSystemOrganizationId();
-                            if (organizationId == null) {
-                                throw new CommonAlertException("当前用户没有配置所属部门");
+                            if (!"1".equals(organId)) {
+                                // 除了区局（organId=1）可查看全部数据外，其他只能查看自己分局的数据
+                                MyBeanUtil.setObjectProperty(baseCriteria, organizationIdFilterStr + ".equals", organId);
                             }
                             // 获取对应的组织架构ID列表（请根据实际需求修改）
-                            List<String> dragStoreIdList = new ArrayList<>();
-                            if (dragStoreIdList != null && dragStoreIdList.size() > 0) {
-                                // 指定药店范围内的数据
-                                MyBeanUtil.setObjectProperty(baseCriteria, organizationIdFilterStr + ".in",
-                                        dragStoreIdList);
-                            } else {
-                                // 没有对应的药店，返回空数据（此处拦截返回）
-                                interceptReturnInfo.setResultCode(Constants.commonReturnStatus.SUCCESS.getValue());
-                                if (Constants.returnDataType.OBJECT.getValue().equals(interceptReturnInfo.getDataType())) {
-                                    interceptReturnInfo.setData(new Object());
-                                } else if (Constants.returnDataType.LIST.getValue().equals(interceptReturnInfo.getDataType())) {
-                                    interceptReturnInfo.setData(new ArrayList());
-                                } else if (Constants.returnDataType.PAGE.getValue().equals(interceptReturnInfo.getDataType())) {
-                                    interceptReturnInfo.setData(new MbpPage() {});
-                                } else if (Constants.returnDataType.INTEGER.getValue().equals(interceptReturnInfo.getDataType())) {
-                                    interceptReturnInfo.setData(0);
-                                } else {
-                                    interceptReturnInfo.setData(null);
-                                }
-                            }
-                            appendParamMap.put(Constants.KEY_ROLE_NAME, Constants.role.ROLE_FATHER.getValue());
+                            appendParamMap.put(Constants.appendParamMapKey.ROLE_NAME.getValue(), Constants.role.ROLE_BUREAU.getValue());
                             return true;
                         }).test(appendParamMap);
                 if (!result) {
                     return result;
                 }
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_FATHER_START, OPERATE_AFTER))
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_BUREAU_START, OPERATE_AFTER))
                         .orElse(map -> true).test(appendParamMap);
                 if (!result) {
                     return result;
                 }
-            } else if (isChildRole) {
-                // 子角色
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_CHILD_START, OPERATE_BEFORE))
+            } else if (userInfoDetailDTO.getStreetRole()) {
+                // 街道人员角色
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_STREET_START, OPERATE_BEFORE))
                         .orElse(map -> true).test(appendParamMap);
                 if (!result) {
                     return result;
                 }
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_CHILD_START, OPERATE_OVERWRITE))
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_STREET_START, OPERATE_OVERWRITE))
                         .orElse(map -> {
                             // 正常操作
-                            // 用户所属组织机构ID
-                            String organizationId = systemUserDTO.getSystemOrganizationId();
-                            if (organizationId == null) {
-                                throw new CommonAlertException("当前用户没有配置所属的组织机构");
+                            if (!"1".equals(organId)) {
+                                // 除了区局（organId=1）可查看全部数据外，其他只能查看自己分局的数据
+                                MyBeanUtil.setObjectProperty(baseCriteria, organizationIdFilterStr + ".equals", organId);
                             }
-                            appendParamMap.put(Constants.KEY_ROLE_NAME, Constants.role.ROLE_CHILD.getValue());
-                            appendParamMap.put(Constants.KEY_ORGAN_ID, organizationId);
-                            // 子角色可看到自己的数据
-                            MyBeanUtil.setObjectProperty(baseCriteria, organizationIdFilterStr + ".equals", organizationId);
                             return true;
                         }).test(appendParamMap);
                 if (!result) {
                     return result;
                 }
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_CHILD_START, OPERATE_AFTER))
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_STREET_START, OPERATE_AFTER))
                         .orElse(map -> true).test(appendParamMap);
                 if (!result) {
                     return result;
@@ -215,8 +212,8 @@ public class AuthServiceImpl implements AuthService {
                 if (operate.getRoleName() != null) {
                     // 找到指定角色的操作
                     boolean rightRole = false;
-                    if (Constants.ROLE_FATHER_START.equals(roleNameStart)
-                            || Constants.ROLE_CHILD_START.equals(roleNameStart)) {
+                    if (Constants.ROLE_BUREAU_START.equals(roleNameStart)
+                            || Constants.ROLE_STREET_START.equals(roleNameStart)) {
                         rightRole = operate.getRoleName().startsWith(roleNameStart);
                     } else {
                         if (Constants.ROLE_OTHER.equals(roleNameStart)) {

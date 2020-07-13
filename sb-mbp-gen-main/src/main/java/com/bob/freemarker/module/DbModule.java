@@ -215,7 +215,7 @@ public class DbModule {
                             // 数据库列的默认值设定
                             String defaultAppend = appendDefaultValue(defaultColumnValue, fieldDTO);
                             if (defaultAppend != null) {
-                                createSql += " default " + defaultAppend;
+                                createSql += " not null default " + defaultAppend;
                             }
                         }
                         if (i < entityDTO.getFieldList().size() - 1) {
@@ -337,7 +337,7 @@ public class DbModule {
                                         + "` char(50) comment '" + relationComment + "'";
                                 // 数据库列的默认值设定
                                 if ("notnull".equals(defaultColumnValue)) {
-                                    alterColumnStr += " default ''";
+                                    alterColumnStr += " not null default ''";
                                 }
                                 // 为整表改表做准备
                                 alterColumnSb.add(alterColumnStr);
@@ -362,7 +362,7 @@ public class DbModule {
                                                 + relationColumnName + "` char(50) comment '" + relationComment + "'";
                                         // 数据库列的默认值设定
                                         if ("notnull".equals(defaultColumnValue)) {
-                                            alterColumnStr += " default ''";
+                                            alterColumnStr += " not null default ''";
                                         }
                                         // 为整表改表做准备
                                         alterColumnSb.add(alterColumnStr);

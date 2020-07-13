@@ -94,10 +94,6 @@ public final class Constants {
     public static final String REGEX_INTEGER_ALL = "^[-\\+]?[\\d]*$";
 
     // ================ 其他常量 start ========================
-    /**
-     * 角色名称Key
-     */
-    public static final String KEY_ROLE_NAME = "roleName";
 
     /**
      * 通用Enum接口
@@ -222,6 +218,27 @@ public final class Constants {
         private String value;
         private String name;
         private cascadeDeleteType(String value, String name) {
+            this.value = value;
+            this.name = name;
+        }
+        @Override
+        public String getValue(){
+            return value;
+        }
+        @Override
+        public String getName(){
+            return name;
+        }
+    }
+
+    /**
+     * appendParamMap的Key
+     */
+    public enum appendParamMapKey implements EnumInter {
+        USER_INFO_DETAIL("userInfoDetailDTO", "当前用户明细信息"), ROLE_NAME("roleName", "角色标识");
+        private String value;
+        private String name;
+        private appendParamMapKey(String value, String name) {
             this.value = value;
             this.name = name;
         }

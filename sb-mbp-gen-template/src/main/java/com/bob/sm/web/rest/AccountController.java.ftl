@@ -21,6 +21,7 @@ import java.util.Optional;
 
 /**
  * 注意规范：新增的方法以create开头，修改的方法以update开头，删除的方法以delete开头，查询的方法以get开头
+ * AOP处理时使用到了bindingResult，所有的bindingResult参数不得删除
  * 账户Controller
  * @author Bob
  */
