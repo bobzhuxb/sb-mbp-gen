@@ -86,12 +86,12 @@ public class DomainUserDetailsService implements UserDetailsService {
     }
 
     private org.springframework.security.core.userdetails.User createSpringSecurityUser(String loginWithPrefix, SystemUserDTO userDTO) {
-        List<SystemUserRoleDTO> userRoleList = userDTO.getSystemUserRoleList();
+        List<SystemRoleDTO> roleList = userDTO.getSystemRoleList();
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        if (userRoleList != null && userRoleList.size() > 0) {
-            List<GrantedAuthority> grantedRoleNames = userRoleList.stream().map(
-                    systemUserRoleDTO ->
-                            new SimpleGrantedAuthority(systemUserRoleDTO.getSystemRole().getName()))
+        if (roleList != null && roleList.size() > 0) {
+            List<GrantedAuthority> grantedRoleNames = roleList.stream().map(
+                    systemRoleDTO ->
+                            new SimpleGrantedAuthority(systemRoleDTO.getName()))
                     .collect(Collectors.toList());
             grantedAuthorities.addAll(grantedRoleNames);
         }

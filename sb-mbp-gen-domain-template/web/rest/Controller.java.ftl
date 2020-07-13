@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +51,6 @@ public class ${eentityName}Controller {
      * @return 结果返回码和消息
      */
     @PostMapping("/${entityUrl}")
-    @PreAuthorize("hasCreate('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO> create${eentityName}(@IdNullValidate(mustNull = true)
         @RequestBody @Validated(value = {ValidateCreateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
 		ReturnCommonDTO resultDTO = ${entityName}Service.baseSave(DOMAIN_NAME, ${entityName}DTO, null);
@@ -66,7 +64,6 @@ public class ${eentityName}Controller {
      * @return 结果返回码和消息
      */
     @PutMapping("/${entityUrl}")
-    @PreAuthorize("hasUpdate('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO> update${eentityName}(@IdNullValidate(mustNotNull = true)
         @RequestBody @Validated(value = {ValidateUpdateGroup.class}) ${eentityName}DTO ${entityName}DTO, BindingResult bindingResult) {
 		ReturnCommonDTO resultDTO = ${entityName}Service.baseSave(DOMAIN_NAME, ${entityName}DTO, null);
@@ -79,7 +76,6 @@ public class ${eentityName}Controller {
      * @return 结果返回码和消息
      */
     @DeleteMapping("/${entityUrl}/{id}")
-    @PreAuthorize("hasDelete('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO> delete${eentityName}(@PathVariable String id) {
         ReturnCommonDTO resultDTO = ${entityName}Service.baseDeleteById(DOMAIN_NAME, id, null);
         return ResponseEntity.ok().headers(null).body(resultDTO);
@@ -91,7 +87,6 @@ public class ${eentityName}Controller {
      * @return 结果返回码和消息
      */
     @DeleteMapping("/${entityUrl}")
-    @PreAuthorize("hasDelete('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO> delete${eentityName}s(@RequestBody List<String> idList) {
         ReturnCommonDTO resultDTO = ${entityName}Service.baseDeleteByIdList(DOMAIN_NAME, idList, null);
         return ResponseEntity.ok().headers(null).body(resultDTO);
@@ -104,7 +99,6 @@ public class ${eentityName}Controller {
      * @return 使用ResponseEntity封装的单条${entityComment}数据
      */
     @GetMapping("/${entityUrl}/{primaryId}")
-    @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}(
             @PathVariable String primaryId, ${eentityName}Criteria criteria) {
         ReturnCommonDTO<${eentityName}DTO> resultDTO = ${entityName}Service.baseFindOne(DOMAIN_NAME, primaryId, criteria, null);
@@ -117,7 +111,6 @@ public class ${eentityName}Controller {
      * @return 使用ResponseEntity封装的多条${entityComment}数据
      */
     @GetMapping("/${entityUrl}-all")
-    @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<List<${eentityName}DTO>>> getAll${eentityName}s(
             ${eentityName}Criteria criteria) {
         ReturnCommonDTO<List<${eentityName}DTO>> resultDTO = ${entityName}Service.baseFindAll(DOMAIN_NAME, criteria, null);
@@ -130,7 +123,6 @@ public class ${eentityName}Controller {
      * @return 使用ResponseEntity封装的单条${entityComment}数据
      */
     @GetMapping("/${entityUrl}-one")
-    @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<${eentityName}DTO>> get${eentityName}One(
             ${eentityName}Criteria criteria) {
         criteria.setLimit(1);
@@ -146,7 +138,6 @@ public class ${eentityName}Controller {
      * @return 使用ResponseEntity封装的分页${entityComment}数据
      */
     @GetMapping("/${entityUrl}")
-    @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<IPage<${eentityName}DTO>>> getPage${eentityName}s(
             ${eentityName}Criteria criteria, MbpPage pageable) {
         ReturnCommonDTO<IPage<${eentityName}DTO>> resultDTO = ${entityName}Service.baseFindPage(DOMAIN_NAME, criteria, pageable, null);
@@ -159,7 +150,6 @@ public class ${eentityName}Controller {
      * @return 使用ResponseEntity封装的${entityComment}数量
      */
     @GetMapping("/${entityUrl}-count")
-    @PreAuthorize("hasRead('${lowerName}')")
     public ResponseEntity<ReturnCommonDTO<Integer>> get${eentityName}Count(${eentityName}Criteria criteria) {
         ReturnCommonDTO<Integer> resultDTO = ${entityName}Service.baseFindCount(DOMAIN_NAME, criteria, null);
         return ResponseEntity.ok().headers(null).body(resultDTO);
