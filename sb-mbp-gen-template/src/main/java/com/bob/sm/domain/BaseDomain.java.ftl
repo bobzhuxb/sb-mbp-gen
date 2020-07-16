@@ -61,6 +61,6 @@ public class BaseDomain implements Serializable {
     // 数据库列名
     public static final String _insertUserId = "insert_user_id";    // 创建者用户ID
     public static final String _operateUserId = "operate_user_id";    // 最后更新者用户ID
-    public static final String _insertTime = "insertTime";    // 创建时间
-    public static final String _updateTime = "updateTime";    // 最后更新时间
+    public static final String _insertTime = "insert_time";    // 创建时间
+    public static final String _updateTime = "update_time";    // 最后更新时间
 }

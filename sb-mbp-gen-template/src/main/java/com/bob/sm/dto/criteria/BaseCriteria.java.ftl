@@ -45,6 +45,8 @@ public class BaseCriteria {
     @RestFieldAllow(allowSet = false)
     private Integer authorityPass;      // 权限是否已验证过（1：是  2或不填：否）
 
+    private String interNo;             // 查询的interNo条件
+
     public StringFilter getId() {
         return id;
     }
@@ -171,5 +173,13 @@ public class BaseCriteria {
 
     public void setAuthorityPass(Integer authorityPass) {
         this.authorityPass = authorityPass;
+    }
+
+    public String getInterNo() {
+        return interNo;
+    }
+
+    public void setInterNo(String interNo) {
+        this.interNo = interNo;
     }
 }

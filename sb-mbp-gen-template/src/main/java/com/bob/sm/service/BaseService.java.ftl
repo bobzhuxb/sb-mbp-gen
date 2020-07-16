@@ -78,10 +78,10 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
 
     /**
      * 单条删除执行完毕之后，在事务外做的非事务操作
-     * @param id 删除的数据的主键ID
+     * @param idList 删除的数据的主键ID列表
      * @param appendMap 附加的参数（前面处理过的结果）
      */
-    default void baseDoAfterDeleteByIdOutTrans(String id, Map<String, Object> appendMap) {
+    default void baseDoAfterDeleteOutTrans(List<String> idList, Map<String, Object> appendMap) {
         // TODO: 单条删除之后的外部非事务操作写在这里（由具体实现覆盖）
     }
 
@@ -95,12 +95,28 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     }
 
     /**
-     * 删除验证（具体子类实现）
+     * 整体删除验证（具体子类实现）
+     * @param appendMap 附加的传递参数
+     */
+    default void baseDeleteValidatorAll(Map<String, Object> appendMap) {
+        // TODO: 删除验证写在这里（由具体实现覆盖）
+    }
+
+    /**
+     * 单个删除验证（具体子类实现）
      * @param domain 数据库中查询出的实体数据内容
      * @param appendMap 附加的传递参数
      */
     default void baseDeleteValidator(T domain, Map<String, Object> appendMap) {
         // TODO: 删除验证写在这里（由具体实现覆盖）
+    }
+
+    /**
+     * 删除最终返回前的操作（具体子类实现）
+     * @param appendMap 附加的参数（前面处理过的结果）
+     */
+    default void baseDeleteBeforeReturn(Map<String, Object> appendMap) {
+        // TODO: 删除之后的操作写在这里（由具体实现覆盖）
     }
 
     /**
@@ -1154,7 +1170,23 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             appendMap = new HashMap<>();
         }
         ReturnCommonDTO result = ((BaseService)AopContext.currentProxy()).baseDeleteByIdTrans(entityTypeName, id, appendMap);
-        baseDoAfterDeleteByIdOutTrans(id, appendMap);
+        baseDoAfterDeleteOutTrans(Arrays.asList(id), appendMap);
+        return result;
+    }
+
+    /**
+     * 根据ID删除数据
+     * @param entityTypeName 实体类型名
+     * @param idList 主键ID列表
+     * @param appendMap 附加的传递参数
+     * @return
+     */
+    default ReturnCommonDTO baseDeleteByIdList(String entityTypeName, List<String> idList, Map<String, Object> appendMap) {
+        if (appendMap == null) {
+            appendMap = new HashMap<>();
+        }
+        ReturnCommonDTO result = ((BaseService)AopContext.currentProxy()).baseDeleteByIdListTrans(entityTypeName, idList, appendMap);
+        baseDoAfterDeleteOutTrans(idList, appendMap);
         return result;
     }
 
@@ -1171,8 +1203,10 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         if (appendMap == null) {
             appendMap = new HashMap<>();
         }
-        return ((BaseService)AopContext.currentProxy()).baseDeleteByMapCascade(
+        ReturnCommonDTO rtn = ((BaseService)AopContext.currentProxy()).baseDeleteByMapCascade(
                 entityTypeName, new HashMap<String, Object>() {{put("id", id);}}, appendMap);
+        ((BaseService)AopContext.currentProxy()).baseDeleteBeforeReturn(appendMap);
+        return rtn;
     }
 
     /**
@@ -1184,7 +1218,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * 注意：此处不要抛出声明式异常，请封装后抛出CommonException异常或其子异常，以保证事物的一致性
      */
     @Transactional(rollbackFor = Exception.class)
-    default ReturnCommonDTO baseDeleteByIdList(String entityTypeName, List<String> idList, Map<String, Object> appendMap) {
+    default ReturnCommonDTO baseDeleteByIdListTrans(String entityTypeName, List<String> idList, Map<String, Object> appendMap) {
         if (appendMap == null) {
             appendMap = new HashMap<>();
         }
@@ -1195,6 +1229,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 throw new CommonAlertException(returnCommonDTO.getErrMsg());
             }
         }
+        ((BaseService)AopContext.currentProxy()).baseDeleteBeforeReturn(appendMap);
         return new ReturnCommonDTO();
     }
 
@@ -1209,6 +1244,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     @Transactional(rollbackFor = Exception.class)
     default ReturnCommonDTO baseDeleteByMapCascade(String entityTypeName, Map<String, Object> columnMap,
                                                    Map<String, Object> appendMap) {
+        ((BaseService)AopContext.currentProxy()).baseDeleteValidatorAll(appendMap);
         // 删除级联实体或置空关联字段或禁止删除
         listByMap(columnMap).forEach(domain -> {
             // 删除验证（例如权限验证等）
