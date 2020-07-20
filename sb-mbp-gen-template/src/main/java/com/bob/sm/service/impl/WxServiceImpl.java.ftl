@@ -1,7 +1,7 @@
 package ${packageName}.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import ${packageName}.util.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import ${packageName}.config.Constants;
@@ -13,14 +13,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
- * 微信相关处理类
+ * 微信相关业务
  * @author Bob
  */
 @Service
@@ -36,28 +33,34 @@ public class WxServiceImpl implements WxService {
      * @param wxOpenIdParamDTO 微信验证标识
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public WxLoginStatusDTO getOpenIdAndLogin(ParamWxOpenIdDTO wxOpenIdParamDTO) {
-        String nowTimeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         // 获取请求URL
-        String requestUrl = Constants.WXAPP_OPEN_ID_URL + "?appid=" + ymlConfig.getWxAppId()
-                + "&secret=" + ymlConfig.getWxAppSecret()
-                + "&js_code=" + wxOpenIdParamDTO.getJsCode().trim() + "&grant_type=" + Constants.WXAPP_GRANT_TYPE;
+        String requestUrl = ymlConfig.getMsWxUrl() + Constants.MS_WXAPP_OPEN_ID_URL + "?js_code=" + wxOpenIdParamDTO.getJsCode().trim();
         Map<String, String> headerMap = new HashMap<>();
         headerMap.put("content-type", "application/json");
+        headerMap.put("token", ymlConfig.getMsWxVerifyToken());
         String httpResultJSONStr = null;
+        // 微服务调用
         try {
             httpResultJSONStr = HttpUtil.doGet(requestUrl, headerMap);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            // 返回数据
+            // 错误返回
             WxLoginStatusDTO loginStatusDTO = new WxLoginStatusDTO();
             loginStatusDTO.setResultCode(Constants.wxLoginResultStatus.WX_SERVER_NOT_CONNECT.getValue());
-            loginStatusDTO.setErrMsg("无法连接微信服务器");
+            loginStatusDTO.setErrMsg("无法连接服务器");
             return loginStatusDTO;
         }
-        WxOpenIdResultDTO wxResultDTO = JSON.parseObject(httpResultJSONStr, WxOpenIdResultDTO.class);
-        String sessionKey = wxResultDTO.getSession_key();
+        WxMsResultDTO wxMsResultDTO = JSON.parseObject(httpResultJSONStr, WxMsResultDTO.class);
+        if (wxMsResultDTO.getCode() != 0) {
+            // 错误返回
+            log.error("微信（微服务）验证失败（code：" + wxMsResultDTO.getCode() + "，info：" + wxMsResultDTO.getMsg() + "）");
+            WxLoginStatusDTO loginStatusDTO = new WxLoginStatusDTO();
+            loginStatusDTO.setResultCode(Constants.wxLoginResultStatus.WX_SERVER_NOT_CONNECT.getValue());
+            loginStatusDTO.setErrMsg("验证失败：" + wxMsResultDTO.getMsg());
+            return loginStatusDTO;
+        }
+        WxOpenIdResultDTO wxResultDTO = ((JSONObject) wxMsResultDTO.getData()).toJavaObject(WxOpenIdResultDTO.class);
         String openId = wxResultDTO.getOpenid();
 
         String token = null;
@@ -67,7 +70,7 @@ public class WxServiceImpl implements WxService {
             // TODO: 微信验证成功，新增或更新用户
         } else {
             // 返回数据
-            log.info("微信验证失败（code：" + wxResultDTO.getErrcode() + "，info：" + wxResultDTO.getErrmsg() + "）");
+            log.error("微信验证失败（code：" + wxResultDTO.getErrcode() + "，info：" + wxResultDTO.getErrmsg() + "）");
             WxLoginStatusDTO loginStatusDTO = new WxLoginStatusDTO();
             loginStatusDTO.setResultCode(Constants.wxLoginResultStatus.VERIFY_FAIL.getValue());
             loginStatusDTO.setErrMsg("验证失败");
@@ -84,87 +87,19 @@ public class WxServiceImpl implements WxService {
     }
 
     /**
-     * 单次获取并刷新ACCESS_TOKEN
-     * @return
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean refreshAccessTokenSingle() {
-        // 获取请求URL
-        String requestUrl = Constants.WXAPP_GET_TOKEN_URL + "?grant_type=client_credential&appid="
-                + ymlConfig.getWxAppId() + "&secret=" + ymlConfig.getWxAppSecret();
-        Map<String, String> headerMap = new HashMap<>();
-        headerMap.put("content-type", "application/json");
-        String httpResultJSONStr = null;
-        try {
-            httpResultJSONStr = HttpUtil.doGet(requestUrl, headerMap);
-        } catch (Exception e) {
-            // 获取数据异常
-            log.error(e.getMessage(), e);
-            return false;
-        }
-        WxAccessTokenResultDTO wxAccessTokenDTO = JSON.parseObject(httpResultJSONStr, WxAccessTokenResultDTO.class);
-        if (wxAccessTokenDTO.getErrcode() != null && !"0".equals(wxAccessTokenDTO.getErrcode())) {
-            log.error(wxAccessTokenDTO.getErrmsg());
-            return false;
-        }
-        String accessToken = wxAccessTokenDTO.getAccess_token();
-        String expiresIn = wxAccessTokenDTO.getExpires_in();
-        log.info("ACCESS_TOKEN获取成功：" + accessToken + "。过期时间：" + expiresIn);
-        // 更新ACCESS_TOKEN
-        Constants.WX_ACCESS_TOKEN_NOW = accessToken;
-        return true;
-    }
-
-    /**
-     * 多次刷新ACCESS_TOKEN（获取失败时才再次获取）
-     * @param totalTimes 总次数
-     * @return
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean refreshAccessToken(int totalTimes) {
-        boolean result = false;
-        int times = 0;
-        while (true) {
-            times++;
-            try {
-                // 微信公众号的ACCESS_TOKEN刷新任务
-                result = refreshAccessTokenSingle();
-            } catch (Exception e) {
-                result = false;
-            }
-            if (!result && times < totalTimes) {
-                // 1分钟之后重新获取（最多10次）
-                try {
-                    Thread.sleep(60 * 1000);
-                } catch (InterruptedException e) {
-                    // 不做任何处理
-                }
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
-    /**
      * 根据当前的ACCESS_TOKEN获取ticket
      * @param publicPageUrl 当前网页URL
      * @return
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public ReturnCommonDTO<ReturnWxJsapiInfoDTO> getJsapiInfoByCurrentAccessToken(String publicPageUrl) {
-        if ("".equals(Constants.WX_ACCESS_TOKEN_NOW)) {
-            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "等待启动");
-        }
+    public ReturnCommonDTO<ReturnWxJsapiInfoDTO> getJsapiInfo(String publicPageUrl) {
         // 获取请求URL
-        String requestUrl = Constants.WXAPP_GET_TICKET_URL + "?access_token=" + Constants.WX_ACCESS_TOKEN_NOW
-                + "&type=jsapi";
+        String requestUrl = ymlConfig.getMsWxUrl() + Constants.MS_WXAPP_JSAPI_URL;
         Map<String, String> headerMap = new HashMap<>();
         headerMap.put("content-type", "application/json");
+        headerMap.put("token", ymlConfig.getMsWxVerifyToken());
         String httpResultJSONStr = null;
+        // 微服务调用
         try {
             httpResultJSONStr = HttpUtil.doGet(requestUrl, headerMap);
         } catch (Exception e) {
@@ -172,13 +107,18 @@ public class WxServiceImpl implements WxService {
             log.error(e.getMessage(), e);
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "获取ticket异常");
         }
-        WxTicketResultDTO wxTicketResultDTO = JSON.parseObject(httpResultJSONStr, WxTicketResultDTO.class);
+        WxMsResultDTO wxMsResultDTO = JSON.parseObject(httpResultJSONStr, WxMsResultDTO.class);
+        if (wxMsResultDTO.getCode() != 0) {
+            // 错误返回
+            log.error("微信（微服务）获取ticket失败（code：" + wxMsResultDTO.getCode() + "，info：" + wxMsResultDTO.getMsg() + "）");
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "获取ticket失败");
+        }
+        WxTicketResultDTO wxTicketResultDTO = ((JSONObject) wxMsResultDTO.getData()).toJavaObject(WxTicketResultDTO.class);
         if (wxTicketResultDTO.getErrcode() != null && !"0".equals(wxTicketResultDTO.getErrcode())) {
             log.error(wxTicketResultDTO.getErrmsg());
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "获取ticket失败");
         }
         String ticket = wxTicketResultDTO.getTicket();
-        String expiresIn = wxTicketResultDTO.getExpires_in();
         String nonceStr = MyStringUtil.generateNonceStr();
         String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
         // 签名
@@ -202,22 +142,28 @@ public class WxServiceImpl implements WxService {
      * @return
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<ReturnMapAddressDTO> getAddressByLogLat(ParamLogLatDTO logLatDTO) {
         // 获取请求URL
-        String requestUrl = Constants.TXMAP_REVERSE_ADDRESS_PARSE_URL + "?key=" + ymlConfig.getTxMapKey()
-                + "&location=" + logLatDTO.getLatitude() + "," + logLatDTO.getLongitude();
+        String requestUrl = ymlConfig.getMsWxUrl() + Constants.MS_TXMAP_REVERSE_ADDRESS_URL
+                + "?latitude=" + logLatDTO.getLatitude() + "&longitude=" + logLatDTO.getLongitude();
         Map<String, String> headerMap = new HashMap<>();
         headerMap.put("content-type", "application/json");
+        headerMap.put("token", ymlConfig.getMsWxVerifyToken());
         String httpResultJSONStr = null;
         try {
             httpResultJSONStr = HttpUtil.doGet(requestUrl, headerMap);
         } catch (Exception e) {
             // 获取数据异常
             log.error(e.getMessage(), e);
-            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "获取ticket异常");
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "获取address异常");
         }
-        TxMapAddressReturnDTO txMapAddressReturnDTO = JSON.parseObject(httpResultJSONStr, TxMapAddressReturnDTO.class);
+        WxMsResultDTO wxMsResultDTO = JSON.parseObject(httpResultJSONStr, WxMsResultDTO.class);
+        if (wxMsResultDTO.getCode() != 0) {
+            // 错误返回
+            log.error("微信（微服务）逆地址解析失败（code：" + wxMsResultDTO.getCode() + "，info：" + wxMsResultDTO.getMsg() + "）");
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "解析失败");
+        }
+        TxMapAddressReturnDTO txMapAddressReturnDTO = ((JSONObject) wxMsResultDTO.getData()).toJavaObject(TxMapAddressReturnDTO.class);
         if (txMapAddressReturnDTO.getStatus() == null || txMapAddressReturnDTO.getStatus() != 0) {
             log.error("腾讯逆地址解析失败：code=" + txMapAddressReturnDTO.getStatus() + "，message="
                     + txMapAddressReturnDTO.getMessage());
@@ -237,7 +183,6 @@ public class WxServiceImpl implements WxService {
      * @return
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<IPage<ReturnMapSearchResultDTO>> getAddressByKeyword(
             ParamMapKeywordSearchDTO mapKeywordSearchDTO) {
         // 默认在苏州查找
@@ -245,20 +190,27 @@ public class WxServiceImpl implements WxService {
             mapKeywordSearchDTO.setRegion("苏州");
         }
         // 获取请求URL
-        String requestUrl = Constants.TXMAP_KEYWORD_SEARCH_URL + "?key=" + ymlConfig.getTxMapKey()
-                + "&keyword=" + mapKeywordSearchDTO.getKeyword() + "&region=" + mapKeywordSearchDTO.getRegion()
+        String requestUrl = ymlConfig.getMsWxUrl() + Constants.MS_TXMAP_KEYWORD_SEARCH_URL
+                + "?keyword=" + mapKeywordSearchDTO.getKeyword() + "&region=" + mapKeywordSearchDTO.getRegion()
                 + "&page_index=" + mapKeywordSearchDTO.getCurrent() + "&page_size=" + mapKeywordSearchDTO.getSize();
         Map<String, String> headerMap = new HashMap<>();
         headerMap.put("content-type", "application/json");
+        headerMap.put("token", ymlConfig.getMsWxVerifyToken());
         String httpResultJSONStr = null;
         try {
             httpResultJSONStr = HttpUtil.doGet(requestUrl, headerMap);
         } catch (Exception e) {
             // 获取数据异常
             log.error(e.getMessage(), e);
-            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "获取ticket异常");
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "获取经纬度异常");
         }
-        TxMapSearchReturnDTO txMapSearchReturnDTO = JSON.parseObject(httpResultJSONStr, TxMapSearchReturnDTO.class);
+        WxMsResultDTO wxMsResultDTO = JSON.parseObject(httpResultJSONStr, WxMsResultDTO.class);
+        if (wxMsResultDTO.getCode() != 0) {
+            // 错误返回
+            log.error("微信（微服务）地址解析失败（code：" + wxMsResultDTO.getCode() + "，info：" + wxMsResultDTO.getMsg() + "）");
+            return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "解析失败");
+        }
+        TxMapSearchReturnDTO txMapSearchReturnDTO = ((JSONObject) wxMsResultDTO.getData()).toJavaObject(TxMapSearchReturnDTO.class);
         if (txMapSearchReturnDTO.getStatus() == null || txMapSearchReturnDTO.getStatus() != 0) {
             log.error("腾讯地图关键字查询失败：code=" + txMapSearchReturnDTO.getStatus() + "，message="
                     + txMapSearchReturnDTO.getMessage());

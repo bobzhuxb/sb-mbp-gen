@@ -100,6 +100,11 @@ public class HttpUtil {
             httpGet.setConfig(requestConfig);
             // 执行get请求得到返回对象
             response = httpClient.execute(httpGet);
+            // 状态不是200，抛异常
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                throw new Exception(EntityUtils.toString(response.getEntity()));
+            }
             // 通过返回对象获取返回数据
             HttpEntity entity = response.getEntity();
             // 通过EntityUtils中的toString方法将结果转换为字符串

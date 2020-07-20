@@ -2,7 +2,6 @@ package ${packageName}.config;
 
 import ${packageName}.service.ApiAdapterService;
 import ${packageName}.service.BaseEntityConfigService;
-import ${packageName}.service.WxService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -18,24 +17,15 @@ import org.springframework.stereotype.Component;
 public class ApplicationInit implements ApplicationRunner {
 
     @Autowired
-    private YmlConfig ymlConfig;
-
-    @Autowired
     private ApiAdapterService apiAdapterService;
 
     @Autowired
     private BaseEntityConfigService baseEntityConfigService;
 
-    @Autowired
-    private WxService wxService;
-
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
         initApiAdapter();
         initEntityConfig();
-        if ("open".equals(ymlConfig.getWxAccessTokenSwitch())) {
-            initWxAccessToken();
-        }
     }
 
     /**
@@ -51,13 +41,6 @@ public class ApplicationInit implements ApplicationRunner {
      */
     private void initEntityConfig() {
         baseEntityConfigService.initEntitiesConfig();
-    }
-
-    /**
-     * 初始化微信的ACCESS_TOKEN
-     */
-    private void initWxAccessToken() {
-        wxService.refreshAccessToken(10);
     }
 
 }

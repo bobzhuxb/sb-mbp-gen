@@ -20,7 +20,7 @@ import javax.validation.Valid;
  * @author Bob
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/drag")
 public class WxController {
 
     private final Logger log = LoggerFactory.getLogger(WxController.class);
@@ -48,7 +48,7 @@ public class WxController {
      */
     @PostMapping("/public/get-wx-js-api-info")
     public ResponseEntity<ReturnCommonDTO<ReturnWxJsapiInfoDTO>> getJsApiInfo(@RequestBody @Valid ParamWxJsApiDTO wxJsApiDTO) {
-        ReturnCommonDTO<ReturnWxJsapiInfoDTO> rtn = wxService.getJsapiInfoByCurrentAccessToken(wxJsApiDTO.getUrl());
+        ReturnCommonDTO<ReturnWxJsapiInfoDTO> rtn = wxService.getJsapiInfo(wxJsApiDTO.getUrl());
         return new ResponseEntity<>(rtn, null, HttpStatus.OK);
     }
 

@@ -55,28 +55,16 @@ public class YmlConfig {
     private String picCompressQuality;
 
     /**
-     * 微信公众号APP_ID
+     * 微服务：微信服务的token验证
      */
-    @Value("${r'${wx.app-id}'}")
-    private String wxAppId;
+    @Value("${r'${ms-wx.verify-token}'}")
+    private String msWxVerifyToken;
 
     /**
-     * 微信公众号APP_SECRET
+     * 微服务：微信服务的URL
      */
-    @Value("${r'${wx.app-secret}'}")
-    private String wxAppSecret;
-
-    /**
-     * 微信ACCESS_TOKEN获取是否打开
-     */
-    @Value("${r'${wx.access-token-switch}'}")
-    private String wxAccessTokenSwitch;
-
-    /**
-     * 腾讯地图Key
-     */
-    @Value("${r'${wx.tx-map-key}'}")
-    private String txMapKey;
+    @Value("${r'${ms-wx.url}'}")
+    private String msWxUrl;
 
     public String getLocation() {
         return location;
@@ -134,35 +122,19 @@ public class YmlConfig {
         this.picCompressQuality = picCompressQuality;
     }
 
-    public String getWxAppId() {
-        return wxAppId;
+    public String getMsWxVerifyToken() {
+        return msWxVerifyToken;
     }
 
-    public void setWxAppId(String wxAppId) {
-        this.wxAppId = wxAppId;
+    public void setMsWxVerifyToken(String msWxVerifyToken) {
+        this.msWxVerifyToken = msWxVerifyToken;
     }
 
-    public String getWxAppSecret() {
-        return wxAppSecret;
+    public String getMsWxUrl() {
+        return msWxUrl;
     }
 
-    public void setWxAppSecret(String wxAppSecret) {
-        this.wxAppSecret = wxAppSecret;
-    }
-
-    public String getWxAccessTokenSwitch() {
-        return wxAccessTokenSwitch;
-    }
-
-    public void setWxAccessTokenSwitch(String wxAccessTokenSwitch) {
-        this.wxAccessTokenSwitch = wxAccessTokenSwitch;
-    }
-
-    public String getTxMapKey() {
-        return txMapKey;
-    }
-
-    public void setTxMapKey(String txMapKey) {
-        this.txMapKey = txMapKey;
+    public void setMsWxUrl(String msWxUrl) {
+        this.msWxUrl = msWxUrl;
     }
 }

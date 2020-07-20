@@ -536,15 +536,21 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
      */
     private void processAssociationNameList(ApiAdapterConfigDTO configDTO, HttpServletRequest request, Object[] parameters) {
         // 验证该request的配置
-        if (configDTO == null || configDTO.getParam() == null || configDTO.getParam().getAssociationNameList() == null) {
-            return;
+        boolean hasAssociationConfig = false;
+        if (configDTO != null && configDTO.getParam() != null && configDTO.getParam().getAssociationNameList() != null) {
+            hasAssociationConfig = true;
         }
         // 遍历所有参数
         for (int i = 0; i < parameters.length; i++) {
             Object parameter = parameters[i];
             if (parameter instanceof BaseCriteria) {
                 // 正常情况下，该if分支只会进来一次
-                ((BaseCriteria)parameter).setAssociationNameList(configDTO.getParam().getAssociationNameList());
+                if (hasAssociationConfig) {
+                    ((BaseCriteria) parameter).setAssociationNameList(configDTO.getParam().getAssociationNameList());
+                } else {
+                    // 过滤掉传入参数中的associationNameList参数，增强安全性，避免接口调用时恶意传输该参数引发性能问题
+                    ((BaseCriteria) parameter).setAssociationNameList(null);
+                }
             }
         }
     }

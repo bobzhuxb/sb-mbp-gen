@@ -55,38 +55,21 @@ public final class Constants {
 
     /************ 微信登录配置 *************/
     /**
-     * 小程序获取openId的URL
+     * 微服务：小程序获取openId的URL
      */
-    public static final String WXAPP_OPEN_ID_URL = "https://api.weixin.qq.com/sns/jscode2session";
+    public static final String MS_WXAPP_OPEN_ID_URL = "/api/v1/wx/get-openid";
     /**
-     * 小程序获取token的URL
+     * 微服务：小程序获取jsapi的URL
      */
-    public static final String WXAPP_GET_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token";
+    public static final String MS_WXAPP_JSAPI_URL = "/api/v1/wx/get-jsapi";
     /**
-     * 小程序获取ticket的URL
+     * 微服务：经纬度转地址描述
      */
-    public static final String WXAPP_GET_TICKET_URL = "https://api.weixin.qq.com/cgi-bin/ticket/getticket";
+    public static final String MS_TXMAP_REVERSE_ADDRESS_URL = "/api/v1/wx/get-address-detail";
     /**
-     * 小程序获取二维码的URL
+     * 微服务：地点关键字搜索
      */
-    public static final String WXAPP_GET_QRCODE_URL = "https://api.weixin.qq.com/wxa/getwxacodeunlimit";
-    /**
-     * 小程序APP授权类型（获取认证码）
-     */
-    public static final String WXAPP_GRANT_TYPE = "authorization_code";
-    /**
-     * 小程序APP当前的Token值
-     */
-    public static String WX_ACCESS_TOKEN_NOW = "";
-    /************ 腾讯地图配置 *************/
-    /**
-     * 经纬度转地址描述
-     */
-    public static String TXMAP_REVERSE_ADDRESS_PARSE_URL = "https://apis.map.qq.com/ws/geocoder/v1/";
-    /**
-     * 地点关键字搜索
-     */
-    public static String TXMAP_KEYWORD_SEARCH_URL = "https://apis.map.qq.com/ws/place/v1/suggestion";
+    public static final String MS_TXMAP_KEYWORD_SEARCH_URL = "/api/v1/wx/search-area";
 
     /**
      * 整数的正则

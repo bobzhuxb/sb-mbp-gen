@@ -48,8 +48,6 @@ tools:
 api-pdf:
     generate: false
 
-wx:
-    app-id: xxxxxxx
-    app-secret: yyyyyyy
-    access-token-switch: close
-    tx-map-key: XXXXX-XXXXX-XXXXX-XXXXX-XXXXX-XXXXX
+ms-wx:
+    verify-token: hychG#$vd!qB8T@RZ5Z5sKCa5Xmqz7QY
+    url: http://api.12465.top
