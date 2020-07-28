@@ -135,6 +135,16 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     }
 
     /**
+     * 增强的条件子查询，实现类可覆盖该方法，写自己的增强的条件子查询
+     * @param entityTypeName 实体类型名
+     * @param criteria 查询条件
+     * @param appendParamMap 附加参数
+     */
+    default void baseSubCriteriaEnhance(String entityTypeName, C criteria, Map<String, Object> appendParamMap) {
+        // TODO: 增强的条件子查询写在这里（由具体实现覆盖）
+    }
+
+    /**
      * 数据权限过滤器
      * @param criteria 附加条件
      * @param appendParamMap 附加的传递参数
@@ -913,6 +923,9 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         subCriteria.setAssociationNameList(subAssociationNameList);
                         // 设置查询列
                         subCriteria.setSqlColumnList(criteria.getSqlColumnList());
+                        // 增强的条件子查询
+                        GlobalCache.getServiceMap().get(relationDTO.getToType())
+                                .baseSubCriteriaEnhance(relationDTO.getToType(), subCriteria, appendParamMap);
                         // 调用级联的Service的方法进行查询
                         Object subDTOList = GlobalCache.getServiceMap().get(relationDTO.getToType())
                                 .baseFindAllEntityPath(relationDTO.getToType(), subCriteria,

@@ -103,6 +103,7 @@ public class CommonServiceImpl implements CommonService {
             }
             fileUploadDTO.setRelativePath(relativePath + "/" + newFileName);
             fileUploadDTO.setUploadTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(nowDate));
+            fileUploadDTO.setExtension(extension);
             return new ReturnUploadCommonDTO<>(fileUploadDTO);
         } catch (Exception e) {
             log.error("文件上传失败：" + fileName, e);

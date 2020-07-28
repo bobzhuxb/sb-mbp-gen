@@ -14,6 +14,8 @@ public class ReturnFileUploadDTO {
 
     private String uploadTime;                  // 文件上传时间
 
+    private String extension;                   // 文件后缀
+
     public String getOriginalFileName() {
         return originalFileName;
     }
@@ -46,4 +48,11 @@ public class ReturnFileUploadDTO {
         this.uploadTime = uploadTime;
     }
 
+    public String getExtension() {
+        return extension;
+    }
+
+    public void setExtension(String extension) {
+        this.extension = extension;
+    }
 }

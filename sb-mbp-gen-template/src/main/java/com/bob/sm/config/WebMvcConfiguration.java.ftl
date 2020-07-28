@@ -23,7 +23,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/static/")
                 .setCacheControl(CacheControl.maxAge(90, TimeUnit.DAYS));
         registry
-                .addResourceHandler("/*.js", "/*.css", "/static/*.png", "/icons/*.png")
+                .addResourceHandler("/*.js", "/*.css")
                 .addResourceLocations("classpath:/static/")
                 .setCacheControl(CacheControl.maxAge(30, TimeUnit.DAYS));
     }
