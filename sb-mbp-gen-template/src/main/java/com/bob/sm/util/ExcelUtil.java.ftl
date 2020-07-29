@@ -32,6 +32,9 @@ public class ExcelUtil {
      * @return cell的值
      */
     public static String getCellValueOfExcel(XSSFCell cell, String dateFormat) {
+        if (cell == null) {
+            return "";
+        }
         String cellValue = "";
         if (cell.getCellTypeEnum() == CellType.NUMERIC) {
             if (HSSFDateUtil.isCellDateFormatted(cell)) {
