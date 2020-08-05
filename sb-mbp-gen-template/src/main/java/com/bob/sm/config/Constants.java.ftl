@@ -215,6 +215,27 @@ public final class Constants {
     }
 
     /**
+     * Excel的类型
+     */
+    public enum excelType implements EnumInter {
+        XLS("xls", "2003版本"), XLSX("xlsx", "2007版本");
+        private String value;
+        private String name;
+        private excelType(String value, String name) {
+            this.value = value;
+            this.name = name;
+        }
+        @Override
+        public String getValue(){
+            return value;
+        }
+        @Override
+        public String getName(){
+            return name;
+        }
+    }
+
+    /**
      * appendParamMap的Key
      */
     public enum appendParamMapKey implements EnumInter {

@@ -23,6 +23,9 @@ public @interface ExcelProperty {
     // 是否允许空值
     boolean nullable() default true;
 
+    // 空值时设定的默认值（该值为非空字符串时有效，且忽略nullable的影响）
+    String emptyToDefault() default "";
+
     // 日期格式
     String dateFormat() default "yyyy-MM-dd";
 

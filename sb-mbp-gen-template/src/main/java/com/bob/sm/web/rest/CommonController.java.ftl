@@ -40,7 +40,7 @@ public class CommonController {
      * @return 上传的文件
      */
     @PostMapping("/file-upload")
-    public ResponseEntity<ReturnCommonDTO<ReturnFileUploadDTO>> uploadFile (
+    public ResponseEntity<ReturnCommonDTO<ReturnFileUploadDTO>> uploadFile(
             @RequestParam(value = "file", required = false)MultipartFile file) {
         ReturnCommonDTO<ReturnFileUploadDTO> resultDTO = commonService.uploadFile(file);
         return ResponseEntity.ok().headers(null).body(resultDTO);
@@ -52,7 +52,7 @@ public class CommonController {
      * @return 下载的文件
      */
     @PostMapping("/file-download")
-    public ResponseEntity<ReturnCommonDTO> downloadFile (HttpServletResponse response,
+    public ResponseEntity<ReturnCommonDTO> downloadFile(HttpServletResponse response,
             @RequestBody FileDownloadDTO fileDownloadDTO, BindingResult bindingResult) {
         String relativePath = fileDownloadDTO.getRelativePath();
         if (!relativePath.startsWith(File.separator)) {

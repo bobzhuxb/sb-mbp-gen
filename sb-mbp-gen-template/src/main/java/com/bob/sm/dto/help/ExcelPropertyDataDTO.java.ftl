@@ -16,6 +16,8 @@ public class ExcelPropertyDataDTO {
 
     private String regex;           // 验证正则
 
+    private String emptyToDefault;  // （该值为非空字符串时有效，且忽略nullable的影响）
+
     private Boolean nullable;       // 是否允许空值
 
     private String dateFormat;      // 日期格式
@@ -59,6 +61,14 @@ public class ExcelPropertyDataDTO {
 
     public void setRegex(String regex) {
         this.regex = regex;
+    }
+
+    public String getEmptyToDefault() {
+        return emptyToDefault;
+    }
+
+    public void setEmptyToDefault(String emptyToDefault) {
+        this.emptyToDefault = emptyToDefault;
     }
 
     public Boolean getNullable() {
