@@ -34,7 +34,6 @@ public class GlobalExceptionHandler {
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
     public ReturnCommonDTO handleSessionTimeout(AuthenticationException ex) {
         String message = ex.getMessage();
-        log.error(ex.getMessage(), ex);
         return new ReturnCommonDTO("-998", message);
     }
 
