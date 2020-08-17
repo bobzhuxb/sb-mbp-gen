@@ -35,7 +35,7 @@ public class EnumValidator implements ConstraintValidator<ValidEnum, Object> {
                     if (cl.isEnum()) {
                         // 枚举类验证
                         Method method = cl.getMethod("values");
-                        Constants.EnumInter enumInters[] = (Constants.EnumInter[]) method.invoke(null, null);
+                        Constants.EnumInter[] enumInters = (Constants.EnumInter[]) method.invoke(null, (Object[])null);
                         for (Constants.EnumInter enumInter : enumInters) {
                             Object enumValue = enumInter.getValue();
                             if (value.equals(enumValue)) {
