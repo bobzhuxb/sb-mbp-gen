@@ -112,7 +112,7 @@ public class CommonUserServiceImpl implements CommonUserService {
                 return systemUserDTOTmp;
             }).get();
             systemUserDTO.setSystemRoleList(systemUserRoleMapper.selectList(
-                    new QueryWrapper<SystemUserRole>().eq("system_user_id", systemUserDTO.getId()))
+                    new QueryWrapper<SystemUserRole>().eq(SystemUserRole._systemUserId, systemUserDTO.getId()))
                     .stream().map(systemUserRole -> systemRoleMapper.selectById(systemUserRole.getSystemRoleId()))
                     .map(systemRole -> {
                         SystemRoleDTO systemRoleDTO = new SystemRoleDTO();

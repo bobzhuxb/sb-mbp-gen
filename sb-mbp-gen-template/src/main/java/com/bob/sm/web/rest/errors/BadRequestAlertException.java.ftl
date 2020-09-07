@@ -12,6 +12,10 @@ public class BadRequestAlertException extends RuntimeException {
 
     private String errorKey;
 
+    public BadRequestAlertException(String defaultMessage) {
+        this.defaultMessage = defaultMessage;
+    }
+
     public BadRequestAlertException(String defaultMessage, String entityName, String errorKey) {
         this.defaultMessage = defaultMessage;
         this.entityName = entityName;

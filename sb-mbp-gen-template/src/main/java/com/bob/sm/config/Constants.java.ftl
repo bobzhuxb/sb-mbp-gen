@@ -236,6 +236,27 @@ public final class Constants {
     }
 
     /**
+     * 用户操作码
+     */
+    public enum operationCode implements EnumInter {
+        ADD("ADD", "新增"), MODIFY("MODIFY", "修改"), DELETE("DELETE", "删除");
+        private String value;
+        private String name;
+        private operationCode(String value, String name) {
+            this.value = value;
+            this.name = name;
+        }
+        @Override
+        public String getValue(){
+            return value;
+        }
+        @Override
+        public String getName(){
+            return name;
+        }
+    }
+
+    /**
      * appendParamMap的Key
      */
     public enum appendParamMapKey implements EnumInter {

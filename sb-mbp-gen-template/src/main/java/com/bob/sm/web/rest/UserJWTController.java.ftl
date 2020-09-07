@@ -6,9 +6,10 @@ import ${packageName}.dto.help.ReturnCommonDTO;
 import ${packageName}.security.jwt.JWTFilter;
 import ${packageName}.security.jwt.TokenProvider;
 import ${packageName}.service.CommonUserService;
-import ${packageName}.util.ParamValidatorUtil;
 import ${packageName}.web.rest.errors.CommonAlertException;
 import ${packageName}.web.rest.vm.LoginVM;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -24,8 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 /**
  * 用户登录认证Controller.
