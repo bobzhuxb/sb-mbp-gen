@@ -87,6 +87,33 @@ public class AccountServiceImpl implements AccountService {
         if (systemUserDTO == null) {
             return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "当前用户不存在");
         }
+        // 密码规则:
+        // 1. 最少8位
+        // 2. 英文 数字 大小写
+        if (newPassword.length() < 8) {
+            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "密码最少8位");
+        }
+        // 是否有大写
+        boolean hasUpper = false;
+        // 是否有小写
+        boolean hasLower = false;
+        // 是否有数字
+        boolean hasDigit = false;
+        for (char newPasswordChar : newPassword.toCharArray()) {
+            if (newPasswordChar >= 'A' && newPasswordChar <= 'Z') {
+                hasUpper = true;
+            }
+            if (newPasswordChar >= 'a' && newPasswordChar <= 'z') {
+                hasLower = true;
+            }
+            if (newPasswordChar >= '0' && newPasswordChar <= '9') {
+                hasDigit = true;
+            }
+        }
+        if (!hasUpper || !hasLower || !hasDigit) {
+            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "密码必须包含英文大小写和数字");
+        }
+        // 验证原密码
         String currentEncryptedPassword = systemUserDTO.getPassword();
         if (!new BCryptPasswordEncoder().matches(currentClearTextPassword, currentEncryptedPassword)) {
             return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "原密码错误");

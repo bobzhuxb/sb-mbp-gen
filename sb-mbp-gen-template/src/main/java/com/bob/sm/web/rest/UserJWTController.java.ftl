@@ -31,7 +31,7 @@ import javax.validation.Valid;
  * @author Bob
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("${urlPrefix}")
 public class UserJWTController {
 
     private final Logger log = LoggerFactory.getLogger(UserJWTController.class);

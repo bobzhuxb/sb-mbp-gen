@@ -25,7 +25,7 @@ import java.util.Optional;
  * @author Bob
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("${urlPrefix}")
 public class AccountController {
 
     private final Logger log = LoggerFactory.getLogger(AccountController.class);

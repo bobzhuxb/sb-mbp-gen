@@ -12,6 +12,7 @@ public class ApiAdapterCriteriaDTO {
     private List<String> toCriteriaList;    // 转换后的条件参数
     private String descr;                   // 参数描述
     private Object fixedValue;              // 固定值
+    private Integer emptyToNull;            // 空字符串是否转为null（1或不填：是  2：否）
 
     public String getFromParam() {
         return fromParam;
@@ -43,5 +44,13 @@ public class ApiAdapterCriteriaDTO {
 
     public void setFixedValue(Object fixedValue) {
         this.fixedValue = fixedValue;
+    }
+
+    public Integer getEmptyToNull() {
+        return emptyToNull;
+    }
+
+    public void setEmptyToNull(Integer emptyToNull) {
+        this.emptyToNull = emptyToNull;
     }
 }

@@ -1,5 +1,6 @@
 package ${packageName}.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -11,6 +12,7 @@ import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+import ${packageName}.config.Constants;
 import ${packageName}.config.YmlConfig;
 import ${packageName}.dto.criteria.BaseCriteria;
 import ${packageName}.dto.criteria.filter.Filter;
@@ -465,9 +467,15 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                             value = fixedValue.toString();
                         } else {
                             value = request.getParameter(criteriaDTO.getFromParam());
+                            // 没有该参数，继续下一条验证
                             if (value == null) {
-                                // 没有该参数，继续下一条验证
                                 continue;
+                            }
+                            // 如果允许将空字符串认作null，且数据为空字符串，则相当于没有该参数，同上，继续下一条验证
+                            if (!Constants.yesNo.NO.getValue().equals(criteriaDTO.getEmptyToNull())) {
+                                if (StrUtil.isBlank(value)) {
+                                    continue;
+                                }
                             }
                         }
                         // 参数转换
