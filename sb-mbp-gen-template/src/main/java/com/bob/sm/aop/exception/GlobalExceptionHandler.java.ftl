@@ -1,6 +1,7 @@
 package ${packageName}.aop.exception;
 
 import ${packageName}.dto.help.ReturnCommonDTO;
+import ${packageName}.util.HttpUtil;
 import ${packageName}.web.rest.errors.BadRequestAlertException;
 import ${packageName}.web.rest.errors.CommonAlertException;
 import ${packageName}.web.rest.errors.CommonException;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.NoSuchElementException;
 
 /**
@@ -81,10 +83,11 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(CommonException.class)
     @ResponseStatus(value = HttpStatus.OK)
-    public ReturnCommonDTO handleBusinessError(CommonException ex) {
+    public ReturnCommonDTO handleBusinessError(HttpServletRequest request, CommonException ex) {
         String code = ex.getCode();
         String message = ex.getMessage();
-        log.error(ex.getMessage(), ex);
+        String messageDetail = message + "\r\n" + HttpUtil.getRequestDetailInfo(request);
+        log.error(messageDetail, ex);
         return new ReturnCommonDTO(code, message);
     }
 
@@ -95,8 +98,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-    public ReturnCommonDTO handleUnexpectedServer(Exception ex) {
-        log.error("系统异常：", ex);
+    public ReturnCommonDTO handleUnexpectedServer(HttpServletRequest request, Exception ex) {
+        String messageDetail = "系统异常：" + "\r\n" + HttpUtil.getRequestDetailInfo(request);
+        log.error(messageDetail, ex);
         return new ReturnCommonDTO("-999", "系统错误");
     }
 
