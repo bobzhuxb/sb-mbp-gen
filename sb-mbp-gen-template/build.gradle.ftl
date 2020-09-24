@@ -53,6 +53,12 @@ dependencies {
 	compile "org.springframework.boot:spring-boot-starter-logging"
 //	compile "net.logstash.logback:logstash-logback-encoder:5.2"
 
+	// ===================================Aliyun Log Logback Appender=====================================
+	// https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java
+	compile group: 'com.google.protobuf', name: 'protobuf-java', version: '3.11.4'
+	// https://mvnrepository.com/artifact/com.aliyun.openservices/aliyun-log-logback-appender
+	compile group: 'com.aliyun.openservices', name: 'aliyun-log-logback-appender', version: '0.1.15'
+
 	// ===================================安全=====================================
 	// Spring安全模块
 	compile "org.springframework.boot:spring-boot-starter-security"
@@ -147,9 +153,7 @@ dependencies {
 //	compile "io.dropwizard.metrics:metrics-servlets:3.2.6"
 //	compile "com.ryantenney.metrics:metrics-spring:3.1.3"
 	// Prometheus监控
-//	compile "io.prometheus:simpleclient:0.6.0"
-//	compile "io.prometheus:simpleclient_dropwizard:0.6.0"
-//	compile "io.prometheus:simpleclient_servlet:0.6.0"
+	compile "io.micrometer:micrometer-registry-prometheus:1.1.2"
 
 	// ===================================微信支付=====================================
 

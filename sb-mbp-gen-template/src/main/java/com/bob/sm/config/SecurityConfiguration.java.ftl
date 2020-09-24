@@ -112,9 +112,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // ==================需要认证的接口范围写在这里 end======================
 
             // ==================系统健康检查 start======================
-            .antMatchers("/management/health").permitAll()
-            .antMatchers("/management/info").permitAll()
-            .antMatchers("/management/**").hasAuthority(Constants.role.ROLE_ADMIN.getValue())
+            .antMatchers("/management/prometheus").permitAll()
             // ==================系统健康检查 end======================
             .and()
             .apply(securityConfigurerAdapter());

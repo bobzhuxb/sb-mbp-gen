@@ -15,6 +15,13 @@ spring:
         ehcache:
             config: classpath:ehcache.xml
 
+management:
+    endpoints:
+        web:
+            base-path: /management
+            exposure:
+                include: ["configprops", "env", "health", "info", "threaddump", "logfile", "prometheus" ]
+
 server:
     compression:
         enabled: true
