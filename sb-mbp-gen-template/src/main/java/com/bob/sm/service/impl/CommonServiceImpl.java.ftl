@@ -236,8 +236,21 @@ public class CommonServiceImpl implements CommonService {
             // ==================== 获取相关参数 ==========================
             // 当前时间
             Date nowDate = new Date();
-            // Excel文件名（不包含后缀）
-            String fileName = excelExportDTO.getFileName();
+            // Excel文件名（包含相对路径，但不包含后缀）
+            // 如果response不为空，则fileName没有相对路径；如果response为空，则fileName有相对路径
+            // response不为空表示导出文件到客户端，response为空表示导出文件到服务器本地
+            // 最终文件名
+            String fileName = null;
+            // 相对路径
+            String relativePath = null;
+            // 包含相对路径，但不包含后缀的文件名
+            String relativeFileName = excelExportDTO.getFileName();
+            if (response != null) {
+                fileName = relativeFileName;
+            } else {
+                fileName = relativeFileName.substring(relativeFileName.lastIndexOf(File.separator) + 1);
+                relativePath = relativeFileName.substring(0, relativeFileName.lastIndexOf(File.separator));
+            }
             // sheet名
             String sheetName = excelExportDTO.getSheetName();
             if (sheetName == null || "".equals(sheetName)) {
@@ -278,7 +291,8 @@ public class CommonServiceImpl implements CommonService {
                     outputStream = response.getOutputStream();
                 } else {
                     // excelExportDTO.getFileName()是相对路径
-                    outputStream = new FileOutputStream(ymlConfig.getLocation() + File.separator + excelExportDTO.getFileName());
+                    outputStream = new FileOutputStream(ymlConfig.getLocation() + File.separator + relativePath
+                            + File.separator + fileName + ".xlsx");
                 }
                 // 创建sheet页
                 SXSSFSheet sheet = workbook.createSheet(sheetName);
