@@ -1,11 +1,11 @@
 package ${packageName}.config;
 
+import ${packageName}.aop.exception.GlobalAsyncUncaughtExceptionHandler;
 import ${packageName}.config.help.ExceptionHandlingAsyncTaskExecutor;
 import ${packageName}.config.help.PropertiesHelp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
-import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,7 +49,7 @@ public class AsyncConfiguration implements AsyncConfigurer, SchedulingConfigurer
 
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-        return new SimpleAsyncUncaughtExceptionHandler();
+        return new GlobalAsyncUncaughtExceptionHandler();
     }
     
     @Override
