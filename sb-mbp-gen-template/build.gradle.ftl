@@ -143,7 +143,7 @@ dependencies {
 
 	// ===================================监控=====================================
 	// Spring监控模块
-//	compile "org.springframework.boot:spring-boot-starter-actuator"
+	compile "org.springframework.boot:spring-boot-starter-actuator"
 	// 健康监测Metrics报告
 //	compile "io.dropwizard.metrics:metrics-core:3.2.6"
 //	compile "io.dropwizard.metrics:metrics-jcache:3.2.6"
