@@ -1,5 +1,6 @@
 package ${packageName}.aop.exception;
 
+import com.alibaba.fastjson.JSONException;
 import ${packageName}.dto.help.ReturnCommonDTO;
 import ${packageName}.util.HttpUtil;
 import ${packageName}.web.rest.errors.BadRequestAlertException;
@@ -61,6 +62,20 @@ public class GlobalExceptionHandler {
     public ReturnCommonDTO handleRequestFault(BadRequestAlertException ex) {
         String message = ex.getDefaultMessage();
         return new ReturnCommonDTO("-996", message);
+    }
+
+    /**
+     * 拦截JSON解析错误（记录错误日志）
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(JSONException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ReturnCommonDTO handleJsonParseFault(HttpServletRequest request, JSONException ex) {
+        String message = "请求错误";
+        String messageDetail = "JSON解析错误\r\n" + HttpUtil.getRequestDetailInfo(request);
+        log.error(messageDetail, ex);
+        return new ReturnCommonDTO("-995", message);
     }
 
     /**

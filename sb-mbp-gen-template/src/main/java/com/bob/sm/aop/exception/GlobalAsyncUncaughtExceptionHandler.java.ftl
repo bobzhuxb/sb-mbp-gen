@@ -22,7 +22,7 @@ public class GlobalAsyncUncaughtExceptionHandler implements AsyncUncaughtExcepti
     public void handleUncaughtException(Throwable ex, Method method, Object... params) {
         if (ex instanceof AuthenticationException || ex instanceof NoSuchElementException
                 || ex instanceof BadRequestAlertException || ex instanceof CommonAlertException) {
-            // Session过期或无效、没有对应的数据、请求错误、业务提示错误
+            // Session过期或无效、没有对应的数据、请求提示错误、业务提示错误
             logger.warn("Unexpected Exception occurred invoking async method: " + method, ex);
         } else {
             // 其他错误（业务异常、其他异常）
