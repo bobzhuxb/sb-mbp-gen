@@ -1,6 +1,7 @@
 package ${packageName}.dto.help;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用于Excel导出使用的参数DTO
@@ -25,6 +26,10 @@ public class ExcelExportDTO {
     private List<?> dataList;                       // 数据
 
     private List<ExcelCellRangeDTO> cellRangeList;  // 要合并的单元格
+
+    private String wrapSpecial = "\\n";             // 换行符特殊标识
+
+    private Map<Integer, ExcelCellDTO> dataSpecialStyleMap;    // 特殊列的样式（Key：列序号  Value：样式）
 
     public String getFileName() {
         return fileName;
@@ -104,6 +109,24 @@ public class ExcelExportDTO {
 
     public ExcelExportDTO setCellRangeList(List<ExcelCellRangeDTO> cellRangeList) {
         this.cellRangeList = cellRangeList;
+        return this;
+    }
+
+    public String getWrapSpecial() {
+        return wrapSpecial;
+    }
+
+    public ExcelExportDTO setWrapSpecial(String wrapSpecial) {
+        this.wrapSpecial = wrapSpecial;
+        return this;
+    }
+
+    public Map<Integer, ExcelCellDTO> getDataSpecialStyleMap() {
+        return dataSpecialStyleMap;
+    }
+
+    public ExcelExportDTO setDataSpecialStyleMap(Map<Integer, ExcelCellDTO> dataSpecialStyleMap) {
+        this.dataSpecialStyleMap = dataSpecialStyleMap;
         return this;
     }
 }

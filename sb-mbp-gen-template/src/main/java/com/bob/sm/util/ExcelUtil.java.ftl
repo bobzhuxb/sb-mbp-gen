@@ -4,7 +4,7 @@ import ${packageName}.annotation.ExcelProperty;
 import ${packageName}.dto.help.ExcelCellDTO;
 import ${packageName}.dto.help.ExcelCellRangeDTO;
 import ${packageName}.dto.help.ExcelRowCellsDTO;
-import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -156,6 +156,17 @@ public class ExcelUtil {
     }
 
     /**
+     * 设置换行
+     * @param cellStyle 单元格样式
+     * @param wrapText 是否换行（默认将\n转换为换行）
+     * @return 返回设置好的样式
+     */
+    public static CellStyle setWrapText(CellStyle cellStyle, Boolean wrapText) {
+        Optional.ofNullable(wrapText).ifPresent(wrap -> cellStyle.setWrapText(wrap));
+        return cellStyle;
+    }
+
+    /**
      * 设置字体（注：font可通过 workbook.createFont() 获取，下同）
      * @param cellStyle 单元格样式
      * @param workbook Excel工作簿
@@ -191,12 +202,13 @@ public class ExcelUtil {
      * @param maxWidthMap 存储的最大列宽（Key：列序号  Value：列宽）
      * @param lastRowToMergeMap 要合并的单元格（Key：要合并的单元格的最后一行  Value：最后一行是该数值的所有合并单元格）
      * @param cellRangeList 要合并的单元格
+     * @param wrapSpecial 自动换行标识符
      * @param workbook Excel工作簿
      * @param sheet Excel的sheet
      */
     public static void addDataToExcel(List<ExcelCellDTO> dataCellList, int appendRow, Map<Integer, Integer> maxWidthMap,
                                       Map<Integer, List<ExcelCellRangeDTO>> lastRowToMergeMap,
-                                      List<ExcelCellRangeDTO> cellRangeList,
+                                      List<ExcelCellRangeDTO> cellRangeList, String wrapSpecial,
                                       SXSSFWorkbook workbook, SXSSFSheet sheet) {
         List<ExcelRowCellsDTO> rowDataCellsList = new ArrayList<>(dataCellList.stream()
                 // 按所在列分组
@@ -224,20 +236,15 @@ public class ExcelUtil {
             // 每列的单元格Map（Key：列号  Value：单元格）
             Map<Integer, SXSSFCell> cellMapOfRow = new HashMap<>();
             for (ExcelCellDTO excelCellDTO : rowCellList) {
-                // 单元格格式设定（背景色、位置、边框、字体）
-                CellStyle dataStyle = workbook.createCellStyle();
-                setAlignment(dataStyle, excelCellDTO.getHorizontal(), excelCellDTO.getVertical());
-                setBackgroundColor(dataStyle, excelCellDTO.getBackgroundColor());
-                setBorder(dataStyle, excelCellDTO.getBorderTop(), excelCellDTO.getBorderBottom(),
-                        excelCellDTO.getBorderLeft(), excelCellDTO.getBorderRight());
-                setFont(dataStyle, workbook, excelCellDTO.getFontName(), excelCellDTO.getFontSize(),
-                        excelCellDTO.getFontItalic(), excelCellDTO.getFontBold(), excelCellDTO.getFontColor());
+                // 单元格格式设定（背景色、位置、边框、字体、换行）
+                CellStyle dataStyle = setCellStyle(excelCellDTO, workbook);
                 // 创建单元格，填入数据，设置格式
                 SXSSFCell cell = dataRow.createCell(excelCellDTO.getColumn());
                 cellMapOfRow.put(excelCellDTO.getColumn(), cell);
-                cell.setCellValue(excelCellDTO.getValue());
+                // 设置单元格内容（替换自动换行标识符）
+                cell.setCellValue(excelCellDTO.getValue().replace(wrapSpecial, "\n"));
                 cell.setCellStyle(dataStyle);
-                // 每处理一行都要计算每列的最大宽度
+                // 每个单元格都要计算每列的最大宽度
                 ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, nowRow, excelCellDTO.getColumn(), null, cellRangeList);
             }
             // 每处理一行都要判断是否有合并单元格，有的话就合并（此时所在行为nowRow）
@@ -249,6 +256,24 @@ public class ExcelUtil {
                 }
             }
         }
+    }
+
+    /**
+     * 设置单元格样式
+     * @param excelCellDTO 单元格及样式要求
+     * @param workbook Excel工作簿
+     */
+    public static CellStyle setCellStyle(ExcelCellDTO excelCellDTO, SXSSFWorkbook workbook) {
+        // 单元格格式设定（背景色、位置、边框、字体、换行）
+        CellStyle dataStyle = workbook.createCellStyle();
+        setAlignment(dataStyle, excelCellDTO.getHorizontal(), excelCellDTO.getVertical());
+        setBackgroundColor(dataStyle, excelCellDTO.getBackgroundColor());
+        setBorder(dataStyle, excelCellDTO.getBorderTop(), excelCellDTO.getBorderBottom(),
+                excelCellDTO.getBorderLeft(), excelCellDTO.getBorderRight());
+        setFont(dataStyle, workbook, excelCellDTO.getFontName(), excelCellDTO.getFontSize(),
+                excelCellDTO.getFontItalic(), excelCellDTO.getFontBold(), excelCellDTO.getFontColor());
+        setWrapText(dataStyle, excelCellDTO.getWrapText());
+        return dataStyle;
     }
 
     /**

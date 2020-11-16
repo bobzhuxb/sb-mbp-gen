@@ -67,7 +67,7 @@ public class YmlConfig {
     private String msWxUrl;
 
     public String getLocation() {
-        return location;
+        return location + File.separator + Constants.FILE_UPLOAD_RELATIVE_PATH;
     }
 
     public void setLocation(String location) {

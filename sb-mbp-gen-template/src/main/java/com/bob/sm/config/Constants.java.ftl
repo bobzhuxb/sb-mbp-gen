@@ -19,6 +19,11 @@ public final class Constants {
     public static final String SPRING_PROFILE_PRODUCTION = "prod";
 
     /**
+     * 上传的文件指定相对路径
+     */
+    public static final String FILE_UPLOAD_RELATIVE_PATH = "upload";
+
+    /**
      * Excel导出中的主题色
      */
     public static final short EXCEL_THEME_COLOR = IndexedColors.GREY_25_PERCENT.getIndex();

@@ -6,13 +6,19 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 
 /**
- * Excel单元格配置DTO
+ * Excel单元格
  * @author Bob
  */
 public class ExcelCellDTO {
 
+    /**
+     * 位置
+     */
     private Integer relativeRow;            // 单元格所在相对行
     private Integer column;                 // 单元格所在列
+    /**
+     * 样式
+     */
     private HorizontalAlignment horizontal; // 水平对齐方式
     private VerticalAlignment vertical;     // 垂直对齐方式
     private Short backgroundColor;          // 背景色
@@ -25,7 +31,10 @@ public class ExcelCellDTO {
     private Boolean fontItalic;             // 是否斜体
     private Boolean fontBold;               // 是否粗体
     private Short fontColor;                // 字体颜色
-
+    private Boolean wrapText;               // 是否换行
+    /**
+     * 数据
+     */
     private String value;        // 单元格数据
 
     public Integer getRelativeRow() {
@@ -151,6 +160,15 @@ public class ExcelCellDTO {
 
     public ExcelCellDTO setFontColor(Short fontColor) {
         this.fontColor = fontColor;
+        return this;
+    }
+
+    public Boolean getWrapText() {
+        return wrapText;
+    }
+
+    public ExcelCellDTO setWrapText(Boolean wrapText) {
+        this.wrapText = wrapText;
         return this;
     }
 
