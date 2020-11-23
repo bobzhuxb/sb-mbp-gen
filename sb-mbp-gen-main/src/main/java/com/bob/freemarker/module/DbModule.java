@@ -257,6 +257,19 @@ public class DbModule {
                             .map(DbColumnDTO::getColumnName).collect(Collectors.toList());
                     // 主键ID不允许变更
                     toDeleteColumnNameList.remove("id");
+                    // 获取列描述
+                    ResultSet resultSet = statement.executeQuery("SELECT t.column_name, t.column_type, t.is_nullable," +
+                            " t.column_default, t.column_comment FROM information_schema.columns t" +
+                            " WHERE table_schema = '" + DbModule.dbName + "' AND table_name = '" + tableName + "'");
+                    // Key：列名  Value：列描述
+                    Map<String, DbColumnDescrDTO> columnDescrMap = new HashMap<>();
+                    while (resultSet.next()) {
+                        // 通过字段检索
+                        String columnName = resultSet.getString("column_name");
+                        columnDescrMap.put(columnName, new DbColumnDescrDTO(columnName,
+                                resultSet.getString("column_type"), resultSet.getString("is_nullable"),
+                                resultSet.getString("column_default"), resultSet.getString("column_comment")));
+                    }
                     // 共通的alter table
                     String alterTablePrefix = "alter table `" + tableName + "`";
                     StringJoiner alterColumnSb = new StringJoiner(",");
@@ -300,22 +313,28 @@ public class DbModule {
                                     if (defaultAppend != null) {
                                         alterColumnStr += " not null default " + defaultAppend;
                                     }
-                                    // 为整表改表做准备
-                                    alterColumnSb.add(alterColumnStr);
-                                    if ("yes".equals(changeColumnSingle)) {
-                                        try {
-                                            // 输出SQL脚本
-                                            outSqlOsw.write(alterTablePrefix + alterColumnStr + ";\r\n");
-                                            // 执行SQL，单列改表
+                                    // 验证该字段是否有修改的部分
+                                    boolean columnHasChange = validateColumnChanged(columnDescrMap, newColumnName,
+                                            defaultAppend, newColumnType, newColumnComment);
+                                    if (columnHasChange) {
+                                        // 有变更
+                                        // 为整表改表做准备
+                                        alterColumnSb.add(alterColumnStr);
+                                        if ("yes".equals(changeColumnSingle)) {
                                             try {
-                                                statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                                // 输出SQL脚本
+                                                outSqlOsw.write(alterTablePrefix + alterColumnStr + ";\r\n");
+                                                // 执行SQL，单列改表
+                                                try {
+                                                    statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                                } catch (Exception e) {
+                                                    System.out.println("【SQL改库错误】：" + alterTablePrefix + alterColumnStr);
+                                                    throw e;
+                                                }
                                             } catch (Exception e) {
                                                 System.out.println("【SQL改库错误】：" + alterTablePrefix + alterColumnStr);
                                                 throw e;
                                             }
-                                        } catch (Exception e) {
-                                            System.out.println("【SQL改库错误】：" + alterTablePrefix + alterColumnStr);
-                                            throw e;
                                         }
                                     }
                                     break;
@@ -357,25 +376,31 @@ public class DbModule {
                                 // 列已经存在
                                 for (DbColumnDTO dbColumnExist : dbTableExist.getColumnList()) {
                                     if (dbColumnExist.getColumnName().equals(relationColumnName)) {
-                                        // 直接更新列类型和注释
+                                        // 直接更新列（类型、注释、是否允许空、默认值）
                                         String alterColumnStr = " modify column `"
                                                 + relationColumnName + "` char(50) comment '" + relationComment + "'";
                                         // 数据库列的默认值设定
                                         if ("notnull".equals(defaultColumnValue)) {
                                             alterColumnStr += " not null default ''";
                                         }
-                                        // 为整表改表做准备
-                                        alterColumnSb.add(alterColumnStr);
-                                        // 单列改表
-                                        if ("yes".equals(changeColumnSingle)) {
-                                            // 输出SQL脚本
-                                            outSqlOsw.write(alterTablePrefix + alterColumnStr + ";\r\n");
-                                            // 执行SQL
-                                            try {
-                                                statement.executeUpdate(alterTablePrefix + alterColumnStr);
-                                            } catch (Exception e) {
-                                                System.out.println("【SQL改库错误】：" + alterTablePrefix + alterColumnStr);
-                                                throw e;
+                                        // 验证该字段是否有修改的部分
+                                        boolean columnHasChange = validateColumnChanged(columnDescrMap, relationColumnName,
+                                                "notnull".equals(defaultColumnValue) ? "" : null, "char(50)", relationComment);
+                                        if (columnHasChange) {
+                                            // 有变更
+                                            // 为整表改表做准备
+                                            alterColumnSb.add(alterColumnStr);
+                                            // 单列改表
+                                            if ("yes".equals(changeColumnSingle)) {
+                                                // 输出SQL脚本
+                                                outSqlOsw.write(alterTablePrefix + alterColumnStr + ";\r\n");
+                                                // 执行SQL
+                                                try {
+                                                    statement.executeUpdate(alterTablePrefix + alterColumnStr);
+                                                } catch (Exception e) {
+                                                    System.out.println("【SQL改库错误】：" + alterTablePrefix + alterColumnStr);
+                                                    throw e;
+                                                }
                                             }
                                         }
                                         break;
@@ -426,6 +451,40 @@ public class DbModule {
                 outSqlOsw.close();
             }
         }
+    }
+
+    /**
+     * 验证该字段是否有修改的部分
+     * @param columnDescrMap 原列名和列描述
+     * @param columnName 列名
+     * @param newDefaultAppend 新的列默认值
+     * @param newColumnType 新的列类型
+     * @param newColumnComment 新的列注释
+     * @return
+     */
+    private static boolean validateColumnChanged(Map<String, DbColumnDescrDTO> columnDescrMap, String columnName,
+                                                 String newDefaultAppend, String newColumnType, String newColumnComment) {
+        // 字段更改前信息
+        DbColumnDescrDTO dbColumnDescrDTO = columnDescrMap.get(columnName);
+        boolean columnHasChange = false;
+        if (newDefaultAppend != null) {
+            // 更改后不允许为空
+            if ("YES".equals(dbColumnDescrDTO.getIsNullable())
+                    || !newDefaultAppend.equals(dbColumnDescrDTO.getColumnDefault())) {
+                // 更改前允许为空或默认值不同，则说明有修改
+                columnHasChange = true;
+            }
+        } else if ("NO".equals(dbColumnDescrDTO.getIsNullable())) {
+            // 更改后允许为空但更改前不允许为空，说明有修改
+            columnHasChange = true;
+        } else {
+            // 默认值验证通过，暂时无修改
+            if (!newColumnType.equals(dbColumnDescrDTO.getColumnType())
+                    || !newColumnComment.equals(dbColumnDescrDTO.getColumnComment())) {
+                columnHasChange = true;
+            }
+        }
+        return columnHasChange;
     }
 
     /**
