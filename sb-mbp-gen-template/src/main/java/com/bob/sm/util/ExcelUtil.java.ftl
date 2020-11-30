@@ -1,6 +1,8 @@
 package ${packageName}.util;
 
 import ${packageName}.annotation.ExcelProperty;
+import ${packageName}.config.Constants;
+import ${packageName}.dto.help.ExcelCellBuilder;
 import ${packageName}.dto.help.ExcelCellDTO;
 import ${packageName}.dto.help.ExcelCellRangeDTO;
 import ${packageName}.dto.help.ExcelRowCellsDTO;
@@ -368,6 +370,15 @@ public class ExcelUtil {
         String[] optionArray = new String[optionList.size()];
         optionList.toArray(optionArray);
         MyBeanUtil.changeStaticAnnotationOfField(objClass, fieldName, ExcelProperty.class, "optionList", optionArray);
+    }
+
+    /**
+     * 生成Excel单元格对象
+     * @param excelCellBuilder 单元格构造器
+     * @return 生成的单元格
+     */
+    public static ExcelCellDTO buildCell(ExcelCellBuilder excelCellBuilder) {
+        return excelCellBuilder.buildCell();
     }
 
     // =============== Excel列号转字母 start ==============================

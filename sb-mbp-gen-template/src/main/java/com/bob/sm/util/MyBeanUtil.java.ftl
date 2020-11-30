@@ -7,6 +7,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
+import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -22,9 +23,40 @@ import java.util.stream.Collectors;
 public class MyBeanUtil {
 
     /**
+     * 拷贝对象的部分属性
+     * @param source 源对象
+     * @param target 目标对象
+     * @param propertyNames 部分属性
+     */
+    public static void copySomeProperties(Object source, Object target, List<String> propertyNames) {
+        if (propertyNames != null && propertyNames.size() > 0) {
+            final BeanWrapper src = new BeanWrapperImpl(source);
+            final BeanWrapper tar = new BeanWrapperImpl(target);
+            Map<String, PropertyDescriptor> srcPdsMap = Arrays.stream(src.getPropertyDescriptors())
+                    .reduce(new HashMap<>(), (map, pds) -> {
+                        map.put(pds.getName(), pds);
+                        return map;
+                    }, (map1, map2) -> map2);
+            Map<String, PropertyDescriptor> tarPdsMap = Arrays.stream(tar.getPropertyDescriptors())
+                    .reduce(new HashMap<>(), (map, pds) -> {
+                        map.put(pds.getName(), pds);
+                        return map;
+                    }, (map1, map2) -> map2);
+            propertyNames.forEach(propertyName -> {
+                PropertyDescriptor srcPds = srcPdsMap.get(propertyName);
+                PropertyDescriptor tarPds = tarPdsMap.get(propertyName);
+                if (srcPds != null && tarPds != null) {
+                    Object srcValue = src.getPropertyValue(propertyName);
+                    tar.setPropertyValue(propertyName, srcValue);
+                }
+            });
+        }
+    }
+
+    /**
      * 拷贝对象的非空属性
-     * @param src
-     * @param target
+     * @param src 源对象
+     * @param target 目标对象
      */
     public static void copyNonNullProperties(Object src, Object target) {
         BeanUtils.copyProperties(src, target, getNullPropertyNames(src));
@@ -32,8 +64,8 @@ public class MyBeanUtil {
 
     /**
      * 拷贝对象的非空属性
-     * @param src
-     * @param target
+     * @param src 源对象
+     * @param target 目标对象
      * @param exceptPropertyNames 排除的属性（不拷贝）
      */
     public static void copyNonNullProperties(Object src, Object target, List<String> exceptPropertyNames) {
@@ -54,10 +86,10 @@ public class MyBeanUtil {
      */
     public static String[] getNotNullPropertyNames(Object source, List<String> exceptNameList) {
         final BeanWrapper src = new BeanWrapperImpl(source);
-        java.beans.PropertyDescriptor[] pds = src.getPropertyDescriptors();
+        PropertyDescriptor[] pds = src.getPropertyDescriptors();
 
         Set<String> notEmptyNames = new HashSet<>();
-        for(java.beans.PropertyDescriptor pd : pds) {
+        for(PropertyDescriptor pd : pds) {
             try {
                 String propertyName = pd.getName();
                 if ("class".equals(propertyName)) {
@@ -80,15 +112,15 @@ public class MyBeanUtil {
 
     /**
      * 获取对象的值为null的属性
-     * @param source
+     * @param source 实体对象
      * @return
      */
     public static String[] getNullPropertyNames(Object source) {
         final BeanWrapper src = new BeanWrapperImpl(source);
-        java.beans.PropertyDescriptor[] pds = src.getPropertyDescriptors();
+        PropertyDescriptor[] pds = src.getPropertyDescriptors();
 
         Set<String> emptyNames = new HashSet<>();
-        for(java.beans.PropertyDescriptor pd : pds) {
+        for(PropertyDescriptor pd : pds) {
             try {
                 Object srcValue = src.getPropertyValue(pd.getName());
                 if (srcValue == null) {
@@ -104,9 +136,9 @@ public class MyBeanUtil {
 
     /**
      * 根据注解名和属性设置属性值
-     * @param annotationClass
-     * @param defaultValue
-     * @param object
+     * @param annotationClass 注解类
+     * @param defaultValue 要设置的值
+     * @param object 实体
      * @return
      */
     public static <T extends Annotation> Object setFieldValueByAnnotationNameAttr(Class<T> annotationClass, String attrName, Object defaultValue, Object object) {
@@ -171,9 +203,10 @@ public class MyBeanUtil {
     }
 
     /**
-     * 根据get/set许可屏蔽相关属性
-     * @param toValue
-     * @param object
+     * 用于禁止接收外部传入的属性值，替代为指定的值
+     * @param attrName 属性名称
+     * @param toValue 要设置的值
+     * @param object 实体对象
      * @return
      */
     public static <T extends Annotation> Object setFieldValueByRestFieldAllow(String attrName, Object toValue, Object object) {
@@ -201,9 +234,10 @@ public class MyBeanUtil {
     }
 
     /**
-     * 根据类的get/set许可屏蔽所有属性
-     * @param toValue
-     * @param object
+     * 设置指定属性的值
+     * @param attrName 属性名称
+     * @param toValue 要设置的值
+     * @param object 实体对象
      * @return
      */
     public static <T extends Annotation> Object setAllFieldValue(String attrName, Object toValue, Object object) {
@@ -232,7 +266,7 @@ public class MyBeanUtil {
 
     /**
      * 所有字段置空
-     * @param object
+     * @param object 要置空字段的实体
      * @return
      */
     public static void setAllFieldToNull(Object object) {
@@ -309,8 +343,8 @@ public class MyBeanUtil {
         try {
             for (int i = 0; i < propertyNameArr.length; i++) {
                 BeanWrapper beanWrapper = new BeanWrapperImpl(propIter);
-                java.beans.PropertyDescriptor[] pds = beanWrapper.getPropertyDescriptors();
-                for (java.beans.PropertyDescriptor pd : pds) {
+                PropertyDescriptor[] pds = beanWrapper.getPropertyDescriptors();
+                for (PropertyDescriptor pd : pds) {
                     // 属性名称验证，只留下指定的属性
                     String propertyName = pd.getName();
                     if (!propertyNameArr[i].equals(propertyName)) {
