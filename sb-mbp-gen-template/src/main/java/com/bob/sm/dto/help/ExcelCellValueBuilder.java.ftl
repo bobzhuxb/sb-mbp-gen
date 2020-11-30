@@ -4,15 +4,15 @@ import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 
 /**
- * Excel单元格Builder（带边框的数据）
+ * Excel单元格Builder（数据）
  * @author Bob
  */
 public class ExcelCellValueBuilder implements ExcelCellBuilder {
 
     private ExcelCellDTO excelCellDTO;
 
-    public ExcelCellValueBuilder(String value, int relativeRow, int column) {
-        ExcelCellDTO excelCellDTO = new ExcelCellDTO().setValue(value).setRelativeRow(relativeRow).setColumn(column);
+    public ExcelCellValueBuilder(int relativeRow, int column, String value) {
+        ExcelCellDTO excelCellDTO = new ExcelCellDTO().setRelativeRow(relativeRow).setColumn(column).setValue(value);
         this.excelCellDTO = excelCellDTO;
     }
 
@@ -22,7 +22,7 @@ public class ExcelCellValueBuilder implements ExcelCellBuilder {
      */
     @Override
     public ExcelCellDTO buildCell() {
-        return excelCellDTO.setHorizontal(HorizontalAlignment.CENTER).setAllBorder(BorderStyle.THIN);
+        return excelCellDTO.setHorizontal(HorizontalAlignment.CENTER);
     }
 
 }

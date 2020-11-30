@@ -10,8 +10,8 @@ public class ExcelCellMainTitleBuilder implements ExcelCellBuilder {
 
     private ExcelCellDTO excelCellDTO;
 
-    public ExcelCellMainTitleBuilder(String value, int relativeRow, int column) {
-        ExcelCellDTO excelCellDTO = new ExcelCellDTO().setValue(value).setRelativeRow(relativeRow).setColumn(column);
+    public ExcelCellMainTitleBuilder(int relativeRow, int column, String value) {
+        ExcelCellDTO excelCellDTO = new ExcelCellDTO().setRelativeRow(relativeRow).setColumn(column).setValue(value);
         this.excelCellDTO = excelCellDTO;
     }
 

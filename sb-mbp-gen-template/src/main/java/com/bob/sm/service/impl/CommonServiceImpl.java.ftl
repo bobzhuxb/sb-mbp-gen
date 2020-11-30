@@ -14,6 +14,7 @@ import ${packageName}.util.LocalCacheEntity;
 import ${packageName}.web.rest.errors.CommonAlertException;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFCell;
 import org.apache.poi.xssf.streaming.SXSSFRow;
@@ -327,7 +328,10 @@ public class CommonServiceImpl implements CommonService {
                         titleNameMap.put(titleDTO.getTitleName(), column);
                         SXSSFCell cell = headRow.createCell(column);
                         // 设置表头内容（替换自动换行标识符）
-                        cell.setCellValue(titleDTO.getTitleContent().replace(excelExportDTO.getWrapSpecial(), "\n"));
+                        String titleContent = titleDTO.getTitleContent() == null ? "" : titleDTO.getTitleContent();
+                        if (excelExportDTO.getWrapSpecial() != null) {
+                            cell.setCellValue(titleContent.replace(excelExportDTO.getWrapSpecial(), "\n"));
+                        }
                         cell.setCellStyle(titleNameStyle);
                         // 每个单元格都要计算该列的最大宽度
                         ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, tableStartRow, column, null, cellRangeList);
@@ -359,7 +363,9 @@ public class CommonServiceImpl implements CommonService {
                                 Object data = ((Map) dataObject).get(titleName);
                                 SXSSFCell cell = dataRow.createCell(column);
                                 // 设置数据（替换自动换行标识符）
-                                cell.setCellValue(data == null ? "" : data.toString().replace(excelExportDTO.getWrapSpecial(), "\n"));
+                                if (excelExportDTO.getWrapSpecial() != null) {
+                                    cell.setCellValue(data == null ? "" : data.toString().replace(excelExportDTO.getWrapSpecial(), "\n"));
+                                }
                                 ExcelCellDTO dataCellDTOStyle = excelExportDTO.getDataSpecialStyleMap() == null ? null
                                         : excelExportDTO.getDataSpecialStyleMap().get(column);
                                 if (dataCellDTOStyle != null) {
@@ -384,7 +390,9 @@ public class CommonServiceImpl implements CommonService {
                                     Object data = field.get(dataObject);
                                     SXSSFCell cell = dataRow.createCell(column);
                                     // 设置数据（替换自动换行标识符）
-                                    cell.setCellValue(data == null ? "" : data.toString().replace(excelExportDTO.getWrapSpecial(), "\n"));
+                                    if (excelExportDTO.getWrapSpecial() != null) {
+                                        cell.setCellValue(data == null ? "" : data.toString().replace(excelExportDTO.getWrapSpecial(), "\n"));
+                                    }
                                     ExcelCellDTO dataCellDTOStyle = excelExportDTO.getDataSpecialStyleMap() == null ? null
                                             : excelExportDTO.getDataSpecialStyleMap().get(column);
                                     if (dataCellDTOStyle != null) {
@@ -767,4 +775,16 @@ public class CommonServiceImpl implements CommonService {
         }
         return new ReturnCommonDTO<>(Constants.commonReturnStatus.SUCCESS.getValue(), null, cacheEntityClone.getExpireTime());
     }
+
+    /**
+     * 系统间调用验证
+     * @param interSystemDTO
+     * @return
+     */
+    @Override
+    public ReturnCommonDTO validateInterSystemSign(InterSystemDTO interSystemDTO) {
+        // TODO: 暂不验证
+        return new ReturnCommonDTO();
+    }
+
 }

@@ -244,7 +244,10 @@ public class ExcelUtil {
                 SXSSFCell cell = dataRow.createCell(excelCellDTO.getColumn());
                 cellMapOfRow.put(excelCellDTO.getColumn(), cell);
                 // 设置单元格内容（替换自动换行标识符）
-                cell.setCellValue(excelCellDTO.getValue().replace(wrapSpecial, "\n"));
+                String cellValue = excelCellDTO.getValue() == null ? "" : excelCellDTO.getValue();
+                if (wrapSpecial != null) {
+                    cell.setCellValue(cellValue.replace(wrapSpecial, "\n"));
+                }
                 cell.setCellStyle(dataStyle);
                 // 每个单元格都要计算每列的最大宽度
                 ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, nowRow, excelCellDTO.getColumn(), null, cellRangeList);
