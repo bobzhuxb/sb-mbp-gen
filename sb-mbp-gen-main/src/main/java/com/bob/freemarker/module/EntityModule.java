@@ -34,11 +34,10 @@ public class EntityModule {
      * @param packageName 生成的项目的包名
      * @param entityTemplatePath 实体模板文件的主路径
      * @param cfg 模板配置
-     * @param urlPrefix URL前缀
      * @throws Exception
      */
     public static ERDTO generateEntities(String umlFileName, String charsetName, String projectPath, String projectName,
-                                         String packageName, String entityTemplatePath, Configuration cfg, String urlPrefix) throws Exception {
+                                         String packageName, String entityTemplatePath, Configuration cfg) throws Exception {
         // 从JDL文件解析出entityList和relationshipList
         ERDTO erdto = JdlParseUtil.parseJdlFile(umlFileName, charsetName);
         // 获取entityList
@@ -61,7 +60,7 @@ public class EntityModule {
             entityDTO.setTableName(StringUtil.camelToUnderline(eentityName));
             List<EntityFieldDTO> fieldList = entityDTO.getFieldList();
             generateEntity(projectPath + projectName + "\\", packageName, entityComment, eentityName, fieldList,
-                    relationshipListCurrent, useDictionaryList, entityTemplatePath, cfg, urlPrefix);
+                    relationshipListCurrent, useDictionaryList, entityTemplatePath, cfg);
         }
         // Swagger2Configuration.java文件的特别修改（此处暂时废弃Swagger）
 //        swagger2ConfigurationSpecial(entityDTOList, relationshipList, projectPath, projectName, packageName);
@@ -266,13 +265,12 @@ public class EntityModule {
      * @param fieldList 实体的域（字段）
      * @param entityTemplatePath 实体模板文件的主路径
      * @param cfg 模板配置
-     * @param urlPrefix URL前缀
      * @throws Exception
      */
     private static void generateEntity(String projectDirectory, String packageName, String entityComment,
                                        String eentityName, List<EntityFieldDTO> fieldList,
                                        List<RelationshipDTO> relationshipList, List<EntityDTO> useDictionaryList,
-                                       String entityTemplatePath, Configuration cfg, String urlPrefix) throws Exception {
+                                       String entityTemplatePath, Configuration cfg) throws Exception {
         Map root = new HashMap();
         // 主实体内容
         root.put("packageName", packageName);
@@ -288,7 +286,6 @@ public class EntityModule {
         root.put("entityUrl", entityUrl);
         root.put("fieldList", fieldList);
         root.put("useDictionaryList", useDictionaryList);
-        root.put("urlPrefix", urlPrefix);
 
         // from表示当前entity，to表示关联entity，fromTo表示当前entity的子属性，toFrom表示当前entity的父属性
         List<RelationshipDTO> fromToList = new ArrayList<>();
@@ -352,7 +349,7 @@ public class EntityModule {
         // 转为配置文件处理，此处暂时不需要aopdeal目录
 //        generateServiceAopdeal(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
         generateController(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
-        generateDocJson(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg, urlPrefix);
+        generateDocJson(projectDirectory, packageName, eentityName, entityTemplatePath, root, cfg);
     }
 
     /**
@@ -443,19 +440,12 @@ public class EntityModule {
      * @param entityTemplatePath
      * @param root
      * @param cfg
-     * @param urlPrefix URL前缀
      * @throws Exception
      */
     private static void generateDocJson(String projectDirectory, String packageName, String eentityName,
-                                        String entityTemplatePath, Map root, Configuration cfg, String urlPrefix) throws Exception {
-        // 生成JSON文件名前缀的URL部分
-        String jsonNamePrefix = urlPrefix.substring(1);
-        jsonNamePrefix = jsonNamePrefix.replace("/", "_");
-        if (!jsonNamePrefix.endsWith("_")) {
-            jsonNamePrefix = jsonNamePrefix + "_";
-        }
+                                        String entityTemplatePath, Map root, Configuration cfg) throws Exception {
         // 生成JSON文件名
-        String jsonFileNamePrefix = jsonNamePrefix + StringUtil.camelToCenterline(eentityName);
+        String jsonFileNamePrefix = StringUtil.camelToCenterline(eentityName);
         generateJsonFile(projectDirectory, packageName, jsonFileNamePrefix + "_POST", entityTemplatePath, root, cfg,
                 "doc\\", "create.json.ftl");
         generateJsonFile(projectDirectory, packageName, jsonFileNamePrefix + "_PUT", entityTemplatePath, root, cfg,
@@ -474,20 +464,6 @@ public class EntityModule {
                 "doc\\", "getPage.json.ftl");
         generateJsonFile(projectDirectory, packageName, jsonFileNamePrefix + "-count_GET", entityTemplatePath, root, cfg,
                 "doc\\", "getCount.json.ftl");
-        // 不用再生成config_files文件
-//        String configFileContentAppend = jsonFileNamePrefix + "_POST.json\r"
-//                + jsonFileNamePrefix + "_PUT.json\r"
-//                + jsonFileNamePrefix + "_1_DELETE.json\r"
-//                + jsonFileNamePrefix + "_DELETE.json\r"
-//                + jsonFileNamePrefix + "_1_GET.json\r"
-//                + jsonFileNamePrefix + "-all_GET.json\r"
-//                + jsonFileNamePrefix + "-one_GET.json\r"
-//                + jsonFileNamePrefix + "_GET.json\r"
-//                + jsonFileNamePrefix + "-count_GET.json\r";
-//        File configFile = new File(projectDirectory + "src\\main\\resources\\inter\\base\\config_files");
-//        OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(configFile, true), "UTF-8");
-//        out.write(configFileContentAppend);
-//        out.close();
     }
 
     /**

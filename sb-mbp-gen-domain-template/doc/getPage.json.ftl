@@ -1,6 +1,7 @@
 {
     "httpMethod": "GET",
-    "httpUrl": "${urlPrefix}/${entityUrl}",
+    "addDefaultPrefix": "yes",
+    "httpUrl": "/${entityUrl}",
     "interDescr": "获取分页-${entityComment}",
     "param": {
         "criteriaList": [

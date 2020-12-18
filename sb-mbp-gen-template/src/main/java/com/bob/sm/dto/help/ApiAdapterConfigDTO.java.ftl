@@ -10,6 +10,7 @@ public class ApiAdapterConfigDTO {
 
     private String interNo;     // 接口识别号（同一接口类别和URL下唯一）
     private String httpMethod;  // 接口方法（GET/POST/PUT/DELETE）
+    private String addDefaultPrefix;    // 是否追加默认URL前缀（yes：是  no或不填：否）
     private String httpUrl;     // 接口URL
     private String interDescr;  // 接口描述
     private ApiAdapterParamDTO param;       // 接口参数配置
@@ -31,6 +32,14 @@ public class ApiAdapterConfigDTO {
 
     public void setHttpMethod(String httpMethod) {
         this.httpMethod = httpMethod;
+    }
+
+    public String getAddDefaultPrefix() {
+        return addDefaultPrefix;
+    }
+
+    public void setAddDefaultPrefix(String addDefaultPrefix) {
+        this.addDefaultPrefix = addDefaultPrefix;
     }
 
     public String getHttpUrl() {

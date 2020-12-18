@@ -1,6 +1,7 @@
 {
     "httpMethod": "DELETE",
-    "httpUrl": "${urlPrefix}/${entityUrl}/1",
+    "addDefaultPrefix": "yes",
+    "httpUrl": "/${entityUrl}/1",
     "interDescr": "单个删除${entityComment}",
     "result":{
         "resultCode": "1：操作成功  2：操作失败",

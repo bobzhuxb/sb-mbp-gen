@@ -28,8 +28,7 @@ import java.util.List;
  * @author Bob
  */
 @RestController
-@RequestMapping("${urlPrefix}")
-public class ${eentityName}Controller {
+public class ${eentityName}Controller extends BaseController {
 
     private final Logger log = LoggerFactory.getLogger(${eentityName}Controller.class);
 

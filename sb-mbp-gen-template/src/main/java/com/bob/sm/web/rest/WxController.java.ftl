@@ -20,8 +20,7 @@ import javax.validation.Valid;
  * @author Bob
  */
 @RestController
-@RequestMapping("${urlPrefix}")
-public class WxController {
+public class WxController extends BaseController {
 
     private final Logger log = LoggerFactory.getLogger(WxController.class);
 

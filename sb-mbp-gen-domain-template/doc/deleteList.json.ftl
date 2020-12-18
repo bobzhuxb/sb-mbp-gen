@@ -1,6 +1,7 @@
 {
     "httpMethod": "DELETE",
-    "httpUrl": "${urlPrefix}/${entityUrl}",
+    "addDefaultPrefix": "yes",
+    "httpUrl": "/${entityUrl}",
     "interDescr": "批量删除${entityComment}（根据主键ID列表删除）",
     "param": {
         "jsonBody": [1,2,3]

@@ -346,7 +346,7 @@ public class AfterInitRunner implements CommandLineRunner {
             // 生成实体
             log.info("=======> 生成实体 start");
             ERDTO erdto = EntityModule.generateEntities(umlFileName, umlFileCharsetName, projectPath,
-                    projectName, packageName, entityTemplatePath, cfg, urlPrefix);
+                    projectName, packageName, entityTemplatePath, cfg);
             log.info("=======> 生成实体 end");
             if ("yes".equals(changeDb)) {
                 // 操作数据库

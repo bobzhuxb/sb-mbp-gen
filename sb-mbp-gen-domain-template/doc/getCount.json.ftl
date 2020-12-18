@@ -1,6 +1,7 @@
 {
     "httpMethod": "GET",
-    "httpUrl": "${urlPrefix}/${entityUrl}-count",
+    "addDefaultPrefix": "yes",
+    "httpUrl": "/${entityUrl}-count",
     "interDescr": "获取数量-${entityComment}",
     "param": {
         "criteriaList": [

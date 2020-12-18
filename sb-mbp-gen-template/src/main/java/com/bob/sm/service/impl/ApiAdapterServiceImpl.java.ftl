@@ -22,12 +22,10 @@ import ${packageName}.dto.help.ApiAdapterResultFieldDTO;
 import ${packageName}.dto.help.ReturnCommonDTO;
 import ${packageName}.service.ApiAdapterService;
 import ${packageName}.web.rest.errors.CommonAlertException;
-import ${packageName}.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -93,6 +91,10 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                         + "_" + configDTO.getHttpMethod() + "_" + configDTO.getInterNo();
                 if (jsonFileName.startsWith("#") || !jsonFileName.equals(key + ".json")) {
                     throw new CommonAlertException(jsonFileName + "文件名与配置不符");
+                }
+                if ("yes".equals(configDTO.getAddDefaultPrefix())) {
+                    // 如果追加默认URL前缀，则在key前面追加上该prefix转换后的key
+                    key = Constants.URL_DEFAULT_PREFIX.substring(1).replace("/", "_") + "_" + key;
                 }
                 // 按处理结果的层级排序（需要一层一层处理）
                 List<ApiAdapterResultFieldDTO> fieldConfigSortList = sortReturnConfigList(configDTO);
@@ -239,7 +241,11 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
         Font fontTitle = new Font(BaseFont.createFont("/inter/font/simsun.ttf", BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED), 8, Font.BOLD);
         Paragraph urlParagraph = new Paragraph();
         urlParagraph.add(new Chunk("接口URL：", fontTitle));
-        urlParagraph.add(new Chunk(configDTO.getHttpUrl(), fontText));
+        String httpUrl = configDTO.getHttpUrl();
+        if ("yes".equals(configDTO.getAddDefaultPrefix())) {
+            httpUrl = Constants.URL_DEFAULT_PREFIX + httpUrl;
+        }
+        urlParagraph.add(new Chunk(httpUrl, fontText));
         pdfDocument.add(urlParagraph);
         Paragraph methodParagraph = new Paragraph();
         methodParagraph.add(new Chunk("接口方法：", fontTitle));

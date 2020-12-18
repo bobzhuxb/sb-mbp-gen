@@ -19,6 +19,11 @@ public final class Constants {
     public static final String SPRING_PROFILE_PRODUCTION = "prod";
 
     /**
+     * 默认的URL前缀
+     */
+    public static final String URL_DEFAULT_PREFIX = "${urlPrefix}";
+
+    /**
      * 上传的文件指定相对路径
      */
     public static final String FILE_UPLOAD_RELATIVE_PATH = "upload";

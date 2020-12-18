@@ -1,6 +1,7 @@
 {
     "httpMethod": "POST",
-    "httpUrl": "${urlPrefix}/${entityUrl}",
+    "addDefaultPrefix": "yes",
+    "httpUrl": "/${entityUrl}",
     "interDescr": "新增${entityComment}",
     "param": {
         "jsonBody": {

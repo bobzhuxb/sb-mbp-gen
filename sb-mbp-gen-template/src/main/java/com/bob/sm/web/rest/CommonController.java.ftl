@@ -23,8 +23,7 @@ import java.io.File;
  * @author Bob
  */
 @RestController
-@RequestMapping("${urlPrefix}")
-public class CommonController {
+public class CommonController extends BaseController {
 
     private final Logger log = LoggerFactory.getLogger(CommonController.class);
 
