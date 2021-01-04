@@ -14,7 +14,6 @@ import ${packageName}.util.LocalCacheEntity;
 import ${packageName}.web.rest.errors.CommonAlertException;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFCell;
 import org.apache.poi.xssf.streaming.SXSSFRow;
@@ -68,7 +67,8 @@ public class CommonServiceImpl implements CommonService {
         int lastPointPosition = fileName.lastIndexOf(".");
         String extension = lastPointPosition < 0 ? "" : fileName.substring(lastPointPosition);
         // 相对路径
-        String relativePath = new SimpleDateFormat("yyyyMMdd").format(nowDate);
+        String relativePath = Constants.FILE_UPLOAD_RELATIVE_PATH + File.separator
+                + new SimpleDateFormat("yyyyMMdd").format(nowDate);
         int fileRandomInt = new Random().nextInt(1000);
         // 新文件名
         String newFileName = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(nowDate) + "_"
@@ -253,6 +253,11 @@ public class CommonServiceImpl implements CommonService {
                 fileName = relativeFileName.substring(relativeFileName.lastIndexOf(File.separator) + 1);
                 relativePath = relativeFileName.substring(0, relativeFileName.lastIndexOf(File.separator));
             }
+            // 后缀名
+            String suffix = Constants.excelType.XLSX.getValue();
+            if (excelExportDTO.getExcelType() != null) {
+                suffix = excelExportDTO.getExcelType();
+            }
             // sheet名
             String sheetName = excelExportDTO.getSheetName();
             if (sheetName == null || "".equals(sheetName)) {
@@ -282,7 +287,7 @@ public class CommonServiceImpl implements CommonService {
                 response.setContentType("application/vnd.ms-excel");
                 // 一定要设置成xlsx格式
                 response.setHeader("Content-Disposition", "attachment;filename*=utf-8'zh_cn'"
-                        + URLEncoder.encode(fileName + ".xlsx", "UTF-8"));
+                        + URLEncoder.encode(fileName + "." + suffix, "UTF-8"));
             }
             // 输出流
             OutputStream outputStream = null;
@@ -294,7 +299,7 @@ public class CommonServiceImpl implements CommonService {
                 } else {
                     // excelExportDTO.getFileName()是相对路径
                     outputStream = new FileOutputStream(ymlConfig.getLocation() + File.separator + relativePath
-                            + File.separator + fileName + ".xlsx");
+                            + File.separator + fileName + "." + suffix);
                 }
                 // 创建sheet页
                 SXSSFSheet sheet = workbook.createSheet(sheetName);
@@ -774,17 +779,6 @@ public class CommonServiceImpl implements CommonService {
             return new ReturnCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "value为空");
         }
         return new ReturnCommonDTO<>(Constants.commonReturnStatus.SUCCESS.getValue(), null, cacheEntityClone.getExpireTime());
-    }
-
-    /**
-     * 系统间调用验证
-     * @param interSystemDTO
-     * @return
-     */
-    @Override
-    public ReturnCommonDTO validateInterSystemSign(InterSystemDTO interSystemDTO) {
-        // TODO: 暂不验证
-        return new ReturnCommonDTO();
     }
 
 }

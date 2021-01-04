@@ -1,4 +1,4 @@
-package ${packageName}.dto.help;
+package com.ts.dt.dto.help;
 
 import java.util.List;
 import java.util.Map;
@@ -10,6 +10,8 @@ import java.util.Map;
 public class ExcelExportDTO {
 
     private String fileName;                        // Excel文件名（不包含后缀）
+
+    private String excelType;                       // Excel类型（XLS/XLSX）
 
     private String sheetName;                       // sheet名
 
@@ -37,6 +39,15 @@ public class ExcelExportDTO {
 
     public ExcelExportDTO setFileName(String fileName) {
         this.fileName = fileName;
+        return this;
+    }
+
+    public String getExcelType() {
+        return excelType;
+    }
+
+    public ExcelExportDTO setExcelType(String excelType) {
+        this.excelType = excelType;
         return this;
     }
 
