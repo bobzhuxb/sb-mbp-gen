@@ -1,5 +1,6 @@
 package ${packageName}.util;
 
+import ${packageName}.config.Constants;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -319,8 +320,14 @@ public class HttpUtil {
      * @return 请求明细
      */
     public static String getRequestDetailInfo(HttpServletRequest request) {
+        // 当前时间毫秒
+        long currentMillis = System.currentTimeMillis();
+        // 获取请求到达时间
+        Object requestStartObj = request.getAttribute(Constants.REQUEST_ATTR_START_TIME);
+        // 计算请求耗时
+        String requestCost = requestStartObj == null ? "未知" : (currentMillis - (Long) requestStartObj) + "毫秒";
         StringBuilder msgDetailSb = new StringBuilder()
-                .append("<<< HTTP请求明细 >>>\r\n")
+                .append("<<< HTTP请求明细 >>>（请求耗时：" + requestCost+ "）\r\n")
                 .append("【METHOD】" + request.getMethod() + "\r\n")
                 .append("【URL】" + request.getRequestURL() + "\r\n")
                 .append("【QUERY_STRING】" + (request.getQueryString() == null ? "null" : request.getQueryString()) + "\r\n")

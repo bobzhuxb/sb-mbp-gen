@@ -29,6 +29,11 @@ public final class Constants {
     public static final String FILE_UPLOAD_RELATIVE_PATH = "upload";
 
     /**
+     * HTTP请求的附带属性（请求到达时间）
+     */
+    public static final String REQUEST_ATTR_START_TIME = "startMillis";
+
+    /**
      * Excel导出中的主题色
      */
     public static final short EXCEL_THEME_COLOR = IndexedColors.GREY_25_PERCENT.getIndex();

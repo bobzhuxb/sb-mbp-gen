@@ -35,7 +35,7 @@ import java.lang.annotation.Annotation;
  */
 @Component
 @Aspect
-@Order(2)
+@Order(3)
 public class ControllerAspect {
 
     private final Logger log = LoggerFactory.getLogger(ControllerAspect.class);
@@ -57,7 +57,7 @@ public class ControllerAspect {
 
     @Around("pointCutAll()")
     public Object allAround(ProceedingJoinPoint pjp) throws Throwable {
-        log.debug("AOP Aronud controller before...");
+        log.debug("AOP Around controller before...");
         // 方法参数
         Object[] parameters = pjp.getArgs();
         Object retVal = null;
@@ -103,13 +103,13 @@ public class ControllerAspect {
             // 没有被参数验证拦截返回的，继续执行后续的操作
             retVal = pjp.proceed(parameters);
         }
-        log.debug("AOP Aronud controller after...");
+        log.debug("AOP Around controller after...");
         return retVal;
     }
 
     @Around("pointCutGet()")
     public Object getAround(ProceedingJoinPoint pjp) throws Throwable {
-        log.debug("AOP Aronud controller get before...");
+        log.debug("AOP Around controller get before...");
         // 获取request参数，拦截并解析成Criteria查询条件，解析不了的继续传下去
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
@@ -127,14 +127,14 @@ public class ControllerAspect {
         // 处理返回结果
         apiAdapterService.processReturn(request, parameters, retVal);
         
-        log.debug("AOP Aronud controller get after...");
+        log.debug("AOP Around controller get after...");
 
         return retVal;
     }
 
     @Around("pointCutCreate()")
     public Object createAround(ProceedingJoinPoint pjp) throws Throwable {
-        log.debug("AOP Aronud controller add before...");
+        log.debug("AOP Around controller add before...");
         // 获取request参数，拦截并解析成Criteria查询条件，解析不了的继续传下去
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
@@ -151,14 +151,14 @@ public class ControllerAspect {
         // 处理返回结果
         apiAdapterService.processReturn(request, parameters, retVal);
         
-        log.debug("AOP Aronud controller add after...");
+        log.debug("AOP Around controller add after...");
 
         return retVal;
     }
 
     @Around("pointCutUpdate()")
     public Object updateAround(ProceedingJoinPoint pjp) throws Throwable {
-        log.debug("AOP Aronud controller update before...");
+        log.debug("AOP Around controller update before...");
         // 获取request参数，拦截并解析成Criteria查询条件，解析不了的继续传下去
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
         ServletRequestAttributes sra = (ServletRequestAttributes) ra;
@@ -174,7 +174,7 @@ public class ControllerAspect {
         // 处理返回结果
         apiAdapterService.processReturn(request, parameters, retVal);
         
-        log.debug("AOP Aronud controller update after...");
+        log.debug("AOP Around controller update after...");
 
         return retVal;
     }

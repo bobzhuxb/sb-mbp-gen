@@ -95,11 +95,9 @@ public class CommonServiceImpl implements CommonService {
             if ("open".equals(ymlConfig.getPicCompressSwitch())) {
                 // 启动压缩
                 int compressCount = FileUtil.compressPic(ymlConfig, localFileName, localCompressFileName);
-                fileUploadDTO.setCompressedRelativePath(Constants.FILE_UPLOAD_RELATIVE_PATH + File.separator
-                        + relativePath + File.separator + localCompressFileName);
+                fileUploadDTO.setCompressedRelativePath(relativePath + File.separator + localCompressFileName);
             }
-            fileUploadDTO.setRelativePath(Constants.FILE_UPLOAD_RELATIVE_PATH + File.separator + relativePath
-                    + File.separator + newFileName);
+            fileUploadDTO.setRelativePath(relativePath + File.separator + newFileName);
             fileUploadDTO.setUploadTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(nowDate));
             return new ReturnUploadCommonDTO<>(fileUploadDTO);
         } catch (Exception e) {
