@@ -9,7 +9,10 @@ import ${packageName}.web.rest.errors.CommonException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -48,8 +51,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
     public ReturnCommonDTO handleNoDataFault(NoSuchElementException ex) {
-        String message = ex.getMessage();
-        return new ReturnCommonDTO("-997", "不存在的数据：" + message);
+        String message = "不存在的数据：" + ex.getMessage();
+        return new ReturnCommonDTO("-997", message);
     }
 
     /**
@@ -72,10 +75,52 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(JSONException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ReturnCommonDTO handleJsonParseFault(HttpServletRequest request, JSONException ex) {
-        String message = "请求错误";
+        String message = "请求错误，请确认JSON格式";
         String messageDetail = "JSON解析错误\r\n" + HttpUtil.getRequestDetailInfo(request);
         log.error(messageDetail, ex);
         return new ReturnCommonDTO("-995", message);
+    }
+
+    /**
+     * 拦截HTTP请求内容错误（记录错误日志）
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ReturnCommonDTO handleHttpMessageNotReadableFault(HttpServletRequest request, HttpMessageNotReadableException ex) {
+        String message = "请求错误，请确认HTTP Body的数据";
+        String messageDetail = "HTTP请求错误\r\n" + HttpUtil.getRequestDetailInfo(request);
+        log.error(messageDetail, ex);
+        return new ReturnCommonDTO("-994", message);
+    }
+
+    /**
+     * 请求的Content-Type不正确
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ReturnCommonDTO handleContentTypeFault(HttpServletRequest request, HttpMediaTypeNotSupportedException ex) {
+        String message = "请求的Content-Type不正确";
+        String messageDetail = "请求的Content-Type不正确：\r\n" + HttpUtil.getRequestDetailInfo(request);
+        log.error(messageDetail, ex);
+        return new ReturnCommonDTO("-993", message);
+    }
+
+    /**
+     * 请求的Content-Type被禁止
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ReturnCommonDTO handleContentTypeNotAcceptableFault(HttpServletRequest request, HttpMediaTypeNotAcceptableException ex) {
+        String message = "请求的Content-Type被禁止";
+        String messageDetail = "请求的Content-Type被禁止：" + "\r\n" + HttpUtil.getRequestDetailInfo(request);
+        log.error(messageDetail, ex);
+        return new ReturnCommonDTO("-992", message);
     }
 
     /**
