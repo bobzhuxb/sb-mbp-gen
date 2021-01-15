@@ -34,6 +34,11 @@ public final class Constants {
     public static final String REQUEST_ATTR_START_TIME = "startMillis";
 
     /**
+     * HTTP请求时延过高的阈值（单位：毫秒，用于记录WARN日志）
+     */
+    public static final long REQUEST_DELAY_THRESHOLD_MILLIS = 10000;
+
+    /**
      * Excel导出中的主题色
      */
     public static final short EXCEL_THEME_COLOR = IndexedColors.GREY_25_PERCENT.getIndex();

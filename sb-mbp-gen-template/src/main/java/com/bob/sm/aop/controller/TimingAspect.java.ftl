@@ -1,6 +1,7 @@
 package ${packageName}.aop.controller;
 
 import ${packageName}.config.Constants;
+import ${packageName}.util.HttpUtil;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -45,7 +46,14 @@ public class TimingAspect {
         Object retVal = pjp.proceed(parameters);
         // 当前时间毫秒
         long endMillis = System.currentTimeMillis();
-        log.debug("AOP Around timing after... 总耗时" + (endMillis - startMillis) + "毫秒");
+        // 请求总耗时
+        long diffMillis = endMillis - startMillis;
+        log.debug("AOP Around timing after... 总耗时" + diffMillis + "毫秒");
+        // 若请求耗时过长，则记录WARN日志
+        if (diffMillis > Constants.REQUEST_DELAY_THRESHOLD_MILLIS) {
+            String messageDetail = "请求耗时过长\r\n" + HttpUtil.getRequestDetailInfo(request);
+            log.warn(messageDetail);
+        }
         return retVal;
     }
 
