@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.validation.BindException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -121,6 +122,20 @@ public class GlobalExceptionHandler {
         String messageDetail = "请求的Content-Type被禁止：" + "\r\n" + HttpUtil.getRequestDetailInfo(request);
         log.error(messageDetail, ex);
         return new ReturnCommonDTO("-992", message);
+    }
+
+    /**
+     * 参数转换错误
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(BindException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ReturnCommonDTO handleBindFault(HttpServletRequest request, BindException ex) {
+        String message = "请求参数转换错误";
+        String messageDetail = "参数转换错误：" + "\r\n" + HttpUtil.getRequestDetailInfo(request);
+        log.error(messageDetail, ex);
+        return new ReturnCommonDTO("-991", message);
     }
 
     /**
