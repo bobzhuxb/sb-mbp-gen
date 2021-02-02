@@ -1,4 +1,4 @@
-package com.ts.dt.dto.help;
+package ${packageName}.dto.help;
 
 import java.util.List;
 import java.util.Map;
@@ -32,6 +32,8 @@ public class ExcelExportDTO {
     private String wrapSpecial = "\\n";             // 换行符特殊标识
 
     private Map<Integer, ExcelCellDTO> dataSpecialStyleMap;    // 特殊列的样式（Key：列序号  Value：样式）
+
+    private List<ExcelCellDTO> specialStyleCellList;    // 实际表格数据中，特殊单元格的样式
 
     public String getFileName() {
         return fileName;
@@ -138,6 +140,15 @@ public class ExcelExportDTO {
 
     public ExcelExportDTO setDataSpecialStyleMap(Map<Integer, ExcelCellDTO> dataSpecialStyleMap) {
         this.dataSpecialStyleMap = dataSpecialStyleMap;
+        return this;
+    }
+
+    public List<ExcelCellDTO> getSpecialStyleCellList() {
+        return specialStyleCellList;
+    }
+
+    public ExcelExportDTO setSpecialStyleCellList(List<ExcelCellDTO> specialStyleCellList) {
+        this.specialStyleCellList = specialStyleCellList;
         return this;
     }
 }

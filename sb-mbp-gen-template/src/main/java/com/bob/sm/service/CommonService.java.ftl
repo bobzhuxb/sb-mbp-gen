@@ -27,6 +27,8 @@ public interface CommonService {
 
     ReturnCommonDTO exportExcel(HttpServletResponse response, ExcelExportDTO excelExportDTO);
 
+    ReturnCommonDTO exportExcel(HttpServletResponse response, List<ExcelExportDTO> excelExportDTOList);
+
     <T> ReturnCommonDTO<List<T>> importParseExcel(String fullFileName, Class<T> excelParseClass,
                                                   Integer maxErrHintCount);
 

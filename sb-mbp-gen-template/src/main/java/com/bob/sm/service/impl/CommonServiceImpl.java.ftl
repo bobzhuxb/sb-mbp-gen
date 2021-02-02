@@ -223,8 +223,10 @@ public class CommonServiceImpl implements CommonService {
         return new ReturnCommonDTO();
     }
 
+    
+
     /**
-     * 导出Excel
+     * 导出单Sheet的Excel
      * @param response HTTP Response
      * @param excelExportDTO 导出的Excel相关数据
      * @return 导出结果
@@ -233,224 +235,346 @@ public class CommonServiceImpl implements CommonService {
     @Override
     public ReturnCommonDTO exportExcel(HttpServletResponse response, ExcelExportDTO excelExportDTO) {
         try {
-            // ==================== 获取相关参数 ==========================
-            // 当前时间
-            Date nowDate = new Date();
-            // Excel文件名（包含相对路径，但不包含后缀）
-            // 如果response不为空，则fileName没有相对路径；如果response为空，则fileName有相对路径
-            // response不为空表示导出文件到客户端，response为空表示导出文件到服务器本地
-            // 最终文件名
-            String fileName = null;
-            // 相对路径
-            String relativePath = null;
-            // 包含相对路径，但不包含后缀的文件名
-            String relativeFileName = excelExportDTO.getFileName();
-            if (response != null) {
-                fileName = relativeFileName;
-            } else {
-                fileName = relativeFileName.substring(relativeFileName.lastIndexOf(File.separator) + 1);
-                relativePath = relativeFileName.substring(0, relativeFileName.lastIndexOf(File.separator));
-            }
-            // 后缀名
-            String suffix = Constants.excelType.XLSX.getValue();
-            if (excelExportDTO.getExcelType() != null) {
-                suffix = excelExportDTO.getExcelType();
-            }
-            // sheet名
-            String sheetName = excelExportDTO.getSheetName();
-            if (sheetName == null || "".equals(sheetName)) {
-                sheetName = fileName;
-            }
-            // 最大列数（用于自适应列宽）
-            int maxColumn = excelExportDTO.getMaxColumn();
-            // 实际表格（包括标题行）的开始行
-            int tableStartRow = excelExportDTO.getTableStartRow();
-            // 在实际表格前面部分的单元格
-            List<ExcelCellDTO> beforeDataCellList = excelExportDTO.getBeforeDataCellList();
-            // 在实际表格后面部分的单元格
-            List<ExcelCellDTO> afterDataCellList = excelExportDTO.getAfterDataCellList();
-            // 标题行
-            List<ExcelTitleDTO> titleList = excelExportDTO.getTitleList();
-            // 数据
-            List<?> dataList = excelExportDTO.getDataList();
-            // 要合并的单元格
-            List<ExcelCellRangeDTO> cellRangeList = excelExportDTO.getCellRangeList();
-
-            // ==================== 开始生成Excel ==========================
-            // 创建Excel工作簿
-            SXSSFWorkbook workbook = new SXSSFWorkbook();
-            if (response != null) {
-                // 设置头信息
-                response.setCharacterEncoding("UTF-8");
-                response.setContentType("application/vnd.ms-excel");
-                // 一定要设置成xlsx格式
-                response.setHeader("Content-Disposition", "attachment;filename*=utf-8'zh_cn'"
-                        + URLEncoder.encode(fileName + "." + suffix, "UTF-8"));
-            }
-            // 输出流
+            SXSSFWorkbook workbook = null;
             OutputStream outputStream = null;
-            workbook.createCellStyle();
             try {
-                if (response != null) {
-                    // 创建一个输出流
-                    outputStream = response.getOutputStream();
-                } else {
-                    // excelExportDTO.getFileName()是相对路径
-                    outputStream = new FileOutputStream(ymlConfig.getLocation() + File.separator + relativePath
-                            + File.separator + fileName + "." + suffix);
+                // 生成Excel信息
+                ExcelExportBaseInfoDTO excelExportBaseInfoDTO = formExcelForExport(response, excelExportDTO);
+                // 获取解析参数
+                workbook = excelExportBaseInfoDTO.getWorkbook();
+                outputStream = excelExportBaseInfoDTO.getOutputStream();
+                String fileName = excelExportBaseInfoDTO.getFileName();
+                // 生成Sheet信息
+                // sheet名
+                String sheetName = excelExportDTO.getSheetName();
+                if (sheetName == null || "".equals(sheetName)) {
+                    sheetName = fileName;
                 }
-                // 创建sheet页
-                SXSSFSheet sheet = workbook.createSheet(sheetName);
-                // 存储最大列宽，用于处理中文不能自动调整列宽的问题
-                Map<Integer, Integer> maxWidthMap = new HashMap<>();
-                // 预处理合并单元格（以防出现Attempting to write ... that is already written to disk.）
-                // Key：要合并的单元格的最后一行  Value：最后一行是该数值的所有合并单元格
-                Map<Integer, List<ExcelCellRangeDTO>> lastRowToMergeMap = ExcelUtil.mergeCellGroup(cellRangeList);
-                // 在实际表格上方的单元格
-                if (beforeDataCellList != null) {
-                    // key：relativeRow相对行数，value：该行的单元格数据
-                    ExcelUtil.addDataToExcel(beforeDataCellList, 0, maxWidthMap, lastRowToMergeMap,
-                            cellRangeList, excelExportDTO.getWrapSpecial(), workbook, sheet);
-                }
-                if (tableStartRow >= 0 && titleList != null && titleList.size() > 0
-                        && dataList != null && dataList.size() > 0) {
-                    // 存在有数据列表的情况下，生成数据列表
-                    // 创建表头
-                    SXSSFRow headRow = sheet.createRow(tableStartRow);
-                    // 表头统一居中，背景为灰色，加边框，可换行
-                    CellStyle titleNameStyle = workbook.createCellStyle();
-                    ExcelUtil.setAlignment(titleNameStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-                    ExcelUtil.setBackgroundColor(titleNameStyle, Constants.EXCEL_THEME_COLOR);
-                    ExcelUtil.setBorder(titleNameStyle, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN);
-                    // 可自动换行
-                    ExcelUtil.setWrapText(titleNameStyle, true);
-                    // 设置表头信息
-                    Map<String, Integer> titleNameMap = new HashMap<>();
-                    for (int column = 0; column < titleList.size(); column++) {
-                        ExcelTitleDTO titleDTO = titleList.get(column);
-                        titleNameMap.put(titleDTO.getTitleName(), column);
-                        SXSSFCell cell = headRow.createCell(column);
-                        // 设置表头内容（替换自动换行标识符）
-                        String titleContent = titleDTO.getTitleContent() == null ? "" : titleDTO.getTitleContent();
-                        if (excelExportDTO.getWrapSpecial() != null) {
-                            cell.setCellValue(titleContent.replace(excelExportDTO.getWrapSpecial(), "\n"));
-                        }
-                        cell.setCellStyle(titleNameStyle);
-                        // 每个单元格都要计算该列的最大宽度
-                        ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, tableStartRow, column, null, cellRangeList);
-                    }
-                    // 默认表数据统一居中，加边框，可换行
-                    CellStyle defaultDataStyle = workbook.createCellStyle();
-                    ExcelUtil.setAlignment(defaultDataStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
-                    ExcelUtil.setBorder(defaultDataStyle, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN);
-                    // 可自动换行
-                    ExcelUtil.setWrapText(defaultDataStyle, true);
-                    // 判断是否有合并单元格，有的话就合并（此时所在行为tableStartRow）
-                    List<ExcelCellRangeDTO> tableStartMergeList = lastRowToMergeMap.get(tableStartRow);
-                    if (tableStartMergeList != null && tableStartMergeList.size() > 0) {
-                        for (ExcelCellRangeDTO cellRangeDTO : tableStartMergeList) {
-                            // 合并单元格
-                            ExcelUtil.doMergeCell(sheet, cellRangeDTO);
-                        }
-                    }
-                    // 填入表数据
-                    for (int dataRowCount = 0; dataRowCount < dataList.size(); dataRowCount++) {
-                        // 当前行
-                        int nowRow = tableStartRow + dataRowCount + 1;
-                        SXSSFRow dataRow = sheet.createRow(nowRow);
-                        Object dataObject = dataList.get(dataRowCount);
-                        if (dataObject instanceof Map) {
-                            // Map获取数据
-                            for (int column = 0; column < titleList.size(); column++) {
-                                String titleName = titleList.get(column).getTitleName();
-                                Object data = ((Map) dataObject).get(titleName);
-                                SXSSFCell cell = dataRow.createCell(column);
-                                // 设置数据（替换自动换行标识符）
-                                if (excelExportDTO.getWrapSpecial() != null) {
-                                    cell.setCellValue(data == null ? "" : data.toString().replace(excelExportDTO.getWrapSpecial(), "\n"));
-                                }
-                                ExcelCellDTO dataCellDTOStyle = excelExportDTO.getDataSpecialStyleMap() == null ? null
-                                        : excelExportDTO.getDataSpecialStyleMap().get(column);
-                                if (dataCellDTOStyle != null) {
-                                    // 如果指定过某列的格式，则用该格式
-                                    cell.setCellStyle(ExcelUtil.setCellStyle(dataCellDTOStyle, workbook));
-                                } else {
-                                    // 默认数据单元格格式
-                                    cell.setCellStyle(defaultDataStyle);
-                                }
-                                // 每个单元格都要计算该列的最大宽度
-                                ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, nowRow, column, null, cellRangeList);
-                            }
-                        } else {
-                            // 反射获取对象属性
-                            for (int column = 0; column < titleList.size(); column++) {
-                                String titleName = titleList.get(column).getTitleName();
-                                // 获取属性（使用apache的包可以获取包括父类的属性）
-                                Field field = FieldUtils.getField(dataObject.getClass(), titleName, true);
-                                // 设置对象的访问权限，保证对private的属性的访问
-                                if (field != null) {
-                                    field.setAccessible(true);
-                                    Object data = field.get(dataObject);
-                                    SXSSFCell cell = dataRow.createCell(column);
-                                    // 设置数据（替换自动换行标识符）
-                                    if (excelExportDTO.getWrapSpecial() != null) {
-                                        cell.setCellValue(data == null ? "" : data.toString().replace(excelExportDTO.getWrapSpecial(), "\n"));
-                                    }
-                                    ExcelCellDTO dataCellDTOStyle = excelExportDTO.getDataSpecialStyleMap() == null ? null
-                                            : excelExportDTO.getDataSpecialStyleMap().get(column);
-                                    if (dataCellDTOStyle != null) {
-                                        // 如果指定过某列的格式，则用该格式
-                                        cell.setCellStyle(ExcelUtil.setCellStyle(dataCellDTOStyle, workbook));
-                                    } else {
-                                        // 默认数据单元格格式
-                                        cell.setCellStyle(defaultDataStyle);
-                                    }
-                                    // 每个单元格都要计算该列的最大宽度
-                                    ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, nowRow, column, null, cellRangeList);
-                                }
-                            }
-                        }
-                        // 每处理一行都要判断是否有合并单元格，有的话就合并（此时所在行为nowRow）
-                        List<ExcelCellRangeDTO> dataRowMergeList = lastRowToMergeMap.get(nowRow);
-                        if (dataRowMergeList != null && dataRowMergeList.size() > 0) {
-                            for (ExcelCellRangeDTO cellRangeDTO : dataRowMergeList) {
-                                // 合并单元格
-                                ExcelUtil.doMergeCell(sheet, cellRangeDTO);
-                            }
-                        }
-                    }
-                }
-                // 在实际表格下方的单元格
-                if (afterDataCellList != null) {
-                    // key：relativeRow相对行数，value：该行的单元格数据
-                    ExcelUtil.addDataToExcel(afterDataCellList, tableStartRow + dataList.size() + 1, maxWidthMap,
-                            lastRowToMergeMap, cellRangeList, excelExportDTO.getWrapSpecial(), workbook, sheet);
-                }
-                // 设置为根据内容自动调整列宽，必须在单元格设值以后进行
-                sheet.trackAllColumnsForAutoSizing();
-                for (int column = 0; column < maxColumn; column++) {
-                    sheet.autoSizeColumn(column);
-                    // 处理中文不能自动调整列宽的问题
-                    if (maxWidthMap.get(column) != null) {
-                        sheet.setColumnWidth(column, maxWidthMap.get(column));
-                    }
-                }
+                formExcelSheetForExport(excelExportDTO, sheetName, workbook);
                 // 写入数据
                 workbook.write(outputStream);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage(), e);
+                throw new CommonAlertException("导出失败");
             } finally {
                 // 关闭
                 if (outputStream != null) {
                     outputStream.close();
                 }
-                workbook.close();
+                if (workbook != null) {
+                    workbook.close();
+                }
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new CommonAlertException("导出失败");
         }
         return new ReturnCommonDTO();
+    }
+
+    /**
+     * 导出多Sheet的Excel
+     * @param response HTTP Response
+     * @param excelExportDTOList 导出的Excel相关数据（每个元素表示一个Sheet的描述）
+     * @return 导出结果
+     * @throws Exception
+     */
+    @Override
+    public ReturnCommonDTO exportExcel(HttpServletResponse response, List<ExcelExportDTO> excelExportDTOList) {
+        // 验证参数
+        if (excelExportDTOList == null && excelExportDTOList.size() == 0) {
+            throw new CommonAlertException("Excel多sheet导出参数异常");
+        }
+        if (excelExportDTOList.size() == 1) {
+            // 单sheet的Excel转入对应的方法进行处理
+            return exportExcel(response, excelExportDTOList.get(0));
+        }
+        try {
+            SXSSFWorkbook workbook = null;
+            OutputStream outputStream = null;
+            try {
+                // 与Excel文件本身相关的属性（非sheet的属性）写在第一个元素中
+                ExcelExportBaseInfoDTO excelExportBaseInfoDTO = formExcelForExport(response, excelExportDTOList.get(0));
+                // 获取解析参数
+                workbook = excelExportBaseInfoDTO.getWorkbook();
+                outputStream = excelExportBaseInfoDTO.getOutputStream();
+                String fileName = excelExportBaseInfoDTO.getFileName();
+                // 生成每一个Sheet信息
+                for (ExcelExportDTO excelExportDTO : excelExportDTOList) {
+                    // sheet名
+                    String sheetName = excelExportDTO.getSheetName();
+                    if (sheetName == null || "".equals(sheetName)) {
+                        throw new CommonAlertException("参数错误，部分sheet名未配置");
+                    }
+                    formExcelSheetForExport(excelExportDTO, sheetName, workbook);
+                }
+                // 写入数据
+                workbook.write(outputStream);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                throw new CommonAlertException("导出失败");
+            } finally {
+                // 关闭
+                if (outputStream != null) {
+                    outputStream.close();
+                }
+                if (workbook != null) {
+                    workbook.close();
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new CommonAlertException("导出失败");
+        }
+        return new ReturnCommonDTO();
+    }
+
+    /**
+     * 为Excel导出解析Excel的基本信息
+     * @param response HTTP Response
+     * @param excelExportDTO 导出的Excel相关数据
+     * @return Excel的基本信息
+     * @throws Exception
+     */
+    private ExcelExportBaseInfoDTO formExcelForExport(HttpServletResponse response, ExcelExportDTO excelExportDTO) throws Exception {
+        // Excel文件名（包含相对路径，但不包含后缀）
+        // 如果response不为空，则fileName没有相对路径；如果response为空，则fileName有相对路径
+        // response不为空表示导出文件到客户端，response为空表示导出文件到服务器本地
+        // 最终文件名
+        String fileName = null;
+        // 相对路径
+        String relativePath = null;
+        // 包含相对路径，但不包含后缀的文件名
+        String relativeFileName = excelExportDTO.getFileName();
+        if (response != null) {
+            fileName = relativeFileName;
+        } else {
+            fileName = relativeFileName.substring(relativeFileName.lastIndexOf(File.separator) + 1);
+            relativePath = relativeFileName.substring(0, relativeFileName.lastIndexOf(File.separator));
+        }
+        // 后缀名
+        String suffix = Constants.excelType.XLSX.getValue();
+        if (excelExportDTO.getExcelType() != null) {
+            suffix = excelExportDTO.getExcelType();
+        }
+        // 创建Excel工作簿
+        SXSSFWorkbook workbook = new SXSSFWorkbook();
+        if (response != null) {
+            // 设置头信息
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("application/vnd.ms-excel");
+            // 一定要设置成xlsx格式
+            response.setHeader("Content-Disposition", "attachment;filename*=utf-8'zh_cn'"
+                    + URLEncoder.encode(fileName + "." + suffix, "UTF-8"));
+        }
+        // 输出流
+        OutputStream outputStream = null;
+        if (response != null) {
+            // 创建一个输出流
+            outputStream = response.getOutputStream();
+        } else {
+            // excelExportDTO.getFileName()是相对路径
+            outputStream = new FileOutputStream(ymlConfig.getLocation() + File.separator + relativePath
+                    + File.separator + fileName + "." + suffix);
+        }
+        return new ExcelExportBaseInfoDTO(fileName, workbook, outputStream);
+    }
+
+    /**
+     * 为Excel导出解析Excel中某个sheet的基本信息
+     * @param excelExportDTO 导出的Excel相关数据
+     * @param sheetName sheet名
+     * @param workbook Excel工作簿
+     * @throws Exception
+     */
+    private void formExcelSheetForExport(ExcelExportDTO excelExportDTO, String sheetName, SXSSFWorkbook workbook) throws Exception {
+        // 最大列数（用于自适应列宽）
+        int maxColumn = excelExportDTO.getMaxColumn();
+        // 实际表格（包括标题行）的开始行
+        int tableStartRow = excelExportDTO.getTableStartRow();
+        // 在实际表格前面部分的单元格
+        List<ExcelCellDTO> beforeDataCellList = excelExportDTO.getBeforeDataCellList();
+        // 在实际表格后面部分的单元格
+        List<ExcelCellDTO> afterDataCellList = excelExportDTO.getAfterDataCellList();
+        // 标题行
+        List<ExcelTitleDTO> titleList = excelExportDTO.getTitleList();
+        // 数据
+        List<?> dataList = excelExportDTO.getDataList();
+        // 要合并的单元格
+        List<ExcelCellRangeDTO> cellRangeList = excelExportDTO.getCellRangeList();
+
+        // ==================== 开始生成Excel ==========================
+        // 创建sheet页
+        SXSSFSheet sheet = workbook.createSheet(sheetName);
+        // 存储最大列宽，用于处理中文不能自动调整列宽的问题
+        Map<Integer, Integer> maxWidthMap = new HashMap<>();
+        // 预处理合并单元格（以防出现Attempting to write ... that is already written to disk.）
+        // Key：要合并的单元格的最后一行  Value：最后一行是该数值的所有合并单元格
+        Map<Integer, List<ExcelCellRangeDTO>> lastRowToMergeMap = ExcelUtil.mergeCellGroup(cellRangeList);
+        // 在实际表格上方的单元格
+        if (beforeDataCellList != null) {
+            // key：relativeRow相对行数，value：该行的单元格数据
+            ExcelUtil.addDataToExcel(beforeDataCellList, 0, maxWidthMap, lastRowToMergeMap,
+                    cellRangeList, excelExportDTO.getWrapSpecial(), workbook, sheet);
+        }
+        if (tableStartRow >= 0 && titleList != null && titleList.size() > 0
+                && dataList != null && dataList.size() > 0) {
+            // 存在有数据列表的情况下，生成数据列表
+            // 创建表头
+            SXSSFRow headRow = sheet.createRow(tableStartRow);
+            // 表头统一居中，背景为灰色，加边框，可换行
+            CellStyle titleNameStyle = workbook.createCellStyle();
+            ExcelUtil.setAlignment(titleNameStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+            ExcelUtil.setBackgroundColor(titleNameStyle, Constants.EXCEL_THEME_COLOR);
+            ExcelUtil.setBorder(titleNameStyle, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN);
+            // 可自动换行
+            ExcelUtil.setWrapText(titleNameStyle, true);
+            // 设置表头信息
+            Map<String, Integer> titleNameMap = new HashMap<>();
+            for (int column = 0; column < titleList.size(); column++) {
+                ExcelTitleDTO titleDTO = titleList.get(column);
+                titleNameMap.put(titleDTO.getTitleName(), column);
+                SXSSFCell cell = headRow.createCell(column);
+                // 设置表头内容（替换自动换行标识符）
+                String titleContent = titleDTO.getTitleContent() == null ? "" : titleDTO.getTitleContent();
+                if (excelExportDTO.getWrapSpecial() != null) {
+                    cell.setCellValue(titleContent.replace(excelExportDTO.getWrapSpecial(), "\n"));
+                }
+                cell.setCellStyle(titleNameStyle);
+                // 每个单元格都要计算该列的最大宽度
+                ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, tableStartRow, column, null, cellRangeList);
+            }
+            // 默认表数据统一居中，加边框，可换行
+            CellStyle defaultDataStyle = workbook.createCellStyle();
+            ExcelUtil.setAlignment(defaultDataStyle, HorizontalAlignment.CENTER, VerticalAlignment.CENTER);
+            ExcelUtil.setBorder(defaultDataStyle, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN, BorderStyle.THIN);
+            // 可自动换行
+            ExcelUtil.setWrapText(defaultDataStyle, true);
+            // 判断是否有合并单元格，有的话就合并（此时所在行为tableStartRow）
+            List<ExcelCellRangeDTO> tableStartMergeList = lastRowToMergeMap.get(tableStartRow);
+            if (tableStartMergeList != null && tableStartMergeList.size() > 0) {
+                for (ExcelCellRangeDTO cellRangeDTO : tableStartMergeList) {
+                    // 合并单元格
+                    ExcelUtil.doMergeCell(sheet, cellRangeDTO);
+                }
+            }
+            // 特殊格式的单元格List
+            List<ExcelCellDTO> specialStyleCellList = excelExportDTO.getSpecialStyleCellList();
+            // 特殊格式的单元格Map（Key：相对行序号，从数据的第一行开始记为0  Value：特殊格式的单元格列表）
+            Map<Integer, List<ExcelCellDTO>> specialStyleCellMap = new HashMap<>();
+            if (specialStyleCellList != null && specialStyleCellList.size() > 0) {
+                for (ExcelCellDTO specialStyleCell : specialStyleCellList) {
+                    int relativeRow = specialStyleCell.getRelativeRow();
+                    List<ExcelCellDTO> rowSpecialStyleCellList = specialStyleCellMap.get(relativeRow);
+                    if (rowSpecialStyleCellList == null) {
+                        rowSpecialStyleCellList = new ArrayList<>();
+                        specialStyleCellMap.put(relativeRow, rowSpecialStyleCellList);
+                    }
+                    rowSpecialStyleCellList.add(specialStyleCell);
+                }
+            }
+            // 填入表数据
+            for (int dataRowCount = 0; dataRowCount < dataList.size(); dataRowCount++) {
+                // 当前行
+                int nowRow = tableStartRow + dataRowCount + 1;
+                SXSSFRow dataRow = sheet.createRow(nowRow);
+                Object dataObject = dataList.get(dataRowCount);
+                // 特殊格式的单元格列表
+                List<ExcelCellDTO> rowSpecialStyleCellList = specialStyleCellMap.get(dataRowCount);
+                if (dataObject instanceof Map) {
+                    // Map获取数据
+                    for (int column = 0; column < titleList.size(); column++) {
+                        String titleName = titleList.get(column).getTitleName();
+                        Object data = ((Map) dataObject).get(titleName);
+                        // 设置数据列的数据和格式
+                        setDataAndStyle(excelExportDTO, data, dataRow, nowRow, column, defaultDataStyle,
+                                rowSpecialStyleCellList, maxWidthMap, cellRangeList, workbook);
+                    }
+                } else {
+                    // 反射获取对象属性
+                    for (int column = 0; column < titleList.size(); column++) {
+                        String titleName = titleList.get(column).getTitleName();
+                        // 获取属性（使用apache的包可以获取包括父类的属性）
+                        Field field = FieldUtils.getField(dataObject.getClass(), titleName, true);
+                        // 设置对象的访问权限，保证对private的属性的访问
+                        if (field != null) {
+                            field.setAccessible(true);
+                            Object data = field.get(dataObject);
+                            // 设置数据列的数据和格式
+                            setDataAndStyle(excelExportDTO, data, dataRow, nowRow, column, defaultDataStyle,
+                                    rowSpecialStyleCellList, maxWidthMap, cellRangeList, workbook);
+                        }
+                    }
+                }
+                // 每处理一行都要判断是否有合并单元格，有的话就合并（此时所在行为nowRow）
+                List<ExcelCellRangeDTO> dataRowMergeList = lastRowToMergeMap.get(nowRow);
+                if (dataRowMergeList != null && dataRowMergeList.size() > 0) {
+                    for (ExcelCellRangeDTO cellRangeDTO : dataRowMergeList) {
+                        // 合并单元格
+                        ExcelUtil.doMergeCell(sheet, cellRangeDTO);
+                    }
+                }
+            }
+        }
+        // 在实际表格下方的单元格
+        if (afterDataCellList != null) {
+            // key：relativeRow相对行数，value：该行的单元格数据
+            ExcelUtil.addDataToExcel(afterDataCellList, tableStartRow + dataList.size() + 1, maxWidthMap,
+                    lastRowToMergeMap, cellRangeList, excelExportDTO.getWrapSpecial(), workbook, sheet);
+        }
+        // 设置为根据内容自动调整列宽，必须在单元格设值以后进行
+        sheet.trackAllColumnsForAutoSizing();
+        for (int column = 0; column < maxColumn; column++) {
+            sheet.autoSizeColumn(column);
+            // 处理中文不能自动调整列宽的问题
+            if (maxWidthMap.get(column) != null) {
+                sheet.setColumnWidth(column, maxWidthMap.get(column));
+            }
+        }
+    }
+
+    /**
+     * 设置数据列的数据和格式
+     * @param excelExportDTO 导出的Excel相关数据
+     * @param data 数据值
+     * @param dataRow 数据行
+     * @param nowRow 当前行
+     * @param column 当前列
+     * @param defaultDataStyle 默认数据格式
+     * @param rowSpecialStyleCellList 当前行特殊格式的单元格列表
+     * @param maxWidthMap 存储的最大列宽Map
+     * @param cellRangeList 要合并的单元格
+     * @param workbook Excel工作簿
+     */
+    private static void setDataAndStyle(ExcelExportDTO excelExportDTO, Object data, SXSSFRow dataRow, int nowRow,
+                                        int column, CellStyle defaultDataStyle, List<ExcelCellDTO> rowSpecialStyleCellList,
+                                        Map<Integer, Integer> maxWidthMap, List<ExcelCellRangeDTO> cellRangeList,
+                                        SXSSFWorkbook workbook) {
+        SXSSFCell cell = dataRow.createCell(column);
+        // 设置数据（替换自动换行标识符）
+        if (excelExportDTO.getWrapSpecial() != null) {
+            cell.setCellValue(data == null ? "" : data.toString().replace(excelExportDTO.getWrapSpecial(), "\n"));
+        }
+        // 指定列格式
+        ExcelCellDTO dataCellStyleFromColumn = excelExportDTO.getDataSpecialStyleMap() == null ? null
+                : excelExportDTO.getDataSpecialStyleMap().get(column);
+        CellStyle dataStyle = defaultDataStyle;
+        // 如果指定过某列的格式，则用该格式
+        if (dataCellStyleFromColumn != null) {
+            dataStyle = ExcelUtil.setCellStyle(dataCellStyleFromColumn, workbook);
+        }
+        // 如果指定过具体单元格格式，则用该格式
+        if (rowSpecialStyleCellList != null && rowSpecialStyleCellList.size() > 0) {
+            for (ExcelCellDTO rowSpecialStyleCell : rowSpecialStyleCellList) {
+                if (rowSpecialStyleCell.getColumn() == column) {
+                    dataStyle = ExcelUtil.setCellStyle(rowSpecialStyleCell, workbook);
+                    break;
+                }
+            }
+        }
+        cell.setCellStyle(dataStyle);
+        // 每个单元格都要计算该列的最大宽度
+        ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, nowRow, column, null, cellRangeList);
     }
 
     /**
