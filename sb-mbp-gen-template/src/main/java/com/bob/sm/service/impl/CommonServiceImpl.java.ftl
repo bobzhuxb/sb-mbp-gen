@@ -363,9 +363,9 @@ public class CommonServiceImpl implements CommonService {
             // 设置头信息
             response.setCharacterEncoding("UTF-8");
             response.setContentType("application/vnd.ms-excel");
-            // 一定要设置成xlsx格式
+            // 文件名进行编码
             response.setHeader("Content-Disposition", "attachment;filename*=utf-8'zh_cn'"
-                    + URLEncoder.encode(fileName + "." + suffix, "UTF-8"));
+                    + URLEncoder.encode(fileName.replace("+", " ") + "." + suffix, "UTF-8"));
         }
         // 输出流
         OutputStream outputStream = null;
