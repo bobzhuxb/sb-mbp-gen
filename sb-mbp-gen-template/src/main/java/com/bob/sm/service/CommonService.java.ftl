@@ -29,6 +29,8 @@ public interface CommonService {
 
     ReturnCommonDTO exportExcel(HttpServletResponse response, List<ExcelExportDTO> excelExportDTOList);
 
+    void encryptExcel(String fullFileName, String password) throws Exception;
+
     <T> ReturnCommonDTO<List<T>> importParseExcel(String fullFileName, Class<T> excelParseClass,
                                                   Integer maxErrHintCount);
 

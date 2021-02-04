@@ -1,6 +1,7 @@
 package ${packageName}.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import ${packageName}.annotation.ExcelProperty;
 import ${packageName}.config.Constants;
@@ -14,6 +15,12 @@ import ${packageName}.util.LocalCacheEntity;
 import ${packageName}.web.rest.errors.CommonAlertException;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.openxml4j.opc.PackageAccess;
+import org.apache.poi.poifs.crypt.EncryptionInfo;
+import org.apache.poi.poifs.crypt.EncryptionMode;
+import org.apache.poi.poifs.crypt.Encryptor;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFCell;
 import org.apache.poi.xssf.streaming.SXSSFRow;
@@ -223,8 +230,6 @@ public class CommonServiceImpl implements CommonService {
         return new ReturnCommonDTO();
     }
 
-    
-
     /**
      * 导出单Sheet的Excel
      * @param response HTTP Response
@@ -252,7 +257,8 @@ public class CommonServiceImpl implements CommonService {
                 }
                 formExcelSheetForExport(excelExportDTO, sheetName, workbook);
                 // 写入数据
-                workbook.write(outputStream);
+                workbook = doWriteExcelStream(workbook, outputStream, excelExportBaseInfoDTO.getSuffix(),
+                        excelExportDTO.getOpenPassword());
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 throw new CommonAlertException("导出失败");
@@ -309,7 +315,8 @@ public class CommonServiceImpl implements CommonService {
                     formExcelSheetForExport(excelExportDTO, sheetName, workbook);
                 }
                 // 写入数据
-                workbook.write(outputStream);
+                workbook = doWriteExcelStream(workbook, outputStream, excelExportBaseInfoDTO.getSuffix(),
+                        excelExportDTOList.get(0).getOpenPassword());
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 throw new CommonAlertException("导出失败");
@@ -377,7 +384,7 @@ public class CommonServiceImpl implements CommonService {
             outputStream = new FileOutputStream(ymlConfig.getLocation() + File.separator + relativePath
                     + File.separator + fileName + "." + suffix);
         }
-        return new ExcelExportBaseInfoDTO(fileName, workbook, outputStream);
+        return new ExcelExportBaseInfoDTO(fileName, workbook, outputStream, suffix);
     }
 
     /**
@@ -575,6 +582,83 @@ public class CommonServiceImpl implements CommonService {
         cell.setCellStyle(dataStyle);
         // 每个单元格都要计算该列的最大宽度
         ExcelUtil.computeMaxColumnWith(maxWidthMap, cell, nowRow, column, null, cellRangeList);
+    }
+
+    /**
+     * 将workbook写入流，如果需要加密，则加密后写入流
+     * @param workbook Excel工作簿
+     * @param outputStream 输出流
+     * @param suffix 后缀
+     * @param encryptPassword 加密密码（若为null，则表示加密）
+     */
+    private SXSSFWorkbook doWriteExcelStream(SXSSFWorkbook workbook, OutputStream outputStream, String suffix,
+                                             String encryptPassword) throws Exception {
+        if (StrUtil.isBlank(encryptPassword)) {
+            // 不加密，直接写入流
+            workbook.write(outputStream);
+            return workbook;
+        }
+        // 先把流写入临时文件，然后加密
+        String tempFileName = System.currentTimeMillis() + "_" + UUID.randomUUID().toString() + "." + suffix;
+        OutputStream tempOutputStream = null;
+        try {
+            tempOutputStream = new FileOutputStream(tempFileName);
+            workbook.write(tempOutputStream);
+        } finally {
+            if (tempOutputStream != null) {
+                tempOutputStream.close();
+            }
+        }
+        encryptExcel(tempFileName, encryptPassword);
+        // 将加密后的文件写回流
+        InputStream encryptFileInputStream = null;
+        try {
+            encryptFileInputStream = new FileInputStream(tempFileName);
+            byte[] read = new byte[10240];
+            int length;
+            // 开始读取
+            while ((length = encryptFileInputStream.read(read)) != -1) {
+                // 开始写入
+                outputStream.write(read, 0, length);
+            }
+        } finally {
+            if (null != encryptFileInputStream) {
+                encryptFileInputStream.close();
+            }
+            // 删除临时的加密文件
+            new File(tempFileName).delete();
+        }
+        return workbook;
+    }
+
+    /**
+     * 对Excel进行加密（读写均加密）
+     * @param fullFileName 带全路径的文件名
+     * @param password 密码
+     * @throws Exception
+     */
+    @Override
+    public void encryptExcel(String fullFileName, String password) throws Exception {
+        POIFSFileSystem fs = new POIFSFileSystem();
+        EncryptionInfo info = new EncryptionInfo(EncryptionMode.standard);
+        // EncryptionInfo info = new EncryptionInfo(EncryptionMode.agile, CipherAlgorithm.aes192, HashAlgorithm.sha384, -1, -1, null);
+        Encryptor enc = info.getEncryptor();
+        // 设置密码
+        enc.confirmPassword(password);
+        OPCPackage opc = null;
+        try {
+            opc = OPCPackage.open(new File(fullFileName), PackageAccess.READ_WRITE);
+            OutputStream os = enc.getDataStream(fs);
+            opc.save(os);
+        } finally {
+            if (opc != null) {
+                opc.close();
+            }
+        }
+        // 保存加密后的文件
+        try (FileOutputStream fos = new FileOutputStream(fullFileName)) {
+            fs.writeFilesystem(fos);
+        }
     }
 
     /**

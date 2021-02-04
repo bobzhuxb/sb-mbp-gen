@@ -15,6 +15,10 @@ public class ExcelExportDTO {
 
     private String sheetName;                       // sheet名
 
+    private String openPassword;                    // 打开文件密码（null表示不加密）
+
+    private String editPassword;                    // 编辑文件密码（null表示不加密）（注：暂不支持）
+
     private int maxColumn;                          // 最大列数（用于自适应列宽）
 
     private int tableStartRow;                      // 实际表格（包括标题行）的开始行
@@ -59,6 +63,24 @@ public class ExcelExportDTO {
 
     public ExcelExportDTO setSheetName(String sheetName) {
         this.sheetName = sheetName;
+        return this;
+    }
+
+    public String getOpenPassword() {
+        return openPassword;
+    }
+
+    public ExcelExportDTO setOpenPassword(String openPassword) {
+        this.openPassword = openPassword;
+        return this;
+    }
+
+    public String getEditPassword() {
+        return editPassword;
+    }
+
+    public ExcelExportDTO setEditPassword(String editPassword) {
+        this.editPassword = editPassword;
         return this;
     }
 

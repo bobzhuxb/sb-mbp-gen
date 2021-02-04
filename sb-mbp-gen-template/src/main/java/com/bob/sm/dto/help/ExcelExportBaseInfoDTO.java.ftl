@@ -12,12 +12,15 @@ public class ExcelExportBaseInfoDTO {
 
     private OutputStream outputStream;  // 输出流
 
+    private String suffix;              // 后缀
+
     public ExcelExportBaseInfoDTO() {}
 
-    public ExcelExportBaseInfoDTO(String fileName, SXSSFWorkbook workbook, OutputStream outputStream) {
+    public ExcelExportBaseInfoDTO(String fileName, SXSSFWorkbook workbook, OutputStream outputStream, String suffix) {
         this.fileName = fileName;
         this.workbook = workbook;
         this.outputStream = outputStream;
+        this.suffix = suffix;
     }
 
     public String getFileName() {
@@ -42,5 +45,13 @@ public class ExcelExportBaseInfoDTO {
 
     public void setOutputStream(OutputStream outputStream) {
         this.outputStream = outputStream;
+    }
+
+    public String getSuffix() {
+        return suffix;
+    }
+
+    public void setSuffix(String suffix) {
+        this.suffix = suffix;
     }
 }
