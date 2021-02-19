@@ -413,6 +413,10 @@ public class CommonServiceImpl implements CommonService {
         // ==================== 开始生成Excel ==========================
         // 创建sheet页
         SXSSFSheet sheet = workbook.createSheet(sheetName);
+        // 如果设置了工作表保护，则设定密码
+        if (StrUtil.isNotBlank(excelExportDTO.getSheetProtectPassword())) {
+            sheet.protectSheet(excelExportDTO.getSheetProtectPassword());
+        }
         // 存储最大列宽，用于处理中文不能自动调整列宽的问题
         Map<Integer, Integer> maxWidthMap = new HashMap<>();
         // 预处理合并单元格（以防出现Attempting to write ... that is already written to disk.）

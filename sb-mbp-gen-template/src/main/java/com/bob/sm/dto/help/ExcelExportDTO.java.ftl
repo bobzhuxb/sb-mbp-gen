@@ -19,6 +19,8 @@ public class ExcelExportDTO {
 
     private String editPassword;                    // 编辑文件密码（null表示不加密）（注：暂不支持）
 
+    private String sheetProtectPassword;            // 工作表保护密码（null表示不加密）
+
     private int maxColumn;                          // 最大列数（用于自适应列宽）
 
     private int tableStartRow;                      // 实际表格（包括标题行）的开始行
@@ -81,6 +83,15 @@ public class ExcelExportDTO {
 
     public ExcelExportDTO setEditPassword(String editPassword) {
         this.editPassword = editPassword;
+        return this;
+    }
+
+    public String getSheetProtectPassword() {
+        return sheetProtectPassword;
+    }
+
+    public ExcelExportDTO setSheetProtectPassword(String sheetProtectPassword) {
+        this.sheetProtectPassword = sheetProtectPassword;
         return this;
     }
 
