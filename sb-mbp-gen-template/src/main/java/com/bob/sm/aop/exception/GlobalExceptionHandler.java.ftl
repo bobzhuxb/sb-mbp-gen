@@ -161,7 +161,11 @@ public class GlobalExceptionHandler {
     public ReturnCommonDTO handleBusinessError(HttpServletRequest request, CommonException ex) {
         String code = ex.getCode();
         String message = ex.getMessage();
-        String messageDetail = message + "\r\n" + HttpUtil.getRequestDetailInfo(request);
+        String messageDetail = message;
+        if (ex.getErrDetail() != null && !"".equals(ex.getErrDetail().trim())) {
+            messageDetail += " ==> " + ex.getErrDetail();
+        }
+        messageDetail += "\r\n" + HttpUtil.getRequestDetailInfo(request);
         log.error(messageDetail, ex);
         return new ReturnCommonDTO(code, message);
     }

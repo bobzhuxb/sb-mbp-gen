@@ -13,6 +13,7 @@ import ${packageName}.util.FileUtil;
 import ${packageName}.util.LocalCache;
 import ${packageName}.util.LocalCacheEntity;
 import ${packageName}.web.rest.errors.CommonAlertException;
+import ${packageName}.web.rest.errors.CommonException;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.opc.OPCPackage;
@@ -108,8 +109,7 @@ public class CommonServiceImpl implements CommonService {
             fileUploadDTO.setUploadTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(nowDate));
             return new ReturnUploadCommonDTO<>(fileUploadDTO);
         } catch (Exception e) {
-            log.error("文件上传失败：" + fileName, e);
-            return new ReturnUploadCommonDTO<>("文件上传失败：" + fileName);
+            throw CommonException.errWithDetail("文件上传失败：" + fileName, e.getMessage());
         }
     }
 
@@ -145,15 +145,16 @@ public class CommonServiceImpl implements CommonService {
             }
             fis = new FileInputStream(file);
             return downloadFileBase(response, fis, fullFileName, changeFileName);
+        } catch (CommonException e) {
+            throw e;
         } catch (Exception e) {
-            log.error("文件下载失败：" + fullFileName, e);
-            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "文件下载失败");
+            throw CommonException.errWithDetail("文件下载失败：" + fullFileName, e.getMessage());
         } finally {
             if (fis != null) {
                 try {
                     fis.close();
                 } catch (IOException e) {
-                    log.error("文件下载失败：" + fullFileName, e);
+                    log.warn("文件下载，流关闭失败：" + fullFileName, e.getMessage());
                 }
             }
         }
@@ -205,27 +206,29 @@ public class CommonServiceImpl implements CommonService {
                     i = bis.read(buffer);
                 }
             } catch (Exception e) {
-                log.error("文件下载失败：" + (oriFileName == null ? "" : oriFileName), e);
-                return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "文件下载失败");
+                throw CommonException.errWithDetail("文件下载失败：" + (oriFileName == null ? "" : oriFileName),
+                        e.getMessage());
             } finally {
                 if (inputStream != null) {
                     try {
                         inputStream.close();
                     } catch (IOException e) {
-                        log.error("文件关闭失败：" + (oriFileName == null ? "" : oriFileName), e);
+                        log.warn("文件下载，流关闭失败：" + (oriFileName == null ? "" : oriFileName), e.getMessage());
                     }
                 }
                 if (bis != null) {
                     try {
                         bis.close();
                     } catch (IOException e) {
-                        log.error("文件关闭失败：" + (oriFileName == null ? "" : oriFileName), e);
+                        log.warn("文件下载，流关闭失败：" + (oriFileName == null ? "" : oriFileName), e.getMessage());
                     }
                 }
             }
+        } catch (CommonException e) {
+            throw e;
         } catch (Exception e) {
-            log.error("文件下载失败：" + (oriFileName == null ? "" : oriFileName), e);
-            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "文件下载失败");
+            throw CommonException.errWithDetail("文件下载失败：" + (oriFileName == null ? "" : oriFileName),
+                    e.getMessage());
         }
         return new ReturnCommonDTO();
     }
@@ -239,41 +242,39 @@ public class CommonServiceImpl implements CommonService {
      */
     @Override
     public ReturnCommonDTO exportExcel(HttpServletResponse response, ExcelExportDTO excelExportDTO) {
+        SXSSFWorkbook workbook = null;
+        OutputStream outputStream = null;
         try {
-            SXSSFWorkbook workbook = null;
-            OutputStream outputStream = null;
+            // 生成Excel信息
+            ExcelExportBaseInfoDTO excelExportBaseInfoDTO = formExcelForExport(response, excelExportDTO);
+            // 获取解析参数
+            workbook = excelExportBaseInfoDTO.getWorkbook();
+            outputStream = excelExportBaseInfoDTO.getOutputStream();
+            String fileName = excelExportBaseInfoDTO.getFileName();
+            // 生成Sheet信息
+            // sheet名
+            String sheetName = excelExportDTO.getSheetName();
+            if (sheetName == null || "".equals(sheetName)) {
+                sheetName = fileName;
+            }
+            formExcelSheetForExport(excelExportDTO, sheetName, workbook);
+            // 写入数据
+            workbook = doWriteExcelStream(workbook, outputStream, excelExportBaseInfoDTO.getSuffix(),
+                    excelExportDTO.getOpenPassword());
+        } catch (Exception e) {
+            throw CommonException.errWithDetail("导出失败", e.getMessage());
+        } finally {
+            // 关闭
             try {
-                // 生成Excel信息
-                ExcelExportBaseInfoDTO excelExportBaseInfoDTO = formExcelForExport(response, excelExportDTO);
-                // 获取解析参数
-                workbook = excelExportBaseInfoDTO.getWorkbook();
-                outputStream = excelExportBaseInfoDTO.getOutputStream();
-                String fileName = excelExportBaseInfoDTO.getFileName();
-                // 生成Sheet信息
-                // sheet名
-                String sheetName = excelExportDTO.getSheetName();
-                if (sheetName == null || "".equals(sheetName)) {
-                    sheetName = fileName;
-                }
-                formExcelSheetForExport(excelExportDTO, sheetName, workbook);
-                // 写入数据
-                workbook = doWriteExcelStream(workbook, outputStream, excelExportBaseInfoDTO.getSuffix(),
-                        excelExportDTO.getOpenPassword());
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-                throw new CommonAlertException("导出失败");
-            } finally {
-                // 关闭
                 if (outputStream != null) {
                     outputStream.close();
                 }
                 if (workbook != null) {
                     workbook.close();
                 }
+            } catch (Exception e) {
+                log.warn("Excel导出，流关闭失败", e.getMessage());
             }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new CommonAlertException("导出失败");
         }
         return new ReturnCommonDTO();
     }
@@ -295,43 +296,42 @@ public class CommonServiceImpl implements CommonService {
             // 单sheet的Excel转入对应的方法进行处理
             return exportExcel(response, excelExportDTOList.get(0));
         }
+        SXSSFWorkbook workbook = null;
+        OutputStream outputStream = null;
         try {
-            SXSSFWorkbook workbook = null;
-            OutputStream outputStream = null;
-            try {
-                // 与Excel文件本身相关的属性（非sheet的属性）写在第一个元素中
-                ExcelExportBaseInfoDTO excelExportBaseInfoDTO = formExcelForExport(response, excelExportDTOList.get(0));
-                // 获取解析参数
-                workbook = excelExportBaseInfoDTO.getWorkbook();
-                outputStream = excelExportBaseInfoDTO.getOutputStream();
-                String fileName = excelExportBaseInfoDTO.getFileName();
-                // 生成每一个Sheet信息
-                for (ExcelExportDTO excelExportDTO : excelExportDTOList) {
-                    // sheet名
-                    String sheetName = excelExportDTO.getSheetName();
-                    if (sheetName == null || "".equals(sheetName)) {
-                        throw new CommonAlertException("参数错误，部分sheet名未配置");
-                    }
-                    formExcelSheetForExport(excelExportDTO, sheetName, workbook);
+            // 与Excel文件本身相关的属性（非sheet的属性）写在第一个元素中
+            ExcelExportBaseInfoDTO excelExportBaseInfoDTO = formExcelForExport(response, excelExportDTOList.get(0));
+            // 获取解析参数
+            workbook = excelExportBaseInfoDTO.getWorkbook();
+            outputStream = excelExportBaseInfoDTO.getOutputStream();
+            // 生成每一个Sheet信息
+            for (ExcelExportDTO excelExportDTO : excelExportDTOList) {
+                // sheet名
+                String sheetName = excelExportDTO.getSheetName();
+                if (sheetName == null || "".equals(sheetName)) {
+                    throw new CommonAlertException("参数错误，部分sheet名未配置");
                 }
-                // 写入数据
-                workbook = doWriteExcelStream(workbook, outputStream, excelExportBaseInfoDTO.getSuffix(),
-                        excelExportDTOList.get(0).getOpenPassword());
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-                throw new CommonAlertException("导出失败");
-            } finally {
-                // 关闭
+                formExcelSheetForExport(excelExportDTO, sheetName, workbook);
+            }
+            // 写入数据
+            workbook = doWriteExcelStream(workbook, outputStream, excelExportBaseInfoDTO.getSuffix(),
+                    excelExportDTOList.get(0).getOpenPassword());
+        } catch (CommonAlertException e) {
+            throw e;
+        } catch (Exception e) {
+            throw CommonException.errWithDetail("导出失败", e.getMessage());
+        } finally {
+            // 关闭
+            try {
                 if (outputStream != null) {
                     outputStream.close();
                 }
                 if (workbook != null) {
                     workbook.close();
                 }
+            } catch (Exception e) {
+                log.warn("Excel导出，流关闭失败", e.getMessage());
             }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new CommonAlertException("导出失败");
         }
         return new ReturnCommonDTO();
     }
