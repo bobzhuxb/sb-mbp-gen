@@ -1,7 +1,7 @@
-package com.ts.dt.service;
+package ${packageName}.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.ts.dt.dto.help.*;
+import ${packageName}.dto.help.*;
 
 /**
  * 微信相关业务

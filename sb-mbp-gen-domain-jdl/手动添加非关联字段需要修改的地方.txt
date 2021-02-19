@@ -1,4 +1,3 @@
 com.bob.sm.domain.XXX.java文件中对应字段及get/set方法的追加
 com.bob.sm.dto.XXXDTO.java文件中对应字段及get/set方法的追加，toString方法的完善
 com.bob.sm.dto.criteria.XXXCriteria.java文件中对应字段Filter及get/set方法的追加，equals/hashCode/toString方法的完善
-com.bob.sm.web.rest.XXXController.java文件中接口的Swagger注释（包括新增、修改、查询所有、分页查询、查询数量接口）
