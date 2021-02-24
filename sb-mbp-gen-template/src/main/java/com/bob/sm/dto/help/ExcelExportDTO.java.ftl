@@ -21,9 +21,9 @@ public class ExcelExportDTO {
 
     private String sheetProtectPassword;            // 工作表保护密码（null表示不加密）
 
-    private int maxColumn;                          // 最大列数（用于自适应列宽）
+    private int maxColumn;                          // 最大列数（用于自适应列宽，从1开始计）
 
-    private int tableStartRow;                      // 实际表格（包括标题行）的开始行
+    private int tableStartRow;                      // 实际表格（包括标题行）的开始行（从0开始计）
 
     private List<ExcelCellDTO> beforeDataCellList;  // 在实际表格前面部分的单元格
 
