@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * 用户登录认证Controller.
@@ -71,6 +73,8 @@ public class UserJWTController extends BaseController {
             SystemUserDTO systemUserDTO = commonUserService.findForceCacheUserByLogin(loginVM.getUsername());
             // 设置返回数据
             resultDTO = new ReturnCommonDTO(new JWTToken(jwt, systemUserDTO.getLogin(), systemUserDTO.getName()));
+            // 审计：登录
+            systemLogMapper.insert(new SystemLog(Constants.systemLogType.LOGIN.getValue(), null, systemUserDTO.getId(), nowTimeStr));
         } catch (AuthenticationException ex) {
             resultDTO = new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "用户名或密码错误");
         } catch (CommonAlertException e) {
@@ -80,6 +84,26 @@ public class UserJWTController extends BaseController {
             resultDTO = new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "登录异常");
         }
         return ResponseEntity.ok().headers(null).body(resultDTO);
+    }
+
+    /**
+     * 退出登录（前端操作，后端只记录日志）
+     * @return
+     */
+    @GetMapping("/logout")
+    public ResponseEntity<ReturnCommonDTO> logout() {
+        // 获取当前时间和日期
+        LocalDateTime nowTime = LocalDateTime.now();
+        String nowTimeStr = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(nowTime);
+        // 获取当前用户
+        SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
+        if (systemUserDTO == null) {
+            // 没有登录
+            throw new CommonAlertException("您尚未登录!");
+        }
+        // 审计：登出
+        systemLogMapper.insert(new SystemLog(Constants.systemLogType.LOGOUT.getValue(), null, systemUserDTO.getId(), nowTimeStr));
+        return ResponseEntity.ok().headers(null).body(null);
     }
 
     /**

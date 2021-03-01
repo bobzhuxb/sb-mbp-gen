@@ -42,6 +42,11 @@ public final class Constants {
      * Excel导出中的主题色
      */
     public static final short EXCEL_THEME_COLOR = IndexedColors.GREY_25_PERCENT.getIndex();
+	
+    /**
+     * 密码有效天数
+     */
+    public static final long PASSWORD_VALID_DAYS = 180;
 
     // ================ 角色 start ========================
     /**
@@ -124,6 +129,38 @@ public final class Constants {
         @Override
         public String getName(){
             return name;
+        }
+    }
+
+    /**
+     * 系统日志类别
+     */
+    public enum systemLogType implements EnumInter {
+        LOGIN("LOGIN", "登录"), LOGOUT("LOGOUT", "登出"), CHANGE_PASSWORD("CHANGE_PASSWORD", "修改密码");
+        private String value;
+        private String name;
+        private systemLogType(String value, String name) {
+            this.value = value;
+            this.name = name;
+        }
+        @Override
+        public String getValue(){
+            return value;
+        }
+        @Override
+        public String getName(){
+            return name;
+        }
+        public String getNameByValue(String value) {
+            if (value == null) {
+                return "";
+            }
+            for (systemLogType data : systemLogType.values()) {
+                if (value.equals(data.getValue())) {
+                    return data.name;
+                }
+            }
+            return "";
         }
     }
 

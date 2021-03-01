@@ -9,6 +9,7 @@ import ${packageName}.dto.criteria.SystemUserCriteria;
 import ${packageName}.dto.criteria.filter.StringFilter;
 import ${packageName}.dto.help.ReturnCommonDTO;
 import ${packageName}.mapper.SystemUserMapper;
+import ${packageName}.mapper.SystemLogMapper;
 import ${packageName}.service.AccountService;
 import ${packageName}.service.CommonUserService;
 import ${packageName}.service.SystemUserService;
@@ -42,6 +43,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private SystemUserMapper systemUserMapper;
+
+    @Autowired
+    private SystemLogMapper systemLogMapper;
 
     /**
      * 根据登录账号获取用户全信息
@@ -83,6 +87,11 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO changePassword(String currentClearTextPassword, String newPassword) {
+        // 获取当前时间和日期
+        DateTimeFormatter dtfTime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime nowTime = LocalDateTime.now();
+        String nowTimeStr = dtfTime.format(nowTime);
+        // 获取当前用户
         SystemUserDTO systemUserDTO = commonUserService.getCurrentUser();
         if (systemUserDTO == null) {
             return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "当前用户不存在");
@@ -113,16 +122,27 @@ public class AccountServiceImpl implements AccountService {
         if (!hasUpper || !hasLower || !hasDigit) {
             return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "密码必须包含英文大小写和数字");
         }
-        // 验证原密码
-        String currentEncryptedPassword = systemUserDTO.getPassword();
+        // 验证原密码（可能刚修改过密码，所以此处从数据库中获取最新值）
+        String currentEncryptedPassword = systemUserMapper.selectById(systemUserDTO.getId()).getPassword();
         if (!new BCryptPasswordEncoder().matches(currentClearTextPassword, currentEncryptedPassword)) {
             return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "原密码错误");
         }
+        // 新密码不得与原密码相同
+        if (currentClearTextPassword.equals(newPassword)) {
+            return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "新密码不得与原密码相同");
+        }
+        // 加密后的新密码
         String encryptedPassword = new BCryptPasswordEncoder().encode(newPassword);
+        // 更新密码有效期截止时间
+        String passwordDeadline = dtfTime.format(nowTime.plusDays(Constants.PASSWORD_VALID_DAYS));
+        // 更新密码和有效期截止时间
         SystemUser userUpdate = new SystemUser();
         userUpdate.setId(systemUserDTO.getId());
         userUpdate.setPassword(encryptedPassword);
+        userUpdate.setPasswordDeadline(passwordDeadline);
         systemUserMapper.updateById(userUpdate);
+        // 审计：修改密码
+        systemLogMapper.insert(new SystemLog(Constants.systemLogType.CHANGE_PASSWORD.getValue(), null, systemUserDTO.getId(), nowTimeStr));
         return new ReturnCommonDTO();
     }
 
@@ -163,7 +183,8 @@ public class AccountServiceImpl implements AccountService {
         if (systemUserDTO == null) {
             return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "当前用户不存在");
         }
-        String currentEncryptedPassword = systemUserDTO.getPassword();
+        // 获取最新密码（可能刚修改过密码，所以此处从数据库中获取最新值）
+        String currentEncryptedPassword = systemUserMapper.selectById(systemUserDTO.getId()).getPassword();
         if (new BCryptPasswordEncoder().matches(currentClearTextPassword, currentEncryptedPassword)) {
             return new ReturnCommonDTO(Constants.yesNo.YES.getValue());
         } else {

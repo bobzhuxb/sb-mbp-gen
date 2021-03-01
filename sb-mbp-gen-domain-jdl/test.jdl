@@ -7,6 +7,9 @@ entity SystemUser {
     // 密码
     //@RestFieldAllow(allowGet = false)
     password String --column-type="varchar(255)"
+    // 密码有效期至
+    //@RestFieldAllow(allowSet = false)
+    passwordDeadline String --column-type="varchar(20)"
     // 账号状态（1：启用 2：停用）
     accountStatus Integer --column-type="tinyint"
     // 姓名
