@@ -266,9 +266,14 @@ public class DbModule {
                     while (resultSet.next()) {
                         // 通过字段检索
                         String columnName = resultSet.getString("column_name");
+                        // SQL执行时空字符串需要单引号，所以此处的验证也要加单引号
+                        String columnDefault = resultSet.getString("column_default");
+                        if (columnDefault != null && "".equals(columnDefault)) {
+                            columnDefault = "''";
+                        }
                         columnDescrMap.put(columnName, new DbColumnDescrDTO(columnName,
                                 resultSet.getString("column_type"), resultSet.getString("is_nullable"),
-                                resultSet.getString("column_default"), resultSet.getString("column_comment")));
+                                columnDefault, resultSet.getString("column_comment")));
                     }
                     // 共通的alter table
                     String alterTablePrefix = "alter table `" + tableName + "`";
@@ -383,9 +388,11 @@ public class DbModule {
                                         if ("notnull".equals(defaultColumnValue)) {
                                             alterColumnStr += " not null default ''";
                                         }
+                                        // SQL执行时空字符串需要单引号，所以此处的验证也要加单引号
+                                        String newDefaultAppend = "notnull".equals(defaultColumnValue) ? "''" : null;
                                         // 验证该字段是否有修改的部分
                                         boolean columnHasChange = validateColumnChanged(columnDescrMap, relationColumnName,
-                                                "notnull".equals(defaultColumnValue) ? "" : null, "char(50)", relationComment);
+                                                newDefaultAppend, "char(50)", relationComment);
                                         if (columnHasChange) {
                                             // 有变更
                                             // 为整表改表做准备
