@@ -28,6 +28,8 @@ public class Filter<FIELD_TYPE> implements Serializable {
     private FIELD_TYPE notBetweenFrom;
     private FIELD_TYPE notBetweenTo;
 
+    private String realFieldType;   // 实际数据类型
+
     public FIELD_TYPE getEquals() {
         return equals;
     }
@@ -158,6 +160,15 @@ public class Filter<FIELD_TYPE> implements Serializable {
 
     public Filter<FIELD_TYPE> setNotBetweenTo(FIELD_TYPE notBetweenTo) {
         this.notBetweenTo = notBetweenTo;
+        return this;
+    }
+
+    public String getRealFieldType() {
+        return realFieldType;
+    }
+
+    public Filter<FIELD_TYPE> setRealFieldType(String realFieldType) {
+        this.realFieldType = realFieldType;
         return this;
     }
 

@@ -272,6 +272,27 @@ public final class Constants {
     }
 
     /**
+     * 实际数据类型（BaseService中使用）
+     */
+    public enum baseRealFieldType implements EnumInter {
+        DOUBLE("Double", "double型"), FLOAT("Float", "float型"), INTEGER("Integer", "int型"), LONG("Long", "long型");
+        private String value;
+        private String name;
+        private baseRealFieldType(String value, String name) {
+            this.value = value;
+            this.name = name;
+        }
+        @Override
+        public String getValue(){
+            return value;
+        }
+        @Override
+        public String getName(){
+            return name;
+        }
+    }
+
+    /**
      * Excel的类型
      */
     public enum excelType implements EnumInter {

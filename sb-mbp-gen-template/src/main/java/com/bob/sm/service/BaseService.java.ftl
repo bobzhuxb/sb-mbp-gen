@@ -681,23 +681,32 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                             wrapper.notExists((String)notExistSql);
                         }
                     }
+                    // 大小的比较需要按照实际类型进行比较
                     if (((Filter)result).getGreaterThan() != null) {
-                        wrapper.gt(columnName, ((Filter)result).getGreaterThan());
+                        Object compareData = baseGetCompareData(((Filter)result).getGreaterThan(), ((Filter)result).getRealFieldType());
+                        wrapper.gt(columnName, compareData);
                     }
                     if (((Filter)result).getGreaterOrEqualThan() != null) {
-                        wrapper.ge(columnName, ((Filter)result).getGreaterOrEqualThan());
+                        Object compareData = baseGetCompareData(((Filter)result).getGreaterOrEqualThan(), ((Filter)result).getRealFieldType());
+                        wrapper.ge(columnName, compareData);
                     }
                     if (((Filter)result).getLessThan() != null) {
-                        wrapper.lt(columnName, ((Filter)result).getLessThan());
+                        Object compareData = baseGetCompareData(((Filter)result).getLessThan(), ((Filter)result).getRealFieldType());
+                        wrapper.lt(columnName, compareData);
                     }
                     if (((Filter)result).getLessOrEqualThan() != null) {
-                        wrapper.le(columnName, ((Filter)result).getLessOrEqualThan());
+                        Object compareData = baseGetCompareData(((Filter)result).getLessOrEqualThan(), ((Filter)result).getRealFieldType());
+                        wrapper.le(columnName, compareData);
                     }
                     if (((Filter)result).getBetweenFrom() != null && ((Filter)result).getBetweenTo() != null) {
-                        wrapper.between(columnName, ((Filter)result).getBetweenFrom(), ((Filter)result).getBetweenTo());
+                        Object betweenFromData = baseGetCompareData(((Filter)result).getBetweenFrom(), ((Filter)result).getRealFieldType());
+                        Object betweenToData = baseGetCompareData(((Filter)result).getBetweenTo(), ((Filter)result).getRealFieldType());
+                        wrapper.between(columnName, betweenFromData, betweenToData);
                     }
                     if (((Filter)result).getNotBetweenFrom() != null && ((Filter)result).getNotBetweenTo() != null) {
-                        wrapper.notBetween(columnName, ((Filter)result).getNotBetweenFrom(), ((Filter)result).getNotBetweenTo());
+                        Object notBetweenFromData = baseGetCompareData(((Filter)result).getNotBetweenFrom(), ((Filter)result).getRealFieldType());
+                        Object notBetweenToData = baseGetCompareData(((Filter)result).getNotBetweenTo(), ((Filter)result).getRealFieldType());
+                        wrapper.notBetween(columnName, notBetweenFromData, notBetweenToData);
                     }
                 }
                 if (result instanceof BaseCriteria) {
@@ -749,6 +758,27 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             }
         }
         return wrapper;
+    }
+
+    /**
+     * 获取比较数据的实际值（根据类型说明进行类型转换）
+     * @param compareData 转换前的待比较数据
+     * @param realFieldType 实际类型说明
+     * @return 转换后的待比较数据
+     */
+    default Object baseGetCompareData(Object compareData, String realFieldType) {
+        if (realFieldType != null) {
+            if (Constants.baseRealFieldType.DOUBLE.getValue().equals(realFieldType)) {
+                compareData = Double.parseDouble(compareData.toString());
+            } else if (Constants.baseRealFieldType.FLOAT.getValue().equals(realFieldType)) {
+                compareData = Float.parseFloat(compareData.toString());
+            } else if (Constants.baseRealFieldType.INTEGER.getValue().equals(realFieldType)) {
+                compareData = Integer.parseInt(compareData.toString());
+            } else if (Constants.baseRealFieldType.LONG.getValue().equals(realFieldType)) {
+                compareData = Long.parseLong(compareData.toString());
+            }
+        }
+        return compareData;
     }
 
     /**
