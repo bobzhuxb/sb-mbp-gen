@@ -25,9 +25,9 @@ public interface CommonService {
     ReturnCommonDTO downloadFileBase(HttpServletResponse response, InputStream inputStream, String oriFileName,
                                      String changeFileName);
 
-    ReturnCommonDTO exportExcel(HttpServletResponse response, ExcelExportDTO excelExportDTO);
+    void exportExcel(HttpServletResponse response, ExcelExportDTO excelExportDTO);
 
-    ReturnCommonDTO exportExcel(HttpServletResponse response, List<ExcelExportDTO> excelExportDTOList);
+    void exportExcel(HttpServletResponse response, List<ExcelExportDTO> excelExportDTOList);
 
     void encryptExcel(String fullFileName, String password) throws Exception;
 

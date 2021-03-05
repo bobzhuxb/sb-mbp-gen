@@ -235,13 +235,15 @@ public class CommonServiceImpl implements CommonService {
 
     /**
      * 导出单Sheet的Excel
+     * 注意：1、Spring框架中，不要对HttpServletResponse对象的ServletOutputStream做流关闭处理
+     * 2、对于下载文件的方法请不要有任何返回值，因为我们写完业务逻辑后Spring框架层还会做一些额外的工作（可能会用到ServletOutputStream对象）
      * @param response HTTP Response
      * @param excelExportDTO 导出的Excel相关数据
      * @return 导出结果
      * @throws Exception
      */
     @Override
-    public ReturnCommonDTO exportExcel(HttpServletResponse response, ExcelExportDTO excelExportDTO) {
+    public void exportExcel(HttpServletResponse response, ExcelExportDTO excelExportDTO) {
         SXSSFWorkbook workbook = null;
         OutputStream outputStream = null;
         try {
@@ -266,35 +268,38 @@ public class CommonServiceImpl implements CommonService {
         } finally {
             // 关闭
             try {
-                if (outputStream != null) {
-                    outputStream.close();
-                }
                 if (workbook != null) {
                     workbook.close();
+                }
+                if (response == null && outputStream != null) {
+                    // 纯写文件需要关闭流，导出时不需要
+                    outputStream.close();
                 }
             } catch (Exception e) {
                 log.warn("Excel导出，流关闭失败", e.getMessage());
             }
         }
-        return new ReturnCommonDTO();
     }
 
     /**
      * 导出多Sheet的Excel
+     * 注意：1、Spring框架中，不要对HttpServletResponse对象的ServletOutputStream做流关闭处理
+     * 2、对于下载文件的方法请不要有任何返回值，因为我们写完业务逻辑后Spring框架层还会做一些额外的工作（可能会用到ServletOutputStream对象）
      * @param response HTTP Response
      * @param excelExportDTOList 导出的Excel相关数据（每个元素表示一个Sheet的描述）
      * @return 导出结果
      * @throws Exception
      */
     @Override
-    public ReturnCommonDTO exportExcel(HttpServletResponse response, List<ExcelExportDTO> excelExportDTOList) {
+    public void exportExcel(HttpServletResponse response, List<ExcelExportDTO> excelExportDTOList) {
         // 验证参数
         if (excelExportDTOList == null && excelExportDTOList.size() == 0) {
             throw new CommonAlertException("Excel多sheet导出参数异常");
         }
         if (excelExportDTOList.size() == 1) {
             // 单sheet的Excel转入对应的方法进行处理
-            return exportExcel(response, excelExportDTOList.get(0));
+            exportExcel(response, excelExportDTOList.get(0));
+            return;
         }
         SXSSFWorkbook workbook = null;
         OutputStream outputStream = null;
@@ -323,17 +328,17 @@ public class CommonServiceImpl implements CommonService {
         } finally {
             // 关闭
             try {
-                if (outputStream != null) {
-                    outputStream.close();
-                }
                 if (workbook != null) {
                     workbook.close();
+                }
+                if (response == null && outputStream != null) {
+                    // 纯写文件需要关闭流，导出时不需要
+                    outputStream.close();
                 }
             } catch (Exception e) {
                 log.warn("Excel导出，流关闭失败", e.getMessage());
             }
         }
-        return new ReturnCommonDTO();
     }
 
     /**
@@ -412,7 +417,13 @@ public class CommonServiceImpl implements CommonService {
 
         // ==================== 开始生成Excel ==========================
         // 创建sheet页
-        SXSSFSheet sheet = workbook.createSheet(sheetName);
+        SXSSFSheet sheet = null;
+        try {
+            sheet = workbook.createSheet(sheetName);
+        } catch (Exception e) {
+            // 出现了重名现象，则创建非指定的名称Sheet
+            sheet = workbook.createSheet();
+        }
         // 如果设置了工作表保护，则设定密码
         if (StrUtil.isNotBlank(excelExportDTO.getSheetProtectPassword())) {
             sheet.protectSheet(excelExportDTO.getSheetProtectPassword());
