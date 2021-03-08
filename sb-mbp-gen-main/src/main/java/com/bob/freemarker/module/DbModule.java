@@ -486,10 +486,11 @@ public class DbModule {
             columnHasChange = true;
         } else {
             // 默认值验证通过，暂时无修改
-            if (!newColumnType.equals(dbColumnDescrDTO.getColumnType())
-                    || !newColumnComment.equals(dbColumnDescrDTO.getColumnComment())) {
-                columnHasChange = true;
-            }
+        }
+        // 最后，验证字段类型和注释
+        if (!newColumnType.equals(dbColumnDescrDTO.getColumnType())
+                || !newColumnComment.equals(dbColumnDescrDTO.getColumnComment())) {
+            columnHasChange = true;
         }
         return columnHasChange;
     }
