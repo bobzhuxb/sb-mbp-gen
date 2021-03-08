@@ -42,6 +42,10 @@ public final class Constants {
      * Excel导出中的主题色
      */
     public static final short EXCEL_THEME_COLOR = IndexedColors.GREY_25_PERCENT.getIndex();
+    /**
+     * 大Excel的指定字节数（只针对xlsx文件）
+     */
+    public static final long EXCEL_LARGE_BYTES = 1024 * 1024;
 	
     /**
      * 密码有效天数
@@ -311,6 +315,13 @@ public final class Constants {
         public String getName(){
             return name;
         }
+    }
+
+    /**
+     * Excel单元格的值类型
+     */
+    public enum excelCellValueType {
+        String, Number, Boolean, Date, TElement, Null, None;
     }
 
     /**

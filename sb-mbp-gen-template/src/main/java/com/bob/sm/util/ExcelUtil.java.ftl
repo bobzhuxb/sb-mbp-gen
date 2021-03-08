@@ -1,12 +1,10 @@
 package ${packageName}.util;
 
+import cn.hutool.core.bean.BeanUtil;
 import ${packageName}.annotation.ExcelProperty;
 import ${packageName}.config.Constants;
-import ${packageName}.dto.help.ExcelCellBuilder;
-import ${packageName}.dto.help.ExcelCellDTO;
-import ${packageName}.dto.help.ExcelCellRangeDTO;
-import ${packageName}.dto.help.ExcelRowCellsDTO;
-import org.apache.commons.lang.time.DateFormatUtils;
+import ${packageName}.dto.help.*;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -17,8 +15,12 @@ import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -384,6 +386,177 @@ public class ExcelUtil {
         return excelCellBuilder.buildCell();
     }
 
+    /**
+     * 验证并解析Excel表头行
+     * @param headValueMap 头数据Map（Key：从0开始计的列号 Value：列内容）
+     * @param excelParseClass 解析用Class
+     * @param headColumn Excel表头最大列数（从1开始计）
+     * @return 解析出的结果
+     */
+    public static <T> ReturnCommonDTO<ExcelHeadValidateResultDTO> validateHead(Map<Integer, String> headValueMap,
+                    Class<T> excelParseClass, int headColumn) throws Exception {
+        // 解析传入的DTO，分别获取每个属性
+        Field[] excelParseFields = excelParseClass.getDeclaredFields();
+        Field[] excelPropertyFields = ExcelPropertyDataDTO.class.getDeclaredFields();
+        // Excel列属性列表
+        List<ExcelPropertyDataDTO> excelPropertyDataList = new ArrayList<>();
+        for (Field excelParseField : excelParseFields) {
+            // 根据注解ExcelProperty的属性（一一映射）反射设置ExcelPropertyDataDTO的属性
+            ExcelPropertyDataDTO excelPropertyDataDTO = new ExcelPropertyDataDTO();
+            String excelParseFieldName = excelParseField.getName();
+            // 设置属性名
+            excelPropertyDataDTO.setPropertyName(excelParseFieldName);
+            // 解析注解内容
+            ExcelProperty excelPropertyAnnotation = excelParseField.getAnnotation(ExcelProperty.class);
+            // 只记录有ExcelProperty注解的字段
+            if (excelPropertyAnnotation != null) {
+                for (Field excelPropertyField : excelPropertyFields) {
+                    String excelPropertyFieldName = excelPropertyField.getName();
+                    Method annotationMethod = null;
+                    try {
+                        annotationMethod = excelPropertyAnnotation.annotationType().getDeclaredMethod(excelPropertyFieldName);
+                    } catch (Exception e) {
+                        // 说明是ExcelPropertyDataDTO多出来的属性，不匹配，直接跳过
+                        continue;
+                    }
+                    Field excelPropertyDataField = excelPropertyDataDTO.getClass().getDeclaredField(excelPropertyFieldName);
+                    if (annotationMethod == null || excelPropertyDataField == null) {
+                        // 非共通属性，跳过
+                        continue;
+                    }
+                    Object annotationValue = annotationMethod.invoke(excelPropertyAnnotation);
+                    if (annotationValue != null) {
+                        // 设置对象的访问权限，保证对private的属性的访问
+                        excelPropertyDataField.setAccessible(true);
+                        excelPropertyDataField.set(excelPropertyDataDTO, annotationValue);
+                    }
+                }
+                // 追加到Excel列属性列表中
+                excelPropertyDataList.add(excelPropertyDataDTO);
+            }
+        }
+        // 转换成Map（Key：列序号，从1开始   Value：ExcelPropertyDataDTO值）
+        Map<Integer, ExcelPropertyDataDTO> excelPropertyDataMap = new HashMap<>();
+        int maxColumn = 0;
+        for (int j = 0; j < excelPropertyDataList.size(); j++) {
+            ExcelPropertyDataDTO excelPropertyDataDTO = excelPropertyDataList.get(j);
+            int index = excelPropertyDataDTO.getIndex();
+            ExcelPropertyDataDTO existProperty = excelPropertyDataMap.get(index);
+            // 验证列序号重复
+            if (existProperty != null) {
+                return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第" + (j + 1)
+                        + "列序号重复");
+            }
+            // 设置最大列
+            if (index > maxColumn) {
+                maxColumn = index;
+            }
+            // 初始化验证正则
+            if (excelPropertyDataDTO.getRegex() != null) {
+                Pattern pattern = Pattern.compile(excelPropertyDataDTO.getRegex());
+                excelPropertyDataDTO.setPattern(pattern);
+            }
+            excelPropertyDataMap.put(excelPropertyDataDTO.getIndex(), excelPropertyDataDTO);
+        }
+        if (maxColumn != excelPropertyDataList.size()) {
+            return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "列序号必须从1开始且递增幅度为1");
+        }
+        if (headColumn != maxColumn) {
+            return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "第1行列数不是" + maxColumn);
+        }
+        // 验证第一行是否正确
+        for (int col = 0; col < headColumn; col++) {
+            // 获取单元格内容
+            String cellValue = headValueMap.get(col);
+            if (cellValue == null || !cellValue.trim().equals(excelPropertyDataMap.get(col + 1).getValue())) {
+                return new ReturnUploadCommonDTO<>(Constants.commonReturnStatus.FAIL.getValue(), "【"
+                        + ExcelUtil.getColumnCorrespondingLabel(col) + "1】的列名不正确，请参照模板修改（注意列顺序不能错乱）");
+            }
+        }
+        // 设置返回数据
+        ExcelHeadValidateResultDTO returnData = new ExcelHeadValidateResultDTO();
+        returnData.setHeadMap(excelPropertyDataMap);
+        returnData.setMaxColumn(maxColumn);
+        return new ReturnCommonDTO(returnData);
+    }
+
+    /**
+     * 将Excel行转换为实体
+     * @param excelParseClass 解析用Class
+     * @param maxColumn 表头的最大列号（从1开始计）
+     * @param rowIndex 当前行号（从0开始计）
+     * @param dataValueMap 当前行数据Map（Key：从0开始计的列号 Value：列内容）
+     * @param excelPropertyDataMap 每列的验证属性
+     * @param errInfoSj 错误信息
+     * @return
+     */
+    public static <T> ReturnExcelRowParseCommonDTO<T> convertRowToObject(Class<T> excelParseClass, int maxColumn,
+                        int rowIndex, Map<Integer, String> dataValueMap, Map<Integer, ExcelPropertyDataDTO> excelPropertyDataMap,
+                        StringJoiner errInfoSj) {
+        // 当前行的错误提示计数
+        int errHintCount = 0;
+        // 初始化该行的返回数据
+        Map<String, String> data = new HashMap<>();
+        // 遍历这一行的每一列
+        for (int col = 1; col < maxColumn + 1; col++) {
+            // 属性数据
+            ExcelPropertyDataDTO excelPropertyDataDTO = excelPropertyDataMap.get(col);
+            // 属性名
+            String propertyName = excelPropertyDataDTO.getPropertyName();
+            String cellValue = dataValueMap.get(col - 1);
+            if (cellValue == null || "".equals(cellValue.trim())) {
+                // 单元格中的数据为空
+                if (!"".equals(excelPropertyDataDTO.getEmptyToDefault())) {
+                    // 有默认值，则设置默认值
+                    cellValue = excelPropertyDataDTO.getEmptyToDefault();
+                } else if (!excelPropertyDataDTO.getNullable()) {
+                    // 限制不允许为空，则报错
+                    errInfoSj.add("【" + ExcelUtil.getColumnCorrespondingLabel(col) + (rowIndex + 1) + "】数据为空");
+                    errHintCount++;
+                    continue;
+                } else {
+                    // 空数据直接设置空字符串
+                    cellValue = "";
+                }
+                data.put(propertyName, cellValue);
+            } else {
+                // 去掉前后空白符
+                cellValue = cellValue.trim();
+                // 指定选项范围
+                String[] optionList = excelPropertyDataDTO.getOptionList();
+                if (optionList != null && optionList.length > 0) {
+                    // 验证指定选项范围
+                    boolean inOption = false;
+                    for (String option : optionList) {
+                        if (option.equals(cellValue)) {
+                            inOption = true;
+                            break;
+                        }
+                    }
+                    if (!inOption) {
+                        errInfoSj.add("【" + ExcelUtil.getColumnCorrespondingLabel(col) + (rowIndex + 1) + "】数据范围不正确");
+                        errHintCount++;
+                        continue;
+                    }
+                } else if (excelPropertyDataDTO.getPattern() != null) {
+                    // 有校验的列
+                    Matcher matcher = excelPropertyDataDTO.getPattern().matcher(cellValue);
+                    if (!matcher.matches()) {
+                        errInfoSj.add("【" + ExcelUtil.getColumnCorrespondingLabel(col) + (rowIndex + 1) + "】数据格式不正确");
+                        errHintCount++;
+                        continue;
+                    }
+                } else {
+                    // 没有校验的列
+                }
+                data.put(propertyName, cellValue);
+            }
+        }
+        // 将Map转为Bean
+        T dataT = BeanUtil.mapToBean(data, excelParseClass, true);
+        return new ReturnExcelRowParseCommonDTO<>(dataT, errHintCount);
+    }
+
     // =============== Excel列号转字母 start ==============================
     /**
      * 列号数据源
@@ -446,6 +619,30 @@ public class ExcelUtil {
         }
 
         return columns;
+    }
+
+    /**
+     * 单元格名称（例如A1、B2等）转列号（从1开始计）
+     * @param cellName 单元格名称
+     * @return 列号
+     */
+    public static int getColumnIndexByCellName(String cellName) {
+        StringBuilder sb = new StringBuilder();
+        String column = "";
+        // 从cellName中提取列号
+        for (char c : cellName.toCharArray()) {
+            if (Character.isAlphabetic(c)) {
+                sb.append(c);
+            } else {
+                column = sb.toString();
+            }
+        }
+        // 列号字符转数字
+        int result = 0;
+        for (char c : column.toCharArray()) {
+            result = result * 26 + (c - 'A') + 1;
+        }
+        return result;
     }
 
     /**

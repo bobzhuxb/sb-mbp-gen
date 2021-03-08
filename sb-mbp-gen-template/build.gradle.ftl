@@ -127,6 +127,7 @@ dependencies {
 	compile "org.apache.poi:poi:3.17"
 	compile "org.apache.poi:poi-ooxml:3.17"
 	compile "org.apache.poi:poi-ooxml-schemas:3.17"
+	compile "xerces:xercesImpl:2.9.1"
 	// iText操作PDF
 	compile "com.itextpdf:itextpdf:5.5.13"
 	// 快速SAX模式的XML解析器

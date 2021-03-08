@@ -1,6 +1,8 @@
 package ${packageName}.service;
 
 import ${packageName}.dto.help.*;
+import ${packageName}.util.IExcelReadRowHandler;
+import ${packageName}.util.IExcelSaxRowRead;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -36,6 +38,20 @@ public interface CommonService {
 
     <T> ReturnCommonDTO<List<T>> importParseExcel(String excelType, InputStream fileInputStream,
                                                   Class<T> excelParseClass, Integer maxErrHintCount);
+
+    <T> ReturnCommonDTO<List<T>> importParseExcelSmall(String fullFileName, Class<T> excelParseClass,
+                                                       Integer maxErrHintCount);
+
+    <T> ReturnCommonDTO<List<T>> importParseExcelSmall(String excelType, InputStream fileInputStream,
+                                                       Class<T> excelParseClass, Integer maxErrHintCount);
+
+    <T> ReturnCommonDTO<List<T>> importParseExcelLarge(String fullFileName, Class<T> excelParseClass,
+                                                       IExcelSaxRowRead rowRead, IExcelReadRowHandler handler,
+                                                       Integer maxErrHintCount);
+
+    <T> ReturnCommonDTO<List<T>> importParseExcelLarge(String excelType, InputStream fileInputStream,
+                                                       Class<T> excelParseClass, IExcelSaxRowRead rowRead,
+                                                       IExcelReadRowHandler handler, Integer maxErrHintCount);
 
     <O> ReturnCommonDTO<O> doGetSingleResult(ReturnCommonDTO<List<O>> resultOfList);
 
