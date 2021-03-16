@@ -189,14 +189,15 @@ public class CommonServiceImpl implements CommonService {
     public ReturnCommonDTO downloadFileBase(HttpServletResponse response, InputStream inputStream, String oriFileName,
                                             String changeFileName) {
         try {
-            // 配置文件下载
-            response.setHeader("content-type", "application/json");
-            response.setContentType("application/json");
+            // 文件下载的ContentType
+            response.setHeader("content-type", "application/octet-stream");
+            response.setContentType("application/octet-stream");
             if (changeFileName == null || "".equals(changeFileName.trim())) {
                 changeFileName = oriFileName.substring(oriFileName.lastIndexOf(File.separator) + 1);
             }
             // 下载文件能正常显示中文
-            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(changeFileName, "UTF-8"));
+            response.setHeader("Content-Disposition", "attachment;filename="
+                    + URLEncoder.encode(changeFileName.replace("+", " "), "UTF-8"));
             // 实现文件下载
             byte[] buffer = new byte[1024];
             BufferedInputStream bis = null;
