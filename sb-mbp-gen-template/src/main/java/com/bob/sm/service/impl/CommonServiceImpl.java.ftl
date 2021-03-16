@@ -190,8 +190,8 @@ public class CommonServiceImpl implements CommonService {
                                             String changeFileName) {
         try {
             // 文件下载的ContentType
-            response.setHeader("content-type", "application/octet-stream");
-            response.setContentType("application/octet-stream");
+            response.setHeader("content-type", "application/json");
+            response.setContentType("application/json");
             if (changeFileName == null || "".equals(changeFileName.trim())) {
                 changeFileName = oriFileName.substring(oriFileName.lastIndexOf(File.separator) + 1);
             }
