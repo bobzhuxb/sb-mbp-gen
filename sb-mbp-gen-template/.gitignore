@@ -135,3 +135,5 @@ logs
 .vscode
 /bin/
 .project
+
+!libs/*.jar
