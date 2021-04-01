@@ -30,8 +30,13 @@ public class CommonException extends RuntimeException {
         this.code = code;
     }
 
-    public static CommonException errWithDetail(String message, String errDetail) {
-        CommonException commonException = new CommonException(message);
+    public CommonException(String message, Throwable e) {
+        super(message, e);
+        this.code = Constants.commonReturnStatus.FAIL.getValue();
+    }
+
+    public static CommonException errWithDetail(String message, String errDetail, Throwable e) {
+        CommonException commonException = new CommonException(message, e);
         commonException.setErrDetail(errDetail);
         return commonException;
     }

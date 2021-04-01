@@ -91,7 +91,7 @@ public class CommonServiceImpl implements CommonService {
             fileUploadDTO.setUploadTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(nowDate));
             return new ReturnUploadCommonDTO<>(fileUploadDTO);
         } catch (Exception e) {
-            throw CommonException.errWithDetail("文件上传失败：" + fileName, e.getMessage());
+            throw CommonException.errWithDetail("文件上传失败：" + fileName, e.getMessage(), e);
         }
     }
 
@@ -130,7 +130,7 @@ public class CommonServiceImpl implements CommonService {
         } catch (CommonException e) {
             throw e;
         } catch (Exception e) {
-            throw CommonException.errWithDetail("文件下载失败：" + fullFileName, e.getMessage());
+            throw CommonException.errWithDetail("文件下载失败：" + fullFileName, e.getMessage(), e);
         } finally {
             if (fis != null) {
                 try {
@@ -190,7 +190,7 @@ public class CommonServiceImpl implements CommonService {
                 }
             } catch (Exception e) {
                 throw CommonException.errWithDetail("文件下载失败：" + (oriFileName == null ? "" : oriFileName),
-                        e.getMessage());
+                        e.getMessage(), e);
             } finally {
                 if (inputStream != null) {
                     try {
@@ -211,7 +211,7 @@ public class CommonServiceImpl implements CommonService {
             throw e;
         } catch (Exception e) {
             throw CommonException.errWithDetail("文件下载失败：" + (oriFileName == null ? "" : oriFileName),
-                    e.getMessage());
+                    e.getMessage(), e);
         }
         return new ReturnCommonDTO();
     }

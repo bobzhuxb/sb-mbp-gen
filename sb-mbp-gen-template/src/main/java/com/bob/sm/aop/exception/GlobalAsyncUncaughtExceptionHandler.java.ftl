@@ -1,5 +1,6 @@
 package ${packageName}.aop.exception;
 
+import com.ts.bpoi.error.BpoiAlertException;
 import ${packageName}.web.rest.errors.BadRequestAlertException;
 import ${packageName}.web.rest.errors.CommonAlertException;
 import org.apache.commons.logging.Log;
@@ -21,7 +22,8 @@ public class GlobalAsyncUncaughtExceptionHandler implements AsyncUncaughtExcepti
     @Override
     public void handleUncaughtException(Throwable ex, Method method, Object... params) {
         if (ex instanceof AuthenticationException || ex instanceof NoSuchElementException
-                || ex instanceof BadRequestAlertException || ex instanceof CommonAlertException) {
+                || ex instanceof BadRequestAlertException || ex instanceof CommonAlertException
+                || ex instanceof BpoiAlertException) {
             // Session过期或无效、没有对应的数据、请求提示错误、业务提示错误
             logger.warn("Unexpected Exception occurred invoking async method: " + method, ex);
         } else {

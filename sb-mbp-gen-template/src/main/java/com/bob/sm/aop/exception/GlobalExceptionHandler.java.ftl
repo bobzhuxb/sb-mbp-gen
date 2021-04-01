@@ -1,6 +1,8 @@
 package ${packageName}.aop.exception;
 
 import com.alibaba.fastjson.JSONException;
+import com.ts.bpoi.error.BpoiAlertException;
+import com.ts.bpoi.error.BpoiException;
 import ${packageName}.dto.help.ReturnCommonDTO;
 import ${packageName}.util.HttpUtil;
 import ${packageName}.web.rest.errors.BadRequestAlertException;
@@ -136,6 +138,38 @@ public class GlobalExceptionHandler {
         String messageDetail = "参数转换错误：" + "\r\n" + HttpUtil.getRequestDetailInfo(request);
         log.error(messageDetail, ex);
         return new ReturnCommonDTO("-991", message);
+    }
+
+    /**
+     * 拦截BPOI业务错误（不记录错误日志）
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(BpoiAlertException.class)
+    @ResponseStatus(value = HttpStatus.OK)
+    public ReturnCommonDTO handleBpoiBusinessFault(BpoiAlertException ex) {
+        String code = ex.getCode();
+        String message = ex.getMessage();
+        return new ReturnCommonDTO(code, message);
+    }
+
+    /**
+     * 拦截BPOI业务异常（记录错误日志）
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(BpoiException.class)
+    @ResponseStatus(value = HttpStatus.OK)
+    public ReturnCommonDTO handleBpoiBusinessError(HttpServletRequest request, BpoiException ex) {
+        String code = ex.getCode();
+        String message = ex.getMessage();
+        String messageDetail = message;
+        if (ex.getErrDetail() != null && !"".equals(ex.getErrDetail().trim())) {
+            messageDetail += " ==> " + ex.getErrDetail();
+        }
+        messageDetail += "\r\n" + HttpUtil.getRequestDetailInfo(request);
+        log.error(messageDetail, ex);
+        return new ReturnCommonDTO(code, message);
     }
 
     /**
