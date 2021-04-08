@@ -1088,6 +1088,17 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     }
 
     /**
+     * 主实体新增或修改（默认实现）
+     * @param entity 待新增或修改的实体Domain
+     * @param appendMap 附加的传递参数
+     * @return 新增或修改的结果
+     */
+    @Transactional(rollbackFor = Exception.class)
+    default boolean baseAddOrUpdateDomain(T entity, Map<String, Object> appendMap) {
+        return saveOrUpdate(entity);
+    }
+
+    /**
      * 新增或修改（事务操作）
      * @param entityTypeName 实体类型名
      * @param dto 主实体
@@ -1125,7 +1136,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         }
         MyBeanUtil.copyNonNullProperties(dto, entity);
         // 新增或更新当前实体
-        boolean result = saveOrUpdate(entity);
+        boolean result = ((BaseService)AopContext.currentProxy()).baseAddOrUpdateDomain(entity, appendMap);
         // 新增或修改后的主键ID
         String dtoId = entity.getId();
         dto.setId(dtoId);
