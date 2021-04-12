@@ -279,7 +279,8 @@ public class DbModule {
                     String alterTablePrefix = "alter table `" + tableName + "`";
                     StringJoiner alterColumnSb = new StringJoiner(",");
                     // entity自带字段
-                    for (EntityFieldDTO fieldDTO : entityDTO.getFieldList()) {
+                    for (int fieldIndex = 0; fieldIndex < entityDTO.getFieldList().size(); fieldIndex++) {
+                        EntityFieldDTO fieldDTO = entityDTO.getFieldList().get(fieldIndex);
                         String newColumnName = StringUtil.camelToUnderline(fieldDTO.getCamelName());
                         String newColumnType = fieldDTO.getColumnType();
                         String newColumnComment = fieldDTO.getComment();
@@ -291,6 +292,16 @@ public class DbModule {
                             String defaultAppend = appendDefaultValue(defaultColumnValue, fieldDTO);
                             if (defaultAppend != null) {
                                 alterColumnStr += " not null default " + defaultAppend;
+                            }
+                            // 设置新增列的位置
+                            if (fieldIndex == 0) {
+                                // 第一个加在id列后面
+                                alterColumnStr += " after id";
+                            } else {
+                                // 其他的加在前一个列后面
+                                String previousColumnName = StringUtil.camelToUnderline(
+                                        entityDTO.getFieldList().get(fieldIndex - 1).getCamelName());
+                                alterColumnStr += " after " + previousColumnName;
                             }
                             // 为整表改表做准备
                             alterColumnSb.add(alterColumnStr);
