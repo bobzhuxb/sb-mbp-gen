@@ -521,6 +521,9 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                                             field.set(objIter, Integer.parseInt(value));
                                         } else if ("class java.lang.Double".equals(field.getGenericType().toString())) {
                                             field.set(objIter, Double.parseDouble(value));
+                                        } else if ("java.util.List<FIELD_TYPE>".equals(field.getGenericType().toString())) {
+                                            List<Object> valueList = Arrays.asList(value.split(","));
+                                            field.set(objIter, valueList);
                                         } else {
                                             field.set(objIter, value);
                                         }
