@@ -181,6 +181,18 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     }
 
     /**
+     * 从缓存查
+     * @param queryWrapper 查询条件
+     * @param id 主键ID
+     * @param criteria 附加条件
+     * @param entityPath 实体的上层路径
+     * @return
+     */
+    default T baseFindOneFromCache(Wrapper<T> queryWrapper, String id, C criteria, String entityPath) {
+        return null;
+    }
+
+    /**
      * 删除某关联ID条件下，且不在本实体主键ID列表中的数据（同时级联删除或置空关联字段，其中级联删除类似于JPA的CascadeType.REMOVE）
      * @param entityTypeName 实体类型简称
      * @param relatedColumnName 关联的字段名称
@@ -200,8 +212,8 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         ).get().stream().forEach(domain -> {
             ReturnCommonDTO returnCommonDTO = ((BaseService)AopContext.currentProxy()).baseDeleteByMapCascade(
                     entityTypeName, new HashMap<String, Object>() {{
-                put("id", ((BaseDomain) domain).getId());
-            }}, appendMap);
+                        put("id", ((BaseDomain) domain).getId());
+                    }}, appendMap);
             if (!Constants.commonReturnStatus.SUCCESS.getValue().equals(returnCommonDTO.getResultCode())) {
                 throw new CommonAlertException(returnCommonDTO.getErrMsg());
             }
@@ -277,10 +289,11 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param criteria 查询条件
      * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
      * @param entityPath 实体的上层路径
+     * @param appendParamMap 附加查询参数
      * @return
      */
     default String baseGetDataQuerySql(String entityTypeName, C criteria, Map<String, String> tableIndexMap,
-                                       String entityPath) {
+                                       String entityPath, Map<String, Object> appendParamMap) {
         // 获取实体配置
         BaseEntityConfigDTO entityConfig = GlobalCache.getEntityConfigMap().get(entityTypeName);
         int tableCount = 0;
@@ -325,7 +338,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 }
             }
         }
-        joinDataSql += baseGetFromAndJoinSql(entityTypeName, criteria, tableCount, fromTableCount, tableIndexMap);
+        joinDataSql += baseGetFromAndJoinSql(entityTypeName, criteria, tableCount, fromTableCount, tableIndexMap, appendParamMap);
         return joinDataSql;
     }
 
@@ -334,12 +347,15 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param entityTypeName 实体类型简称
      * @param criteria 查询条件
      * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
+     * @param appendParamMap 附加查询参数
      * @return
      */
-    default String baseGetCountQuerySql(String entityTypeName, C criteria, Map<String, String> tableIndexMap) {
+    default String baseGetCountQuerySql(String entityTypeName, C criteria, Map<String, String> tableIndexMap,
+                                        Map<String, Object> appendParamMap) {
         int tableCount = 0;
         int fromTableCount = tableCount;
-        String joinCountSql = "SELECT COUNT(0)" + baseGetFromAndJoinSql(entityTypeName, criteria, tableCount, fromTableCount, tableIndexMap);
+        String joinCountSql = "SELECT COUNT(0)" + baseGetFromAndJoinSql(entityTypeName, criteria, tableCount, fromTableCount,
+                tableIndexMap, appendParamMap);
         return joinCountSql;
     }
 
@@ -350,14 +366,15 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param tableCount 当前表序号
      * @param fromTableCount 上一层的表序号
      * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
+     * @param appendParamMap 附加查询参数
      * @return
      */
     default String baseGetFromAndJoinSql(String entityTypeName, C criteria, int tableCount, int fromTableCount,
-                                         Map<String, String> tableIndexMap) {
+                                         Map<String, String> tableIndexMap, Map<String, Object> appendParamMap) {
         // 获取实体配置
         BaseEntityConfigDTO entityConfig = GlobalCache.getEntityConfigMap().get(entityTypeName);
         String joinSubSql = " FROM " + entityConfig.getTableName() + " AS " + entityConfig.getTableName() + "_" + tableCount;
-        joinSubSql += baseGetJoinSql(entityTypeName, criteria, tableCount, fromTableCount, null, tableIndexMap);
+        joinSubSql += baseGetJoinSql(entityTypeName, criteria, tableCount, fromTableCount, null, tableIndexMap, appendParamMap);
         return joinSubSql;
     }
 
@@ -369,10 +386,11 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      * @param fromTableCount 上一层的表序号
      * @param lastFieldName 上一级查询的最后字段名
      * @param tableIndexMap 级联查询参数（直到字段）与表序号表类型（下划线隔开）的Map
+     * @param appendParamMap 附加查询参数
      * @return
      */
     default String baseGetJoinSql(String entityTypeName, C criteria, int tableCount, int fromTableCount, String lastFieldName,
-                                  Map<String, String> tableIndexMap) {
+                                  Map<String, String> tableIndexMap, Map<String, Object> appendParamMap) {
         String joinSubSql = "";
         // 获取实体配置
         BaseEntityConfigDTO entityConfig = GlobalCache.getEntityConfigMap().get(entityTypeName);
@@ -434,8 +452,9 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         throw new CommonException("字段_" + fieldName + "Id值为空");
                     }
                     // 上级级联
-                    joinSubSql += " LEFT JOIN " + relatedEntityConfig.getTableName() + " AS "
-                            + relatedEntityConfig.getTableName() + "_" + tableCount + " ON "
+                    joinSubSql += " LEFT JOIN " + GlobalCache.getServiceMap().get(fieldDomainName).baseFormJoinTable(
+                                relatedEntityConfig.getTableName(), appendParamMap)
+                            + " AS " + relatedEntityConfig.getTableName() + "_" + tableCount + " ON "
                             + relatedEntityConfig.getTableName() + "_" + tableCount + ".id = "
                             + entityConfig.getTableName() + "_" + fromTableCount
                             + "." + joinColumnName;
@@ -447,7 +466,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 }
                 tableIndexMap.put(tableKey, tableCount + "_" + fieldDomainName);
                 String nextJoinSql = GlobalCache.getServiceMap().get(fieldDomainName).baseGetJoinSql(fieldDomainName,
-                        (BaseCriteria)criteriaFieldObj, tableCount, tableCount, tableKey, tableIndexMap);
+                        (BaseCriteria)criteriaFieldObj, tableCount, tableCount, tableKey, tableIndexMap, appendParamMap);
                 if (!fieldName.endsWith("List")) {
                     // 上级级联
                     joinSubSql += nextJoinSql;
@@ -455,6 +474,16 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             }
         }
         return joinSubSql;
+    }
+
+    /**
+     * 获取级联的表（默认实现）
+     * @param tableName 级联的表名
+     * @param appendParamMap 附加查询参数
+     * @return
+     */
+    default String baseFormJoinTable(String tableName, Map<String, Object> appendParamMap) {
+        return tableName;
     }
 
     /**
@@ -911,6 +940,10 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         if (associationNameList == null || associationNameList.size() == 0) {
             return dto;
         }
+        // 获取级联的审计数据
+        ((BaseService)AopContext.currentProxy()).baseAuditAssociation(dto, associationNameList, criteria,
+                entityPath, appendParamMap);
+        // 获取关系数据
         List<BaseEntityConfigRelationDTO> relationList = GlobalCache.getEntityRelationsMap().get(entityTypeName);
         if (relationList == null || relationList.size() == 0) {
             return dto;
@@ -1017,58 +1050,70 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     e.printStackTrace();
                 }
             }
-            if ("insertUser".equals(associationName)) {
-                // 获取创建者
-                String insertUserId = dto.getInsertUserId();
-                if (insertUserId == null) {
-                    continue;
-                }
-                List<String> associationName2List = new ArrayList<>();
-                for (String associationNameIter : associationNameList) {
-                    if (associationNameIter.startsWith("insertUser.")) {
-                        String associationName2 = associationNameIter.substring("insertUser.".length());
-                        associationName2List.add(associationName2);
-                    }
-                }
-                SystemUserCriteria insertUserCriteria = new SystemUserCriteria();
-                // 此处不用再验证权限
-                insertUserCriteria.setAuthorityPass(Constants.yesNo.YES.getValue());
-                // 设置级联查询
-                insertUserCriteria.setAssociationNameList(associationName2List);
-                // 设置查询列
-                insertUserCriteria.setSqlColumnList(criteria.getSqlColumnList());
-                ReturnCommonDTO<SystemUserDTO> insertUserRtn = GlobalCache.getServiceMap().get("SystemUser")
-                        .baseFindOneEntityPath("SystemUser", insertUserId, insertUserCriteria,
-                                entityPath + "insertUser.", appendParamMap);
-                dto.setInsertUser(insertUserRtn.getData());
-            }
-            if ("operateUser".equals(associationName)) {
-                // 获取最后更新者
-                String operateUserId = dto.getOperateUserId();
-                if (operateUserId == null) {
-                    continue;
-                }
-                List<String> associationName2List = new ArrayList<>();
-                for (String associationNameIter : associationNameList) {
-                    if (associationNameIter.startsWith("operateUser.")) {
-                        String associationName2 = associationNameIter.substring("operateUser.".length());
-                        associationName2List.add(associationName2);
-                    }
-                }
-                SystemUserCriteria operateUserCriteria = new SystemUserCriteria();
-                // 此处不用再验证权限
-                operateUserCriteria.setAuthorityPass(Constants.yesNo.YES.getValue());
-                // 设置级联查询
-                operateUserCriteria.setAssociationNameList(associationName2List);
-                // 设置查询列
-                operateUserCriteria.setSqlColumnList(criteria.getSqlColumnList());
-                ReturnCommonDTO<SystemUserDTO> operateUserRtn = GlobalCache.getServiceMap().get("SystemUser")
-                        .baseFindOneEntityPath("SystemUser", operateUserId, operateUserCriteria,
-                                entityPath + "operateUser.", appendParamMap);
-                dto.setOperateUser(operateUserRtn.getData());
-            }
         }
         return dto;
+    }
+
+    /**
+     * 获取级联的审计数据
+     * @param dto 主实体
+     * @param associationNameList 级联名称列表
+     * @param criteria 关联属性的条件
+     * @param entityPath 实体的上层路径
+     * @param appendParamMap 附加的查询参数条件
+     */
+    default void baseAuditAssociation(O dto, List<String> associationNameList, BaseCriteria criteria,
+                                      String entityPath, Map<String, Object> appendParamMap) {
+        if (associationNameList.contains("insertUser")) {
+            // 获取创建者
+            String insertUserId = dto.getInsertUserId();
+            if (insertUserId == null) {
+                return;
+            }
+            List<String> associationName2List = new ArrayList<>();
+            for (String associationNameIter : associationNameList) {
+                if (associationNameIter.startsWith("insertUser.")) {
+                    String associationName2 = associationNameIter.substring("insertUser.".length());
+                    associationName2List.add(associationName2);
+                }
+            }
+            SystemUserCriteria insertUserCriteria = new SystemUserCriteria();
+            // 此处不用再验证权限
+            insertUserCriteria.setAuthorityPass(Constants.yesNo.YES.getValue());
+            // 设置级联查询
+            insertUserCriteria.setAssociationNameList(associationName2List);
+            // 设置查询列
+            insertUserCriteria.setSqlColumnList(criteria.getSqlColumnList());
+            ReturnCommonDTO<SystemUserDTO> insertUserRtn = GlobalCache.getServiceMap().get("SystemUser")
+                    .baseFindOneEntityPath("SystemUser", insertUserId, insertUserCriteria,
+                            entityPath + "insertUser.", appendParamMap);
+            dto.setInsertUser(insertUserRtn.getData());
+        }
+        if (associationNameList.contains("operateUser")) {
+            // 获取最后更新者
+            String operateUserId = dto.getOperateUserId();
+            if (operateUserId == null) {
+                return;
+            }
+            List<String> associationName2List = new ArrayList<>();
+            for (String associationNameIter : associationNameList) {
+                if (associationNameIter.startsWith("operateUser.")) {
+                    String associationName2 = associationNameIter.substring("operateUser.".length());
+                    associationName2List.add(associationName2);
+                }
+            }
+            SystemUserCriteria operateUserCriteria = new SystemUserCriteria();
+            // 此处不用再验证权限
+            operateUserCriteria.setAuthorityPass(Constants.yesNo.YES.getValue());
+            // 设置级联查询
+            operateUserCriteria.setAssociationNameList(associationName2List);
+            // 设置查询列
+            operateUserCriteria.setSqlColumnList(criteria.getSqlColumnList());
+            ReturnCommonDTO<SystemUserDTO> operateUserRtn = GlobalCache.getServiceMap().get("SystemUser")
+                    .baseFindOneEntityPath("SystemUser", operateUserId, operateUserCriteria,
+                            entityPath + "operateUser.", appendParamMap);
+            dto.setOperateUser(operateUserRtn.getData());
+        }
     }
 
     /**
@@ -1432,7 +1477,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 执行查询并返回结果
         Map<String, Object> appendParamMapFinal = appendParamMap;
         String entityPathFinal = entityPath;
-        return Optional.ofNullable(baseFindOneSimple(wrapper, criteria, entityPath)).map(entity ->
+        return Optional.ofNullable(baseFindOneSimple(wrapper, id, criteria, entityPath)).map(entity ->
                 new ReturnCommonDTO(((BaseService)AopContext.currentProxy()).baseDoConvert(
                         entityTypeName, entity, criteria, entityPathFinal, appendParamMapFinal)))
                 .orElse(new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "没有该数据"));
@@ -1441,11 +1486,30 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
     /**
      * 查询单条数据
      * @param queryWrapper 查询条件
+     * @param id 主键ID
      * @param criteria 附加条件
      * @param entityPath 实体的上层路径
      * @return
      */
-    default T baseFindOneSimple(Wrapper<T> queryWrapper, C criteria, String entityPath) {
+    default T baseFindOneSimple(Wrapper<T> queryWrapper, String id, C criteria, String entityPath) {
+        if (Constants.yesNo.YES.getValue().equals(criteria.getFindFromCache())) {
+            // 从缓存查，查不到则到数据库查，且查出的结果同时放到缓存中
+            return (T) ((BaseService)AopContext.currentProxy()).baseFindOneFromCache(queryWrapper, id, criteria, entityPath);
+        } else {
+            // 常规操作（查数据库）
+            return (T) ((BaseService)AopContext.currentProxy()).baseFindOneNormal(queryWrapper, id, criteria, entityPath);
+        }
+    }
+
+    /**
+     * 查询单条数据（常规操作）
+     * @param queryWrapper 查询条件
+     * @param id 主键ID
+     * @param criteria 附加条件
+     * @param entityPath 实体的上层路径
+     * @return
+     */
+    default T baseFindOneNormal(Wrapper<T> queryWrapper, String id, C criteria, String entityPath) {
         // 最终查询的列，存放的内容是数据库中表的列名
         List<String> finalQueryColumnList = baseGetFinalQueryColumnList(criteria, entityPath);
         if (finalQueryColumnList.size() == 0) {
@@ -1496,7 +1560,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 预处理orderBy的内容
         basePreOrderBy(criteria, tableIndexMap);
         // 获取查询SQL（select和join）
-        String dataQuerySql = baseGetDataQuerySql(entityTypeName, criteria, tableIndexMap, entityPath);
+        String dataQuerySql = baseGetDataQuerySql(entityTypeName, criteria, tableIndexMap, entityPath, appendParamMap);
         // 处理where条件
         Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, appendParamMap, null, tableIndexMap, null);
         // 执行查询并返回结果
@@ -1545,9 +1609,9 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         // 预处理orderBy的内容
         basePreOrderBy(criteria, tableIndexMap);
         // 获取查询SQL（select和join）
-        String dataQuerySql = baseGetDataQuerySql(entityTypeName, criteria, tableIndexMap, entityPath);
+        String dataQuerySql = baseGetDataQuerySql(entityTypeName, criteria, tableIndexMap, entityPath, appendParamMap);
         // 处理where条件
-        String countQuerySql = baseGetCountQuerySql(entityTypeName, criteria, tableIndexMap);
+        String countQuerySql = baseGetCountQuerySql(entityTypeName, criteria, tableIndexMap, appendParamMap);
         Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, appendParamMap, null, tableIndexMap, null);
         // 执行查询并返回结果
         Map<String, Object> appendParamMapFinal = appendParamMap;
@@ -1629,7 +1693,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             return interceptReturnInfo;
         }
         // 获取查询SQL（select和join）
-        String countQuerySql = baseGetCountQuerySql(entityTypeName, criteria, tableIndexMap);
+        String countQuerySql = baseGetCountQuerySql(entityTypeName, criteria, tableIndexMap, appendParamMap);
         // 处理where条件
         Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, appendParamMap, null, tableIndexMap, null);
         // 执行查询并返回结果

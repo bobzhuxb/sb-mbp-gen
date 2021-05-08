@@ -45,6 +45,8 @@ public class BaseCriteria {
     @RestFieldAllow(allowSet = false)
     private Integer authorityPass;      // 权限是否已验证过（1：是  2或不填：否）
 
+    private Integer findFromCache;      // 是否从缓存查（1：是  2或不填：否）
+
     private String interNo;             // 查询的interNo条件
 
     public StringFilter getId() {
@@ -173,6 +175,14 @@ public class BaseCriteria {
 
     public void setAuthorityPass(Integer authorityPass) {
         this.authorityPass = authorityPass;
+    }
+
+    public Integer getFindFromCache() {
+        return findFromCache;
+    }
+
+    public void setFindFromCache(Integer findFromCache) {
+        this.findFromCache = findFromCache;
     }
 
     public String getInterNo() {
