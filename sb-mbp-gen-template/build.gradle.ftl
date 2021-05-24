@@ -15,6 +15,8 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'war'
 apply plugin: 'io.spring.dependency-management'
 
+apply from: "codeup.gradle"
+
 archivesBaseName = '${projectName}'
 group = '${packageName}'
 version = '0.1'
@@ -122,12 +124,9 @@ dependencies {
 	// apache的http客户端
 	compile "org.apache.httpcomponents:httpclient"
 	// Alibaba的FastJson
-	compile "com.alibaba:fastjson:1.2.74"
+	compile "com.alibaba:fastjson:1.2.76"
 	// POI操作Office
-	compile "org.apache.poi:poi:3.17"
-	compile "org.apache.poi:poi-ooxml:3.17"
-	compile "org.apache.poi:poi-ooxml-schemas:3.17"
-	compile "xerces:xercesImpl:2.9.1"
+	compile "com.ts:bpoi:1.0"
 	// iText操作PDF
 	compile "com.itextpdf:itextpdf:5.5.13"
 	// 快速SAX模式的XML解析器
@@ -157,8 +156,5 @@ dependencies {
 	compile "io.micrometer:micrometer-registry-prometheus:1.1.2"
 
 	// ===================================微信支付=====================================
-
-	// ===================================本地jar包=====================================
-	compile fileTree(dir:'libs',include:['*.jar'])
 
 }
