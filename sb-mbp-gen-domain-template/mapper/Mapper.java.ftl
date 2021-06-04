@@ -1,6 +1,7 @@
 package ${packageName}.mapper;
 
 import ${packageName}.domain.*;
+import org.apache.ibatis.annotations.Param;
 
 <#if eentityName == 'SystemPermission'>
 

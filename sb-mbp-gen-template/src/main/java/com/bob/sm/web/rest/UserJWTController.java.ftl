@@ -1,8 +1,10 @@
 package ${packageName}.web.rest;
 
 import ${packageName}.config.Constants;
+import ${packageName}.domain.SystemLog;
 import ${packageName}.dto.SystemUserDTO;
 import ${packageName}.dto.help.ReturnCommonDTO;
+import ${packageName}.mapper.SystemLogMapper;
 import ${packageName}.security.jwt.JWTFilter;
 import ${packageName}.security.jwt.TokenProvider;
 import ${packageName}.service.CommonUserService;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
@@ -40,6 +43,9 @@ public class UserJWTController extends BaseController {
     private final TokenProvider tokenProvider;
 
     private final AuthenticationManager authenticationManager;
+
+    @Autowired
+    private SystemLogMapper systemLogMapper;
 
     @Autowired
     private CommonUserService commonUserService;
