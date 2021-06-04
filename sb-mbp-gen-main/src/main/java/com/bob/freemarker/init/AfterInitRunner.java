@@ -238,7 +238,7 @@ public class AfterInitRunner implements CommandLineRunner {
                 return;
             }
             if (!new File(templatePath).exists()) {
-                System.out.println("--template-path指定的路径不存在");
+                System.out.println("--template-path指定的路径（" + templatePath + "）不存在");
                 return;
             }
         }
@@ -260,21 +260,24 @@ public class AfterInitRunner implements CommandLineRunner {
         if (existProjectDirectory == null || !new File(existProjectDirectory + existProjectName).exists()) {
             if ("yes".equals(generateTemplate) || "only".equals(generateTemplate)) {
                 // yes：是且同时生成全代码和数据表。only：只生成模板。
-                System.out.println("--from-project-path和--from-project-name共同指定的路径不存在");
+                System.out.println("--from-project-path和--from-project-name共同指定的路径（"
+                        + existProjectDirectory + existProjectName + "）不存在");
                 return;
             }
         }
         if (!new File(templatePath + templateName).exists()) {
             if ("no".equals(generateTemplate) || "update-entity".equals(generateTemplate)) {
                 // no：只生成全代码和数据表。update-entity：只更新实体代码和数据表。
-                System.out.println("--template-path和--template-name共同指定的路径不存在");
+                System.out.println("--template-path和--template-name共同指定的路径（"
+                        + templatePath + templateName + "）不存在");
                 return;
             }
         }
         if (!new File(entityTemplatePath).exists() || !new File(umlFileName).exists()) {
             if ("yes".equals(generateTemplate) || "no".equals(generateTemplate) || "update-entity".equals(generateTemplate)) {
                 // yes：是且同时生成全代码和数据表。no：只生成全代码和数据表。update-entity：只更新实体代码和数据表。
-                System.out.println("--entity-template-path指定的路径或--entity-jdl-file指定的文件不存在");
+                System.out.println("--entity-template-path指定的路径（" + entityTemplatePath
+                        + "）或--entity-jdl-file指定的文件（" + umlFileName + "）不存在");
                 return;
             }
         }
