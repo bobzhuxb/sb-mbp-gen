@@ -49,21 +49,11 @@ public class DomainUserDetailsService implements UserDetailsService {
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(final String loginWithPrefix) {
         log.debug("Authenticating {}", loginWithPrefix);
-        String systemCode = null;
-        String login = loginWithPrefix.substring(2);
-        if (loginWithPrefix.startsWith(Constants.systemCode.WEB.getLoginAppendPrefix())) {
-            // Web端
-            systemCode = Constants.systemCode.WEB.getValue();
-        } else if (loginWithPrefix.startsWith(Constants.systemCode.APP.getLoginAppendPrefix())) {
-            // App端
-            systemCode = Constants.systemCode.APP.getValue();
-        }
+        String login = loginWithPrefix;
         // 获取用户
         SystemUser userNow = systemUserMapper.selectOne(new QueryWrapper<SystemUser>()
                 // 登录名条件
                 .eq(SystemUser._login, login)
-                // 登录入口条件
-                .eq(SystemUser._systemCode, systemCode)
                 // 用户启用条件
                 .eq(SystemUser._accountStatus, Constants.enabled.ENABLED.getValue())
         );

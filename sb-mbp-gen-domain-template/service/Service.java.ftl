@@ -17,12 +17,4 @@ import java.util.Map;
  */
 public interface ${eentityName}Service extends BaseService<${eentityName}, ${eentityName}Criteria, ${eentityName}DTO> {
 
-	<#if eentityName == 'SystemPermission'>
-    void saveRolePermissions(RolePageElementsDTO rolePageElementsDTO);
-
-    List<PageElementDTO> getPageElementTree(String roleId);
-
-    List<PageElementDTO> getPageElementOfCurrentUser();
-	</#if>
-
 }

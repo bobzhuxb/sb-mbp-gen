@@ -64,6 +64,9 @@ public class UserJWTController extends BaseController {
      */
     @PostMapping("/authenticate")
     public ResponseEntity<ReturnCommonDTO<JWTToken>> authorize(@Valid @RequestBody LoginVM loginVM, BindingResult bindingResult) {
+        // 获取当前时间和日期
+        LocalDateTime nowTime = LocalDateTime.now();
+        String nowTimeStr = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(nowTime);
         // 验证用户名和密码
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginVM.getUsername(), loginVM.getPassword());

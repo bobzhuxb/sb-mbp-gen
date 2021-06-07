@@ -2,7 +2,6 @@
 <!DOCTYPE configuration>
 
 <configuration scan="true">
-    <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
     <!-- The FILE and ASYNC appenders are here as examples for a production configuration -->
     <!--

@@ -69,10 +69,10 @@ public class AuthServiceImpl implements AuthService {
         // 是否街道人员
         boolean isStreetRole = false;
         for (SystemRoleDTO role : roleList) {
-            if (role.getName() != null && role.getName().startsWith(Constants.ROLE_BUREAU_START)) {
+            if (role.getName() != null && role.getName().startsWith(Constants.ROLE_FATHER_START)) {
                 isBureauRole = true;
             }
-            if (role.getName() != null && role.getName().startsWith(Constants.ROLE_STREET_START)) {
+            if (role.getName() != null && role.getName().startsWith(Constants.ROLE_CHILD_START)) {
                 isStreetRole = true;
             }
         }
@@ -123,12 +123,12 @@ public class AuthServiceImpl implements AuthService {
             // 追加前、中、后的特殊操作，如果不覆盖，则中间步骤走正常操作
             if (userInfoDetailDTO.getBureauRole()) {
                 // 局端角色
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_BUREAU_START, OPERATE_BEFORE))
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_FATHER_START, OPERATE_BEFORE))
                         .orElse(map -> true).test(appendParamMap);
                 if (!result) {
                     return result;
                 }
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_BUREAU_START, OPERATE_OVERWRITE))
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_FATHER_START, OPERATE_OVERWRITE))
                         .orElse(map -> {
                             // 正常操作
                             if (!"1".equals(organId)) {
@@ -136,25 +136,25 @@ public class AuthServiceImpl implements AuthService {
                                 MyBeanUtil.setObjectProperty(baseCriteria, organizationIdFilterStr + ".equals", organId);
                             }
                             // 获取对应的组织架构ID列表（请根据实际需求修改）
-                            appendParamMap.put(Constants.appendParamMapKey.ROLE_NAME.getValue(), Constants.role.ROLE_BUREAU.getValue());
+                            appendParamMap.put(Constants.appendParamMapKey.ROLE_NAME.getValue(), Constants.role.ROLE_FATHER.getValue());
                             return true;
                         }).test(appendParamMap);
                 if (!result) {
                     return result;
                 }
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_BUREAU_START, OPERATE_AFTER))
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_FATHER_START, OPERATE_AFTER))
                         .orElse(map -> true).test(appendParamMap);
                 if (!result) {
                     return result;
                 }
             } else if (userInfoDetailDTO.getStreetRole()) {
                 // 街道人员角色
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_STREET_START, OPERATE_BEFORE))
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_CHILD_START, OPERATE_BEFORE))
                         .orElse(map -> true).test(appendParamMap);
                 if (!result) {
                     return result;
                 }
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_STREET_START, OPERATE_OVERWRITE))
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_CHILD_START, OPERATE_OVERWRITE))
                         .orElse(map -> {
                             // 正常操作
                             if (!"1".equals(organId)) {
@@ -166,7 +166,7 @@ public class AuthServiceImpl implements AuthService {
                 if (!result) {
                     return result;
                 }
-                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_STREET_START, OPERATE_AFTER))
+                result = Optional.ofNullable(getOperate(operateList, Constants.ROLE_CHILD_START, OPERATE_AFTER))
                         .orElse(map -> true).test(appendParamMap);
                 if (!result) {
                     return result;
@@ -212,8 +212,8 @@ public class AuthServiceImpl implements AuthService {
                 if (operate.getRoleName() != null) {
                     // 找到指定角色的操作
                     boolean rightRole = false;
-                    if (Constants.ROLE_BUREAU_START.equals(roleNameStart)
-                            || Constants.ROLE_STREET_START.equals(roleNameStart)) {
+                    if (Constants.ROLE_FATHER_START.equals(roleNameStart)
+                            || Constants.ROLE_CHILD_START.equals(roleNameStart)) {
                         rightRole = operate.getRoleName().startsWith(roleNameStart);
                     } else {
                         if (Constants.ROLE_OTHER.equals(roleNameStart)) {

@@ -26,6 +26,19 @@ public class ${eentityName} extends BaseDomain {
 
     private String ${toFrom.toFromEntityName}Id;    // ${toFrom.toFromComment}ID
 	</#list>
+	<#if (eentityName) == 'SystemLog'>
+
+    public ${eentityName}() {}
+	</#if>
+	<#if (eentityName) == 'SystemLog'>
+
+    public SystemLog(String logType, String content, String insertUserId, String insertTime) {
+        super.setInsertUserId(insertUserId);
+        super.setInsertTime(insertTime);
+        this.logType = logType;
+        this.content = content;
+    }
+	</#if>
     <#list fieldList as field>
 	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
 

@@ -1,6 +1,7 @@
 package ${packageName}.service.impl;
 
 import ${packageName}.config.Constants;
+import ${packageName}.domain.SystemLog;
 import ${packageName}.domain.SystemUser;
 import ${packageName}.dto.EnhanceUserDTO;
 import ${packageName}.dto.SystemRoleDTO;
@@ -22,6 +23,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -158,11 +161,10 @@ public class AccountServiceImpl implements AccountService {
         if (systemUserDTO == null) {
             return new ReturnCommonDTO(Constants.commonReturnStatus.FAIL.getValue(), "当前用户不存在");
         }
-        // 不能修改账号、密码、账号状态、所属系统
+        // 不能修改账号、密码、账号状态
         userDTO.setLogin(null);
         userDTO.setPassword(null);
         userDTO.setAccountStatus(null);
-        userDTO.setSystemCode(null);
         // 更新用户信息
         SystemUser systemUserUpdate = new SystemUser();
         MyBeanUtil.copyNonNullProperties(userDTO, systemUserUpdate);

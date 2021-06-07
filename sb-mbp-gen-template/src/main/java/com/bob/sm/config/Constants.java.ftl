@@ -287,6 +287,27 @@ public final class Constants {
     }
 
     /**
+     * 启用状态
+     */
+    public enum enabled implements EnumInter {
+        ENABLED(1, "启用"), DISABLED(2, "停用");
+        private Integer value;
+        private String name;
+        private enabled(Integer value, String name) {
+            this.value = value;
+            this.name = name;
+        }
+        @Override
+        public Integer getValue(){
+            return value;
+        }
+        @Override
+        public String getName(){
+            return name;
+        }
+    }
+
+    /**
      * 用户操作码
      */
     public enum operationCode implements EnumInter {
