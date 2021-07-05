@@ -66,7 +66,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadRequestAlertException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ReturnCommonDTO handleRequestFault(BadRequestAlertException ex) {
-        String message = ex.getDefaultMessage();
+        String message = ex.getMessage();
         return new ReturnCommonDTO("-996", message);
     }
 
