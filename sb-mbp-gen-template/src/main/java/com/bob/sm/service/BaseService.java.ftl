@@ -26,6 +26,8 @@ import org.slf4j.Logger;
 import org.springframework.aop.framework.AopContext;
 
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -1128,7 +1130,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             appendMap = new HashMap<>();
         }
         ReturnCommonDTO result = ((BaseService)AopContext.currentProxy()).baseSaveInTrans(entityTypeName, dto, appendMap);
-        baseDoAfterSaveOutTrans(dto, appendMap);
         return result;
     }
 
@@ -1152,6 +1153,13 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
      */
     @Transactional(rollbackFor = Exception.class)
     default ReturnCommonDTO baseSaveInTrans(String entityTypeName, O dto, Map<String, Object> appendMap) {
+        // 设置事务完成之后的操作
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                baseDoAfterSaveOutTrans(dto, appendMap);
+            }
+        });
         // 获取主键ID，根据ID存在与否判断是新增还是修改
         String dtoIdUpdate = dto.getId();
         // 设置当前用户和时间
@@ -1161,10 +1169,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         dto.setInsertUserId(dto.getId() == null ? nowUserId : null);
         dto.setUpdateTime(nowTime);
         dto.setOperateUserId(nowUserId);
-        // 附加参数设置
-        if (appendMap == null) {
-            appendMap = new HashMap<>();
-        }
         // 新增修改验证
         boolean continueSave = ((BaseService)AopContext.currentProxy()).baseSaveValidator(dto, appendMap);
         if (!continueSave) {
