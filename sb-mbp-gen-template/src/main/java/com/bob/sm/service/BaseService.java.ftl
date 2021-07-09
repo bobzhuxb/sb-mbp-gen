@@ -1173,7 +1173,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         boolean continueSave = ((BaseService)AopContext.currentProxy()).baseSaveValidator(dto, appendMap);
         if (!continueSave) {
             // 不继续保存,在此处终止
-            return new ReturnCommonDTO();
+            return new ReturnCommonDTO(Constants.commonReturnStatus.SUCCESS.getValue(), null, dto.getId());
         }
         // 获取实体配置
         Class<? extends BaseDomain> entityClass = GlobalCache.getDomainClassMap().get(entityTypeName);
