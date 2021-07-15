@@ -1,11 +1,17 @@
 package ${packageName}.util;
 
 import ${packageName}.config.YmlConfig;
+import ${packageName}.dto.help.CompressChangeFileDTO;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
-import java.io.File;
+import java.io.*;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * 文件工具类
@@ -91,6 +97,80 @@ public class FileUtil {
             accuracy = 0.4;
         }
         return accuracy;
+    }
+
+    /**
+     * 打包下载文件
+     * @param compressChangeFileList  待打包的文件
+     * @param zipPath 打包完成后的文件全路径
+     */
+    public static void zipFile(List<CompressChangeFileDTO> compressChangeFileList, String zipPath) throws IOException {
+        FileInputStream fis = null;
+
+        try (FileOutputStream fos = new FileOutputStream(zipPath);
+             ZipOutputStream zos = new ZipOutputStream(fos)) {
+            for (CompressChangeFileDTO compressChangeFile : compressChangeFileList) {
+                File inputFile = new File(compressChangeFile.getFullFileName());
+                if (inputFile.exists()) {
+                    if (inputFile.isFile()) {
+                        fis = new FileInputStream(inputFile);
+                        String singleFileNameChange = compressChangeFile.getFullFileName();
+                        if (compressChangeFile.getChangeFileName() != null) {
+                            singleFileNameChange = compressChangeFile.getChangeFileName();
+                        }
+                        ZipEntry zipEntry = new ZipEntry(singleFileNameChange);
+                        zos.putNextEntry(zipEntry);
+                        int len = 0;
+                        byte[] bytes = new byte[1024 * 5];
+                        while ((len = fis.read(bytes)) > 0) {
+                            zos.write(bytes, 0, len);
+                        }
+                        zos.closeEntry();
+                        fis.close();
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 图片文件转化成Base64字符串
+     * @param fullFileName 全路径的图片文件名
+     * @return
+     */
+    public static String getBase64ImgStr(String fullFileName) throws IOException {
+        // 将图片文件转化为字节数组字符串，并对其进行Base64编码处理
+        byte[] data = null;
+        // 读取图片字节数组
+        try (InputStream in = new FileInputStream(fullFileName)) {
+            data = new byte[in.available()];
+            in.read(data);
+        }
+        // 返回Base64编码过的字节数组字符串
+        return new BASE64Encoder().encode(data);
+    }
+
+    /**
+     * Base64字符串转化成图片文件
+     * @param imgStr Base64字符串
+     * @param fullFileName 输出的图片全路径文件名
+     * @return
+     */
+    public static void generateImageFromBase64(String imgStr, String fullFileName) throws IOException {
+        BASE64Decoder decoder = new BASE64Decoder();
+        try (OutputStream out = new FileOutputStream(fullFileName)) {
+            // Base64解码
+            byte[] b = decoder.decodeBuffer(imgStr);
+            for (int i = 0;i < b.length; ++i) {
+                if (b[i] < 0) {
+                    // 调整异常数据
+                    b[i] += 256;
+                }
+            }
+            // 生成图片
+            out.write(b);
+            out.flush();
+        }
     }
 
 }
