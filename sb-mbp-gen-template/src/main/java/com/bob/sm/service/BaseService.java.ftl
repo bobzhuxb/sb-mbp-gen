@@ -460,6 +460,34 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                             + relatedEntityConfig.getTableName() + "_" + tableCount + ".id = "
                             + entityConfig.getTableName() + "_" + fromTableCount
                             + "." + joinColumnName;
+                } else {
+                    // 默认下级不级联，但有个特殊情况，OneToOne的时候也是以List显示，所以OneToOne时可级联
+                    List<BaseEntityConfigRelationDTO> relationList = GlobalCache.getEntityRelationsMap().get(entityTypeName);
+                    for (BaseEntityConfigRelationDTO relationDTO : relationList) {
+                        if ("OneToOne".equals(relationDTO.getRelationType())
+                                && fieldName.equals(relationDTO.getFromName() + "List")) {
+                            Class toDomainClass = GlobalCache.getDomainClassMap().get(relationDTO.getToType());
+                            // 以List结尾的toName，但实际上是OneToOne
+                            Object selfJoinColumnName = null;
+                            try {
+                                Field columnNameField = FieldUtils.getField(toDomainClass, "_" + relationDTO.getToName() + "Id", true);
+                                columnNameField.setAccessible(true);
+                                selfJoinColumnName = columnNameField.get(toDomainClass);
+                            } catch (Exception e) {
+                                throw new CommonException("获取字段_" + fieldName + "Id异常");
+                            }
+                            if (selfJoinColumnName == null) {
+                                throw new CommonException("字段_" + fieldName + "Id值为空");
+                            }
+                            // 往下级联
+                            joinSubSql += " LEFT JOIN " + GlobalCache.getServiceMap().get(fieldDomainName).baseFormJoinTable(
+                                    relatedEntityConfig.getTableName(), appendParamMap)
+                                    + " AS " + relatedEntityConfig.getTableName() + "_" + tableCount + " ON "
+                                    + relatedEntityConfig.getTableName() + "_" + tableCount + "." + selfJoinColumnName + " = "
+                                    + entityConfig.getTableName() + "_" + fromTableCount
+                                    + ".id";
+                        }
+                    }
                 }
                 String tableKey = fieldName;
                 if (lastFieldName != null) {
@@ -631,17 +659,17 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                                 .last("ESCAPE '/'"));
                     }
                     if (((StringFilter)result).getNotContains() != null) {
-                        wrapper.and(i -> i.notLike(columnName, ((StringFilter) result).getContains()
+                        wrapper.and(i -> i.notLike(columnName, ((StringFilter) result).getNotContains()
                                 .replace("/", "//").replace("_", "/_").replace("%", "/%"))
                                 .last("ESCAPE '/'"));
                     }
                     if (((StringFilter)result).getStartWith() != null) {
-                        wrapper.and(i -> i.likeRight(columnName, ((StringFilter) result).getContains()
+                        wrapper.and(i -> i.likeRight(columnName, ((StringFilter) result).getStartWith()
                                 .replace("/", "//").replace("_", "/_").replace("%", "/%"))
                                 .last("ESCAPE '/'"));
                     }
                     if (((StringFilter)result).getEndWith() != null) {
-                        wrapper.and(i -> i.likeLeft(columnName, ((StringFilter) result).getContains()
+                        wrapper.and(i -> i.likeLeft(columnName, ((StringFilter) result).getEndWith()
                                 .replace("/", "//").replace("_", "/_").replace("%", "/%"))
                                 .last("ESCAPE '/'"));
                     }
