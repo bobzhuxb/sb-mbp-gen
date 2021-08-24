@@ -5,6 +5,7 @@ import com.bob.at.domain.AhClassCode;
 import com.bob.at.dto.AhClassCodeDTO;
 import com.bob.at.dto.criteria.AhClassCodeCriteria;
 import com.bob.at.dto.help.ReturnCommonDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -25,5 +26,7 @@ public interface AhClassCodeService extends IService<AhClassCode> {
     ReturnCommonDTO<AhClassCodeDTO> getAhClassCode(String id);
 
     ReturnCommonDTO<List<AhClassCodeDTO>> getAllAhClassCodes(AhClassCodeCriteria criteria);
+
+    ReturnCommonDTO uploadClassFiles(String projectId, MultipartFile[] files);
 
 }

@@ -18,6 +18,7 @@ import com.bob.at.service.AhProjectService;
 import com.bob.at.util.MyBeanUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
  * @author Bob
  */
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class AhProjectServiceImpl extends ServiceImpl<AhProjectMapper, AhProject>
         implements AhProjectService {
 

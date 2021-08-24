@@ -11,6 +11,7 @@ import com.bob.at.mapper.AhInterfaceMapper;
 import com.bob.at.service.AhInterfaceService;
 import com.bob.at.util.MyBeanUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
  * @author Bob
  */
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class AhInterfaceServiceImpl extends ServiceImpl<AhInterfaceMapper, AhInterface>
         implements AhInterfaceService {
 

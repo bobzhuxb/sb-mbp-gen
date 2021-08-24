@@ -7,6 +7,7 @@ import com.bob.at.service.AhClassCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -84,6 +85,30 @@ public class AhClassCodeController {
     @GetMapping("/ah-class-code-all")
     public ResponseEntity<ReturnCommonDTO<List<AhClassCodeDTO>>> getAllAhClassCodes(AhClassCodeCriteria criteria) {
         ReturnCommonDTO<List<AhClassCodeDTO>> resultDTO = ahClassCodeService.getAllAhClassCodes(criteria);
+        return ResponseEntity.ok().headers(null).body(resultDTO);
+    }
+
+    /**
+     * 上传类所在文件夹
+     * @param projectId 所属项目ID
+     * @param folder
+     * @return
+     */
+    @PostMapping("/ah-class-code-folder-upload")
+    public ResponseEntity<ReturnCommonDTO> uploadClassFolder(String projectId, MultipartFile[] folder) {
+        ReturnCommonDTO resultDTO = ahClassCodeService.uploadClassFiles(projectId, folder);
+        return ResponseEntity.ok().headers(null).body(resultDTO);
+    }
+
+    /**
+     * 上传类所在文件夹
+     * @param projectId 所属项目ID
+     * @param file
+     * @return
+     */
+    @PostMapping("/ah-class-code-file-upload")
+    public ResponseEntity<ReturnCommonDTO> uploadClassFile(String projectId, MultipartFile file) {
+        ReturnCommonDTO resultDTO = ahClassCodeService.uploadClassFiles(projectId, new MultipartFile[] {file});
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 

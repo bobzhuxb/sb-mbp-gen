@@ -25,4 +25,23 @@ public class Constants {
         }
     }
 
+    /**
+     * Java文件类型
+     */
+    public enum javaFileType {
+        SOURCE_FILE("sourceFile", "Java源文件"), CLASS_FILE("CLASS_FILE", "类文件");
+        private String value;
+        private String name;
+        private javaFileType(String value, String name) {
+            this.value = value;
+            this.name = name;
+        }
+        public String getValue(){
+            return value;
+        }
+        public String getName(){
+            return name;
+        }
+    }
+
 }
