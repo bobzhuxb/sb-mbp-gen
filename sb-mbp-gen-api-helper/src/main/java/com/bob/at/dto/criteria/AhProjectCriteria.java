@@ -5,4 +5,17 @@ package com.bob.at.dto.criteria;
  * @author Bob
  */
 public class AhProjectCriteria {
+
+    /**
+     * 项目名模糊查询
+     */
+    private String nameLike;
+
+    public String getNameLike() {
+        return nameLike;
+    }
+
+    public void setNameLike(String nameLike) {
+        this.nameLike = nameLike;
+    }
 }
