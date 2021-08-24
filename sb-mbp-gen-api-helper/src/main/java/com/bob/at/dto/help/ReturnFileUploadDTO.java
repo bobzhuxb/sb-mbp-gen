@@ -10,7 +10,7 @@ public class ReturnFileUploadDTO {
 
     private String relativePath;                // 文件相对路径
 
-    private String compressedRelativePath;      // 压缩后文件相对路径
+    private String absolutePath;                // 文件绝对路径
 
     private String uploadTime;                  // 文件上传时间
 
@@ -32,12 +32,12 @@ public class ReturnFileUploadDTO {
         this.relativePath = relativePath;
     }
 
-    public String getCompressedRelativePath() {
-        return compressedRelativePath;
+    public String getAbsolutePath() {
+        return absolutePath;
     }
 
-    public void setCompressedRelativePath(String compressedRelativePath) {
-        this.compressedRelativePath = compressedRelativePath;
+    public void setAbsolutePath(String absolutePath) {
+        this.absolutePath = absolutePath;
     }
 
     public String getUploadTime() {

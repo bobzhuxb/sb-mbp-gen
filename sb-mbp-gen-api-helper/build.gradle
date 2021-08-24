@@ -91,4 +91,7 @@ dependencies {
 	compile "net.coobird:thumbnailator:0.4.8"
 	// 拼音
 	compile "com.belerweb:pinyin4j:2.5.1"
+
+	// ===================================本地jar包=====================================
+	compile fileTree(dir:'libs',include:['*.jar'])
 }
