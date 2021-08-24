@@ -1,0 +1,1 @@
+# 用于协助ApiAdapter的json文件生成

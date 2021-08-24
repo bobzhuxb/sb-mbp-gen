@@ -1,0 +1,94 @@
+buildscript {
+	ext {
+		springBootVersion = '2.1.1.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'war'
+apply plugin: 'io.spring.dependency-management'
+
+archivesBaseName = 'apihelper'
+group = 'com.bob'
+version = '0.1'
+sourceCompatibility = '1.8'
+
+configurations {
+	providedRuntime
+	compile.exclude module: "spring-boot-starter-tomcat"
+}
+
+repositories {
+	maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+}
+
+dependencies {
+	// Spring加载器工具
+	compile "org.springframework.boot:spring-boot-loader-tools"
+	// Spring AOP模块
+	compile "org.springframework.boot:spring-boot-starter-aop"
+
+	// ===================================Servlet容器=====================================
+	compile ("org.springframework.boot:spring-boot-starter-web") {
+		exclude module: 'spring-boot-starter-tomcat'
+	}
+	testImplementation('org.springframework.boot:spring-boot-starter-test')
+	// Spring内嵌容器Undertow（功能类似于Tomcat）
+	compile "org.springframework.boot:spring-boot-starter-undertow"
+
+	// ===================================日志=====================================
+	// Spring日志模块、logstash模块
+	compile "org.springframework.boot:spring-boot-starter-logging"
+	
+	// ===================================数据库=====================================
+	// Mysql
+	compile "mysql:mysql-connector-java"
+	// MyBatis Plus
+	compile "com.baomidou:mybatis-plus-boot-starter:3.1.0"
+	compile "com.baomidou:mybatis-plus:3.1.0"
+	compile "com.baomidou:mybatis-plus-extension:3.1.0"
+	compile "com.baomidou:mybatis-plus-generator:3.1.0"
+	// 事务处理API
+	compile "javax.transaction:javax.transaction-api"
+	
+	// ===================================工具=====================================
+	// apache-commons工具包
+	compile "org.apache.commons:commons-lang3"
+	// commons-io工具包
+	compile "commons-io:commons-io:2.6"
+	// commons-beanutils工具包
+	compile "commons-beanutils:commons-beanutils:1.9.3"
+	// google的guava包
+	compile "com.google.guava:guava:27.1-jre"
+	// 注解生成get/set方法
+	compile "org.projectlombok:lombok"
+	// 一系列Java工具集（https://www.hutool.cn/）
+	compile "cn.hutool:hutool-all:5.0.2"
+	// CGLIB
+//	compile "commons-beanutils:commons-beanutils:1.9.3"
+//	compile "cglib:cglib-nodep:3.2.4"
+	// apache的http客户端
+	compile "org.apache.httpcomponents:httpclient"
+	// Alibaba的FastJson
+	compile "com.alibaba:fastjson:1.2.76"
+	// iText操作PDF
+	compile "com.itextpdf:itextpdf:5.5.13"
+	// 快速SAX模式的XML解析器
+//	compile "com.fasterxml.jackson.datatype:jackson-datatype-hppc"
+//	compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+//	compile "com.fasterxml.jackson.datatype:jackson-datatype-hibernate5"
+//	compile "com.fasterxml.jackson.core:jackson-annotations"
+//	compile "com.fasterxml.jackson.core:jackson-databind"
+//	compile "com.fasterxml.jackson.module:jackson-module-afterburner"
+	// 图片压缩
+	compile "net.coobird:thumbnailator:0.4.8"
+	// 拼音
+	compile "com.belerweb:pinyin4j:2.5.1"
+}
