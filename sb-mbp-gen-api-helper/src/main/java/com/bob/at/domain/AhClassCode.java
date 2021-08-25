@@ -1,7 +1,5 @@
 package com.bob.at.domain;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-
 import java.util.Objects;
 
 /**
@@ -15,8 +13,6 @@ public class AhClassCode extends BaseDomain {
     private String packageName;    // 包名
 
     private String className;    // 类名
-
-    private byte[] byteCode;    // 字节码
 
     private String ahProjectId;    // 项目ID
 
@@ -34,14 +30,6 @@ public class AhClassCode extends BaseDomain {
 
     public void setClassName(String className) {
         this.className = className;
-    }
-
-    public byte[] getByteCode() {
-        return byteCode;
-    }
-
-    public void setByteCode(byte[] byteCode) {
-        this.byteCode = byteCode;
     }
 
     public String getAhProjectId() {
@@ -78,7 +66,6 @@ public class AhClassCode extends BaseDomain {
                 "id=" + getId() +
                 ", packageName='" + getPackageName() + "'" +
                 ", className='" + getClassName() + "'" +
-                ", byteCode=" + getByteCode() +
                 ", insertTime='" + getInsertTime() + "'" +
                 ", updateTime='" + getUpdateTime() + "'" +
                 ", ahProjectId=" + getAhProjectId() +
@@ -89,7 +76,6 @@ public class AhClassCode extends BaseDomain {
     public static final String _TableName = "ah_class_code";
     public static final String _packageName = "package_name";    // 包名
     public static final String _className = "class_name";    // 类名
-    public static final String _byteCode = "byte_code";    // 字节码
     public static final String _ahProjectId = "ah_project_id";    // 项目ID
 
 }

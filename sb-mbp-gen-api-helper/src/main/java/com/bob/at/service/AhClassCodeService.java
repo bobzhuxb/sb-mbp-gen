@@ -8,6 +8,7 @@ import com.bob.at.dto.help.ReturnCommonDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 可用实体类
@@ -23,10 +24,14 @@ public interface AhClassCodeService extends IService<AhClassCode> {
 
     ReturnCommonDTO deleteAhClassCodes(List<String> idList);
 
+    ReturnCommonDTO deleteAhClassCodesOfProject(String projectId);
+
     ReturnCommonDTO<AhClassCodeDTO> getAhClassCode(String id);
 
     ReturnCommonDTO<List<AhClassCodeDTO>> getAllAhClassCodes(AhClassCodeCriteria criteria);
 
-    ReturnCommonDTO uploadClassFiles(String projectId, MultipartFile[] files);
+    ReturnCommonDTO uploadClassFiles(String projectId, String fileType, String overwrite, MultipartFile[] files);
+
+    void reloadClassCodeAndField(String projectId, String overwrite, Set<Class> classSet);
 
 }

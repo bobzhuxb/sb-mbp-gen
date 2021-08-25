@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bob.at.mapper.AhFieldMapper">
+
+    <delete id="deleteByProjectId">
+        DELETE af FROM ah_field af
+        LEFT JOIN ah_class_code acc ON acc.id = af.ah_class_code_id
+        WHERE acc.ah_project_id = #{projectId}
+    </delete>
+
+</mapper>

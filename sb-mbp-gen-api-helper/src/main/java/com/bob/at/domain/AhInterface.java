@@ -1,7 +1,5 @@
 package com.bob.at.domain;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-
 import java.util.Objects;
 
 /**

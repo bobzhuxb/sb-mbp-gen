@@ -1,38 +1,35 @@
 package com.bob.at.service.impl;
 
-import cn.hutool.core.io.file.FileReader;
-import cn.hutool.core.util.ClassLoaderUtil;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bob.at.config.YmlConfig;
 import com.bob.at.domain.AhClassCode;
+import com.bob.at.domain.AhField;
+import com.bob.at.domain.AhInterface;
 import com.bob.at.dto.AhClassCodeDTO;
 import com.bob.at.dto.criteria.AhClassCodeCriteria;
 import com.bob.at.dto.help.ReturnCommonDTO;
 import com.bob.at.dto.help.ReturnFileUploadDTO;
 import com.bob.at.mapper.AhClassCodeMapper;
+import com.bob.at.mapper.AhFieldMapper;
 import com.bob.at.service.AhClassCodeService;
+import com.bob.at.service.AhProjectService;
 import com.bob.at.util.DynamicLoader;
 import com.bob.at.util.MemoryClassLoader;
 import com.bob.at.util.MyBeanUtil;
-import com.bob.at.util.MyClassLoader;
 import com.bob.at.web.rest.errors.CommonException;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
-import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.lang.reflect.Field;
-import java.net.URLClassLoader;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,14 +38,20 @@ import java.util.stream.Collectors;
  * @author Bob
  */
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhClassCode>
         implements AhClassCodeService {
+
+    @Autowired
+    private AhFieldMapper ahFieldMapper;
+
+    @Autowired
+    private AhClassCodeService ahClassCodeService;
 
     @Autowired
     private YmlConfig ymlConfig;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO createAhClassCode(AhClassCodeDTO ahClassCodeDTO) {
         AhClassCode ahClassCode = new AhClassCode();
         MyBeanUtil.copyNonNullProperties(ahClassCodeDTO, ahClassCode);
@@ -57,6 +60,7 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO updateAhClassCode(AhClassCodeDTO ahClassCodeDTO) {
         AhClassCode ahClassCode = new AhClassCode();
         MyBeanUtil.copyNonNullProperties(ahClassCodeDTO, ahClassCode);
@@ -65,18 +69,31 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO deleteAhClassCode(String id) {
+        ahFieldMapper.delete(new QueryWrapper<AhField>().eq(AhField._ahClassCodeId, id));
         baseMapper.deleteById(id);
         return new ReturnCommonDTO();
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO deleteAhClassCodes(List<String> idList) {
+        ahFieldMapper.delete(new QueryWrapper<AhField>().in(AhField._ahClassCodeId, idList));
         baseMapper.deleteBatchIds(idList);
         return new ReturnCommonDTO();
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ReturnCommonDTO deleteAhClassCodesOfProject(String projectId) {
+        ahFieldMapper.deleteByProjectId(projectId);
+        baseMapper.delete(new QueryWrapper<AhClassCode>().eq(AhClassCode._ahProjectId, projectId));
+        return new ReturnCommonDTO();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<AhClassCodeDTO> getAhClassCode(String id) {
         AhClassCode inter = baseMapper.selectById(id);
         AhClassCodeDTO classCodeDTO = new AhClassCodeDTO();
@@ -85,6 +102,7 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<List<AhClassCodeDTO>> getAllAhClassCodes(AhClassCodeCriteria criteria) {
         List<AhClassCode> classCodeList = baseMapper.selectList(new QueryWrapper<AhClassCode>()
                 .eq(StrUtil.isNotBlank(criteria.getProjectIdEq()), AhClassCode._ahProjectId, criteria.getProjectIdEq().trim()));
@@ -100,64 +118,119 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
     }
 
     @Override
-    public ReturnCommonDTO uploadClassFiles(String projectId, MultipartFile[] files) {
+    public ReturnCommonDTO uploadClassFiles(String projectId, String fileType, String overwrite, MultipartFile[] files) {
         Set<Class> classSet = new HashSet<>();
+        List<String> fullFileNameList = new ArrayList<>();
         for (MultipartFile file : files) {
             // 获取文件名和文件内容
             ReturnFileUploadDTO fileUploadDTO = uploadFileToLocal(file);
-            String fileName = fileUploadDTO.getOriginalFileName();
-            FileReader fileReader = new FileReader(fileUploadDTO.getAbsolutePath());
-            // 文件的字节码Map（一个文件可能有多个类）
-            Map<String, byte[]> bytecode = null;
-            if (fileName.endsWith(".java")) {
-                // java文件
-                String javaSrc = fileReader.readString();
-                bytecode = DynamicLoader.compile(javaSrc);
-                for (String keyName : bytecode.keySet()) {
-                    try {
-                        Class<?> clazz = new MemoryClassLoader(bytecode).loadClass(keyName);
-                        classSet.add(clazz);
-                    } catch (Exception e) {
-                        throw new CommonException("类加载异常", e);
-                    }
-                }
-            } else if (fileName.endsWith(".class")) {
-                // class文件
-                try {
-                    byte[] classBytes = fileReader.readBytes();
-                    Class<?> clazz = new MyClassLoader(classBytes).loadClass("");
-                    classSet.add(clazz);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    throw new CommonException("文件解析错误");
-                }
-            } else {
-                throw new CommonException("文件类别错误");
+            String fullFileName = fileUploadDTO.getAbsolutePath();
+            if (fullFileName.endsWith(fileType)) {
+                fullFileNameList.add(fileUploadDTO.getAbsolutePath());
             }
+        }
+        if (".java".equals(fileType)) {
+            try {
+                Map<String, byte[]> byteCodeMap = DynamicLoader.compile(fullFileNameList);
+                for (String keyName : byteCodeMap.keySet()) {
+                    Class<?> clazz = new MemoryClassLoader(byteCodeMap).loadClass(keyName);
+                    classSet.add(clazz);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new CommonException("java文件动态编译加载异常", e);
+            }
+        } else if (".class".equals(fileType)) {
+            // class文件
+            throw new CommonException("暂不支持");
+//            try {
+//                FileReader fileReader = new FileReader(fullFileName);
+//                byte[] classBytes = fileReader.readBytes();
+//                Class<?> clazz = new MyClassLoader(classBytes).loadClass("");
+//                classSet.add(clazz);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                throw new CommonException("类动态加载异常");
+//            }
+        } else {
+            throw new CommonException("fileType类别错误");
+        }
+        ahClassCodeService.reloadClassCodeAndField(projectId, overwrite, classSet);
+        return new ReturnCommonDTO();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void reloadClassCodeAndField(String projectId, String overwrite, Set<Class> classSet) {
+        // 获取当前时间
+        LocalDateTime nowTime = LocalDateTime.now();
+        String nowTimeStr = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(nowTime);
+        // 验证
+        if ("yes".equals(overwrite)) {
+            // 全覆盖，则清空该项目下的所有类
+            ahClassCodeService.deleteAhClassCodesOfProject(projectId);
         }
         for (Class<?> clazz : classSet) {
+            String packageName = ClassUtil.getPackage(clazz);
+            String className = ClassUtil.getClassName(clazz, true);
+            // 已存在的classCodeId
+            String classCodeIdExist = null;
+            if (!"yes".equals(overwrite)) {
+                // 非全覆盖，要验证是新增还是修改
+                AhClassCode classCodeExist = baseMapper.selectOne(new QueryWrapper<AhClassCode>()
+                        .eq(AhClassCode._ahProjectId, projectId)
+                        .eq(AhClassCode._packageName, packageName)
+                        .eq(AhClassCode._className, className));
+                if (classCodeExist != null) {
+                    classCodeIdExist = classCodeExist.getId();
+                }
+            }
+            // 后续级联用的classCodeId
+            String classCodeIdRelate = null;
+            // AhClassCode表
+            if (classCodeIdExist == null) {
+                AhClassCode ahClassCodeAdd = new AhClassCode();
+                ahClassCodeAdd.setPackageName(packageName);
+                ahClassCodeAdd.setClassName(className);
+                ahClassCodeAdd.setAhProjectId(projectId);
+                ahClassCodeAdd.setInsertTime(nowTimeStr);
+                baseMapper.insert(ahClassCodeAdd);
+                classCodeIdRelate = ahClassCodeAdd.getId();
+            } else {
+                AhClassCode ahClassCodeUpdate = new AhClassCode();
+                ahClassCodeUpdate.setId(classCodeIdExist);
+                ahClassCodeUpdate.setUpdateTime(nowTimeStr);
+                baseMapper.updateById(ahClassCodeUpdate);
+                classCodeIdRelate = classCodeIdExist;
+            }
+            // AhField表
+            if (classCodeIdExist != null) {
+                ahFieldMapper.delete(new QueryWrapper<AhField>().eq(AhField._ahClassCodeId, classCodeIdExist));
+            }
             Field[] fields = ClassUtil.getDeclaredFields(clazz);
             for (Field field : fields) {
-                System.out.println(field.getName());
+                String fieldFullTypeName = ClassUtil.getClassName(field.getType(), false);
+                String fieldName = field.getName();
+                // 新增Field
+                AhField ahFieldAdd = new AhField();
+                ahFieldAdd.setTypeName(fieldFullTypeName);
+                ahFieldAdd.setFieldName(fieldName);
+                ahFieldAdd.setAhClassCodeId(classCodeIdRelate);
+                ahFieldAdd.setInsertTime(nowTimeStr);
+                ahFieldMapper.insert(ahFieldAdd);
             }
-            System.out.println("=================================================");
         }
-        return new ReturnCommonDTO();
+
     }
 
     private ReturnFileUploadDTO uploadFileToLocal(MultipartFile file) {
         Date nowDate = new Date();
         // 获取文件名和文件内容
         String fileName = file.getOriginalFilename();
-        // 获取扩展名（注意扩展名可能不存在的情况）
-        int lastPointPosition = fileName.lastIndexOf(".");
-        String extension = lastPointPosition < 0 ? "" : fileName.substring(lastPointPosition);
         // 相对路径
-        String relativePath = new SimpleDateFormat("yyyyMMdd").format(nowDate);
-        int fileRandomInt = new Random().nextInt(1000);
+        String relativePath = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(nowDate);
         // 新文件名
-        String newFileName = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(nowDate) + "_"
-                + fileRandomInt + extension;
+        String newFileName = fileName;
         // 本地（服务器）绝对路径
         String localPath = ymlConfig.getLocation() + File.separator + relativePath;
         // 生成文件

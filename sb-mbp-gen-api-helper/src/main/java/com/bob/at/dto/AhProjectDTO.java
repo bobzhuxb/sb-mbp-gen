@@ -14,6 +14,8 @@ public class AhProjectDTO extends BaseDTO {
     private String descr;    // 描述
 
     private String urlPrefix;    // URL前缀
+
+    private String basePackage;     // 基础包名
     
 	///////////////////////// 附加关联属性 /////////////////////////
 
@@ -46,6 +48,14 @@ public class AhProjectDTO extends BaseDTO {
 
     public void setUrlPrefix(String urlPrefix) {
         this.urlPrefix = urlPrefix;
+    }
+
+    public String getBasePackage() {
+        return basePackage;
+    }
+
+    public void setBasePackage(String basePackage) {
+        this.basePackage = basePackage;
     }
 
     public List<AhInterfaceDTO> getAhInterfaceList() {
@@ -95,6 +105,7 @@ public class AhProjectDTO extends BaseDTO {
                 ", name='" + getName() + "'" +
                 ", descr='" + getDescr() + "'" +
                 ", urlPrefix='" + getUrlPrefix() + "'" +
+                ", basePackage='" + getBasePackage() + "'" +
                 ", insertTime='" + getInsertTime() + "'" +
                 ", updateTime='" + getUpdateTime() + "'" +
                 "}";

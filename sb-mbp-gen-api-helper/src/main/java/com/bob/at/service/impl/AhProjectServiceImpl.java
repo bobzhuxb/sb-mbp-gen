@@ -12,6 +12,7 @@ import com.bob.at.dto.AhProjectDTO;
 import com.bob.at.dto.criteria.AhProjectCriteria;
 import com.bob.at.dto.help.ReturnCommonDTO;
 import com.bob.at.mapper.AhClassCodeMapper;
+import com.bob.at.mapper.AhFieldMapper;
 import com.bob.at.mapper.AhInterfaceMapper;
 import com.bob.at.mapper.AhProjectMapper;
 import com.bob.at.service.AhProjectService;
@@ -30,7 +31,6 @@ import java.util.stream.Collectors;
  * @author Bob
  */
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class AhProjectServiceImpl extends ServiceImpl<AhProjectMapper, AhProject>
         implements AhProjectService {
 
@@ -38,9 +38,13 @@ public class AhProjectServiceImpl extends ServiceImpl<AhProjectMapper, AhProject
     private AhClassCodeMapper ahClassCodeMapper;
 
     @Autowired
+    private AhFieldMapper ahFieldMapper;
+
+    @Autowired
     private AhInterfaceMapper ahInterfaceMapper;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO createAhProject(AhProjectDTO ahProjectDTO) {
         AhProject ahProject = new AhProject();
         MyBeanUtil.copyNonNullProperties(ahProjectDTO, ahProject);
@@ -49,6 +53,7 @@ public class AhProjectServiceImpl extends ServiceImpl<AhProjectMapper, AhProject
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO updateAhProject(AhProjectDTO ahProjectDTO) {
         AhProject ahProject = new AhProject();
         MyBeanUtil.copyNonNullProperties(ahProjectDTO, ahProject);
@@ -57,7 +62,9 @@ public class AhProjectServiceImpl extends ServiceImpl<AhProjectMapper, AhProject
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO deleteAhProject(String id) {
+        ahFieldMapper.deleteByProjectId(id);
         ahClassCodeMapper.delete(new QueryWrapper<AhClassCode>().eq(AhClassCode._ahProjectId, id));
         ahInterfaceMapper.delete(new QueryWrapper<AhInterface>().eq(AhInterface._ahProjectId, id));
         baseMapper.deleteById(id);
@@ -65,7 +72,11 @@ public class AhProjectServiceImpl extends ServiceImpl<AhProjectMapper, AhProject
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO deleteAhProjects(List<String> idList) {
+        for (String id : idList) {
+            ahFieldMapper.deleteByProjectId(id);
+        }
         ahClassCodeMapper.delete(new QueryWrapper<AhClassCode>().in(AhClassCode._ahProjectId, idList));
         ahInterfaceMapper.delete(new QueryWrapper<AhInterface>().in(AhInterface._ahProjectId, idList));
         baseMapper.deleteBatchIds(idList);
@@ -73,6 +84,7 @@ public class AhProjectServiceImpl extends ServiceImpl<AhProjectMapper, AhProject
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<AhProjectDTO> getAhProject(String id) {
         AhProject project = baseMapper.selectById(id);
         AhProjectDTO projectDTO = new AhProjectDTO();
@@ -82,6 +94,7 @@ public class AhProjectServiceImpl extends ServiceImpl<AhProjectMapper, AhProject
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<List<AhProjectDTO>> getAllAhProjects(AhProjectCriteria criteria) {
         List<AhProject> projectList = baseMapper.selectList(new QueryWrapper<AhProject>()
             .like(StrUtil.isNotBlank(criteria.getNameLike()), AhProject._name, criteria.getNameLike().trim()));

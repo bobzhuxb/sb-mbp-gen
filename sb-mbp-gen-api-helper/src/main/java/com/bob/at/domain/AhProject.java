@@ -1,7 +1,5 @@
 package com.bob.at.domain;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-
 import java.util.Objects;
 
 /**
@@ -17,6 +15,8 @@ public class AhProject extends BaseDomain {
     private String descr;    // 描述
 
     private String urlPrefix;    // URL前缀
+
+    private String basePackage;     // 基础包名
 
     public String getName() {
         return name;
@@ -40,6 +40,14 @@ public class AhProject extends BaseDomain {
 
     public void setUrlPrefix(String urlPrefix) {
         this.urlPrefix = urlPrefix;
+    }
+
+    public String getBasePackage() {
+        return basePackage;
+    }
+
+    public void setBasePackage(String basePackage) {
+        this.basePackage = basePackage;
     }
 
     @Override
@@ -69,6 +77,7 @@ public class AhProject extends BaseDomain {
                 ", name='" + getName() + "'" +
                 ", descr='" + getDescr() + "'" +
                 ", urlPrefix='" + getUrlPrefix() + "'" +
+                ", basePackage='" + getBasePackage() + "'" +
                 ", insertTime='" + getInsertTime() + "'" +
                 ", updateTime='" + getUpdateTime() + "'" +
                 "}";
@@ -79,5 +88,6 @@ public class AhProject extends BaseDomain {
     public static final String _name = "name";    // 名称
     public static final String _descr = "descr";    // 描述
     public static final String _urlPrefix = "url_prefix";    // URL前缀
+    public static final String _basePackage = "base_package";    // 基础包名
 
 }

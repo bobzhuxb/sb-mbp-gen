@@ -10,7 +10,7 @@ public class MyClassLoader extends ClassLoader {
 
     @Override
     protected Class<?> findClass(String name) {
-        Class clazz = defineClass(classBytes, 0, classBytes.length);
+        Class clazz = defineClass(null, classBytes, 0, classBytes.length);
         return clazz;
     }
 

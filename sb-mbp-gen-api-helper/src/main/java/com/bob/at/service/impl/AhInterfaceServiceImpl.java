@@ -22,11 +22,11 @@ import java.util.stream.Collectors;
  * @author Bob
  */
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class AhInterfaceServiceImpl extends ServiceImpl<AhInterfaceMapper, AhInterface>
         implements AhInterfaceService {
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO createAhInterface(AhInterfaceDTO ahInterfaceDTO) {
         AhInterface ahInterface = new AhInterface();
         MyBeanUtil.copyNonNullProperties(ahInterfaceDTO, ahInterface);
@@ -35,6 +35,7 @@ public class AhInterfaceServiceImpl extends ServiceImpl<AhInterfaceMapper, AhInt
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO updateAhInterface(AhInterfaceDTO ahInterfaceDTO) {
         AhInterface ahInterface = new AhInterface();
         MyBeanUtil.copyNonNullProperties(ahInterfaceDTO, ahInterface);
@@ -43,18 +44,21 @@ public class AhInterfaceServiceImpl extends ServiceImpl<AhInterfaceMapper, AhInt
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO deleteAhInterface(String id) {
         baseMapper.deleteById(id);
         return new ReturnCommonDTO();
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO deleteAhInterfaces(List<String> idList) {
         baseMapper.deleteBatchIds(idList);
         return new ReturnCommonDTO();
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<AhInterfaceDTO> getAhInterface(String id) {
         AhInterface inter = baseMapper.selectById(id);
         AhInterfaceDTO interfaceDTO = new AhInterfaceDTO();
@@ -63,6 +67,7 @@ public class AhInterfaceServiceImpl extends ServiceImpl<AhInterfaceMapper, AhInt
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<List<AhInterfaceDTO>> getAllAhInterfaces(AhInterfaceCriteria criteria) {
         List<AhInterface> interfaceList = baseMapper.selectList(new QueryWrapper<AhInterface>()
                 .eq(StrUtil.isNotBlank(criteria.getProjectIdEq()), AhInterface._ahProjectId, criteria.getProjectIdEq().trim()));

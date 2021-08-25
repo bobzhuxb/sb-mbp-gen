@@ -8,32 +8,26 @@ import java.net.URLClassLoader;
 import java.nio.CharBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Required JDK >= 1.6<br><br>
- * This class can help you create the Java byte code dynamically through the string and load it into memory.<br><br>
- *
- * HOW TO:<br>
- * First step. <code>Map<String, byte[]> bytecode = DynamicLoader.compile("TestClass.java", javaSrc);</code><br>
- * Second step. <code>DynamicLoader.MemoryClassLoader classLoader = new DynamicLoader.MemoryClassLoader(bytecode);</code><br>
- * Third step. <code>Class clazz = classLoader.loadClass("TestClass");</code><br>
- * <br>
- * Then just like the normal use of the call this class can be.
+ * 动态加载器
+ * @author Bob
  */
 public class DynamicLoader {
+
+    private static Pattern PATTERN = Pattern.compile("public\\s+class\\s+(\\w+)");
+
     /**
-     * auto fill in the java-name with code, return null if cannot find the public class
-     * @param javaSrc source code string
-     * @return return the Map, the KEY means ClassName, the VALUE means bytecode.
+     * 自动从Java源码中分析出类名，并编译Java源码
+     * @param javaSrc Java源码
+     * @return Key：全路径类名   Value：字节码
      */
-    public static Map<String, byte[]> compile(String javaSrc) {
-        Pattern pattern = Pattern.compile("public\\s+class\\s+(\\w+)");
-
-        Matcher matcher = pattern.matcher(javaSrc);
-
+    public static Map<String, byte[]> compile(String javaSrc) throws IOException {
+        Matcher matcher = PATTERN.matcher(javaSrc);
         if (matcher.find()) {
             return compile(matcher.group(1) + ".java", javaSrc);
         }
@@ -41,11 +35,12 @@ public class DynamicLoader {
     }
 
     /**
-     * @param javaName the name of your public class,eg: <code>TestClass.java</code>
-     * @param javaSrc source code string
-     * @return return the Map, the KEY means ClassName, the VALUE means bytecode.
+     * 编译Java源码
+     * @param javaName Java类名，例如：TestClass.java
+     * @param javaSrc Java源码
+     * @return Key：全路径类名   Value：字节码
      */
-    public static Map<String, byte[]> compile(String javaName, String javaSrc) {
+    public static Map<String, byte[]> compile(String javaName, String javaSrc) throws IOException {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager stdManager = compiler.getStandardFileManager(null, null, null);
 
@@ -55,62 +50,32 @@ public class DynamicLoader {
             if (task.call()) {
                 return manager.getClassBytes();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return null;
     }
 
-    public static class MemoryClassLoader extends URLClassLoader {
+    /**
+     * 编译Java源码
+     * @param javaName Java类名，例如：TestClass.java
+     * @param javaSrc Java源码
+     * @return Key：全路径类名   Value：字节码
+     */
+    public static Map<String, byte[]> compile(List<String> fullFileNameList) throws IOException {
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        StandardJavaFileManager stdManager = compiler.getStandardFileManager(null, null, null);
 
-        Map<String, byte[]> classBytes = new HashMap<String, byte[]>();
-
-        public MemoryClassLoader(Map<String, byte[]> classBytes) {
-            super(new URL[0], MemoryClassLoader.class.getClassLoader());
-            this.classBytes.putAll(classBytes);
-        }
-
-        @Override
-        protected Class<?> findClass(String name) throws ClassNotFoundException {
-            byte[] buf = classBytes.get(name);
-            if (buf == null) {
-                return super.findClass(name);
+        try (MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager)) {
+            Iterable<? extends JavaFileObject> javaFileObjects =
+                    stdManager.getJavaFileObjectsFromStrings(fullFileNameList);
+            JavaCompiler.CompilationTask task = compiler.getTask(null, manager, null, null, null, javaFileObjects);
+            if (task.call()) {
+                return manager.getClassBytes();
             }
-            classBytes.remove(name);
-            return defineClass(name, buf, 0, buf.length);
         }
+        return null;
     }
+
 }
-
-/************************************/
-/*
- * Copyright (C) 2006 Sun Microsystems, Inc. All rights reserved.
- * Use is subject to license terms.
- *
- * Redistribution and use in source and binary forms, with or without modification, are
- * permitted provided that the following conditions are met: Redistributions of source code
- * must retain the above copyright notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice, this list of
- * conditions and the following disclaimer in the documentation and/or other materials
- * provided with the distribution. Neither the name of the Sun Microsystems nor the names of
- * is contributors may be used to endorse or promote products derived from this software
- * without specific prior written permission.
-
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS
- * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
- * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
- * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
-
-/*
- * MemoryJavaFileManager.java
- * @author A. Sundararajan
- */
 
 /**
  * JavaFileManager that keeps compiled .class bytes in memory.
@@ -127,17 +92,19 @@ final class MemoryJavaFileManager extends ForwardingJavaFileManager {
 
     public MemoryJavaFileManager(JavaFileManager fileManager) {
         super(fileManager);
-        classBytes = new HashMap<String, byte[]>();
+        classBytes = new HashMap<>();
     }
 
     public Map<String, byte[]> getClassBytes() {
         return classBytes;
     }
 
+    @Override
     public void close() throws IOException {
-        classBytes = new HashMap<String, byte[]>();
+        classBytes = new HashMap<>();
     }
 
+    @Override
     public void flush() throws IOException {
     }
 

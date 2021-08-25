@@ -2,6 +2,8 @@ package com.bob.at.aop.exception;
 
 import com.alibaba.fastjson.JSONException;
 import com.bob.at.dto.help.ReturnCommonDTO;
+import com.bob.at.web.rest.errors.CommonAlertException;
+import com.bob.at.web.rest.errors.CommonException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -102,6 +104,19 @@ public class GlobalExceptionHandler {
         String message = "请求参数转换错误";
         log.error(message, ex);
         return new ReturnCommonDTO("-991", message);
+    }
+
+    /**
+     * 拦截业务错误
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(CommonException.class)
+    @ResponseStatus(value = HttpStatus.OK)
+    public ReturnCommonDTO handleBusinessFault(CommonException ex) {
+        String code = ex.getCode();
+        String message = ex.getMessage();
+        return new ReturnCommonDTO(code, message);
     }
 
     /**
