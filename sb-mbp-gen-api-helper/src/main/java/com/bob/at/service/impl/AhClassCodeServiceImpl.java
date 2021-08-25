@@ -1,5 +1,6 @@
 package com.bob.at.service.impl;
 
+import cn.hutool.core.io.file.FileReader;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -19,6 +20,7 @@ import com.bob.at.service.AhProjectService;
 import com.bob.at.util.DynamicLoader;
 import com.bob.at.util.MemoryClassLoader;
 import com.bob.at.util.MyBeanUtil;
+import com.bob.at.util.MyClassLoader;
 import com.bob.at.web.rest.errors.CommonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -144,10 +146,12 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
             // class文件
             throw new CommonException("暂不支持");
 //            try {
-//                FileReader fileReader = new FileReader(fullFileName);
-//                byte[] classBytes = fileReader.readBytes();
-//                Class<?> clazz = new MyClassLoader(classBytes).loadClass("");
-//                classSet.add(clazz);
+//                for (String fullFileName : fullFileNameList) {
+//                    FileReader fileReader = new FileReader(fullFileName);
+//                    byte[] classBytes = fileReader.readBytes();
+//                    Class<?> clazz = new MyClassLoader(classBytes).loadClass("");
+//                    classSet.add(clazz);
+//                }
 //            } catch (Exception e) {
 //                e.printStackTrace();
 //                throw new CommonException("类动态加载异常");

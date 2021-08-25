@@ -1,0 +1,38 @@
+.project {
+    cursor: pointer;
+    width: 200px;
+    height: 20px;
+    background-color: aquamarine;
+    margin-top: 5px;
+}
+
+.interface {
+    cursor: pointer;
+    width: 500px;
+    height: 20px;
+    background-color: aqua;
+    margin-top: 5px;
+}
+
+.base-input {
+    margin-bottom: 3px;
+    width: 1000px;
+}
+
+.base-select {
+    margin-bottom: 3px;
+}
+
+.tool_btn {
+    height: 21px;
+    line-height: 21px;
+    padding: 0 11px;
+    background: #02bafa;
+    border: 1px #26bbdb solid;
+    border-radius: 3px;
+    /*color: #fff;*/
+    display: inline-block;
+    text-decoration: none;
+    font-size: 12px;
+    outline: none;
+}

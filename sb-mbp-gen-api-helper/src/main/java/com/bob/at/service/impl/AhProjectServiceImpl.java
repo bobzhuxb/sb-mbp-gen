@@ -97,7 +97,7 @@ public class AhProjectServiceImpl extends ServiceImpl<AhProjectMapper, AhProject
     @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<List<AhProjectDTO>> getAllAhProjects(AhProjectCriteria criteria) {
         List<AhProject> projectList = baseMapper.selectList(new QueryWrapper<AhProject>()
-            .like(StrUtil.isNotBlank(criteria.getNameLike()), AhProject._name, criteria.getNameLike().trim()));
+            .like(StrUtil.isNotBlank(criteria.getNameLike()), AhProject._name, criteria.getNameLike()));
         if (projectList == null || projectList.size() == 0) {
             return new ReturnCommonDTO<>(new ArrayList<>());
         }

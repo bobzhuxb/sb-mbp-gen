@@ -1,0 +1,40 @@
+#fromObject div {
+    height: 20px;
+    margin-top: 2px;
+    opacity: 0.45;
+    background-color: #dad55e;
+    cursor: pointer;
+}
+
+#toObject div {
+    
+}
+
+.to-data-line {
+    height: 20px;
+    background-color: #f1a899;
+    cursor: pointer;
+}
+
+.data-is-object {
+    border: blue 3px solid;
+}
+
+.data-is-list {
+    border: red 3px solid;
+}
+
+.to-insert-line {
+    height: 10px;
+    background-color: #fffa90;
+}
+
+.compare-div {
+    display: inline-block;
+    width: 48%;
+    vertical-align: top;
+}
+
+.over-to-line {
+    background-color: greenyellow;
+}

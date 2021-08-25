@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>拖拽生成配置文件</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="stylesheet" type="text/css" href="css/param.css">
+    <link rel="stylesheet" type="text/css" href="css/result.css">
+
+    <script type="text/javascript" src="layout/jquery.layout.js"></script>
+    <script type="text/javascript" src="js/common.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+    <script type="text/javascript" src="js/base.js"></script>
+    <script type="text/javascript" src="js/param.js"></script>
+    <script type="text/javascript" src="js/result.js"></script>
+</head>
+<body>
+    <!--<div class="ui-layout-north">拖拽生成配置文件（配合代码生成器）</div>-->
+    <!--<div class="ui-layout-south">South</div>-->
+    <!--<div class="ui-layout-east">East</div>-->
+    <div class="ui-layout-west">
+        <div id="leftTabs">
+            <ul>
+                <li><a href="#projectDiv">工程</a></li>
+                <li><a href="#interfaceDiv">接口</a></li>
+            </ul>
+            <div id="projectDiv" style="width:130px;overflow:auto;background:#EEEEEE;">
+                <a href="#" class="tool_btn" onclick="openAddProjectDialog();" style="margin-bottom:3px;" title="添加工程">+</a>
+                <input id="projectSearch" type="text" style="width: 120px;" />
+                <div id="projects"></div>
+            </div>
+            <div id="interfaceDiv" style="width:130px;overflow:auto;background:#EEEEEE;">
+                <a href="#" class="tool_btn" onclick="addInterface();" style="margin-bottom:3px;" title="添加接口">+</a>
+                <input id="interfaceSearch" type="text" style="width: 120px;" />
+                <div id="interfaces"></div>
+            </div>
+        </div>
+    </div>
+    <div class="ui-layout-center">
+        <span>当前工程：<span id="curProject" style="width: 30px;" title=""></span></span>
+        &nbsp;|&nbsp;
+        <span>当前接口：<span id="curInterface" style="width: 30px;" title=""></span></span>
+        &nbsp;|&nbsp;
+        <a href="#" class="tool_btn" onclick="refreshAllData();">放弃修改并刷新</a>
+        &nbsp;|&nbsp;
+        <a href="#" class="tool_btn" onclick="xxx();">验证并生成JSON</a>
+        &nbsp;|&nbsp;
+        <a href="#" class="tool_btn" onclick="xxx();">验证并保存JSON</a>
+        &nbsp;|&nbsp;
+        <a href="#" class="tool_btn" onclick="xxx();">导入JSON</a>
+        &nbsp;|&nbsp;
+        <a href="#" class="tool_btn" onclick="xxx();">批量导入JSON并覆盖</a>
+        &nbsp;|&nbsp;
+        <a href="#" class="tool_btn" onclick="xxx();">导入实体类</a>
+        &nbsp;|&nbsp;
+        <a href="#" class="tool_btn" onclick="xxx();">导出当前工程</a>
+        <div id="tabs">
+            <ul>
+                <li><a href="#baseInfo">基本信息</a></li>
+                <li><a href="#paramInfo">参数信息</a></li>
+                <li><a href="#resultInfo">返回信息</a></li>
+            </ul>
+            <div id="baseInfo">
+                <div class="sub-main">
+                    <div class="sub-main-title">接口号（interNo）</div>
+                    <input name="interNo" type="text" class="base-input" />
+                </div>
+                <div class="sub-main">
+                    <div class="sub-main-title">接口方法（httpMethod）</div>
+                    <select name="httpMethod" class="base-select">
+                        <option value="GET" selected="selected">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                    </select>
+                </div>
+                <div class="sub-main">
+                    <div class="sub-main-title">追加默认URL前缀（addDefaultPrefix）</div>
+                    <select name="addDefaultPrefix" class="base-select">
+                        <option value="yes" selected="selected">是</option>
+                        <option value="no">否</option>
+                    </select>
+                </div>
+                <div class="sub-main">
+                    <div class="sub-main-title">接口URL（httpUrl）</div>
+                    <input name="httpUrl" type="text" class="base-input" />
+                </div>
+                <div class="sub-main">
+                    <div class="sub-main-title">接口描述（interDescr）</div>
+                    <input name="interDescr" type="text" class="base-input" />
+                </div>
+                <div class="sub-main">
+                    <div class="sub-main-title">相关截图（interPic）</div>
+                    <input name="interPic" type="text" class="base-input" />
+                </div>
+            </div>
+            <div id="paramInfo">
+                <div class="sub-main">
+                    <div class="sub-main-title" style="display: inline-block;">条件（criteriaList）</div>
+                    <a href="#" onclick="subMainAddLine(this, 'criteriaToAdd');">添加</a>
+                    <div id="criteriaToAdd" style="display: none;">
+                        <div name="criteriaList" style="display: inline-block; margin-left: 5px; margin-bottom: 5px;
+                                    background-color: darkturquoise;">
+                            参数名：<input name="fromParam" type="text" class="base-input" />
+                            <span style="display:-moz-inline-box; display:inline-block; width:80px;"></span>
+                            <a href="#" onclick="removeSubMainLine(this);">删除</a>
+                            <div></div>
+                            描述：<input name="descr" type="text" class="base-input" />
+                            <div></div>
+                            固定值：<input name="fixedValue" type="text" class="base-input" />
+                            <div></div>
+                            空串转null：
+                            <select name="emptyToNull" class="base-select">
+                                <option value="1" selected="selected">是</option>
+                                <option value="2">否</option>
+                            </select>
+                            <div style="margin-left: 20px; margin-top:5px;">
+                                <div style="display: inline-block;">转换后的条件参数：</div>
+                                <a href="#" onclick="subMainAddLine(this, 'toCriteriaToAdd');">添加</a>
+                                <div id="toCriteriaToAdd" style="display: none;">
+                                    <div style="display: inline-block;">
+                                        <input name="toCriteriaList" type="text" class="base-input" />
+                                        <a href="#" onclick="removeSubMainLine(this);">删除</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sub-main">
+                    <div class="sub-main-title" style="display: inline-block;">级联（associationNameList）</div>
+                    <a href="#" onclick="subMainAddLine(this, 'associationNameToAdd');">添加</a>
+                    <div id="associationNameToAdd" style="display: none;">
+                        <div style="display: inline-block;">
+                            <input name="associationNameList" type="text" class="base-input" />
+                            <a href="#" onclick="removeSubMainLine(this);">删除</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="sub-main">
+                    <div class="sub-main-title" style="display: inline-block;">字典（dictionaryNameList）</div>
+                    <a href="#" onclick="subMainAddLine(this, 'dictionaryNameToAdd');">添加</a>
+                    <div id="dictionaryNameToAdd" style="display: none;">
+                        <div style="display: inline-block;">
+                            <input name="dictionaryNameList" type="text" class="base-input" />
+                            <a href="#" onclick="removeSubMainLine(this);">删除</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="sub-main">
+                    <div class="sub-main-title">排序（orderBy）</div>
+                    <input name="orderBy" type="text" class="base-input" />
+                </div>
+                <div class="sub-main">
+                    <div class="sub-main-title" style="display: inline-block;">取数字段（sqlColumnList）</div>
+                    <a href="#" onclick="subMainAddLine(this, 'sqlColumnToAdd');">添加</a>
+                    <div id="sqlColumnToAdd" style="display: none;">
+                        <div style="display: inline-block;">
+                            <input name="sqlColumnList" type="text" class="base-input" />
+                            <a href="#" onclick="removeSubMainLine(this);">删除</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="resultInfo">
+                <div id="fromObject" class="compare-div" style="background-color: aqua;">
+                    <div identify="10000" level="1" type="normal" fullName="id" descr="主键ID"><span class="from-name">id</span>&nbsp;|&nbsp;主键ID</div>
+                    <div identify="10001" level="1" type="normal" fullName="name" descr="名称"><span class="from-name">name</span>&nbsp;|&nbsp;名称</div>
+                    <div identify="10002" level="1" type="normal" fullName="description" descr="描述"><span class="from-name">description</span>&nbsp;|&nbsp;描述</div>
+                    <div identify="10003" level="1" type="normal" fullName="insertTime" descr="录入时间"><span class="from-name">insertTime</span>&nbsp;|&nbsp;录入时间</div>
+                    <div identify="10004" level="1" type="object" fullName="father" descr="父" class="data-is-object"><span class="from-name">father</span>&nbsp;|&nbsp;父</div>
+                    <div identify="10005" level="2" type="normal" fullName="father.name" descr="姓名" parent="10004"><span class="from-name">name</span>&nbsp;|&nbsp;姓名</div>
+                    <div identify="10006" level="2" type="normal" fullName="father.age" descr="年龄" parent="10004"><span class="from-name">age</span>&nbsp;|&nbsp;年龄</div>
+                    <div identify="10007" level="1" type="list" fullName="children" descr="子" class="data-is-list"><span class="from-name">children</span>&nbsp;|&nbsp;子</div>
+                    <div identify="10008" level="2" type="normal" fullName="children.name" descr="姓名" parent="10007"><span class="from-name">name</span>&nbsp;|&nbsp;姓名</div>
+                    <div identify="10009" level="2" type="normal" fullName="children.likes" descr="爱好" parent="10007"><span class="from-name">likes</span>&nbsp;|&nbsp;爱好</div>
+                    <div identify="10010" level="2" type="object" fullName="children.baseInfo" descr="基本信息" parent="10007" class="data-is-object"><span class="from-name">baseInfo</span>&nbsp;|&nbsp;基本信息</div>
+                    <div identify="10011" level="3" type="normal" fullName="children.baseInfo.high" descr="身高" parent="10010"><span class="from-name">high</span>&nbsp;|&nbsp;身高</div>
+                    <div identify="10012" level="3" type="normal" fullName="children.baseInfo.weight" descr="体重" parent="10010"><span class="from-name">weight</span>&nbsp;|&nbsp;体重</div>
+                    <div identify="10013" level="2" type="list" fullName="children.games" descr="游戏" parent="10007" class="data-is-list"><span class="from-name">games</span>&nbsp;|&nbsp;游戏</div>
+                    <div identify="10014" level="3" type="normal" fullName="children.games.name" descr="名称" parent="10013"><span class="from-name">name</span>&nbsp;|&nbsp;名称</div>
+                    <div identify="10015" level="3" type="normal" fullName="children.games.count" descr="人数" parent="10013"><span class="from-name">count</span>&nbsp;|&nbsp;人数</div>
+                </div>
+                <div id="toObject" class="compare-div" style="background-color: deepskyblue;">
+                    <div class="to-insert-line"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="projectDialog" title="项目">
+        <form>
+            <fieldset>
+                <label for="name">项目名称</label>
+                <input type="text" name="name" id="name" class="text ui-widget-content ui-corner-all">
+                <label for="descr">项目描述</label>
+                <input type="text" name="descr" id="descr" class="text ui-widget-content ui-corner-all">
+                <label for="urlPrefix">URL前缀</label>
+                <input type="text" name="urlPrefix" id="urlPrefix" class="text ui-widget-content ui-corner-all">
+                <label for="basePackage">基础包名</label>
+                <input type="text" name="basePackage" id="basePackage" class="text ui-widget-content ui-corner-all">
+                <input type="hidden" name="id" value="" />
+            </fieldset>
+        </form>
+    </div>
+</body>
+</html>
