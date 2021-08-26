@@ -120,6 +120,15 @@ function initLayoutWest() {
             projectAddForm[0].reset();
         }
     });
+    projectAddForm = projectDialog.find("form").on("submit", function(event) {
+        event.preventDefault();
+        var projectId = $("#projectDialog").find("input[name='id']").val();
+        if (projectId == "") {
+            addProject();
+        } else {
+            updateProject(projectId);
+        }
+    });
     refreshLayoutWest();
 }
 
@@ -130,6 +139,9 @@ function refreshLayoutWest() {
     refreshProjects();
 }
 
+/**
+ * 获取并刷新工程
+ */
 function refreshProjects() {
     $.ajax({
         url: "/api/ah-project-all",
@@ -147,13 +159,14 @@ function refreshProjects() {
                 for (var i = 0; i < projects.length; i++) {
                     var project = projects[i];
                     var projectHtml = "<div identify='" + project.id + "' class='project' search='"
-                        + project.name + "_" + project.descr + "' "
-                        + "urlPrefix='" + project.urlPrefix + "'" + "title='" + project.descr + "' "
-                        + "onclick='selectProject(this);'><span>" + project.name
-                        + "</span><a href='#' style='margin-left: 10px;' title='点击修改' "
-                        + "onclick='openUpdateProjectDialog(\"" + project.id + "\")'>M</a>"
-                        + "<a href='#' style='margin-left: 10px;' title='点击删除' "
-                        + "onclick='openDeleteProjectDialog(\"" + project.id + "\")'>X</a></div>";
+                        + project.name + "_" + project.descr + "' projectName='" + project.name
+                        + "' projectDescr='" + project.descr + "' basePackage='" + project.basePackage
+                        + "' urlPrefix='" + project.urlPrefix + "'" + "title='" + project.descr
+                        + "' onclick='selectProject(this);'><span>" + project.name
+                        + "</span><a href='#' style='margin-left: 10px; color: dodgerblue;' title='点击修改' "
+                        + "onclick='openUpdateProjectDialog(this)'>M</a>"
+                        + "<a href='#' style='margin-left: 10px; color: red;' title='点击删除' "
+                        + "onclick='openDeleteProjectDialog(this)'>X</a></div>";
                     var $projectLine = $(projectHtml);
                     $("#projects").append($projectLine);
                 }
@@ -183,8 +196,19 @@ function openAddProjectDialog() {
 /**
  * 打开修改工程对话框
  */
-function openUpdateProjectDialog(projectId) {
+function openUpdateProjectDialog(domObj) {
+    // 刷新数据
+    var projectId = $(domObj).parent().attr("identify");
+    var projectName = $(domObj).parent().attr("projectName");
+    var projectDescr = $(domObj).parent().attr("projectDescr");
+    var urlPrefix = $(domObj).parent().attr("urlPrefix");
+    var basePackage = $(domObj).parent().attr("basePackage");
     $("#projectDialog").find("input[name='id']").val(projectId);
+    $("#projectDialog").find("input[name='name']").val(projectName);
+    $("#projectDialog").find("input[name='descr']").val(projectDescr);
+    $("#projectDialog").find("input[name='urlPrefix']").val(urlPrefix);
+    $("#projectDialog").find("input[name='basePackage']").val(basePackage);
+    // 弹对话框
     var updateButtons = {
         "修改": updateProject,
         "取消": function() {
@@ -198,7 +222,8 @@ function openUpdateProjectDialog(projectId) {
 /**
  * 打开修改工程确认框
  */
-function openDeleteProjectDialog() {
+function openDeleteProjectDialog(domObj) {
+    var projectId = $(domObj).parent().attr("identify");
 
 }
 
@@ -240,10 +265,14 @@ function addOrUpdateProject(httpType) {
 }
 
 /**
- * 添加接口
+ * 准备添加接口
  */
-function addInterface() {
-    alert("add-interface");
+function prepareForAddInterface() {
+    addingInterface = true;
+    interfaceSelected = null;
+    refreshInterfaceData();
+    $(".interface").removeClass("list-selected");
+    $("#curInterface").html("新增中...");
 }
 
 /**
@@ -251,28 +280,59 @@ function addInterface() {
  */
 function selectProject(project) {
     var newProjectId = $(project).attr("identify");
+    var changeProject = false;
     if (projectSelected == null || newProjectId != projectSelected.id) {
         interfaceSelected = null;
+        changeProject = true;
     }
     projectSelected = getProject(newProjectId);
-    refreshAllData();
-    // 获取接口
-    var interfaces = [
-        {"id": "inter001", "interNo" : "list", "httpUrl" : "/cmn-after-sale", "interDescr": "售后服务页面", "httpMethod": "GET", "addDefaultPrefix": "yes"},
-        {"id": "inter002", "interNo" : "list", "httpUrl" : "/cmn-city-all", "interDescr": "归属地市列表页面", "httpMethod": "GET", "addDefaultPrefix": "yes"},
-        {"id": "inter003", "interNo" : "all", "httpUrl" : "/cmn-financial-report-supervise-export", "interDescr": "财务报表导出", "httpMethod": "GET", "addDefaultPrefix": "yes"},
-        {"id": "inter004", "interNo" : "list", "httpUrl" : "/cmn-purchase-contract", "interDescr": "采购合同页面", "httpMethod": "GET", "addDefaultPrefix": "yes"},
-        {"id": "inter005", "interNo" : "all", "httpUrl" : "/mis-accept-export", "interDescr": "单条验收单明细导出", "httpMethod": "GET", "addDefaultPrefix": "yes"},
-    ];
-    for (var i = 0; i < interfaces.length; i++) {
-        var interface = interfaces[i];
-        var interfaceHtml = "<div identify='" + interface.id + "' class='interface' search='"
-            + interface.httpUrl + "_" + interface.interDescr + "' "
-            + "title='" + interface.interDescr + "' onclick='selectInterface(this);'>"
-            + interface.httpUrl + "</div>";
-        var $interfaceLine = $(interfaceHtml);
-        $("#interfaces").append($interfaceLine);
+    if (projectSelected == null) {
+        return;
     }
+    $(".project").removeClass("list-selected");
+    $(project).addClass("list-selected");
+    // 如果更新了选中，则刷新数据
+    if (changeProject) {
+        // 刷新接口列表
+        refreshInterfaces(newProjectId);
+        // 刷新接口数据（清空）
+        refreshInterfaceData();
+    }
+}
+
+/**
+ * 获取并刷新接口列表
+ */
+function refreshInterfaces(projectId) {
+    prepareForAddInterface();
+    $.ajax({
+        url: "/api/ah-interface-all?projectIdEq=" + projectId,
+        type: "GET",
+        dataType: "JSON",
+        success: function(result) {
+            if (result.resultCode != "1") {
+                alert("刷新接口失败");
+                return;
+            }
+            var interfaces = result.data;
+            // 刷新接口
+            $("#interfaces").html("");
+            if (interfaces != null) {
+                for (var i = 0; i < interfaces.length; i++) {
+                    var interface = interfaces[i];
+                    var interfaceHtml = "<div identify='" + interface.id + "' class='interface' search='"
+                        + interface.httpUrl + "_" + interface.interDescr + "' "
+                        + "title='" + interface.interDescr + "' onclick='selectInterface(this);'>"
+                        + interface.httpUrl + "</div>";
+                    var $interfaceLine = $(interfaceHtml);
+                    $("#interfaces").append($interfaceLine);
+                }
+            }
+        },
+        error: function () {
+            alert("刷新接口失败");
+        }
+    });
 }
 
 /**
@@ -285,8 +345,16 @@ function selectInterface(inter) {
         changeInterface = true;
     }
     interfaceSelected = getInterface(newInterfaceId);
+    if (interfaceSelected == null) {
+        return;
+    }
+    // 准备修改接口
+    addingInterface = false;
+    $(".interface").removeClass("list-selected");
+    $(inter).addClass("list-selected");
+    // 如果更新了选中，则刷新接口数据
     if (changeInterface) {
-        refreshAllData();
+        refreshInterfaceData();
     }
 }
 
@@ -294,12 +362,23 @@ function selectInterface(inter) {
  * 从后台获取project信息
  */
 function getProject(projectId) {
-    // TODO
-    var project = new Object();
-    project.id = "proj001";
-    project.name = "toronto";
-    project.descr = "药械进销存子系统";
-    project.urlPrefix = "/api/drag";
+    var project = null;
+    $.ajax({
+        url: "/api/ah-project/" + projectId,
+        type: "GET",
+        dataType: "JSON",
+        async: false,
+        success: function(result) {
+            if (result.resultCode != "1") {
+                alert("获取工程失败");
+                return;
+            }
+            project = result.data;
+        },
+        error: function () {
+            alert("获取工程失败");
+        }
+    });
     return project;
 }
 
@@ -307,21 +386,40 @@ function getProject(projectId) {
  * 从后台获取interface信息
  */
 function getInterface(interfaceId) {
-    // TODO
-    var inter = new Object();
-    inter.id = "inter001";
-    inter.interNo = "list";
-    inter.httpUrl = "/cmn-after-sale";
-    inter.interDescr = "售后服务页面";
-    inter.httpMethod = "GET";
-    inter.addDefaultPrefix = "yes";
+    var inter = null;
+    $.ajax({
+        url: "/api/ah-interface/" + interfaceId,
+        type: "GET",
+        dataType: "JSON",
+        async: false,
+        success: function(result) {
+            if (result.resultCode != "1") {
+                alert("获取工程失败");
+                return;
+            }
+            inter = result.data;
+        },
+        error: function () {
+            alert("获取工程失败");
+        }
+    });
     return inter;
+}
+
+/**
+ * 放弃修改接口
+ */
+function abortChangingInterface() {
+    refreshInterfaceData();
+    if (addingInterface) {
+        $("#curInterface").html("新增中...");
+    }
 }
 
 /**
  * 刷新页面数据（配置文件内容）
  */
-function refreshAllData() {
+function refreshInterfaceData() {
     $("#curProject").html(projectSelected.name);
     $("#curProject").attr("title", projectSelected.name + "\n" + projectSelected.descr);
     if (interfaceSelected == null) {
@@ -335,4 +433,107 @@ function refreshAllData() {
     refreshBaseData();
     refreshParamData();
     refreshResultData();
+}
+
+/**
+ * 验证并生成接口的JSON
+ */
+function validAndGenInter() {
+    // 1、基本信息
+    var interInfoData = new Object();
+    interInfoData.interNo = emptyStringToNull($("#baseInfo").find("input[name='interNo']").val());
+    interInfoData.httpMethod = emptyStringToNull($("#baseInfo").find("select[name='httpMethod']").val());
+    interInfoData.addDefaultPrefix = emptyStringToNull($("#baseInfo").find("select[name='addDefaultPrefix']").val());
+    interInfoData.httpUrl = emptyStringToNull($("#baseInfo").find("input[name='httpUrl']").val());
+    interInfoData.interDescr = emptyStringToNull($("#baseInfo").find("input[name='interDescr']").val());
+    // 2、参数信息
+    interInfoData.param = new Object();
+    // 2.1、条件信息
+    var criteriaList = $("#paramInfo").find("div[idFrom='criteriaToAdd']");
+    if (typeof(criteriaList) != "undefined") {
+        if (criteriaList.length > 0) {
+            interInfoData.param.criteriaList = new Array();
+            for (var i = 0; i < criteriaList.length; i++) {
+                var criteria = criteriaList[i];
+                var fromParam = emptyStringToNull($(criteria).find("input[name='fromParam']").val());
+                var descr = emptyStringToNull($(criteria).find("input[name='descr']").val());
+                var fixedValue = emptyStringToNull($(criteria).find("input[name='fixedValue']").val());
+                var emptyToNull = emptyStringToNull($(criteria).find("select[name='emptyToNull']").val());
+                var toCriteriaList = getStringArrayFromList($(criteria).find("input[name='copy']"));
+                if (fromParam == null) {
+                    continue;
+                }
+                var criteriaObj = new Object();
+                criteriaObj.fromParam = fromParam;
+                criteriaObj.descr = descr;
+                criteriaObj.fixedValue = fixedValue;
+                criteriaObj.emptyToNull = emptyToNull;
+                criteriaObj.toCriteriaList = toCriteriaList;
+                // 添加到criteriaList中
+                interInfoData.param.criteriaList.push(criteriaObj);
+            }
+            if (interInfoData.param.criteriaList.length == 0) {
+                interInfoData.param.criteriaList = null;
+            }
+        }
+    }
+    // 2.2、级联信息
+    var associationNameList = $("#paramInfo").find("div[idFrom='associationNameToAdd']");
+    interInfoData.param.associationNameList = getStringArrayFromList(associationNameList);
+    // 2.3、字典信息
+    var dictionaryNameList = $("#paramInfo").find("div[idFrom='dictionaryNameToAdd']");
+    interInfoData.param.dictionaryNameList = getStringArrayFromList(dictionaryNameList);
+    // 2.4、排序信息
+    interInfoData.param.orderBy = emptyStringToNull($("#baseInfo").find("input[name='orderBy']").val());
+    // 2.5、SQL列信息
+    var sqlColumnList = $("#paramInfo").find("div[idFrom='sqlColumnToAdd']");
+    interInfoData.param.sqlColumnList = getStringArrayFromList(sqlColumnList);
+    // 3、返回信息
+    interInfoData.result = new Object();
+    interInfoData.result.resultCode = "1：操作成功  2：操作失败";
+    interInfoData.result.errMsg = "错误消息";
+    interInfoData.result.data = "返回数据";
+    interInfoData.result.fieldList = new Array();
+    var field = new Object();
+    field.name = "";
+    field.type = "";
+    field.fromName = "";
+    field.descr = "";
+    interInfoData.result.fieldList.push(field);
+    // 返回数据
+    console.log(JSON.stringify(interInfoData));
+    return interInfoData;
+}
+
+/**
+ * 从obj列表中取值
+ */
+function getStringArrayFromList(domObjList) {
+    var resultList = null;
+    if (typeof(domObjList) != "undefined") {
+        if (domObjList.length > 0) {
+            resultList = new Array();
+            for (var index = 0; index < domObjList.length; index++) {
+                var toCriteriaValue = emptyStringToNull($(domObjList[index]).val());
+                if (toCriteriaValue == null) {
+                    continue;
+                }
+                resultList.push(toCriteriaValue);
+            }
+            if (resultList.length == 0) {
+                resultList = null;
+            }
+        }
+    }
+    return resultList;
+}
+
+/**
+ * 新增或更新接口
+ */
+function addOrUpdateInterface() {
+    validAndGenInter();
+    if (interfaceSelected != null) {
+        // 更新
+    }
 }

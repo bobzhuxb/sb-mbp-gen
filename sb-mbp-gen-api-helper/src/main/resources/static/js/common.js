@@ -6,6 +6,18 @@ var interfaceSelected = null;
 var projectDialog;
 // 工程新增表单
 var projectAddForm;
+// 是否正在新增接口中
+var addingInterface = false;
+
+/**
+ * 空值转null
+ */
+function emptyStringToNull(data) {
+    if (typeof(data) == "undefined" || data == null || data.trim() == "") {
+        return null;
+    }
+    return data;
+}
 
 // form转json
 $.fn.toJSON = function()

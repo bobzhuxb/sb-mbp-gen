@@ -70,7 +70,7 @@ public class AhInterfaceServiceImpl extends ServiceImpl<AhInterfaceMapper, AhInt
     @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<List<AhInterfaceDTO>> getAllAhInterfaces(AhInterfaceCriteria criteria) {
         List<AhInterface> interfaceList = baseMapper.selectList(new QueryWrapper<AhInterface>()
-                .eq(StrUtil.isNotBlank(criteria.getProjectIdEq()), AhInterface._ahProjectId, criteria.getProjectIdEq().trim()));
+                .eq(StrUtil.isNotBlank(criteria.getProjectIdEq()), AhInterface._ahProjectId, criteria.getProjectIdEq()));
         if (interfaceList == null || interfaceList.size() == 0) {
             return new ReturnCommonDTO<>(new ArrayList<>());
         }

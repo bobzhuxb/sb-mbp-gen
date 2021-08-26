@@ -13,13 +13,15 @@ function refreshParamData() {
 }
 
 /**
- * 添加sqlColumn
+ * 复制一行
  */
 function subMainAddLine(obj, toAddDomId) {
     var $toAdd = $("#" + toAddDomId).clone();
     $toAdd.removeAttr("id");
+    $toAdd.removeClass("template");
+    $toAdd.attr("idFrom", toAddDomId);
+    $toAdd.addClass("copied");
     $(obj).parent().append($toAdd);
-    $toAdd.show();
 }
 
 /**

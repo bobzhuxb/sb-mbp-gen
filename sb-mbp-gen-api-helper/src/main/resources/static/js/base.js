@@ -15,8 +15,8 @@ function refreshBaseData() {
         return;
     }
     $("input[name='interNo']").val(interfaceSelected.interNo);
-    $("input[name='httpMethod']").val(interfaceSelected.httpMethod);
-    $("input[name='addDefaultPrefix']").val(interfaceSelected.addDefaultPrefix);
+    $("select[name='httpMethod']").val(interfaceSelected.httpMethod);
+    $("select[name='addDefaultPrefix']").val(interfaceSelected.addDefaultPrefix);
     $("input[name='httpUrl']").val(interfaceSelected.httpUrl);
     $("input[name='interDescr']").val(interfaceSelected.interDescr);
 }
