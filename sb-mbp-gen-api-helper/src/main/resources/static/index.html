@@ -167,6 +167,12 @@
                 </div>
             </div>
             <div id="resultInfo">
+                <div>
+                    返回类型：<span id="resultBasePackage"></span>
+                    <input id="resultSearch" type="text" class="base-input" style="width: 400px;" />
+                    &nbsp;
+                    <a href="#" class="tool_btn" onclick="loadClassToResult();">加载</a>
+                </div>
                 <div id="fromObject" class="compare-div" style="background-color: aqua;">
                     <div identify="10000" level="1" type="normal" fullName="id" descr="主键ID"><span class="from-name">id</span>&nbsp;|&nbsp;主键ID</div>
                     <div identify="10001" level="1" type="normal" fullName="name" descr="名称"><span class="from-name">name</span>&nbsp;|&nbsp;名称</div>
@@ -185,10 +191,10 @@
                     <div identify="10014" level="3" type="normal" fullName="children.games.name" descr="名称" parent="10013"><span class="from-name">name</span>&nbsp;|&nbsp;名称</div>
                     <div identify="10015" level="3" type="normal" fullName="children.games.count" descr="人数" parent="10013"><span class="from-name">count</span>&nbsp;|&nbsp;人数</div>
                 </div>
-                <div id="toObject" class="compare-div" style="background-color: deepskyblue;">
+                <div id="toObject" class="compare-div" style="margin-left: 10px; background-color: aqua;">
                     <div class="to-insert-line"></div>
                 </div>
-            </div>
+            </input>
         </div>
     </div>
     <div id="projectDialog" title="项目">

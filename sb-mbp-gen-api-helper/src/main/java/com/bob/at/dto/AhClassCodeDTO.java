@@ -1,5 +1,6 @@
 package com.bob.at.dto;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -17,6 +18,8 @@ public class AhClassCodeDTO extends BaseDTO {
 	///////////////////////// 附加关联属性 /////////////////////////
 
     private AhProjectDTO ahProject;    // 项目
+
+    private List<AhFieldDTO> ahFieldList;    // 字段列表
 
     // ================self code:自定义属性start=====================
     // ================self code:自定义属性end=====================
@@ -51,6 +54,14 @@ public class AhClassCodeDTO extends BaseDTO {
 
     public void setAhProject(AhProjectDTO ahProject) {
         this.ahProject = ahProject;
+    }
+
+    public List<AhFieldDTO> getAhFieldList() {
+        return ahFieldList;
+    }
+
+    public void setAhFieldList(List<AhFieldDTO> ahFieldList) {
+        this.ahFieldList = ahFieldList;
     }
 
     // ================self code:自定义属性的get/set方法start=====================

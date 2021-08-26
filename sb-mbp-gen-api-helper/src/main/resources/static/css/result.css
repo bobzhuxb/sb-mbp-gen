@@ -33,6 +33,8 @@
     display: inline-block;
     width: 48%;
     vertical-align: top;
+    white-space: nowrap;
+    overflow: auto;
 }
 
 .over-to-line {

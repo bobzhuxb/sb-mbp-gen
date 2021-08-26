@@ -10,6 +10,9 @@ import com.bob.at.domain.AhClassCode;
 import com.bob.at.domain.AhField;
 import com.bob.at.domain.AhInterface;
 import com.bob.at.dto.AhClassCodeDTO;
+import com.bob.at.dto.AhFieldDTO;
+import com.bob.at.dto.AhInterfaceDTO;
+import com.bob.at.dto.AhProjectDTO;
 import com.bob.at.dto.criteria.AhClassCodeCriteria;
 import com.bob.at.dto.help.ReturnCommonDTO;
 import com.bob.at.dto.help.ReturnFileUploadDTO;
@@ -100,6 +103,7 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
         AhClassCode inter = baseMapper.selectById(id);
         AhClassCodeDTO classCodeDTO = new AhClassCodeDTO();
         MyBeanUtil.copyNonNullProperties(inter, classCodeDTO);
+        getAssociation(classCodeDTO);
         return new ReturnCommonDTO<>(classCodeDTO);
     }
 
@@ -117,6 +121,17 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
             return classCodeDTO;
         }).collect(Collectors.toList());
         return new ReturnCommonDTO<>(classCodeDTOList);
+    }
+
+    private void getAssociation(AhClassCodeDTO classCodeDTO) {
+        List<AhFieldDTO> ahFieldList = Optional.ofNullable(
+                ahFieldMapper.selectList(new QueryWrapper<AhField>().eq(AhField._ahClassCodeId, classCodeDTO.getId())))
+                .orElse(new ArrayList<>()).stream().map(ahField -> {
+                    AhFieldDTO ahFieldDTO = new AhFieldDTO();
+                    MyBeanUtil.copyNonNullProperties(ahField, ahFieldDTO);
+                    return ahFieldDTO;
+                }).collect(Collectors.toList());
+        classCodeDTO.setAhFieldList(ahFieldList);
     }
 
     @Override

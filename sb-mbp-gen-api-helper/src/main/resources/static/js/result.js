@@ -5,6 +5,7 @@ var fromChildInclude = true;
  * 初始化当前页的事件
  */
 function initResultTabEvents() {
+    $(".compare-div").height($(document).height() - 180);
     initFromLineLevel();
     initToDataLineLevel();
     fromLineEvent();
@@ -12,6 +13,47 @@ function initResultTabEvents() {
     toInsertLineEvent();
     toNameTextEvent();
     toDescrTextEvent();
+}
+
+/**
+ * 初始化返回类型搜索框
+ */
+function initResultSearch() {
+    var classCodeList = projectSelected.ahClassCodeList;
+    var basePackage = projectSelected.basePackage;
+    if (classCodeList != null && classCodeList.length > 0) {
+        var resultSearchDataList = new Array();
+        for (var i = 0; i < classCodeList.length; i++) {
+            var classCode = classCodeList[i];
+            var packageName = classCode.packageName;
+            if (!packageName.startsWith(basePackage)) {
+                continue;
+            }
+            var className = classCode.className;
+            var searchData = packageName.substring(basePackage.length + 1) + "." + className;
+            resultSearchDataList.push(searchData);
+        }
+        $("#resultSearch").autocomplete({
+            source: resultSearchDataList
+        });
+    }
+}
+
+/**
+ * 加载结果类到fromObject
+ */
+function loadClassToResult() {
+    var searchFullClassName = $("#resultBasePackage").html() + "." + $("#resultSearch").val();
+    for (var i = 0; i < projectSelected.ahClassCodeList.length; i++) {
+        var ahClassCode = projectSelected.ahClassCodeList[i];
+        var curFullClassName = ahClassCode.packageName + "." + ahClassCode.className;
+        if (curFullClassName == searchFullClassName) {
+            var fieldList = ahClassCode.ahFieldList;
+            // TODO：初始化左侧列表
+            break;
+        }
+    }
+    var fromObjectHtml = "";
 }
 
 /**
@@ -29,7 +71,7 @@ function initFromLineLevel() {
     for (var i = 0; i < $fromDivs.length; i++) {
         var fromDiv = $fromDivs[i];
         var level = $(fromDiv).attr("level");
-        $(fromDiv).css("padding-left", (level * 10) + "px");
+        $(fromDiv).css("padding-left", (level * 30) + "px");
     }
 }
 
@@ -41,7 +83,7 @@ function initToDataLineLevel() {
     for (var i = 0; i < $toDataLines.length; i++) {
         var toDataLine = $toDataLines[i];
         var level = $(toDataLine).attr("level");
-        $(toDataLine).css("padding-left", (level * 10) + "px");
+        $(toDataLine).css("padding-left", (level * 30) + "px");
     }
 }
 

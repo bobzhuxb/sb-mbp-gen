@@ -297,6 +297,9 @@ function selectProject(project) {
         refreshInterfaces(newProjectId);
         // 刷新接口数据（清空）
         refreshInterfaceData();
+        // 更新结果页搜索框
+        $("#resultBasePackage").html(projectSelected.basePackage + ".");
+        initResultSearch();
     }
 }
 
@@ -459,7 +462,7 @@ function validAndGenInter() {
                 var descr = emptyStringToNull($(criteria).find("input[name='descr']").val());
                 var fixedValue = emptyStringToNull($(criteria).find("input[name='fixedValue']").val());
                 var emptyToNull = emptyStringToNull($(criteria).find("select[name='emptyToNull']").val());
-                var toCriteriaList = getStringArrayFromList($(criteria).find("input[name='copy']"));
+                var toCriteriaList = getStringArrayFromList($(criteria).find("input[name='toCriteriaList']"));
                 if (fromParam == null) {
                     continue;
                 }
@@ -478,15 +481,15 @@ function validAndGenInter() {
         }
     }
     // 2.2、级联信息
-    var associationNameList = $("#paramInfo").find("div[idFrom='associationNameToAdd']");
+    var associationNameList = $("#paramInfo").find("input[name='associationNameList']");
     interInfoData.param.associationNameList = getStringArrayFromList(associationNameList);
     // 2.3、字典信息
-    var dictionaryNameList = $("#paramInfo").find("div[idFrom='dictionaryNameToAdd']");
+    var dictionaryNameList = $("#paramInfo").find("input[name='dictionaryNameList']");
     interInfoData.param.dictionaryNameList = getStringArrayFromList(dictionaryNameList);
     // 2.4、排序信息
-    interInfoData.param.orderBy = emptyStringToNull($("#baseInfo").find("input[name='orderBy']").val());
+    interInfoData.param.orderBy = emptyStringToNull($("#paramInfo").find("input[name='orderBy']").val());
     // 2.5、SQL列信息
-    var sqlColumnList = $("#paramInfo").find("div[idFrom='sqlColumnToAdd']");
+    var sqlColumnList = $("#paramInfo").find("input[name='sqlColumnList']");
     interInfoData.param.sqlColumnList = getStringArrayFromList(sqlColumnList);
     // 3、返回信息
     interInfoData.result = new Object();
