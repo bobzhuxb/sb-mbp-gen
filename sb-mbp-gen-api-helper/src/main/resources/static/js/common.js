@@ -6,6 +6,10 @@ var interfaceSelected = null;
 var projectDialog;
 // 工程新增表单
 var projectAddForm;
+// 类文件上传对话框
+var uploadClassDialog;
+// 类文件上传表单
+var uploadClassForm;
 // 是否正在新增接口中
 var addingInterface = false;
 

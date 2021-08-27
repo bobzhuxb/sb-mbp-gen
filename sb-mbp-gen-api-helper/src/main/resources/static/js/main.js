@@ -129,6 +129,19 @@ function initLayoutWest() {
             updateProject(projectId);
         }
     });
+    uploadClassDialog = $("#uploadClassDialog").dialog({
+        autoOpen: false,
+        height: 300,
+        width: 350,
+        modal: true,
+        close: function() {
+            uploadClassForm[0].reset();
+        }
+    });
+    uploadClassForm = uploadClassDialog.find("form").on("submit", function(event) {
+        event.preventDefault();
+        uploadClassFiles();
+    });
     refreshLayoutWest();
 }
 
@@ -262,6 +275,36 @@ function addOrUpdateProject(httpType) {
             alert("操作失败");
         }
     });
+}
+
+/**
+ * 打开上传Java或Class文件对话框
+ */
+function openUploadClassFilesDialog() {
+    if (projectSelected == null) {
+        alert("请先选择工程");
+        return;
+    }
+    var addButtons = {
+        "上传": uploadClassFiles,
+        "取消": function() {
+            uploadClassDialog.dialog("close");
+        }
+    };
+    $("#uploadClassDialog").dialog("option", "buttons", addButtons);
+    uploadClassDialog.dialog("open");
+}
+
+/**
+ * 上传Java或Class文件
+ */
+function uploadClassFiles() {
+    if (projectSelected == null) {
+        alert("请先选择工程");
+        return;
+    }
+    $("#uploadClassDialog").find("input[name='projectId']").val(projectSelected.id);
+    $("#uploadClassDialog form").submit();
 }
 
 /**
@@ -410,6 +453,30 @@ function getInterface(interfaceId) {
 }
 
 /**
+ * 获取实体类
+ */
+function getClassCode(classId) {
+    var clazz = null;
+    $.ajax({
+        url: "/api/ah-class-code/" + classId,
+        type: "GET",
+        dataType: "JSON",
+        async: false,
+        success: function(result) {
+            if (result.resultCode != "1") {
+                alert("获取实体类失败");
+                return;
+            }
+            clazz = result.data;
+        },
+        error: function () {
+            alert("获取实体类失败");
+        }
+    });
+    return clazz;
+}
+
+/**
  * 放弃修改接口
  */
 function abortChangingInterface() {
@@ -497,12 +564,20 @@ function validAndGenInter() {
     interInfoData.result.errMsg = "错误消息";
     interInfoData.result.data = "返回数据";
     interInfoData.result.fieldList = new Array();
-    var field = new Object();
-    field.name = "";
-    field.type = "";
-    field.fromName = "";
-    field.descr = "";
-    interInfoData.result.fieldList.push(field);
+    var toObjectDataList = $("#toObject .to-data-line");
+    for (var i = 0; i < toObjectDataList.length; i++) {
+        var field = new Object();
+        var toObjectData = toObjectDataList[i];
+        var type = $(toObjectData).attr("type");
+        if (type == "normal") {
+            type = null;
+        }
+        field.name = $(toObjectData).find(".to-name").html();
+        field.type = type;
+        field.fromName = $(toObjectData).attr("fullName");
+        field.descr = $(toObjectData).find(".to-descr").html();
+        interInfoData.result.fieldList.push(field);
+    }
     // 返回数据
     console.log(JSON.stringify(interInfoData));
     return interInfoData;

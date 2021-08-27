@@ -55,7 +55,7 @@
         &nbsp;|&nbsp;
         <a href="#" class="tool_btn" onclick="xxx();">批量导入JSON并覆盖</a>
         &nbsp;|&nbsp;
-        <a href="#" class="tool_btn" onclick="xxx();">导入实体类</a>
+        <a href="#" class="tool_btn" onclick="openUploadClassFilesDialog();">导入实体类</a>
         &nbsp;|&nbsp;
         <a href="#" class="tool_btn" onclick="xxx();">导出当前工程</a>
         <div id="tabs">
@@ -210,6 +210,24 @@
                 <input type="text" name="basePackage" id="basePackage" class="text ui-widget-content ui-corner-all">
                 <input type="hidden" name="id" value="" />
                 <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+            </fieldset>
+        </form>
+    </div>
+    <div id="uploadClassDialog" title="上传实体类">
+        <form action="/api/ah-class-code-folder-upload" method="POST" enctype="application/x-www-form-urlencoded">
+            <fieldset>
+                <input type="hidden" name="projectId" />
+                文件类型
+                <input type="radio" name="fileType" value=".java" checked="checked" />Java文件
+                <input type="radio" name="fileType" value=".class" />Class文件
+                <hr>
+                全覆盖
+                <input type="radio" name="overwrite" value="yes" checked="checked" />是
+                <input type="radio" name="overwrite" value="no" />否
+                <hr>
+                上传文件
+                <input type="file" name="folder" accept="text/java" multiple="multiple" value="" />
+                <!--<input type="submit" tabindex="-1" style="position:absolute; top:-1000px">-->
             </fieldset>
         </form>
     </div>

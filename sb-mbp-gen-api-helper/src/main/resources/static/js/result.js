@@ -6,13 +6,19 @@ var fromChildInclude = true;
  */
 function initResultTabEvents() {
     $(".compare-div").height($(document).height() - 180);
-    initFromLineLevel();
     initToDataLineLevel();
-    fromLineEvent();
     toDataLineEvent();
     toInsertLineEvent();
     toNameTextEvent();
     toDescrTextEvent();
+}
+
+/**
+ * 刷新fromLine之后的操作
+ */
+function doAfterFromLineRefreshed() {
+    initFromLineLevel();
+    fromLineEvent();
 }
 
 /**
@@ -43,17 +49,42 @@ function initResultSearch() {
  * 加载结果类到fromObject
  */
 function loadClassToResult() {
-    var searchFullClassName = $("#resultBasePackage").html() + "." + $("#resultSearch").val();
+    var searchFullClassName = $("#resultBasePackage").html() + $("#resultSearch").val();
     for (var i = 0; i < projectSelected.ahClassCodeList.length; i++) {
         var ahClassCode = projectSelected.ahClassCodeList[i];
         var curFullClassName = ahClassCode.packageName + "." + ahClassCode.className;
         if (curFullClassName == searchFullClassName) {
-            var fieldList = ahClassCode.ahFieldList;
-            // TODO：初始化左侧列表
+            // 初始化左侧列表
+            var ahClassCodeFull = getClassCode(ahClassCode.id);
+            formFromLines(ahClassCodeFull);
             break;
         }
     }
-    var fromObjectHtml = "";
+}
+
+/**
+ * 生成来源数据行
+ * <div identify="10007" level="1" type="list" fullName="children" descr="子" class="data-is-list"><span class="from-name">children</span>&nbsp;|&nbsp;子</div>
+ */
+function formFromLines(ahClassCode) {
+    var fromLinesHtml = "";
+    var fieldList = ahClassCode.ahFieldList;
+    for (var i = 0; i < fieldList.length; i++) {
+        var field = fieldList[i];
+        var identify = field.id;
+        var fieldTypeName = field.typeName;
+        var fieldName = field.fieldName;
+        if (fieldName.startsWith("_")) {
+            // 该字段是为了匹配数据库使用的，过滤掉
+            continue;
+        }
+        fromLinesHtml += "<div identify='" + identify + "' level='1' type='normal' fullName='"
+            + fieldName + "' descr='（请填写注释）' fieldType='" + fieldTypeName + "' parent='' class=''>"
+            + "<span class='from-name'>" + fieldName + "</span> | （请填写注释）</div>";
+    }
+    // 刷新来源行
+    $("#fromObject").html(fromLinesHtml);
+    doAfterFromLineRefreshed();
 }
 
 /**
