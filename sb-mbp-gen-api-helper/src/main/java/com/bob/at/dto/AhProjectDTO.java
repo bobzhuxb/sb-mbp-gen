@@ -9,6 +9,10 @@ import java.util.Objects;
  */
 public class AhProjectDTO extends BaseDTO {
 
+    public static void main(String[] args) {
+
+    }
+
     private String name;    // 名称
 
     private String descr;    // 描述

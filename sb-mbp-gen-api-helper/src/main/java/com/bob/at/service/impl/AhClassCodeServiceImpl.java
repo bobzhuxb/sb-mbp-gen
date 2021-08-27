@@ -1,6 +1,5 @@
 package com.bob.at.service.impl;
 
-import cn.hutool.core.io.file.FileReader;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -8,22 +7,17 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bob.at.config.YmlConfig;
 import com.bob.at.domain.AhClassCode;
 import com.bob.at.domain.AhField;
-import com.bob.at.domain.AhInterface;
 import com.bob.at.dto.AhClassCodeDTO;
 import com.bob.at.dto.AhFieldDTO;
-import com.bob.at.dto.AhInterfaceDTO;
-import com.bob.at.dto.AhProjectDTO;
 import com.bob.at.dto.criteria.AhClassCodeCriteria;
 import com.bob.at.dto.help.ReturnCommonDTO;
 import com.bob.at.dto.help.ReturnFileUploadDTO;
 import com.bob.at.mapper.AhClassCodeMapper;
 import com.bob.at.mapper.AhFieldMapper;
 import com.bob.at.service.AhClassCodeService;
-import com.bob.at.service.AhProjectService;
 import com.bob.at.util.DynamicLoader;
 import com.bob.at.util.MemoryClassLoader;
 import com.bob.at.util.MyBeanUtil;
-import com.bob.at.util.MyClassLoader;
 import com.bob.at.web.rest.errors.CommonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,6 +30,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +41,8 @@ import java.util.stream.Collectors;
 @Service
 public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhClassCode>
         implements AhClassCodeService {
+
+    private static final Pattern LIST_TYPE_PATTERN = Pattern.compile("^java\\.util\\.List\\<(.*)\\>$");
 
     @Autowired
     private AhFieldMapper ahFieldMapper;
@@ -230,10 +228,20 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
             for (Field field : fields) {
                 String fieldFullTypeName = ClassUtil.getClassName(field.getType(), false);
                 String fieldName = field.getName();
+                String genericTypeName = null;
+                if ("java.util.List".equals(fieldFullTypeName)) {
+                    // 继续获取泛型名
+                    String genericTypeStr = field.getGenericType().getTypeName();
+                    Matcher matcher = LIST_TYPE_PATTERN.matcher(genericTypeStr);
+                    if (matcher.find()) {
+                        genericTypeName = matcher.group(1);
+                    }
+                }
                 // 新增Field
                 AhField ahFieldAdd = new AhField();
                 ahFieldAdd.setTypeName(fieldFullTypeName);
                 ahFieldAdd.setFieldName(fieldName);
+                ahFieldAdd.setGenericTypeName(genericTypeName);
                 ahFieldAdd.setAhClassCodeId(classCodeIdRelate);
                 ahFieldAdd.setInsertTime(nowTimeStr);
                 ahFieldMapper.insert(ahFieldAdd);

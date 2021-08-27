@@ -304,7 +304,19 @@ function uploadClassFiles() {
         return;
     }
     $("#uploadClassDialog").find("input[name='projectId']").val(projectSelected.id);
-    $("#uploadClassDialog form").submit();
+    $.ajax({
+        url : uploadClassForm.attr("action"),
+        type : 'POST',
+        cache : false,
+        data : new FormData(uploadClassForm[0]),
+        processData : false,
+        contentType : false,
+        success : function(result) {
+            alert("上传完成");
+            projectDialog.dialog("close");
+            $(".project[identify='" + projectSelected.id + "']").trigger("click");
+        }
+    });
 }
 
 /**

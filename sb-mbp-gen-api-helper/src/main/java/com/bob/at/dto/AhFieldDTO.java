@@ -8,7 +8,9 @@ import java.util.Objects;
  */
 public class AhFieldDTO extends BaseDTO {
 
-    private String typeName;        // 类型名
+    private String typeName;        // 字段类型名
+
+    private String genericTypeName; // 泛型名
 
     private String fieldName;       // 字段名
 
@@ -27,6 +29,14 @@ public class AhFieldDTO extends BaseDTO {
 
     public void setTypeName(String typeName) {
         this.typeName = typeName;
+    }
+
+    public String getGenericTypeName() {
+        return genericTypeName;
+    }
+
+    public void setGenericTypeName(String genericTypeName) {
+        this.genericTypeName = genericTypeName;
     }
 
     public String getFieldName() {
@@ -82,6 +92,7 @@ public class AhFieldDTO extends BaseDTO {
         return "AhClassCodeDTO{" +
                 "id=" + getId() +
                 ", typeName='" + getTypeName() + "'" +
+                ", genericTypeName='" + getGenericTypeName() + "'" +
                 ", fieldName='" + getFieldName() + "'" +
                 ", insertTime='" + getInsertTime() + "'" +
                 ", updateTime='" + getUpdateTime() + "'" +

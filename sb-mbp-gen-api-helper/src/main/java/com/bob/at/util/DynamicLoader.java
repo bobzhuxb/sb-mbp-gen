@@ -56,8 +56,7 @@ public class DynamicLoader {
 
     /**
      * 编译Java源码
-     * @param javaName Java类名，例如：TestClass.java
-     * @param javaSrc Java源码
+     * @param fullFileNameList 全路径文件名列表
      * @return Key：全路径类名   Value：字节码
      */
     public static Map<String, byte[]> compile(List<String> fullFileNameList) throws IOException {

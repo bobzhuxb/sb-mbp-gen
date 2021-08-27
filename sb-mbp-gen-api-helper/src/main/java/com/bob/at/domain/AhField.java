@@ -10,7 +10,9 @@ public class AhField extends BaseDomain {
 
     private static final long serialVersionUID = 1L;
 
-    private String typeName;        // 类型名
+    private String typeName;        // 字段类型名
+
+    private String genericTypeName; // 泛型名
 
     private String fieldName;       // 字段名
 
@@ -22,6 +24,14 @@ public class AhField extends BaseDomain {
 
     public void setTypeName(String typeName) {
         this.typeName = typeName;
+    }
+
+    public String getGenericTypeName() {
+        return genericTypeName;
+    }
+
+    public void setGenericTypeName(String genericTypeName) {
+        this.genericTypeName = genericTypeName;
     }
 
     public String getFieldName() {
@@ -65,6 +75,7 @@ public class AhField extends BaseDomain {
         return "AhField{" +
                 "id=" + getId() +
                 ", typeName='" + getTypeName() + "'" +
+                ", genericTypeName='" + getGenericTypeName() + "'" +
                 ", fieldName='" + getFieldName() + "'" +
                 ", insertTime='" + getInsertTime() + "'" +
                 ", updateTime='" + getUpdateTime() + "'" +
@@ -75,6 +86,7 @@ public class AhField extends BaseDomain {
     // 数据表名和列名
     public static final String _TableName = "ah_field";
     public static final String _typeName = "type_name";    // 字段类型名
+    public static final String _genericTypeName = "generic_type_name";    // 泛型名
     public static final String _fieldName = "field_name";    // 字段名
     public static final String _ahClassCodeId = "ah_class_code_id";    // 类ID
 
