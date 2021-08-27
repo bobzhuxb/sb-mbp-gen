@@ -89,6 +89,17 @@ public class AhClassCodeController {
     }
 
     /**
+     * 条件查询单条
+     * @param criteria 查询条件
+     * @return 使用ResponseEntity封装的多条项目数据
+     */
+    @GetMapping("/ah-class-code-one")
+    public ResponseEntity<ReturnCommonDTO<AhClassCodeDTO>> getAhClassCodeOne(AhClassCodeCriteria criteria) {
+        ReturnCommonDTO<AhClassCodeDTO> resultDTO = ahClassCodeService.getAhClassCodeOne(criteria);
+        return ResponseEntity.ok().headers(null).body(resultDTO);
+    }
+
+    /**
      * 上传类所在文件夹
      * @param projectId 所属项目ID
      * @param fileType 文件类型（JAVA或CLASS）

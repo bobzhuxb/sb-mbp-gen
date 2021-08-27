@@ -98,9 +98,9 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<AhClassCodeDTO> getAhClassCode(String id) {
-        AhClassCode inter = baseMapper.selectById(id);
+        AhClassCode classCode = baseMapper.selectById(id);
         AhClassCodeDTO classCodeDTO = new AhClassCodeDTO();
-        MyBeanUtil.copyNonNullProperties(inter, classCodeDTO);
+        MyBeanUtil.copyNonNullProperties(classCode, classCodeDTO);
         getAssociation(classCodeDTO);
         return new ReturnCommonDTO<>(classCodeDTO);
     }
@@ -119,6 +119,27 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
             return classCodeDTO;
         }).collect(Collectors.toList());
         return new ReturnCommonDTO<>(classCodeDTOList);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ReturnCommonDTO<AhClassCodeDTO> getAhClassCodeOne(AhClassCodeCriteria criteria) {
+        String fullNameEq = criteria.getFullNameEq();
+        if (StrUtil.isNotBlank(fullNameEq)) {
+            String packageName = fullNameEq.substring(0, fullNameEq.lastIndexOf("."));
+            String className = fullNameEq.substring(fullNameEq.lastIndexOf(".") + 1);
+            AhClassCode classCode = baseMapper.selectOne(new QueryWrapper<AhClassCode>()
+                    .eq(AhClassCode._packageName, packageName)
+                    .eq(AhClassCode._className, className)
+                    .last("limit 1"));
+            if (classCode != null) {
+                AhClassCodeDTO classCodeDTO = new AhClassCodeDTO();
+                MyBeanUtil.copyNonNullProperties(classCode, classCodeDTO);
+                getAssociation(classCodeDTO);
+                return new ReturnCommonDTO<>(classCodeDTO);
+            }
+        }
+        return new ReturnCommonDTO<>();
     }
 
     private void getAssociation(AhClassCodeDTO classCodeDTO) {

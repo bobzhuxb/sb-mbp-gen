@@ -48,7 +48,7 @@ function initResultSearch() {
 /**
  * 加载结果类到fromObject
  */
-function loadClassToResult() {
+function loadReturnClassToResult() {
     var searchFullClassName = $("#resultBasePackage").html() + $("#resultSearch").val();
     for (var i = 0; i < projectSelected.ahClassCodeList.length; i++) {
         var ahClassCode = projectSelected.ahClassCodeList[i];
@@ -56,7 +56,10 @@ function loadClassToResult() {
         if (curFullClassName == searchFullClassName) {
             // 初始化左侧列表
             var ahClassCodeFull = getClassCode(ahClassCode.id);
-            formFromLines(ahClassCodeFull);
+            var fromLinesHtml = formFromLines(ahClassCodeFull, 1, "");
+            // 刷新来源行
+            $("#fromObject").html(fromLinesHtml);
+            doAfterFromLineRefreshed();
             break;
         }
     }
@@ -64,9 +67,9 @@ function loadClassToResult() {
 
 /**
  * 生成来源数据行
- * <div identify="10007" level="1" type="list" fullName="children" descr="子" class="data-is-list"><span class="from-name">children</span>&nbsp;|&nbsp;子</div>
  */
-function formFromLines(ahClassCode) {
+function formFromLines(ahClassCode, level, parent) {
+    var basePackage = projectSelected.basePackage;
     var fromLinesHtml = "";
     var fieldList = ahClassCode.ahFieldList;
     for (var i = 0; i < fieldList.length; i++) {
@@ -74,17 +77,98 @@ function formFromLines(ahClassCode) {
         var identify = field.id;
         var fieldTypeName = field.typeName;
         var fieldName = field.fieldName;
+        var genericTypeName = field.genericTypeName;
         if (fieldName.startsWith("_")) {
             // 该字段是为了匹配数据库使用的，过滤掉
             continue;
         }
-        fromLinesHtml += "<div identify='" + identify + "' level='1' type='normal' fullName='"
-            + fieldName + "' descr='（请填写注释）' fieldType='" + fieldTypeName + "' parent='' class=''>"
-            + "<span class='from-name'>" + fieldName + "</span> | （请填写注释）</div>";
+        var isObject = false;
+        var isArray = false;
+        if (fieldTypeName == "java.util.List") {
+            isArray = true;
+        } else if (fieldTypeName.startsWith(basePackage + ".")) {
+            isObject = true;
+        }
+        // 组装HTML
+        fromLinesHtml += "<div identify='" + identify + "' level='" + level + "'";
+        if (isArray) {
+            fromLinesHtml += " type='list'" + " childrenType='" + genericTypeName
+                + "' class='from-data-line data-is-list'";
+        } else if (isObject) {
+            fromLinesHtml += " type='object' class='from-data-line data-is-object'";
+        } else {
+            fromLinesHtml += " type='normal' class='from-data-line'";
+        }
+        fromLinesHtml += " fullName='" + fieldName + "' descr='（请填写注释）' fieldType='"
+            + fieldTypeName + "' parent='" + parent + "'>";
+        if (isArray || isObject) {
+            fromLinesHtml += "<span class='fold-unfold' onclick='foldOrUnfoldFrom(this, false);' title='点击展开'>+</span> ";
+        }
+        fromLinesHtml += "<span class='from-name'>" + fieldName + "</span> | （请填写注释）</div>";
     }
-    // 刷新来源行
-    $("#fromObject").html(fromLinesHtml);
-    doAfterFromLineRefreshed();
+    return fromLinesHtml;
+}
+
+/**
+ * fromObject：展开或关闭
+ */
+function foldOrUnfoldFrom(obj, forceUnfold) {
+    var myIdentify = $(obj).parent().attr("identify");
+    // 子目录
+    var $childrenDivs = $(".from-data-line[parent='" + myIdentify + "']");
+    if (!forceUnfold && $(obj).html() == "+") {
+        // 准备展开（只展开下一层）
+        if (typeof($childrenDivs) != "undefined" && $childrenDivs.length > 0) {
+            // 已加载过，直接显示
+            $childrenDivs.show();
+        } else {
+            // 未加载过，调用接口获取数据加载
+            var type = $(obj).parent().attr("type");
+            var loadingTypeName;
+            if (type == "object") {
+                loadingTypeName = $(obj).parent().attr("fieldType");
+            } else if (type == "list") {
+                loadingTypeName = $(obj).parent().attr("childrenType");
+            } else {
+                // 无需加载
+                return;
+            }
+            var ahClassCodeFull = getClassCodeByFullName(loadingTypeName);
+            var myLevel = $(obj).parent().attr("level");
+            var nextLevel = parseInt(myLevel) + 1;
+            var fromLinesHtml = formFromLines(ahClassCodeFull, nextLevel, myIdentify);
+            // 刷新来源行
+            $(obj).parent().after(fromLinesHtml);
+        }
+        $(obj).attr("title", "点击收起");
+        $(obj).html("-");
+        doAfterFromLineRefreshed();
+    } else {
+        // 准备合起
+        // 先对子目录进行合起操作
+        for (var i = 0; i < $childrenDivs.length; i++) {
+            var childDiv = $childrenDivs[i];
+            var childType = $(childDiv).attr("type");
+            if (childType != "normal") {
+                var childSpan = $(childDiv).find(".fold-unfold");
+                if (childSpan.html() == "-") {
+                    foldOrUnfoldFrom(childSpan[0], true);
+                }
+            }
+            // 再对自己进行合起操作
+            $(childDiv).hide();
+        }
+        // 再对自己进行合起操作
+        $(obj).attr("title", "点击展开");
+        $(obj).html("+");
+    }
+}
+
+/**
+ * fromObject：递归隐藏子目录
+ */
+function hideChildrenFrom() {
+
 }
 
 /**

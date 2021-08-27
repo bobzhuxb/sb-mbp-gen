@@ -489,6 +489,30 @@ function getClassCode(classId) {
 }
 
 /**
+ * 获取实体类
+ */
+function getClassCodeByFullName(fullClassName) {
+    var clazz = null;
+    $.ajax({
+        url: "/api/ah-class-code-one?fullNameEq=" + fullClassName,
+        type: "GET",
+        dataType: "JSON",
+        async: false,
+        success: function(result) {
+            if (result.resultCode != "1") {
+                alert("获取实体类失败");
+                return;
+            }
+            clazz = result.data;
+        },
+        error: function () {
+            alert("获取实体类失败");
+        }
+    });
+    return clazz;
+}
+
+/**
  * 放弃修改接口
  */
 function abortChangingInterface() {

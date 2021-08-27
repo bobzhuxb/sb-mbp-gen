@@ -40,3 +40,8 @@
 .over-to-line {
     background-color: greenyellow;
 }
+
+.fold-unfold {
+    font-weight: bold;
+    color: red;
+}
