@@ -10,6 +10,8 @@ var projectAddForm;
 var uploadClassDialog;
 // 类文件上传表单
 var uploadClassForm;
+// 确认对话框
+var confirmDialog;
 // 是否正在新增接口中
 var addingInterface = false;
 
@@ -21,6 +23,21 @@ function emptyStringToNull(data) {
         return null;
     }
     return data;
+}
+
+/**
+ * 移除空值属性
+ */
+function removeNullProperty(obj, excludeProList) {
+    Object.keys(obj).forEach(item => {
+        if (typeof(excludeProList) != "undefined" && excludeProList.includes(item)) {
+            return;
+        }
+        if (!obj[item]) {
+            delete obj[item];
+        }
+    });
+    return obj;
 }
 
 // form转json

@@ -142,6 +142,12 @@ function initLayoutWest() {
         event.preventDefault();
         uploadClassFiles();
     });
+    confirmDialog = $("#confirmDialog").dialog({
+        autoOpen: false,
+        height: 200,
+        width: 300,
+        modal: true
+    });
     refreshLayoutWest();
 }
 
@@ -177,9 +183,9 @@ function refreshProjects() {
                         + "' urlPrefix='" + project.urlPrefix + "'" + "title='" + project.descr
                         + "' onclick='selectProject(this);'><span>" + project.name
                         + "</span><a href='#' style='margin-left: 10px; color: dodgerblue;' title='点击修改' "
-                        + "onclick='openUpdateProjectDialog(this)'>M</a>"
+                        + "onclick='openUpdateProjectDialog(this);'>M</a>"
                         + "<a href='#' style='margin-left: 10px; color: red;' title='点击删除' "
-                        + "onclick='openDeleteProjectDialog(this)'>X</a></div>";
+                        + "onclick='openDeleteProjectDialog(this);'>X</a></div>";
                     var $projectLine = $(projectHtml);
                     $("#projects").append($projectLine);
                 }
@@ -189,6 +195,24 @@ function refreshProjects() {
             alert("刷新工程失败");
         }
     });
+}
+
+/**
+ * 打开确认对话框
+ */
+function openConfirmDialog(content, callback, callbackParam) {
+    var addButtons = {
+        "确定": function () {
+            callback(callbackParam);
+            confirmDialog.dialog("close");
+        },
+        "取消": function() {
+            confirmDialog.dialog("close");
+        }
+    };
+    $("#confirmDialogContent").html(content);
+    $("#confirmDialog").dialog("option", "buttons", addButtons);
+    confirmDialog.dialog("open");
 }
 
 /**
@@ -233,11 +257,11 @@ function openUpdateProjectDialog(domObj) {
 }
 
 /**
- * 打开修改工程确认框
+ * 打开删除工程确认框
  */
 function openDeleteProjectDialog(domObj) {
     var projectId = $(domObj).parent().attr("identify");
-
+    openConfirmDialog("确认删除工程？", deleteProject, projectId);
 }
 
 /**
@@ -275,6 +299,13 @@ function addOrUpdateProject(httpType) {
             alert("操作失败");
         }
     });
+}
+
+/**
+ * 删除工程
+ */
+function deleteProject(projectId) {
+    console.log("我要删除Project：" + projectId);
 }
 
 /**
@@ -552,6 +583,11 @@ function validAndGenInter() {
     interInfoData.addDefaultPrefix = emptyStringToNull($("#baseInfo").find("select[name='addDefaultPrefix']").val());
     interInfoData.httpUrl = emptyStringToNull($("#baseInfo").find("input[name='httpUrl']").val());
     interInfoData.interDescr = emptyStringToNull($("#baseInfo").find("input[name='interDescr']").val());
+    if (interInfoData.interNo == null || interInfoData.httpMethod == null || interInfoData.addDefaultPrefix == null
+        || interInfoData.httpUrl || interInfoData.interDescr) {
+        alert("接口号、接口方法、追加默认前缀、接口URL、接口描述不允许为空");
+        return;
+    }
     // 2、参数信息
     interInfoData.param = new Object();
     // 2.1、条件信息
@@ -575,6 +611,8 @@ function validAndGenInter() {
                 criteriaObj.fixedValue = fixedValue;
                 criteriaObj.emptyToNull = emptyToNull;
                 criteriaObj.toCriteriaList = toCriteriaList;
+                // 移除criteria的空值属性
+                removeNullProperty(criteriaObj);
                 // 添加到criteriaList中
                 interInfoData.param.criteriaList.push(criteriaObj);
             }
@@ -594,6 +632,8 @@ function validAndGenInter() {
     // 2.5、SQL列信息
     var sqlColumnList = $("#paramInfo").find("input[name='sqlColumnList']");
     interInfoData.param.sqlColumnList = getStringArrayFromList(sqlColumnList);
+    // 移除param的空值属性
+    removeNullProperty(interInfoData.param);
     // 3、返回信息
     interInfoData.result = new Object();
     interInfoData.result.resultCode = "1：操作成功  2：操作失败";
@@ -612,8 +652,15 @@ function validAndGenInter() {
         field.type = type;
         field.fromName = $(toObjectData).attr("fullName");
         field.descr = $(toObjectData).find(".to-descr").html();
+        // 移除field的空值属性
+        removeNullProperty(field);
+        // 添加field
         interInfoData.result.fieldList.push(field);
     }
+    // 移除result的空值属性
+    removeNullProperty(interInfoData.param);
+    // 移除最外层Object的空值属性
+    removeNullProperty(interInfoData, ["param", "result"]);
     // 返回数据
     console.log(JSON.stringify(interInfoData));
     return interInfoData;

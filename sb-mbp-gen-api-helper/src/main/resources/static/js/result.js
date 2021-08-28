@@ -587,20 +587,15 @@ function formDataLineAndInsertLine($toObj, draggingLevel, identify, type, fieldR
         // list的特殊样式
         dataLineHtml += " data-is-list";
     }
-    dataLineHtml += "'>";
-    if (type == "object" || type == "list") {
-        dataLineHtml += "<span class='fold-unfold' onclick='foldOrUnfoldTo(this);'></span>";
-    } else {
-        dataLineHtml += "<span class='no-fold'></span>";
-    }
-    dataLineHtml += "<span class='to-name' ondblclick='changeToName(this);'>" + draggingContent + "</span>"
+    dataLineHtml += "'><span class='fold-span'></span> "
+        + "<span class='to-name' ondblclick='changeToName(this);'>" + draggingContent + "</span>"
         + "<input type='text' class='to-name-text' style='width:200px;display:none;' value='" + draggingContent + "' />"
         + " | "
         + "<span class='to-descr' ondblclick='changeToDescr(this);'>" + descr + "</span>"
         + "<input type='text' class='to-descr-text' style='width:200px;display:none;' value='" + descr + "' />"
         + " | "
         + "<span class='to-level'>（" + draggingLevel + "）</span>"
-        + "<span style='margin-left: 30px;' title='点击删除' onclick='deleteToLine(this, false);'>X</span>"
+        + "<span style='margin-left: 30px;' title='点击删除' onclick='openDeleteToLineDialog(this);'>X</span>"
         + "</div>";
     // 准备插入行
     var $newDataLine = $(dataLineHtml);
@@ -611,20 +606,19 @@ function formDataLineAndInsertLine($toObj, draggingLevel, identify, type, fieldR
 }
 
 /**
- * 刷新toObject的行
+ * 刷新toObject的行（加标识、设置样式等）
  */
 function refreshToObjectLines() {
-    // 只刷新object和list的行
-    var needToRefreshLines = $(".to-data-line.data-is-object, .to-data-line.data-is-list");
+    var toDataLines = $(".to-data-line");
     // 有子数据（业务意义上）的行，追加加号或减号
-    for (var i = 0; i < needToRefreshLines.length; i++) {
-        var needToRefreshLine = needToRefreshLines[i];
-        var myIdentify = $(needToRefreshLine).attr("identify");
+    for (var i = 0; i < toDataLines.length; i++) {
+        var toDataLine = toDataLines[i];
+        var myIdentify = $(toDataLine).attr("identify");
         var myChildren = $(".to-data-line[parent='" + myIdentify + "']");
+        var $foldSpan = $(toDataLine).find(".fold-span");
         if (typeof(myChildren) != "undefined" && myChildren.length > 0) {
             // 有子数据（业务意义上）的行
             var nowDisplay = $(myChildren[0]).css("display");
-            var $foldSpan = $(needToRefreshLine).find(".fold-unfold");
             if (nowDisplay == "none") {
                 // 加号
                 $foldSpan.html("+");
@@ -634,6 +628,18 @@ function refreshToObjectLines() {
                 $foldSpan.html("-");
                 $foldSpan.attr("title", "点击收起");
             }
+            $foldSpan.removeClass("no-fold");
+            $foldSpan.addClass("fold-unfold");
+            $foldSpan.click(function() {
+                foldOrUnfoldTo(this);
+            });
+        } else {
+            // 没有子数据（业务意义上）的行
+            $foldSpan.html("");
+            $foldSpan.removeAttr("title");
+            $foldSpan.removeClass("fold-unfold");
+            $foldSpan.addClass("no-fold");
+            $foldSpan.unbind("click");
         }
     }
     doAfterToLineRefreshed();
@@ -680,21 +686,20 @@ function foldOrUnfoldTo(obj) {
 }
 
 /**
- * 删除拖拽后的数据行（级联删除）
+ * 打开删除拖拽后的数据行确认框
  */
-function deleteToLine(obj, needConfirm) {
+function openDeleteToLineDialog(obj) {
     var $dataLineDiv = $(obj).parent();
-    if (needConfirm) {
-        $.confirm({
-            confirm: function () {
-                directDeleteToLine($dataLineDiv);
-                refreshToObjectLines();
-            }
-        });
-    } else {
-        directDeleteToLine($dataLineDiv);
-        refreshToObjectLines();
-    }
+    openConfirmDialog("确认删除？<br/><span style='color: red; font-weight: bold;'>注意：此操作会同时删除所有的子数据</span>",
+        deleteToLine, $dataLineDiv);
+}
+
+/**
+ * 删除拖拽后的数据行操作
+ */
+function deleteToLine($dataLineDiv) {
+    directDeleteToLine($dataLineDiv);
+    refreshToObjectLines();
 }
 
 /**

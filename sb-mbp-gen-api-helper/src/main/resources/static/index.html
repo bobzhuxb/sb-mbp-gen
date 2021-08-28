@@ -133,7 +133,7 @@
                 </div>
                 <div class="sub-main">
                     <div class="sub-main-title" style="display: inline-block;">级联（associationNameList）</div>
-                    <a href="#" onclick="subMainAddLine(this, 'associationNameToAdd');">添加</a>
+                    <a id="associationNameAddBtn" href="#" onclick="subMainAddLine(this, 'associationNameToAdd');">添加</a>
                     <div id="associationNameToAdd" class="template">
                         <div style="display: inline-block;">
                             <input name="associationNameList" type="text" class="base-input" />
@@ -143,7 +143,7 @@
                 </div>
                 <div class="sub-main">
                     <div class="sub-main-title" style="display: inline-block;">字典（dictionaryNameList）</div>
-                    <a href="#" onclick="subMainAddLine(this, 'dictionaryNameToAdd');">添加</a>
+                    <a id="dictionaryNameAddBtn" href="#" onclick="subMainAddLine(this, 'dictionaryNameToAdd');">添加</a>
                     <div id="dictionaryNameToAdd" class="template">
                         <div style="display: inline-block;">
                             <input name="dictionaryNameList" type="text" class="base-input" />
@@ -157,7 +157,7 @@
                 </div>
                 <div class="sub-main">
                     <div class="sub-main-title" style="display: inline-block;">取数字段（sqlColumnList）</div>
-                    <a href="#" onclick="subMainAddLine(this, 'sqlColumnToAdd');">添加</a>
+                    <a id="sqlColumnAddBtn" href="#" onclick="subMainAddLine(this, 'sqlColumnToAdd');">添加</a>
                     <div id="sqlColumnToAdd" class="template">
                         <div style="display: inline-block;">
                             <input name="sqlColumnList" type="text" class="base-input" />
@@ -232,6 +232,12 @@
                 上传文件
                 <input type="file" name="folder" accept="text/java" multiple="multiple" value="" />
             </fieldset>
+        </form>
+    </div>
+    <div id="confirmDialog" title="确认">
+        <form>
+            <span id="confirmDialogContent"></span>
+            <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
         </form>
     </div>
 </body>
