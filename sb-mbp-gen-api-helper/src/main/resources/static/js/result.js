@@ -22,6 +22,13 @@ function doAfterFromLineRefreshed() {
 }
 
 /**
+ * 刷新toLine之后的操作
+ */
+function doAfterToLineRefreshed() {
+    initToDataLineLevel();
+}
+
+/**
  * 初始化返回类型搜索框
  */
 function initResultSearch() {
@@ -56,7 +63,7 @@ function loadReturnClassToResult() {
         if (curFullClassName == searchFullClassName) {
             // 初始化左侧列表
             var ahClassCodeFull = getClassCode(ahClassCode.id);
-            var fromLinesHtml = formFromLines(ahClassCodeFull, 1, "");
+            var fromLinesHtml = formFromLines(ahClassCodeFull, 1, "", "");
             // 刷新来源行
             $("#fromObject").html(fromLinesHtml);
             doAfterFromLineRefreshed();
@@ -68,7 +75,7 @@ function loadReturnClassToResult() {
 /**
  * 生成来源数据行
  */
-function formFromLines(ahClassCode, level, parent) {
+function formFromLines(ahClassCode, level, parentIdentify, parentFullName) {
     var basePackage = projectSelected.basePackage;
     var fromLinesHtml = "";
     var fieldList = ahClassCode.ahFieldList;
@@ -89,20 +96,26 @@ function formFromLines(ahClassCode, level, parent) {
         } else if (fieldTypeName.startsWith(basePackage + ".")) {
             isObject = true;
         }
+        var fullName = fieldName;
+        if (parentFullName != "") {
+            fullName = parentFullName + "." + fullName;
+        }
         // 组装HTML
         fromLinesHtml += "<div identify='" + identify + "' level='" + level + "'";
         if (isArray) {
-            fromLinesHtml += " type='list'" + " childrenType='" + genericTypeName
+            fromLinesHtml += " type='list'" + " genericTypeName='" + genericTypeName
                 + "' class='from-data-line data-is-list'";
         } else if (isObject) {
             fromLinesHtml += " type='object' class='from-data-line data-is-object'";
         } else {
             fromLinesHtml += " type='normal' class='from-data-line'";
         }
-        fromLinesHtml += " fullName='" + fieldName + "' descr='（请填写注释）' fieldType='"
-            + fieldTypeName + "' parent='" + parent + "'>";
+        fromLinesHtml += " fullName='" + fullName + "' title='全路径：" + fullName + "\n类型：" + fieldTypeName
+            + "' descr='（请填写注释）' fieldType='" + fieldTypeName + "' parent='" + parentIdentify + "'>";
         if (isArray || isObject) {
             fromLinesHtml += "<span class='fold-unfold' onclick='foldOrUnfoldFrom(this, false);' title='点击展开'>+</span> ";
+        } else {
+            fromLinesHtml += "<span class='no-fold'></span> ";
         }
         fromLinesHtml += "<span class='from-name'>" + fieldName + "</span> | （请填写注释）</div>";
     }
@@ -114,6 +127,7 @@ function formFromLines(ahClassCode, level, parent) {
  */
 function foldOrUnfoldFrom(obj, forceUnfold) {
     var myIdentify = $(obj).parent().attr("identify");
+    var myFullName = $(obj).parent().attr("fullName");
     // 子目录
     var $childrenDivs = $(".from-data-line[parent='" + myIdentify + "']");
     if (!forceUnfold && $(obj).html() == "+") {
@@ -128,7 +142,7 @@ function foldOrUnfoldFrom(obj, forceUnfold) {
             if (type == "object") {
                 loadingTypeName = $(obj).parent().attr("fieldType");
             } else if (type == "list") {
-                loadingTypeName = $(obj).parent().attr("childrenType");
+                loadingTypeName = $(obj).parent().attr("genericTypeName");
             } else {
                 // 无需加载
                 return;
@@ -136,7 +150,7 @@ function foldOrUnfoldFrom(obj, forceUnfold) {
             var ahClassCodeFull = getClassCodeByFullName(loadingTypeName);
             var myLevel = $(obj).parent().attr("level");
             var nextLevel = parseInt(myLevel) + 1;
-            var fromLinesHtml = formFromLines(ahClassCodeFull, nextLevel, myIdentify);
+            var fromLinesHtml = formFromLines(ahClassCodeFull, nextLevel, myIdentify, myFullName);
             // 刷新来源行
             $(obj).parent().after(fromLinesHtml);
         }
@@ -165,13 +179,6 @@ function foldOrUnfoldFrom(obj, forceUnfold) {
 }
 
 /**
- * fromObject：递归隐藏子目录
- */
-function hideChildrenFrom() {
-
-}
-
-/**
  * 刷新结果数据
  */
 function refreshResultData() {
@@ -186,7 +193,7 @@ function initFromLineLevel() {
     for (var i = 0; i < $fromDivs.length; i++) {
         var fromDiv = $fromDivs[i];
         var level = $(fromDiv).attr("level");
-        $(fromDiv).css("padding-left", (level * 30) + "px");
+        $(fromDiv).css("padding-left", ((level - 1) * 20) + "px");
     }
 }
 
@@ -198,7 +205,7 @@ function initToDataLineLevel() {
     for (var i = 0; i < $toDataLines.length; i++) {
         var toDataLine = $toDataLines[i];
         var level = $(toDataLine).attr("level");
-        $(toDataLine).css("padding-left", (level * 30) + "px");
+        $(toDataLine).css("padding-left", ((level - 1) * 20) + "px");
     }
 }
 
@@ -294,6 +301,9 @@ function toInsertLineEvent() {
                 // 从转换后字段拖拽而来（上下移动）
                 toLineDropped($dragging, $(this));
             }
+            // 插入行之后的操作
+            doAfterDroppedHtmlFormed();
+            refreshToObjectLines();
         }
     });
 }
@@ -310,6 +320,13 @@ function fromLineDropped($dragging, $toObj) {
     var descr = $dragging.attr("descr");
     var parent = $dragging.attr("parent");
     var draggingContent = $dragging.children("span[class='from-name']").html();
+    var fieldType = $dragging.attr("fieldType");
+    var genericTypeName = $dragging.attr("genericTypeName");
+    // 分析该字段的实际类型
+    var fieldRealTypeName = fieldType;
+    if (fieldType == "java.util.List") {
+        fieldRealTypeName = genericTypeName;
+    }
     // 第一层不存在父级
     if (typeof(parent) == "undefined") {
         parent = null;
@@ -326,9 +343,8 @@ function fromLineDropped($dragging, $toObj) {
     fullName = mayModify.fullName;
     parent = mayModify.parent;
     // 生成数据行和插入行
-    var $prevInsertLine = formDataLineAndInsertLine($toObj, draggingLevel, identify, type, fullName, descr, parent, draggingContent);
-    // 插入行之后的操作
-    doAfterDroppedHtmlFormed();
+    var $prevInsertLine = formDataLineAndInsertLine($toObj, draggingLevel, identify, type, fieldRealTypeName,
+        fullName, descr, parent, draggingContent);
     if (fromChildInclude) {
         // 子元素一并拖拽
         // 如果被拖拽的元素是object或list，必须带着所有子元素（业务意义上）一起拖拽
@@ -342,7 +358,10 @@ function fromLineDropped($dragging, $toObj) {
             for (var i = children.length - 1; i >= 0; i--) {
                 var $child = $(children[i]);
                 var $childToObj = $prevInsertLine;
-                fromLineDropped($child, $childToObj);
+                // 继续拖拽子目录（非折叠的）
+                if ($child.css("display") != "none") {
+                    fromLineDropped($child, $childToObj);
+                }
             }
         }
     }
@@ -544,15 +563,17 @@ function getListFullPath(identify, subNames) {
 }
 
 /**
- * 生成数据行和插入行
+ * 生成toObject的数据行和插入行
  */
-function formDataLineAndInsertLine($toObj, draggingLevel, identify, type, fullName, descr, parent, draggingContent) {
+function formDataLineAndInsertLine($toObj, draggingLevel, identify, type, fieldRealTypeName, fullName,
+                                   descr, parent, draggingContent) {
     // 字段行HTML
     var dataLineHtml = "<div"
         + " identify='" + identify + "'"
         + " level='" + draggingLevel + "'"
         + " type='" + type + "'"
-        + " title='" + fullName + "'"
+        + " fieldRealTypeName=' " + fieldRealTypeName + "'"
+        + " title='全路径：" + fullName + "\n来源类型：" + fieldRealTypeName + "'"
         + " fullName='" + fullName + "'";
     if (parent != null) {
         // 第一层级不存在parent属性
@@ -566,15 +587,20 @@ function formDataLineAndInsertLine($toObj, draggingLevel, identify, type, fullNa
         // list的特殊样式
         dataLineHtml += " data-is-list";
     }
-    dataLineHtml += "'>"
-        + "<span class='to-name' ondblclick='changeToName(this);'>" + draggingContent + "</span>"
+    dataLineHtml += "'>";
+    if (type == "object" || type == "list") {
+        dataLineHtml += "<span class='fold-unfold' onclick='foldOrUnfoldTo(this);'></span>";
+    } else {
+        dataLineHtml += "<span class='no-fold'></span>";
+    }
+    dataLineHtml += "<span class='to-name' ondblclick='changeToName(this);'>" + draggingContent + "</span>"
         + "<input type='text' class='to-name-text' style='width:200px;display:none;' value='" + draggingContent + "' />"
         + " | "
         + "<span class='to-descr' ondblclick='changeToDescr(this);'>" + descr + "</span>"
         + "<input type='text' class='to-descr-text' style='width:200px;display:none;' value='" + descr + "' />"
         + " | "
         + "<span class='to-level'>（" + draggingLevel + "）</span>"
-        + "<span style='margin-left: 50px;' title='点击删除' onclick='deleteToLine(this);'>X</span>"
+        + "<span style='margin-left: 30px;' title='点击删除' onclick='deleteToLine(this, false);'>X</span>"
         + "</div>";
     // 准备插入行
     var $newDataLine = $(dataLineHtml);
@@ -582,6 +608,75 @@ function formDataLineAndInsertLine($toObj, draggingLevel, identify, type, fullNa
     $toObj.after($newInsertLine);
     $toObj.after($newDataLine);
     return $newInsertLine;
+}
+
+/**
+ * 刷新toObject的行
+ */
+function refreshToObjectLines() {
+    // 只刷新object和list的行
+    var needToRefreshLines = $(".to-data-line.data-is-object, .to-data-line.data-is-list");
+    // 有子数据（业务意义上）的行，追加加号或减号
+    for (var i = 0; i < needToRefreshLines.length; i++) {
+        var needToRefreshLine = needToRefreshLines[i];
+        var myIdentify = $(needToRefreshLine).attr("identify");
+        var myChildren = $(".to-data-line[parent='" + myIdentify + "']");
+        if (typeof(myChildren) != "undefined" && myChildren.length > 0) {
+            // 有子数据（业务意义上）的行
+            var nowDisplay = $(myChildren[0]).css("display");
+            var $foldSpan = $(needToRefreshLine).find(".fold-unfold");
+            if (nowDisplay == "none") {
+                // 加号
+                $foldSpan.html("+");
+                $foldSpan.attr("title", "点击展开");
+            } else {
+                // 减号
+                $foldSpan.html("-");
+                $foldSpan.attr("title", "点击收起");
+            }
+        }
+    }
+    doAfterToLineRefreshed();
+}
+
+/**
+ * toObject：展开或关闭
+ */
+function foldOrUnfoldTo(obj) {
+    var myIdentify = $(obj).parent().attr("identify");
+    // 子目录
+    var $childrenDivs = $(".to-data-line[parent='" + myIdentify + "']");
+    if ($(obj).html() == "+") {
+        // 准备展开（只展开下一层）
+        for (var i = 0; i < $childrenDivs.length; i++) {
+            childDiv = $childrenDivs[i];
+            $(childDiv).show();
+            $(childDiv).next().show();
+        }
+        $(obj).attr("title", "点击收起");
+        $(obj).html("-");
+        doAfterToLineRefreshed();
+    } else {
+        // 准备合起
+        // 先对子目录进行合起操作
+        for (var i = 0; i < $childrenDivs.length; i++) {
+            var childDiv = $childrenDivs[i];
+            var childType = $(childDiv).attr("type");
+            if (childType != "normal") {
+                var childSpan = $(childDiv).find(".fold-unfold");
+                if (childSpan.html() == "-") {
+                    foldOrUnfoldTo(childSpan[0], true);
+                }
+            }
+            // 再对自己进行合起操作
+            $(childDiv).hide();
+            // 对自己的下一行insertLine进行合起操作
+            $(childDiv).next().hide();
+        }
+        // 再对自己进行合起操作
+        $(obj).attr("title", "点击展开");
+        $(obj).html("+");
+    }
 }
 
 /**
@@ -593,10 +688,12 @@ function deleteToLine(obj, needConfirm) {
         $.confirm({
             confirm: function () {
                 directDeleteToLine($dataLineDiv);
+                refreshToObjectLines();
             }
         });
     } else {
         directDeleteToLine($dataLineDiv);
+        refreshToObjectLines();
     }
 }
 
@@ -648,6 +745,7 @@ function toLineDropped($dragging, $toObj) {
     var descr = $dragging.children(".to-descr").html();
     var parent = $dragging.attr("parent");
     var draggingContent = $dragging.children(".to-name").html();
+    var fieldRealTypeName = $dragging.attr("fieldRealTypeName");
     // 第一层不存在父级
     if (typeof(parent) == "undefined") {
         parent = null;
@@ -664,12 +762,11 @@ function toLineDropped($dragging, $toObj) {
     fullName = mayModify.fullName;
     parent = mayModify.parent;
     // 生成数据行和插入行
-    var $prevInsertLine = formDataLineAndInsertLine($toObj, draggingLevel, identify, type, fullName, descr, parent, draggingContent);
+    var $prevInsertLine = formDataLineAndInsertLine($toObj, draggingLevel, identify, type, fieldRealTypeName,
+        fullName, descr, parent, draggingContent);
     // 删除原先行及其下一行
     $dragging.next().remove();
     $dragging.remove();
-    // 插入行之后的操作
-    doAfterDroppedHtmlFormed();
     // 如果被拖拽的元素是object或list，必须带着所有子元素（业务意义上）一起拖拽
     if (type == "object" || type == "list") {
         // 递归调用，所以只调用拖拽下一层级的即可
@@ -692,7 +789,6 @@ function toLineDropped($dragging, $toObj) {
 function doAfterDroppedHtmlFormed() {
     toDataLineEvent();
     toInsertLineEvent();
-    initToDataLineLevel();
     toNameTextEvent();
     toDescrTextEvent();
 }

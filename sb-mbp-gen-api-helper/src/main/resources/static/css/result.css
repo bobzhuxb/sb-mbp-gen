@@ -37,6 +37,13 @@
     overflow: auto;
 }
 
+.compare-description {
+    display: inline-block;
+    width: 48%;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
 .over-to-line {
     background-color: greenyellow;
 }
@@ -44,4 +51,10 @@
 .fold-unfold {
     font-weight: bold;
     color: red;
+}
+
+.no-fold {
+    display: -moz-inline-box;
+    display: inline-block;
+    width: 10px;
 }
