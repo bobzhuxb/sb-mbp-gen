@@ -584,7 +584,7 @@ function validAndGenInter() {
     interInfoData.httpUrl = emptyStringToNull($("#baseInfo").find("input[name='httpUrl']").val());
     interInfoData.interDescr = emptyStringToNull($("#baseInfo").find("input[name='interDescr']").val());
     if (interInfoData.interNo == null || interInfoData.httpMethod == null || interInfoData.addDefaultPrefix == null
-        || interInfoData.httpUrl || interInfoData.interDescr) {
+        || interInfoData.httpUrl == null || interInfoData.interDescr == null) {
         alert("接口号、接口方法、追加默认前缀、接口URL、接口描述不允许为空");
         return;
     }
@@ -600,6 +600,7 @@ function validAndGenInter() {
                 var fromParam = emptyStringToNull($(criteria).find("input[name='fromParam']").val());
                 var descr = emptyStringToNull($(criteria).find("input[name='descr']").val());
                 var fixedValue = emptyStringToNull($(criteria).find("input[name='fixedValue']").val());
+                var fixedValueIsDigit = $(criteria).find("input[name='fixedValueIsDigit']").is(':checked');
                 var emptyToNull = emptyStringToNull($(criteria).find("select[name='emptyToNull']").val());
                 var toCriteriaList = getStringArrayFromList($(criteria).find("input[name='toCriteriaList']"));
                 if (fromParam == null) {
@@ -608,8 +609,13 @@ function validAndGenInter() {
                 var criteriaObj = new Object();
                 criteriaObj.fromParam = fromParam;
                 criteriaObj.descr = descr;
-                criteriaObj.fixedValue = fixedValue;
-                criteriaObj.emptyToNull = emptyToNull;
+                criteriaObj.fixedValueIsDigit = fixedValueIsDigit;
+                if (fixedValueIsDigit) {
+                    criteriaObj.fixedValue = parseInt(fixedValue);
+                } else {
+                    criteriaObj.fixedValue = fixedValue;
+                }
+                criteriaObj.emptyToNull = parseInt(emptyToNull);
                 criteriaObj.toCriteriaList = toCriteriaList;
                 // 移除criteria的空值属性
                 removeNullProperty(criteriaObj);

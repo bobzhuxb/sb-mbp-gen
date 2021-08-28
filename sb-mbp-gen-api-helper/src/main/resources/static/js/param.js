@@ -17,33 +17,59 @@ function refreshParamData() {
     }
     // 获取JSON数据
     var interfaceData = JSON.parse(interfaceSelected.dataJson);
+    var param = interfaceData.param;
     // 添加补充数据
-    if (interfaceData.associationNameList != null && interfaceData.associationNameList.length > 0) {
-        for (var i = 0; i < interfaceData.associationNameList.length; i++) {
+    // 1、条件
+    if (param.criteriaList != null && param.criteriaList.length > 0) {
+        for (var i = 0; i < param.criteriaList.length; i++) {
+            subMainAddLine(document.getElementById("criteriaAddBtn"), 'criteriaToAdd');
+        }
+        var blocks = $("div[idfrom='criteriaToAdd']");
+        for (var i = 0; i < blocks.length; i++) {
+            var criteria = param.criteriaList[i];
+            $(blocks[i]).find("input[name='fromParam']").val(criteria.fromParam);
+            $(blocks[i]).find("input[name='descr']").val(criteria.descr);
+            $(blocks[i]).find("input[name='fixedValue']").val(criteria.fixedValue);
+            if (criteria.fixedValueIsDigit) {
+                $(blocks[i]).find("input[name='fixedValueIsDigit']").prop("checked",true);
+            }
+            $(blocks[i]).find("select[name='emptyToNull']").val(criteria.emptyToNull);
+            var toCriteriaLines = $(blocks[i]).find("div[idfrom='toCriteriaToAdd']");
+            for (var j = 0; j < toCriteriaLines.length; j++) {
+                $(toCriteriaLines[j]).val(criteria.toCriteriaList[j]);
+            }
+        }
+    }
+    // 2、级联
+    if (param.associationNameList != null && param.associationNameList.length > 0) {
+        for (var i = 0; i < param.associationNameList.length; i++) {
             subMainAddLine(document.getElementById("associationNameAddBtn"), 'associationNameToAdd');
         }
         var lines = $("div[idfrom='associationNameToAdd']").find("input[name='associationNameList']");
         for (var i = 0; i < lines.length; i++) {
-            $(lines[i]).val(interfaceData.associationNameList[i]);
+            $(lines[i]).val(param.associationNameList[i]);
         }
     }
-    if (interfaceData.dictionaryNameList != null && interfaceData.dictionaryNameList.length > 0) {
-        for (var i = 0; i < interfaceData.dictionaryNameList.length; i++) {
+    // 3、数据字典
+    if (param.dictionaryNameList != null && param.dictionaryNameList.length > 0) {
+        for (var i = 0; i < param.dictionaryNameList.length; i++) {
             subMainAddLine(document.getElementById("dictionaryNameAddBtn"), 'dictionaryNameToAdd');
         }
         var lines = $("div[idfrom='dictionaryNameToAdd']").find("input[name='dictionaryNameList']");
         for (var i = 0; i < lines.length; i++) {
-            $(lines[i]).val(interfaceData.dictionaryNameList[i]);
+            $(lines[i]).val(param.dictionaryNameList[i]);
         }
     }
-    $("#paramInfo").find("input[name='orderBy']").val(interfaceData.param.orderBy);
-    if (interfaceData.sqlColumnList != null && interfaceData.sqlColumnList.length > 0) {
-        for (var i = 0; i < interfaceData.sqlColumnList.length; i++) {
+    // 4、排序
+    $("#paramInfo").find("input[name='orderBy']").val(param.orderBy);
+    // 5、SQL列
+    if (param.sqlColumnList != null && param.sqlColumnList.length > 0) {
+        for (var i = 0; i < param.sqlColumnList.length; i++) {
             subMainAddLine(document.getElementById("sqlColumnAddBtn"), 'sqlColumnToAdd');
         }
         var lines = $("div[idfrom='sqlColumnToAdd']").find("input[name='sqlColumnList']");
         for (var i = 0; i < lines.length; i++) {
-            $(lines[i]).val(interfaceData.sqlColumnList[i]);
+            $(lines[i]).val(param.sqlColumnList[i]);
         }
     }
 }

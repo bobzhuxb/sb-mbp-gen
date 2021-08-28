@@ -101,7 +101,7 @@
             <div id="paramInfo">
                 <div class="sub-main">
                     <div class="sub-main-title" style="display: inline-block;">条件（criteriaList）</div>
-                    <a href="#" onclick="subMainAddLine(this, 'criteriaToAdd');">添加</a>
+                    <a id="criteriaAddBtn" href="#" onclick="subMainAddLine(this, 'criteriaToAdd');">添加</a>
                     <div id="criteriaToAdd" class="template">
                         <div style="display: inline-block; margin-left: 5px; margin-bottom: 5px;
                                     background-color: darkturquoise;">
@@ -112,6 +112,7 @@
                             描述：<input name="descr" type="text" class="base-input" />
                             <div></div>
                             固定值：<input name="fixedValue" type="text" class="base-input" />
+                            &nbsp;<input name="fixedValueIsDigit" type="checkbox" />是数字
                             <div></div>
                             空串转null：
                             <select name="emptyToNull" class="base-select">
@@ -168,7 +169,7 @@
             </div>
             <div id="resultInfo">
                 <div>
-                    返回类型：<span id="resultBasePackage"></span>
+                    原返回类型：<span id="resultBasePackage"></span>
                     <input id="resultSearch" type="text" class="base-input" style="width: 400px;" />
                     &nbsp;
                     <a href="#" class="tool_btn" onclick="loadReturnClassToResult();">加载</a>
@@ -178,7 +179,7 @@
                     <div class="compare-description" style="margin-left: 10px;">转换后</div>
                 </div>
                 <div id="fromObject" class="compare-div" style="background-color: aqua;">
-                    <div identify="10000" level="1" type="normal" fullName="id" descr="主键ID"><span class="from-name">id</span>&nbsp;|&nbsp;主键ID</div>
+                    <!--<div identify="10000" level="1" type="normal" fullName="id" descr="主键ID"><span class="from-name">id</span>&nbsp;|&nbsp;主键ID</div>
                     <div identify="10001" level="1" type="normal" fullName="name" descr="名称"><span class="from-name">name</span>&nbsp;|&nbsp;名称</div>
                     <div identify="10002" level="1" type="normal" fullName="description" descr="描述"><span class="from-name">description</span>&nbsp;|&nbsp;描述</div>
                     <div identify="10003" level="1" type="normal" fullName="insertTime" descr="录入时间"><span class="from-name">insertTime</span>&nbsp;|&nbsp;录入时间</div>
@@ -193,7 +194,7 @@
                     <div identify="10012" level="3" type="normal" fullName="children.baseInfo.weight" descr="体重" parent="10010"><span class="from-name">weight</span>&nbsp;|&nbsp;体重</div>
                     <div identify="10013" level="2" type="list" fullName="children.games" descr="游戏" parent="10007" class="data-is-list"><span class="from-name">games</span>&nbsp;|&nbsp;游戏</div>
                     <div identify="10014" level="3" type="normal" fullName="children.games.name" descr="名称" parent="10013"><span class="from-name">name</span>&nbsp;|&nbsp;名称</div>
-                    <div identify="10015" level="3" type="normal" fullName="children.games.count" descr="人数" parent="10013"><span class="from-name">count</span>&nbsp;|&nbsp;人数</div>
+                    <div identify="10015" level="3" type="normal" fullName="children.games.count" descr="人数" parent="10013"><span class="from-name">count</span>&nbsp;|&nbsp;人数</div>-->
                 </div>
                 <div id="toObject" class="compare-div" style="margin-left: 10px; background-color: aqua;">
                     <div class="to-insert-line"></div>
