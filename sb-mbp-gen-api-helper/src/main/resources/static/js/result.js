@@ -254,8 +254,9 @@ function getFieldRealTypeNameByArr(fullPathNameArr, index, nowClassTypeName) {
         // 找不到对应的类
         return null;
     }
-    // TODO；查找fieldList
-    var fieldList = nowClassCode.xxx;
+    // 查找fieldList
+    var nowClassCodeFull = getClassCode(nowClassCode.id);
+    var fieldList = nowClassCodeFull.ahFieldList;
     for (var i = 0; i < fieldList.length; i++) {
         var field = fieldList[i];
         // 字段名称
