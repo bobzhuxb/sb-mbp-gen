@@ -75,11 +75,18 @@ function loadReturnClassToResult() {
     var interfaceData = JSON.parse(interfaceSelected.dataJson);
     var fieldList = interfaceData.result.fieldList;
     if (fieldList != null && fieldList.length > 0) {
+        // 给每个field添加一个标识
+        for (var i = 0; i < fieldList.length; i++) {
+            var field = fieldList[i];
+            // 生成相关属性
+            var toIdentify = generateUUID();
+            field.identify = toIdentify;
+        }
         // 对fieldList重新排序，符合父子结构
         var sortedFieldList = new Array();
         // 从第1层级开始处理
-        sortFieldList(fieldList, sortedFieldList, 1);
-        if (sortedFieldList == null || sortedFieldList.length == 0) {
+        var result = sortFieldList(searchFullClassName, fieldList, sortedFieldList, 1);
+        if (!result || sortedFieldList == null || sortedFieldList.length == 0) {
             // 上一步解析发生错误
             return;
         }
@@ -87,7 +94,7 @@ function loadReturnClassToResult() {
         for (var i = 0; i < sortedFieldList.length; i++) {
             var field = sortedFieldList[i];
             // 生成相关属性
-            var toIdentify = generateUUID();
+            var toIdentify = field.identify;
             // 字段类别（normal、object、list）
             var type = field.type;
             if (type == null) {
@@ -151,7 +158,7 @@ function loadReturnClassToResult() {
 /**
  * 对fieldList重新排序，符合父子结构
  */
-function sortFieldList(fieldList, sortedFieldList, processingLevel) {
+function sortFieldList(nowReturnTypeName, fieldList, sortedFieldList, processingLevel) {
     for (var i = 0; i < fieldList.length; i++) {
         var field = fieldList[i];
         // 来源全路径名
@@ -163,21 +170,38 @@ function sortFieldList(fieldList, sortedFieldList, processingLevel) {
             // 过滤掉不是当前处理层级的
             continue;
         }
+        // 根据fullName查找fieldRealTypeName
+        field.fieldRealTypeName = getFieldRealTypeName(fullName, nowReturnTypeName);
+        if (field.fieldRealTypeName == null) {
+            return false;
+        }
         if (processingLevel == 1) {
             // 第一层的parent为null
             field.toParent = null;
-        } else {
-            // 其他层级
-            ???
-        }
-        // 根据fullName查找fieldRealTypeName
-        field.fieldRealTypeName
-        if (processingLevel == 1) {
             // 第一层直接添加
             sortedFieldList.push(field);
         } else {
             // 其他层级
-            ???
+            var parentFromName = fullName.substring(0, fullName.lastIndexOf(".") - 1);
+            for (var j = 0; j < fieldList.length; j++) {
+                var findParentField = fieldList[i];
+                var findParentFieldFromName = findParentField.fromName;
+                if (findParentFieldFromName == parentFromName) {
+                    // 找到对应的parent了
+                    // 设置当前的parent的identify
+                    field.toParent = findParentField.identify;
+                    // 在当前的parentField后面追加
+                    for (var k = 0; k < sortedFieldList.length; k++) {
+                        var sortedField = sortedFieldList[k];
+                        if (sortedField.identify = findParentField.identify) {
+                            // 找到的指定位置为k
+                            break;
+                        }
+                    }
+                    sortedFieldList.splice(k + 1, 0, field);
+                    break;
+                }
+            }
         }
         // 标记该field已处理完
         field.processed = true;
@@ -193,8 +217,68 @@ function sortFieldList(fieldList, sortedFieldList, processingLevel) {
     }
     // 未处理完成，则继续处理下一层级，处理完成则结束
     if (!allProcessed) {
-        sortFieldList(fieldList, sortedFieldList, processingLevel + 1);
+        var result = sortFieldList(fieldList, sortedFieldList, processingLevel + 1);
+        if (!result) {
+            return false;
+        }
     }
+    // 处理完成
+    return true;
+}
+
+/**
+ * 根据全路径名获取field类型全称
+ */
+function getFieldRealTypeName(fullPathName, nowClassTypeName) {
+    var fullPathNameArr = fullPathName.split(".");
+    var fieldRealTypeName = getFieldRealTypeNameByArr(fullPathNameArr, 0, nowClassTypeName);
+    return fieldRealTypeName;
+}
+
+/**
+ * 递归调用获取field类型全称
+ */
+function getFieldRealTypeNameByArr(fullPathNameArr, index, nowClassTypeName) {
+    // 找到对应的classCode
+    var classCodeList = projectSelected.ahClassCodeList;
+    var nowClassCode = null;
+    for (var i = 0; i < classCodeList.length; i++) {
+        var classCode = classCodeList[i];
+        var classFullName = classCode.packageName + "." + classCode.className;
+        if (classFullName == nowClassTypeName) {
+            nowClassCode = classCode;
+            break;
+        }
+    }
+    if (nowClassCode == null) {
+        // 找不到对应的类
+        return null;
+    }
+    // TODO；查找fieldList
+    var fieldList = nowClassCode.xxx;
+    for (var i = 0; i < fieldList.length; i++) {
+        var field = fieldList[i];
+        // 字段名称
+        var fieldName = field.fieldName;
+        // 获取field的实际类型
+        var typeName = field.typeName;
+        var fieldRealTypeName = typeName;
+        if (fieldRealTypeName == "java.util.List") {
+            fieldRealTypeName = field.genericTypeName;
+        }
+        if (fullPathNameArr[index] == fieldName) {
+            // 找到了对应的字段
+            if (index == fullPathNameArr.length - 1) {
+                // 最后一层
+                return fieldRealTypeName;
+            } else {
+                // 其他层，递归调用
+                return getFieldRealTypeNameByArr(fullPathNameArr, index + 1, fieldRealTypeName);
+            }
+        }
+    }
+    // 未找到对应的字段
+    return null;
 }
 
 /**
