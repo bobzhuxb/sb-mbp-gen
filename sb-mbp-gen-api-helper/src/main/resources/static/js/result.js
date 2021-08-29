@@ -182,7 +182,24 @@ function foldOrUnfoldFrom(obj, forceUnfold) {
  * 刷新结果数据
  */
 function refreshResultData() {
-
+    var basePackage = projectSelected.basePackage;
+    $("#fromObject").html("");
+    $("#toObject").html("<div class='to-insert-line'></div>");
+    if (interfaceSelected == null) {
+        $("#resultSearch").val("");
+        return;
+    }
+    var returnTypeName = interfaceSelected.returnTypeName;
+    if (returnTypeName == null || !returnTypeName.startsWith(basePackage + ".")) {
+        return;
+    }
+    // 设置returnType搜索内容
+    var searchWord = returnTypeName.substring(basePackage.length + 1);
+    $("#resultSearch").val(searchWord);
+    // 加载结果类到fromObject和toObject
+    loadReturnClassToResult();
+    // 初始化结果页事件
+    initResultTabEvents();
 }
 
 /**
@@ -573,7 +590,7 @@ function formDataLineAndInsertLine($toObj, draggingLevel, identify, type, fieldR
         + " level='" + draggingLevel + "'"
         + " type='" + type + "'"
         + " fieldRealTypeName=' " + fieldRealTypeName + "'"
-        + " title='全路径：" + fullName + "\n来源类型：" + fieldRealTypeName + "'"
+        + " title='来源全路径：" + fullName + "\n来源类型：" + fieldRealTypeName + "'"
         + " fullName='" + fullName + "'";
     if (parent != null) {
         // 第一层级不存在parent属性

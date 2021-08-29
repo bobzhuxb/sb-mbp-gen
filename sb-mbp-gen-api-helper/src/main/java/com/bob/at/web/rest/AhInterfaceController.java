@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -27,7 +28,7 @@ public class AhInterfaceController {
      * @return 结果返回码和消息
      */
     @PostMapping("/ah-interface")
-    public ResponseEntity<ReturnCommonDTO> createAhInterface(@RequestBody AhInterfaceDTO ahInterfaceDTO) {
+    public ResponseEntity<ReturnCommonDTO> createAhInterface(@Valid @RequestBody AhInterfaceDTO ahInterfaceDTO) {
         ReturnCommonDTO resultDTO = AhInterfaceService.createAhInterface(ahInterfaceDTO);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
@@ -38,7 +39,7 @@ public class AhInterfaceController {
      * @return 结果返回码和消息
      */
     @PutMapping("/ah-interface")
-    public ResponseEntity<ReturnCommonDTO> updateAhInterface(@RequestBody AhInterfaceDTO ahInterfaceDTO) {
+    public ResponseEntity<ReturnCommonDTO> updateAhInterface(@Valid @RequestBody AhInterfaceDTO ahInterfaceDTO) {
         ReturnCommonDTO resultDTO = AhInterfaceService.updateAhInterface(ahInterfaceDTO);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }

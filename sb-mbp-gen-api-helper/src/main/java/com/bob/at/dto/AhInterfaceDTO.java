@@ -1,5 +1,7 @@
 package com.bob.at.dto;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.Objects;
 
 /**
@@ -8,18 +10,34 @@ import java.util.Objects;
  */
 public class AhInterfaceDTO extends BaseDTO {
 
+    @NotBlank
+    @Size(min = 1)
     private String interNo;    // 接口号
 
+    @NotBlank
+    @Size(min = 1)
     private String httpUrl;    // URL地址
 
+    @NotBlank
+    @Size(min = 1)
     private String httpMethod;    // Http方法
 
+    @NotBlank
+    @Size(min = 1)
     private String addDefaultPrefix;    // 是否有默认前缀
 
+    @NotBlank
+    @Size(min = 1)
     private String interDescr;    // 描述
 
+    @Size(min = 1)
+    private String returnTypeName;    // 返回类型全名
+
+    @Size(min = 1)
     private String dataJson;    // 配置JSON
 
+    @NotBlank
+    @Size(min = 1)
     private String ahProjectId;    // 项目ID
     
 	///////////////////////// 附加关联属性 /////////////////////////
@@ -68,7 +86,15 @@ public class AhInterfaceDTO extends BaseDTO {
     public void setInterDescr(String interDescr) {
         this.interDescr = interDescr;
     }
-	
+
+    public String getReturnTypeName() {
+        return returnTypeName;
+    }
+
+    public void setReturnTypeName(String returnTypeName) {
+        this.returnTypeName = returnTypeName;
+    }
+
     public String getDataJson() {
         return dataJson;
     }

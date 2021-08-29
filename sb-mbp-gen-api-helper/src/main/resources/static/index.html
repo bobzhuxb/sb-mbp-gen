@@ -41,24 +41,24 @@
         </div>
     </div>
     <div class="ui-layout-center">
-        <span>当前工程：<span id="curProject" style="width: 30px;" title=""></span></span>
+        <span>当前工程：<span id="curProject" class="highlight-text" title=""></span></span>
         &nbsp;|&nbsp;
-        <span>当前接口：<span id="curInterface" style="width: 30px;" title=""></span></span>
+        <span>当前接口：<span id="curInterface" class="highlight-text" title=""></span></span>
         &nbsp;|&nbsp;
         <a href="#" class="tool_btn" onclick="abortChangingInterface();">放弃修改并刷新</a>
         &nbsp;|&nbsp;
-        <a href="#" class="tool_btn" onclick="validAndGenInter();">验证并生成JSON</a>
+        <a href="#" class="tool_btn" onclick="showCurrentJson();">预览JSON</a>
         &nbsp;|&nbsp;
-        <a href="#" class="tool_btn" onclick="xxx();">验证并保存JSON</a>
+        <a href="#" class="tool_btn" onclick="addOrUpdateInterface();">保存接口</a>
         &nbsp;|&nbsp;
-        <a href="#" class="tool_btn" onclick="xxx();">导入JSON</a>
+        <a href="#" class="tool_btn" onclick="importInterJson();">导入JSON</a>
         &nbsp;|&nbsp;
-        <a href="#" class="tool_btn" onclick="xxx();">批量导入JSON并覆盖</a>
+        <a href="#" class="tool_btn" onclick="importInterJsonBatch();">批量导入JSON</a>
         &nbsp;|&nbsp;
         <a href="#" class="tool_btn" onclick="openUploadClassFilesDialog();">导入实体类</a>
         &nbsp;|&nbsp;
-        <a href="#" class="tool_btn" onclick="xxx();">导出当前工程</a>
-        <div id="tabs">
+        <a href="#" class="tool_btn" onclick="exportCurrentProject();">导出当前工程</a>
+        <div id="centerTabs" style="display: none;">
             <ul>
                 <li><a href="#baseInfo">基本信息</a></li>
                 <li><a href="#paramInfo">参数信息</a></li>

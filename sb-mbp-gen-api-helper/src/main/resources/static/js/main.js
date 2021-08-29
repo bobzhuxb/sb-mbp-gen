@@ -86,7 +86,7 @@ function doLayout() {
  */
 function initTab() {
     $("#leftTabs").tabs();
-    $("#tabs").tabs();
+    $("#centerTabs").tabs();
 }
 
 /**
@@ -189,6 +189,9 @@ function refreshProjects() {
                     var $projectLine = $(projectHtml);
                     $("#projects").append($projectLine);
                 }
+                if (projectSelected != null) {
+                    $(".project[identify='" + projectSelected.id + "']").addClass("list-selected");
+                }
             }
         },
         error: function () {
@@ -261,7 +264,8 @@ function openUpdateProjectDialog(domObj) {
  */
 function openDeleteProjectDialog(domObj) {
     var projectId = $(domObj).parent().attr("identify");
-    openConfirmDialog("确认删除工程？", deleteProject, projectId);
+    openConfirmDialog("确认删除工程？<br/><span style='color: red; font-weight: bold;'>"
+        + "注意：该操作会删除工程及其关联的所有数据！</span>", deleteProject, projectId);
 }
 
 /**
@@ -305,7 +309,18 @@ function addOrUpdateProject(httpType) {
  * 删除工程
  */
 function deleteProject(projectId) {
-    console.log("我要删除Project：" + projectId);
+    $.ajax({
+        url: "/api/ah-project/" + projectId,
+        type: "DELETE",
+        contentType: "application/json",
+        success: function(result) {
+            projectDialog.dialog("close");
+            refreshProjects();
+        },
+        error: function () {
+            alert("操作失败");
+        }
+    });
 }
 
 /**
@@ -359,6 +374,8 @@ function prepareForAddInterface() {
     refreshInterfaceData();
     $(".interface").removeClass("list-selected");
     $("#curInterface").html("新增中...");
+    // 显示centerTabs
+    $("#centerTabs").show();
 }
 
 /**
@@ -386,6 +403,8 @@ function selectProject(project) {
         // 更新结果页搜索框
         $("#resultBasePackage").html(projectSelected.basePackage + ".");
         initResultSearch();
+        // 隐藏centerTab信息
+        $("#centerTabs").hide();
     }
 }
 
@@ -437,6 +456,8 @@ function selectInterface(inter) {
     if (interfaceSelected == null) {
         return;
     }
+    // 显示centerTabs
+    $("#centerTabs").show();
     // 准备修改接口
     addingInterface = false;
     $(".interface").removeClass("list-selected");
@@ -547,6 +568,14 @@ function getClassCodeByFullName(fullClassName) {
  * 放弃修改接口
  */
 function abortChangingInterface() {
+    if (projectSelected == null) {
+        alert("请先选择工程");
+        return;
+    }
+    if (interfaceSelected == null && !addingInterface) {
+        alert("请先选择接口或新增接口");
+        return;
+    }
     refreshInterfaceData();
     if (addingInterface) {
         $("#curInterface").html("新增中...");
@@ -573,9 +602,24 @@ function refreshInterfaceData() {
 }
 
 /**
+ * 显示当前页面的JSON
+ */
+function showCurrentJson() {
+    if (projectSelected == null) {
+        alert("请先选择工程");
+        return;
+    }
+    if (interfaceSelected == null && !addingInterface) {
+        alert("请先选择接口或新增接口");
+        return;
+    }
+    var interJson = validAndGenInterJson();
+}
+
+/**
  * 验证并生成接口的JSON
  */
-function validAndGenInter() {
+function validAndGenInterJson() {
     // 1、基本信息
     var interInfoData = new Object();
     interInfoData.interNo = emptyStringToNull($("#baseInfo").find("input[name='interNo']").val());
@@ -668,8 +712,9 @@ function validAndGenInter() {
     // 移除最外层Object的空值属性
     removeNullProperty(interInfoData, ["param", "result"]);
     // 返回数据
-    console.log(JSON.stringify(interInfoData));
-    return interInfoData;
+    var interInfoJson = JSON.stringify(interInfoData);
+    console.log(interInfoJson);
+    return interInfoJson;
 }
 
 /**
@@ -699,8 +744,53 @@ function getStringArrayFromList(domObjList) {
  * 新增或更新接口
  */
 function addOrUpdateInterface() {
-    validAndGenInter();
-    if (interfaceSelected != null) {
-        // 更新
+    if (projectSelected == null) {
+        alert("请先选择工程");
+        return;
     }
+    if (interfaceSelected == null && !addingInterface) {
+        alert("请先选择接口或新增接口");
+        return;
+    }
+    var interJson = validAndGenInterJson();
+    if (interfaceSelected == null) {
+        // 新增
+        // TODO：新增接口
+    } else {
+        // 更新
+        // TODO：更新接口
+    }
+}
+
+/**
+ * 导入接口的JSON
+ */
+function importInterJson() {
+    if (projectSelected == null) {
+        alert("请先选择工程");
+        return;
+    }
+    // TODO：导入JSON
+}
+
+/**
+ * 批量导入接口的JSON
+ */
+function importInterJsonBatch() {
+    if (projectSelected == null) {
+        alert("请先选择工程");
+        return;
+    }
+    // TODO：批量导入JSON
+}
+
+/**
+ * 打包并导出当前工程的所有JSON
+ */
+function exportCurrentProject() {
+    if (projectSelected == null) {
+        alert("请先选择工程");
+        return;
+    }
+    // TODO：导出当前工程
 }

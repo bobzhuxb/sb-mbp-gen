@@ -44,3 +44,9 @@
     font-size: 12px;
     outline: none;
 }
+
+.highlight-text {
+    width: 30px;
+    color: red;
+    font-weight: bold;
+}

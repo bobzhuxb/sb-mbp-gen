@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -27,7 +28,7 @@ public class AhProjectController {
      * @return 结果返回码和消息
      */
     @PostMapping("/ah-project")
-    public ResponseEntity<ReturnCommonDTO> createAhProject(@RequestBody AhProjectDTO ahProjectDTO) {
+    public ResponseEntity<ReturnCommonDTO> createAhProject(@Valid @RequestBody AhProjectDTO ahProjectDTO) {
 		ReturnCommonDTO resultDTO = ahProjectService.createAhProject(ahProjectDTO);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
@@ -38,7 +39,7 @@ public class AhProjectController {
      * @return 结果返回码和消息
      */
     @PutMapping("/ah-project")
-    public ResponseEntity<ReturnCommonDTO> updateAhProject(@RequestBody AhProjectDTO ahProjectDTO) {
+    public ResponseEntity<ReturnCommonDTO> updateAhProject(@Valid @RequestBody AhProjectDTO ahProjectDTO) {
 		ReturnCommonDTO resultDTO = ahProjectService.updateAhProject(ahProjectDTO);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }

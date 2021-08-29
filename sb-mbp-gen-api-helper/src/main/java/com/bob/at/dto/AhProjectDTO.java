@@ -1,5 +1,7 @@
 package com.bob.at.dto;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.Objects;
 
@@ -9,16 +11,20 @@ import java.util.Objects;
  */
 public class AhProjectDTO extends BaseDTO {
 
-    public static void main(String[] args) {
-
-    }
-
+    @NotBlank
+    @Size(min = 1)
     private String name;    // 名称
 
+    @NotBlank
+    @Size(min = 1)
     private String descr;    // 描述
 
+    @NotBlank
+    @Size(min = 1)
     private String urlPrefix;    // URL前缀
 
+    @NotBlank
+    @Size(min = 1)
     private String basePackage;     // 基础包名
     
 	///////////////////////// 附加关联属性 /////////////////////////

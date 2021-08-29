@@ -20,6 +20,8 @@ public class AhInterface extends BaseDomain {
 
     private String interDescr;    // 描述
 
+    private String returnTypeName;    // 返回类型全名
+
     private String dataJson;    // 配置JSON
 
     private String ahProjectId;    // 项目ID
@@ -62,6 +64,14 @@ public class AhInterface extends BaseDomain {
 
     public void setInterDescr(String interDescr) {
         this.interDescr = interDescr;
+    }
+
+    public String getReturnTypeName() {
+        return returnTypeName;
+    }
+
+    public void setReturnTypeName(String returnTypeName) {
+        this.returnTypeName = returnTypeName;
     }
 
     public String getDataJson() {
