@@ -75,8 +75,14 @@ function loadReturnClassToResult() {
     var interfaceData = JSON.parse(interfaceSelected.dataJson);
     var fieldList = interfaceData.result.fieldList;
     if (fieldList != null && fieldList.length > 0) {
-        // TODO：对fieldList重新排序，符合父子结构
-        var sortedFieldList = xxxx(fieldList);
+        // 对fieldList重新排序，符合父子结构
+        var sortedFieldList = new Array();
+        // 从第1层级开始处理
+        sortFieldList(fieldList, sortedFieldList, 1);
+        if (sortedFieldList == null || sortedFieldList.length == 0) {
+            // 上一步解析发生错误
+            return;
+        }
         // 生成一行行的数据行和插入行
         for (var i = 0; i < sortedFieldList.length; i++) {
             var field = sortedFieldList[i];
@@ -139,6 +145,55 @@ function loadReturnClassToResult() {
         // 插入行之后的操作
         doAfterDroppedHtmlFormed();
         refreshToObjectLines();
+    }
+}
+
+/**
+ * 对fieldList重新排序，符合父子结构
+ */
+function sortFieldList(fieldList, sortedFieldList, processingLevel) {
+    for (var i = 0; i < fieldList.length; i++) {
+        var field = fieldList[i];
+        // 来源全路径名
+        var fullName = field.fromName;
+        var splitFullNameArr = fullName.split(".");
+        // 层级
+        var level = splitFullNameArr.length;
+        if (level != processingLevel) {
+            // 过滤掉不是当前处理层级的
+            continue;
+        }
+        if (processingLevel == 1) {
+            // 第一层的parent为null
+            field.toParent = null;
+        } else {
+            // 其他层级
+            ???
+        }
+        // 根据fullName查找fieldRealTypeName
+        field.fieldRealTypeName
+        if (processingLevel == 1) {
+            // 第一层直接添加
+            sortedFieldList.push(field);
+        } else {
+            // 其他层级
+            ???
+        }
+        // 标记该field已处理完
+        field.processed = true;
+    }
+    // 每次处理完一个层级之后，都验证一下是否全部处理完成
+    var allProcessed = true;
+    for (var i = 0; i < fieldList.length; i++) {
+        var field = fieldList[i];
+        if (!field.processed) {
+            allProcessed = false;
+            break;
+        }
+    }
+    // 未处理完成，则继续处理下一层级，处理完成则结束
+    if (!allProcessed) {
+        sortFieldList(fieldList, sortedFieldList, processingLevel + 1);
     }
 }
 
