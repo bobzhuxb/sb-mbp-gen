@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -20,7 +21,7 @@ import java.util.List;
 public class AhInterfaceController {
 
     @Autowired
-    private com.bob.at.service.AhInterfaceService AhInterfaceService;
+    private AhInterfaceService ahInterfaceService;
 
     /**
      * 新增
@@ -29,7 +30,7 @@ public class AhInterfaceController {
      */
     @PostMapping("/ah-interface")
     public ResponseEntity<ReturnCommonDTO> createAhInterface(@Valid @RequestBody AhInterfaceDTO ahInterfaceDTO) {
-        ReturnCommonDTO resultDTO = AhInterfaceService.createAhInterface(ahInterfaceDTO);
+        ReturnCommonDTO resultDTO = ahInterfaceService.createAhInterface(ahInterfaceDTO);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -40,7 +41,7 @@ public class AhInterfaceController {
      */
     @PutMapping("/ah-interface")
     public ResponseEntity<ReturnCommonDTO> updateAhInterface(@Valid @RequestBody AhInterfaceDTO ahInterfaceDTO) {
-        ReturnCommonDTO resultDTO = AhInterfaceService.updateAhInterface(ahInterfaceDTO);
+        ReturnCommonDTO resultDTO = ahInterfaceService.updateAhInterface(ahInterfaceDTO);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -51,7 +52,7 @@ public class AhInterfaceController {
      */
     @DeleteMapping("/ah-interface/{id}")
     public ResponseEntity<ReturnCommonDTO> deleteAhInterface(@PathVariable String id) {
-        ReturnCommonDTO resultDTO = AhInterfaceService.deleteAhInterface(id);
+        ReturnCommonDTO resultDTO = ahInterfaceService.deleteAhInterface(id);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -62,7 +63,7 @@ public class AhInterfaceController {
      */
     @DeleteMapping("/ah-interface")
     public ResponseEntity<ReturnCommonDTO> deleteAhInterfaces(@RequestBody List<String> idList) {
-        ReturnCommonDTO resultDTO = AhInterfaceService.deleteAhInterfaces(idList);
+        ReturnCommonDTO resultDTO = ahInterfaceService.deleteAhInterfaces(idList);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -73,7 +74,7 @@ public class AhInterfaceController {
      */
     @GetMapping("/ah-interface/{primaryId}")
     public ResponseEntity<ReturnCommonDTO<AhInterfaceDTO>> getAhInterface(@PathVariable String primaryId) {
-        ReturnCommonDTO<AhInterfaceDTO> resultDTO = AhInterfaceService.getAhInterface(primaryId);
+        ReturnCommonDTO<AhInterfaceDTO> resultDTO = ahInterfaceService.getAhInterface(primaryId);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -84,8 +85,28 @@ public class AhInterfaceController {
      */
     @GetMapping("/ah-interface-all")
     public ResponseEntity<ReturnCommonDTO<List<AhInterfaceDTO>>> getAllAhInterfaces(AhInterfaceCriteria criteria) {
-        ReturnCommonDTO<List<AhInterfaceDTO>> resultDTO = AhInterfaceService.getAllAhInterfaces(criteria);
+        ReturnCommonDTO<List<AhInterfaceDTO>> resultDTO = ahInterfaceService.getAllAhInterfaces(criteria);
         return ResponseEntity.ok().headers(null).body(resultDTO);
+    }
+
+    /**
+     * 导出JSON
+     * @param interfaceId 接口ID
+     * @return 使用ResponseEntity封装的多条药品库存批次数据
+     */
+    @GetMapping("/export-inter-json/{interfaceId}")
+    public void exportInterJson(@PathVariable String interfaceId, HttpServletResponse response) {
+        ahInterfaceService.exportInterJson(interfaceId, response);
+    }
+
+    /**
+     * 导出工程的JSON文件并压缩
+     * @param projectId 工程ID
+     * @return 使用ResponseEntity封装的多条药品库存批次数据
+     */
+    @GetMapping("/export-project-inter-json/{projectId}")
+    public void exportProjectInterJson(@PathVariable String projectId, HttpServletResponse response) {
+        ahInterfaceService.exportProjectInterJson(projectId, response);
     }
 
 }

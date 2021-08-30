@@ -21,6 +21,21 @@ import java.util.stream.Collectors;
 public class MyBeanUtil {
 
     /**
+     * 获取所有的字段
+     * @param clazz 类
+     */
+    public static List<Field> getAllFieldsOfClass(Class<?> clazz) {
+        List<Field> fieldList = new ArrayList<>();
+        while (clazz != null) {
+            Field[] declaredFields = clazz.getDeclaredFields();
+            fieldList.addAll(Arrays.asList(declaredFields));
+            // 获得父类的字节码对象
+            clazz = clazz.getSuperclass();
+        }
+        return fieldList;
+    }
+
+    /**
      * 拷贝对象的部分属性
      * @param source 源对象
      * @param target 目标对象

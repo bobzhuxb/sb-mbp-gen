@@ -245,8 +245,8 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
             if (classCodeIdExist != null) {
                 ahFieldMapper.delete(new QueryWrapper<AhField>().eq(AhField._ahClassCodeId, classCodeIdExist));
             }
-            Field[] fields = ClassUtil.getDeclaredFields(clazz);
-            for (Field field : fields) {
+            List<Field> fieldList = MyBeanUtil.getAllFieldsOfClass(clazz);
+            for (Field field : fieldList) {
                 String fieldFullTypeName = ClassUtil.getClassName(field.getType(), false);
                 String fieldName = field.getName();
                 String genericTypeName = null;

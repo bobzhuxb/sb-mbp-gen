@@ -168,11 +168,13 @@ function refreshLayoutWest() {
  * 获取并刷新工程
  */
 function refreshProjects() {
+    showLoading("body");
     $.ajax({
         url: "/api/ah-project-all",
         type: "GET",
         dataType: "JSON",
         success: function(result) {
+            closeLoading();
             if (result.resultCode != "1") {
                 alert("刷新工程失败");
                 return;
@@ -201,6 +203,7 @@ function refreshProjects() {
             }
         },
         error: function () {
+            closeLoading();
             alert("刷新工程失败");
         }
     });
@@ -209,10 +212,14 @@ function refreshProjects() {
 /**
  * 打开接口JSON预览对话框
  */
-function openInterJsonDialog(content, callback) {
+function openInterJsonDialog(content, saveCallback, exportCallback) {
     var addButtons = {
         "保存": function () {
-            callback();
+            saveCallback();
+            interJsonDialog.dialog("close");
+        },
+        "保存并导出": function () {
+            exportCallback();
             interJsonDialog.dialog("close");
         },
         "取消": function() {
@@ -313,6 +320,7 @@ function updateProject() {
  */
 function addOrUpdateProject(httpType) {
     var reqData = $("#projectDialog").find("form").toJSON();
+    showLoading("body");
     $.ajax({
         url: "/api/ah-project",
         type: httpType,
@@ -320,10 +328,12 @@ function addOrUpdateProject(httpType) {
         contentType: "application/json",
         dataType: "JSON",
         success: function(result) {
+            closeLoading();
             projectDialog.dialog("close");
             refreshProjects();
         },
         error: function () {
+            closeLoading();
             alert("操作失败");
         }
     });
@@ -333,15 +343,47 @@ function addOrUpdateProject(httpType) {
  * 删除工程
  */
 function deleteProject(projectId) {
+    showLoading("body");
     $.ajax({
         url: "/api/ah-project/" + projectId,
         type: "DELETE",
         contentType: "application/json",
         success: function(result) {
-            projectDialog.dialog("close");
+            closeLoading();
+            confirmDialog.dialog("close");
             refreshProjects();
         },
         error: function () {
+            closeLoading();
+            alert("操作失败");
+        }
+    });
+}
+
+/**
+ * 打开删除接口确认框
+ */
+function openDeleteInterfaceDialog(domObj) {
+    var interfaceId = $(domObj).parent().attr("identify");
+    openConfirmDialog("确认删除接口？", deleteInterface, interfaceId);
+}
+
+/**
+ * 删除接口
+ */
+function deleteInterface(interfaceId) {
+    showLoading("body");
+    $.ajax({
+        url: "/api/ah-interface/" + interfaceId,
+        type: "DELETE",
+        contentType: "application/json",
+        success: function(result) {
+            closeLoading();
+            confirmDialog.dialog("close");
+            refreshInterfaces(projectSelected.id);
+        },
+        error: function () {
+            closeLoading();
             alert("操作失败");
         }
     });
@@ -374,6 +416,7 @@ function uploadClassFiles() {
         return;
     }
     $("#uploadClassDialog").find("input[name='projectId']").val(projectSelected.id);
+    showLoading("body");
     $.ajax({
         url : uploadClassForm.attr("action"),
         type : 'POST',
@@ -382,9 +425,14 @@ function uploadClassFiles() {
         processData : false,
         contentType : false,
         success : function(result) {
+            closeLoading();
             alert("上传完成");
-            projectDialog.dialog("close");
+            uploadClassDialog.dialog("close");
             $(".project[identify='" + projectSelected.id + "']").trigger("click");
+        },
+        error: function () {
+            closeLoading();
+            alert("上传失败");
         }
     });
 }
@@ -436,11 +484,13 @@ function selectProject(project) {
  * 获取并刷新接口列表
  */
 function refreshInterfaces(projectId) {
+    showLoading("body");
     $.ajax({
         url: "/api/ah-interface-all?projectIdEq=" + projectId,
         type: "GET",
         dataType: "JSON",
         success: function(result) {
+            closeLoading();
             if (result.resultCode != "1") {
                 alert("刷新接口失败");
                 return;
@@ -454,14 +504,19 @@ function refreshInterfaces(projectId) {
                     var interfaceHtml = "<div identify='" + interface.id + "' class='interface' search='"
                         + interface.httpUrl + "_" + interface.interDescr + "' "
                         + "title='" + interface.interDescr + "' onclick='selectInterface(this);'>"
-                        + interface.httpUrl + "</div>";
+                        + "<span>" + interface.httpUrl + "</span>"
+                        + "<a href='#' style='margin-left: 10px; color: red;' title='点击删除' "
+                        + "onclick='openDeleteInterfaceDialog(this);'>X</a></div>";
                     var $interfaceLine = $(interfaceHtml);
                     $("#interfaces").append($interfaceLine);
                 }
             }
-            selectInterface($(".interface[identify='" + interfaceSelected.id + "']"));
+            if (interfaceSelected != null) {
+                selectInterface($(".interface[identify='" + interfaceSelected.id + "']"));
+            }
         },
         error: function () {
+            closeLoading();
             alert("刷新接口失败");
         }
     });
@@ -475,6 +530,15 @@ function selectInterface(inter) {
     var changeInterface = false;
     if (interfaceSelected == null || newInterfaceId != interfaceSelected.id) {
         changeInterface = true;
+    }
+    if (typeof(newInterfaceId) == "undefined") {
+        // 删除后，默认选择第一个接口
+        var $firstInter = $(".interface:first");
+        if (typeof($firstInter) == "undefined") {
+            return;
+        }
+        newInterfaceId = $firstInter.attr("identify");
+        inter = $firstInter.get(0);
     }
     interfaceSelected = getInterface(newInterfaceId);
     if (interfaceSelected == null) {
@@ -497,12 +561,14 @@ function selectInterface(inter) {
  */
 function getProject(projectId) {
     var project = null;
+    showLoading("body");
     $.ajax({
         url: "/api/ah-project/" + projectId,
         type: "GET",
         dataType: "JSON",
         async: false,
         success: function(result) {
+            closeLoading();
             if (result.resultCode != "1") {
                 alert("获取工程失败");
                 return;
@@ -510,6 +576,7 @@ function getProject(projectId) {
             project = result.data;
         },
         error: function () {
+            closeLoading();
             alert("获取工程失败");
         }
     });
@@ -521,12 +588,14 @@ function getProject(projectId) {
  */
 function getInterface(interfaceId) {
     var inter = null;
+    showLoading("body");
     $.ajax({
         url: "/api/ah-interface/" + interfaceId,
         type: "GET",
         dataType: "JSON",
         async: false,
         success: function(result) {
+            closeLoading();
             if (result.resultCode != "1") {
                 alert("获取工程失败");
                 return;
@@ -534,6 +603,7 @@ function getInterface(interfaceId) {
             inter = result.data;
         },
         error: function () {
+            closeLoading();
             alert("获取工程失败");
         }
     });
@@ -545,12 +615,14 @@ function getInterface(interfaceId) {
  */
 function getClassCode(classId) {
     var clazz = null;
+    showLoading("body");
     $.ajax({
         url: "/api/ah-class-code/" + classId,
         type: "GET",
         dataType: "JSON",
         async: false,
         success: function(result) {
+            closeLoading();
             if (result.resultCode != "1") {
                 alert("获取实体类失败");
                 return;
@@ -558,6 +630,7 @@ function getClassCode(classId) {
             clazz = result.data;
         },
         error: function () {
+            closeLoading();
             alert("获取实体类失败");
         }
     });
@@ -569,12 +642,14 @@ function getClassCode(classId) {
  */
 function getClassCodeByFullName(fullClassName) {
     var clazz = null;
+    showLoading("body");
     $.ajax({
         url: "/api/ah-class-code-one?fullNameEq=" + fullClassName,
         type: "GET",
         dataType: "JSON",
         async: false,
         success: function(result) {
+            closeLoading();
             if (result.resultCode != "1") {
                 alert("获取实体类失败");
                 return;
@@ -582,6 +657,7 @@ function getClassCodeByFullName(fullClassName) {
             clazz = result.data;
         },
         error: function () {
+            closeLoading();
             alert("获取实体类失败");
         }
     });
@@ -638,7 +714,7 @@ function showCurrentJson() {
         return;
     }
     var interInfoData = validAndGenInterData();
-    openInterJsonDialog(formatJson(interInfoData), addOrUpdateInterface);
+    openInterJsonDialog(formatJson(interInfoData), saveInterface, saveInterfaceAndExport);
 }
 
 /**
@@ -767,7 +843,7 @@ function getStringArrayFromList(domObjList) {
 /**
  * 新增或更新接口
  */
-function addOrUpdateInterface() {
+function saveInterface(successCallback) {
     if (projectSelected == null) {
         alert("请先选择工程");
         return;
@@ -798,6 +874,7 @@ function addOrUpdateInterface() {
     interParam.dataJson = interInfoJson;
     interParam.ahProjectId = projectSelected.id;
     // 保存数据
+    showLoading("body");
     $.ajax({
         url: "/api/ah-interface",
         type: method,
@@ -805,13 +882,38 @@ function addOrUpdateInterface() {
         contentType: "application/json",
         dataType: "JSON",
         success: function(result) {
-            alert("保存成功");
+            closeLoading();
+            if (typeof(successCallback) != "undefined") {
+                successCallback();
+            } else {
+                alert("保存成功");
+            }
             interJsonDialog.dialog("close");
-            refreshInterfaces(projectSelected.id);
+            refreshInterfaces(projectSelected.data);
         },
         error: function () {
+            closeLoading();
             alert("保存失败");
         }
+    });
+}
+
+/**
+ * 保存并导出接口
+ */
+function saveInterfaceAndExport() {
+    saveInterface(exportCurrentJson);
+}
+
+/**
+ * 导出接口为JSON文件
+ */
+function exportCurrentJson() {
+    downLoadFile({
+        url: "/api/export-inter-json/" + interfaceSelected.id,
+        data: {},
+        isNewWinOpen: false,
+        method: "GET"
     });
 }
 
@@ -845,5 +947,10 @@ function exportCurrentProject() {
         alert("请先选择工程");
         return;
     }
-    // TODO：导出当前工程
+    downLoadFile({
+        url: "/api/export-project-inter-json/" + projectSelected.id,
+        data: {},
+        isNewWinOpen: false,
+        method: "GET"
+    });
 }

@@ -104,3 +104,60 @@ function formatJson(msg) {
     }
     return jsonStr;
 }
+
+function showLoading(elementTag, message) {
+    var msg = message ? message : "";
+    $("<div class=\"loading-mask\"></div>").css({
+        display: "block", width: "100%",
+        height: $(window).height(),
+        'z-index': 1200
+    }).appendTo(elementTag);
+    $("<div class=\"loading-mask-msg\"></div>")
+        .html(msg)
+        .appendTo(elementTag).css({ display: "block", left: "48%", top: ($(window).height() - 45) / 2, 'z-index': 1200 });
+}
+
+function closeLoading() {
+    $('.loading-mask').remove();
+    $('.loading-mask-msg').remove();
+}
+
+function downLoadFile(options) {
+    var config = $.extend(true, {
+        method: 'post',
+        isNewWinOpen: false,
+        onLoad:function () {
+
+        }
+    }, options);
+    var frameName = 'downloadFrame_' + new Date().getTime();
+    var $iframe = $('<div style="display: none"><iframe name="' + frameName + '" src="about:blank"></iframe></div>');
+    var $form = $('<form target="' + frameName + '" method="' + config.method + '" action="' + config.url + '"></form>');
+    if (config.isNewWinOpen) {
+        $form.attr("target", "_blank");
+    }
+    showLoading("body");
+    $iframe.children().load(function () {
+        closeLoading();
+        try {
+            var jsonStr = $(this).contents("body").text();
+            var jsonObj;
+            if(jsonStr != ""){
+                jsonObj= JSON.parse(jsonStr);
+                config.onLoad(jsonObj);
+            }
+        } catch (e) {
+
+        }
+        setTimeout(function () {
+            $(this).parent().remove();
+        }.bind(this), 3000);
+    });
+    /*拼接参数*/
+    for (var key in config.data) {
+        $form.append('<input type="hidden" name="' + key + '" value="' + config.data[key] + '" />');
+    }
+    $iframe.append($form);
+    $("body").append($iframe);
+    $form.submit();
+}
