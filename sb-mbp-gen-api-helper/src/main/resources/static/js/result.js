@@ -57,7 +57,9 @@ function initResultSearch() {
  */
 function loadReturnClassFromObject() {
     // fromObject加载
-    var searchFullClassName = $("#resultBasePackage").html() + $("#resultSearch").val();
+    var searchFullClassName = $("#resultBasePackage").html() + $("#resultSearch").val().trim();
+    // 每次加载时，设置返回结果类型
+    returnTypeName = searchFullClassName;
     for (var i = 0; i < projectSelected.ahClassCodeList.length; i++) {
         var ahClassCode = projectSelected.ahClassCodeList[i];
         var curFullClassName = ahClassCode.packageName + "." + ahClassCode.className;
@@ -409,7 +411,7 @@ function refreshResultData() {
         $("#resultSearch").val("");
         return;
     }
-    var returnTypeName = interfaceSelected.returnTypeName;
+    var returnTypeName = interfaceSelected.returnType;
     if (returnTypeName == null || !returnTypeName.startsWith(basePackage + ".")) {
         return;
     }

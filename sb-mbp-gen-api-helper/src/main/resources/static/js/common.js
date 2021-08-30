@@ -2,6 +2,8 @@
 var projectSelected = null;
 // 当前选中的接口
 var interfaceSelected = null;
+// 当前的返回类型
+var returnTypeName = null;
 // 工程新增对话框
 var projectDialog;
 // 工程新增表单
@@ -10,6 +12,8 @@ var projectAddForm;
 var uploadClassDialog;
 // 类文件上传表单
 var uploadClassForm;
+// 接口JSON预览框
+var interJsonDialog;
 // 确认对话框
 var confirmDialog;
 // 是否正在新增接口中
@@ -71,3 +75,32 @@ $.fn.toJSON = function()
     });
     return o;
 };
+
+function formatJson(msg) {
+    var rep = "~";
+    var jsonStr = JSON.stringify(msg, null, rep);
+    var str = "";
+    for (var i = 0; i < jsonStr.length; i++) {
+        var text2 = jsonStr.charAt(i);
+        if (i > 1) {
+            var text = jsonStr.charAt(i - 1);
+            if (rep != text && rep == text2) {
+                str += "<br/>";
+            }
+        }
+        str += text2;
+    }
+    jsonStr = "";
+    for (var i = 0; i < str.length; i++) {
+        var text = str.charAt(i);
+        if (rep == text) {
+            jsonStr += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        } else {
+            jsonStr += text;
+        }
+        if (i == str.length - 2) {
+            jsonStr += "<br/>";
+        }
+    }
+    return jsonStr;
+}

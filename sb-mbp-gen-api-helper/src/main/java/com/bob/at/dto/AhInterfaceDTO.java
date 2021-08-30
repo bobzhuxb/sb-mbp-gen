@@ -31,7 +31,7 @@ public class AhInterfaceDTO extends BaseDTO {
     private String interDescr;    // 描述
 
     @Size(min = 1)
-    private String returnTypeName;    // 返回类型全名
+    private String returnType;    // 返回类型全名
 
     @Size(min = 1)
     private String dataJson;    // 配置JSON
@@ -87,12 +87,12 @@ public class AhInterfaceDTO extends BaseDTO {
         this.interDescr = interDescr;
     }
 
-    public String getReturnTypeName() {
-        return returnTypeName;
+    public String getReturnType() {
+        return returnType;
     }
 
-    public void setReturnTypeName(String returnTypeName) {
-        this.returnTypeName = returnTypeName;
+    public void setReturnType(String returnType) {
+        this.returnType = returnType;
     }
 
     public String getDataJson() {

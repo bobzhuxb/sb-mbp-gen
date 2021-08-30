@@ -142,6 +142,12 @@ function initLayoutWest() {
         event.preventDefault();
         uploadClassFiles();
     });
+    interJsonDialog = $("#interJsonDialog").dialog({
+        autoOpen: false,
+        height: 600,
+        width: 800,
+        modal: true
+    });
     confirmDialog = $("#confirmDialog").dialog({
         autoOpen: false,
         height: 200,
@@ -198,6 +204,24 @@ function refreshProjects() {
             alert("刷新工程失败");
         }
     });
+}
+
+/**
+ * 打开接口JSON预览对话框
+ */
+function openInterJsonDialog(content, callback) {
+    var addButtons = {
+        "保存": function () {
+            callback();
+            interJsonDialog.dialog("close");
+        },
+        "取消": function() {
+            interJsonDialog.dialog("close");
+        }
+    };
+    $("#interJsonShow").html(content);
+    $("#interJsonDialog").dialog("option", "buttons", addButtons);
+    interJsonDialog.dialog("open");
 }
 
 /**
@@ -613,13 +637,14 @@ function showCurrentJson() {
         alert("请先选择接口或新增接口");
         return;
     }
-    var interJson = validAndGenInterJson();
+    var interInfoData = validAndGenInterData();
+    openInterJsonDialog(formatJson(interInfoData), addOrUpdateInterface);
 }
 
 /**
- * 验证并生成接口的JSON
+ * 验证并生成接口数据
  */
-function validAndGenInterJson() {
+function validAndGenInterData() {
     // 1、基本信息
     var interInfoData = new Object();
     interInfoData.interNo = emptyStringToNull($("#baseInfo").find("input[name='interNo']").val());
@@ -627,9 +652,10 @@ function validAndGenInterJson() {
     interInfoData.addDefaultPrefix = emptyStringToNull($("#baseInfo").find("select[name='addDefaultPrefix']").val());
     interInfoData.httpUrl = emptyStringToNull($("#baseInfo").find("input[name='httpUrl']").val());
     interInfoData.interDescr = emptyStringToNull($("#baseInfo").find("input[name='interDescr']").val());
+    interInfoData.returnType = emptyStringToNull(returnTypeName);
     if (interInfoData.interNo == null || interInfoData.httpMethod == null || interInfoData.addDefaultPrefix == null
-        || interInfoData.httpUrl == null || interInfoData.interDescr == null) {
-        alert("接口号、接口方法、追加默认前缀、接口URL、接口描述不允许为空");
+        || interInfoData.httpUrl == null || interInfoData.interDescr == null || interInfoData.returnType == null) {
+        alert("接口号、接口方法、追加默认前缀、接口URL、接口描述、接口返回类型不允许为空");
         return;
     }
     // 2、参数信息
@@ -712,9 +738,7 @@ function validAndGenInterJson() {
     // 移除最外层Object的空值属性
     removeNullProperty(interInfoData, ["param", "result"]);
     // 返回数据
-    var interInfoJson = JSON.stringify(interInfoData);
-    console.log(interInfoJson);
-    return interInfoJson;
+    return interInfoData;
 }
 
 /**
@@ -752,20 +776,48 @@ function addOrUpdateInterface() {
         alert("请先选择接口或新增接口");
         return;
     }
-    var interJson = validAndGenInterJson();
+    var interInfoData = validAndGenInterData();
+    var interInfoJson = JSON.stringify(interInfoData);
+    // 保存参数
+    var interParam = new Object();
+    var method;
     if (interfaceSelected == null) {
-        // 新增
-        // TODO：新增接口
+        // 新增接口
+        method = "POST";
     } else {
-        // 更新
-        // TODO：更新接口
+        // 更新接口
+        method = "PUT";
+        interParam.id = interfaceSelected.id
     }
+    interParam.interNo = interInfoData.interNo;
+    interParam.httpUrl = interInfoData.httpUrl;
+    interParam.httpMethod = interInfoData.httpMethod;
+    interParam.addDefaultPrefix = interInfoData.addDefaultPrefix;
+    interParam.interDescr = interInfoData.interDescr;
+    interParam.returnType = interInfoData.returnType;
+    interParam.dataJson = interInfoJson;
+    interParam.ahProjectId = projectSelected.id;
+    // 保存数据
+    $.ajax({
+        url: "/api/ah-interface",
+        type: method,
+        data: JSON.stringify(interParam),
+        contentType: "application/json",
+        dataType: "JSON",
+        success: function(result) {
+            interJsonDialog.dialog("close");
+            refreshInterfaces(projectSelected.id);
+        },
+        error: function () {
+            alert("保存失败");
+        }
+    });
 }
 
 /**
- * 导入接口的JSON
+ * 导入接口的JSON文件
  */
-function importInterJson() {
+function importInterJsonFile() {
     if (projectSelected == null) {
         alert("请先选择工程");
         return;
@@ -774,9 +826,9 @@ function importInterJson() {
 }
 
 /**
- * 批量导入接口的JSON
+ * 批量导入接口的JSON文件
  */
-function importInterJsonBatch() {
+function importInterJsonFileBatch() {
     if (projectSelected == null) {
         alert("请先选择工程");
         return;

@@ -51,9 +51,9 @@
         &nbsp;|&nbsp;
         <a href="#" class="tool_btn" onclick="addOrUpdateInterface();">保存接口</a>
         &nbsp;|&nbsp;
-        <a href="#" class="tool_btn" onclick="importInterJson();">导入JSON</a>
+        <a href="#" class="tool_btn" onclick="importInterJsonFile();">导入JSON</a>
         &nbsp;|&nbsp;
-        <a href="#" class="tool_btn" onclick="importInterJsonBatch();">批量导入JSON</a>
+        <a href="#" class="tool_btn" onclick="importInterJsonFileBatch();">批量导入JSON</a>
         &nbsp;|&nbsp;
         <a href="#" class="tool_btn" onclick="openUploadClassFilesDialog();">导入实体类</a>
         &nbsp;|&nbsp;
@@ -179,22 +179,6 @@
                     <div class="compare-description" style="margin-left: 10px;">转换后</div>
                 </div>
                 <div id="fromObject" class="compare-div" style="background-color: aqua;">
-                    <!--<div identify="10000" level="1" type="normal" fullName="id" descr="主键ID"><span class="from-name">id</span>&nbsp;|&nbsp;主键ID</div>
-                    <div identify="10001" level="1" type="normal" fullName="name" descr="名称"><span class="from-name">name</span>&nbsp;|&nbsp;名称</div>
-                    <div identify="10002" level="1" type="normal" fullName="description" descr="描述"><span class="from-name">description</span>&nbsp;|&nbsp;描述</div>
-                    <div identify="10003" level="1" type="normal" fullName="insertTime" descr="录入时间"><span class="from-name">insertTime</span>&nbsp;|&nbsp;录入时间</div>
-                    <div identify="10004" level="1" type="object" fullName="father" descr="父" class="data-is-object"><span class="from-name">father</span>&nbsp;|&nbsp;父</div>
-                    <div identify="10005" level="2" type="normal" fullName="father.name" descr="姓名" parent="10004"><span class="from-name">name</span>&nbsp;|&nbsp;姓名</div>
-                    <div identify="10006" level="2" type="normal" fullName="father.age" descr="年龄" parent="10004"><span class="from-name">age</span>&nbsp;|&nbsp;年龄</div>
-                    <div identify="10007" level="1" type="list" fullName="children" descr="子" class="data-is-list"><span class="from-name">children</span>&nbsp;|&nbsp;子</div>
-                    <div identify="10008" level="2" type="normal" fullName="children.name" descr="姓名" parent="10007"><span class="from-name">name</span>&nbsp;|&nbsp;姓名</div>
-                    <div identify="10009" level="2" type="normal" fullName="children.likes" descr="爱好" parent="10007"><span class="from-name">likes</span>&nbsp;|&nbsp;爱好</div>
-                    <div identify="10010" level="2" type="object" fullName="children.baseInfo" descr="基本信息" parent="10007" class="data-is-object"><span class="from-name">baseInfo</span>&nbsp;|&nbsp;基本信息</div>
-                    <div identify="10011" level="3" type="normal" fullName="children.baseInfo.high" descr="身高" parent="10010"><span class="from-name">high</span>&nbsp;|&nbsp;身高</div>
-                    <div identify="10012" level="3" type="normal" fullName="children.baseInfo.weight" descr="体重" parent="10010"><span class="from-name">weight</span>&nbsp;|&nbsp;体重</div>
-                    <div identify="10013" level="2" type="list" fullName="children.games" descr="游戏" parent="10007" class="data-is-list"><span class="from-name">games</span>&nbsp;|&nbsp;游戏</div>
-                    <div identify="10014" level="3" type="normal" fullName="children.games.name" descr="名称" parent="10013"><span class="from-name">name</span>&nbsp;|&nbsp;名称</div>
-                    <div identify="10015" level="3" type="normal" fullName="children.games.count" descr="人数" parent="10013"><span class="from-name">count</span>&nbsp;|&nbsp;人数</div>-->
                 </div>
                 <div id="toObject" class="compare-div" style="margin-left: 10px; background-color: aqua;">
                     <div class="to-insert-line"></div>
@@ -233,6 +217,12 @@
                 上传文件
                 <input type="file" name="folder" accept="text/java" multiple="multiple" value="" />
             </fieldset>
+        </form>
+    </div>
+    <div id="interJsonDialog" title="接口数据预览">
+        <form>
+            <div id="interJsonShow"></div>
+            <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
         </form>
     </div>
     <div id="confirmDialog" title="确认">
