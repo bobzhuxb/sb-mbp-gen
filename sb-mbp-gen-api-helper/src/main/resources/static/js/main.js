@@ -436,7 +436,6 @@ function selectProject(project) {
  * 获取并刷新接口列表
  */
 function refreshInterfaces(projectId) {
-    prepareForAddInterface();
     $.ajax({
         url: "/api/ah-interface-all?projectIdEq=" + projectId,
         type: "GET",
@@ -460,6 +459,7 @@ function refreshInterfaces(projectId) {
                     $("#interfaces").append($interfaceLine);
                 }
             }
+            selectInterface($(".interface[identify='" + interfaceSelected.id + "']"));
         },
         error: function () {
             alert("刷新接口失败");
@@ -805,6 +805,7 @@ function addOrUpdateInterface() {
         contentType: "application/json",
         dataType: "JSON",
         success: function(result) {
+            alert("保存成功");
             interJsonDialog.dialog("close");
             refreshInterfaces(projectSelected.id);
         },
