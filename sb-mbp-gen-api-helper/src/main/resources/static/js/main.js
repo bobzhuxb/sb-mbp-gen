@@ -815,9 +815,9 @@ function validAndGenInterData() {
         if (type == "normal") {
             type = null;
         }
-        field.name = $(toObjectData).find(".to-name").html();
+        field.name = $(toObjectData).attr("fullName");
         field.type = type;
-        field.fromName = $(toObjectData).attr("fullName");
+        field.fromName = $(toObjectData).attr("oriFullName");
         field.descr = $(toObjectData).find(".to-descr").html();
         // 移除field的空值属性
         removeNullProperty(field);

@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50717
 File Encoding         : 65001
 
-Date: 2021-08-27 16:12:22
+Date: 2021-08-31 22:37:36
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -57,6 +57,7 @@ CREATE TABLE `ah_interface` (
   `http_method` varchar(10) DEFAULT NULL COMMENT 'Http方法',
   `add_default_prefix` varchar(10) DEFAULT NULL COMMENT '是否有默认前缀',
   `inter_descr` varchar(200) DEFAULT NULL COMMENT '描述',
+  `return_type` varchar(100) DEFAULT NULL COMMENT '返回类型全名',
   `data_json` text COMMENT '配置JSON',
   `insert_time` varchar(20) DEFAULT NULL COMMENT '插入时间',
   `update_time` varchar(20) DEFAULT NULL COMMENT '更新时间',
