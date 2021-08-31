@@ -461,6 +461,7 @@ function prepareForAddInterface() {
     $("#curInterface").html("新增中...");
     // 显示centerTabs
     $("#centerTabs").show();
+    initResultTabEvents();
 }
 
 /**
@@ -559,6 +560,7 @@ function selectInterface(inter) {
     }
     // 显示centerTabs
     $("#centerTabs").show();
+    initResultTabEvents();
     // 准备修改接口
     addingInterface = false;
     $(".interface").removeClass("list-selected");
