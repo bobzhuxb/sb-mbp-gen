@@ -7,6 +7,7 @@ import com.bob.at.service.AhInterfaceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -107,6 +108,18 @@ public class AhInterfaceController {
     @GetMapping("/export-project-inter-json/{projectId}")
     public void exportProjectInterJson(@PathVariable String projectId, HttpServletResponse response) {
         ahInterfaceService.exportProjectInterJson(projectId, response);
+    }
+
+    /**
+     * 导入接口JSON
+     * @param projectId 所属项目ID
+     * @param folder
+     * @return
+     */
+    @PostMapping("/ah-interface-json-upload")
+    public ResponseEntity<ReturnCommonDTO> importInterfaceJson(String projectId, @RequestParam("folder") MultipartFile[] folder) {
+        ReturnCommonDTO resultDTO = ahInterfaceService.importInterfaceJson(projectId, folder);
+        return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
 }

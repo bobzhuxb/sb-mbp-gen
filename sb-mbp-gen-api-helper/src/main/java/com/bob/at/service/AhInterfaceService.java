@@ -5,6 +5,7 @@ import com.bob.at.domain.AhInterface;
 import com.bob.at.dto.AhInterfaceDTO;
 import com.bob.at.dto.criteria.AhInterfaceCriteria;
 import com.bob.at.dto.help.ReturnCommonDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -30,5 +31,7 @@ public interface AhInterfaceService extends IService<AhInterface> {
     void exportInterJson(String interfaceId, HttpServletResponse response);
 
     void exportProjectInterJson(String projectId, HttpServletResponse response);
+
+    ReturnCommonDTO importInterfaceJson(String projectId, MultipartFile[] files);
 
 }

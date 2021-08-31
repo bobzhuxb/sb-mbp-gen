@@ -16,6 +16,10 @@ var uploadClassForm;
 var interJsonDialog;
 // 确认对话框
 var confirmDialog;
+// JSON导入对话框
+var jsonImportDialog;
+// JSON导入表单
+var jsonImportForm;
 // 是否正在新增接口中
 var addingInterface = false;
 

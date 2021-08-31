@@ -52,9 +52,7 @@
         &nbsp;|&nbsp;
         <a href="#" class="tool_btn" onclick="saveInterface();">保存接口</a>
         &nbsp;|&nbsp;
-        <a href="#" class="tool_btn" onclick="importInterJsonFile();">导入JSON</a>
-        &nbsp;|&nbsp;
-        <a href="#" class="tool_btn" onclick="importInterJsonFileBatch();">批量导入JSON</a>
+        <a href="#" class="tool_btn" onclick="openImportInterJsonFilesDialog();">导入接口JSON</a>
         &nbsp;|&nbsp;
         <a href="#" class="tool_btn" onclick="openUploadClassFilesDialog();">导入实体类</a>
         &nbsp;|&nbsp;
@@ -204,7 +202,7 @@
         </form>
     </div>
     <div id="uploadClassDialog" title="上传实体类">
-        <form action="/api/ah-class-code-folder-upload" method="POST" enctype="application/x-www-form-urlencoded">
+        <form enctype="application/x-www-form-urlencoded">
             <fieldset>
                 <input type="hidden" name="projectId" />
                 文件类型
@@ -223,6 +221,14 @@
         <form>
             <div id="interJsonShow"></div>
             <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+        </form>
+    </div>
+    <div id="jsonImportDialog" title="导入接口JSON">
+        <form enctype="application/x-www-form-urlencoded">
+            <fieldset>
+                <input type="hidden" name="projectId" />
+                <input type="file" name="folder" accept="text/json" multiple="multiple" value="" />
+            </fieldset>
         </form>
     </div>
     <div id="confirmDialog" title="确认">

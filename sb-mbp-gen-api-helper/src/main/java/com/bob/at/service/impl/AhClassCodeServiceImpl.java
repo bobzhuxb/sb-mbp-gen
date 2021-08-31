@@ -51,7 +51,7 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
     private AhClassCodeService ahClassCodeService;
 
     @Autowired
-    private YmlConfig ymlConfig;
+    private CommonService commonService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -158,8 +158,8 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
         Set<Class> classSet = new HashSet<>();
         List<String> fullFileNameList = new ArrayList<>();
         for (MultipartFile file : files) {
-            // 获取文件名和文件内容
-            ReturnFileUploadDTO fileUploadDTO = uploadFileToLocal(file);
+            // 获取文件名和文件信息
+            ReturnFileUploadDTO fileUploadDTO = commonService.uploadFileToLocal(file);
             String fullFileName = fileUploadDTO.getAbsolutePath();
             if (fullFileName.endsWith(fileType)) {
                 fullFileNameList.add(fileUploadDTO.getAbsolutePath());
@@ -269,36 +269,5 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
             }
         }
 
-    }
-
-    private ReturnFileUploadDTO uploadFileToLocal(MultipartFile file) {
-        Date nowDate = new Date();
-        // 获取文件名和文件内容
-        String fileName = file.getOriginalFilename();
-        // 相对路径
-        String relativePath = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(nowDate);
-        // 新文件名
-        String newFileName = fileName;
-        // 本地（服务器）绝对路径
-        String localPath = ymlConfig.getLocation() + File.separator + relativePath;
-        // 生成文件
-        File targetPath = new File(localPath);
-        if (!targetPath.exists()) {
-            targetPath.mkdirs();
-        }
-        String localFileName = localPath + File.separator + newFileName;
-        File targetFile = new File(localFileName);
-        // 文件保存到服务器
-        try {
-            file.transferTo(targetFile);
-            ReturnFileUploadDTO fileUploadDTO = new ReturnFileUploadDTO();
-            fileUploadDTO.setOriginalFileName(fileName);
-            fileUploadDTO.setRelativePath(relativePath + File.separator + newFileName);
-            fileUploadDTO.setAbsolutePath(localFileName);
-            fileUploadDTO.setUploadTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(nowDate));
-            return fileUploadDTO;
-        } catch (Exception e) {
-            throw CommonException.errWithDetail("文件上传失败：" + fileName, e.getMessage(), e);
-        }
     }
 }

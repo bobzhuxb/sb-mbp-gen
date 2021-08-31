@@ -148,6 +148,19 @@ function initLayoutWest() {
         width: 800,
         modal: true
     });
+    jsonImportDialog = $("#jsonImportDialog").dialog({
+        autoOpen: false,
+        height: 300,
+        width: 350,
+        modal: true,
+        close: function() {
+            uploadClassForm[0].reset();
+        }
+    });
+    jsonImportForm = jsonImportDialog.find("form").on("submit", function(event) {
+        event.preventDefault();
+        importInterJsonFiles();
+    });
     confirmDialog = $("#confirmDialog").dialog({
         autoOpen: false,
         height: 200,
@@ -418,8 +431,8 @@ function uploadClassFiles() {
     $("#uploadClassDialog").find("input[name='projectId']").val(projectSelected.id);
     showLoading("body");
     $.ajax({
-        url : uploadClassForm.attr("action"),
-        type : 'POST',
+        url : "/api/ah-class-code-folder-upload",
+        type : "POST",
         cache : false,
         data : new FormData(uploadClassForm[0]),
         processData : false,
@@ -883,13 +896,17 @@ function saveInterface(successCallback) {
         dataType: "JSON",
         success: function(result) {
             closeLoading();
-            if (typeof(successCallback) != "undefined") {
-                successCallback();
+            if (result.resultCode == "1") {
+                if (typeof (successCallback) != "undefined") {
+                    successCallback();
+                } else {
+                    alert("保存成功");
+                }
+                interJsonDialog.dialog("close");
+                refreshInterfaces(projectSelected.data);
             } else {
-                alert("保存成功");
+                alert(result.errMsg);
             }
-            interJsonDialog.dialog("close");
-            refreshInterfaces(projectSelected.data);
         },
         error: function () {
             closeLoading();
@@ -918,25 +935,56 @@ function exportCurrentJson() {
 }
 
 /**
- * 导入接口的JSON文件
+ * 打开导入接口的JSON文件对话框
  */
-function importInterJsonFile() {
+function openImportInterJsonFilesDialog() {
     if (projectSelected == null) {
         alert("请先选择工程");
         return;
     }
-    // TODO：导入JSON
+    var addButtons = {
+        "导入": importInterJsonFiles,
+        "取消": function() {
+            jsonImportDialog.dialog("close");
+        }
+    };
+    $("#jsonImportDialog").dialog("option", "buttons", addButtons);
+    jsonImportDialog.dialog("open");
 }
 
 /**
  * 批量导入接口的JSON文件
  */
-function importInterJsonFileBatch() {
+function importInterJsonFiles() {
     if (projectSelected == null) {
         alert("请先选择工程");
         return;
     }
-    // TODO：批量导入JSON
+    // 批量导入JSON
+    $("#jsonImportDialog").find("input[name='projectId']").val(projectSelected.id);
+    showLoading("body");
+    $.ajax({
+        url : "/api/ah-interface-json-upload",
+        type : "POST",
+        cache : false,
+        data : new FormData(jsonImportForm[0]),
+        processData : false,
+        contentType : false,
+        success : function(result) {
+            closeLoading();
+            if (result.resultCode != "1") {
+                alert(result.errMsg);
+            } else {
+                alert("上传完成");
+                jsonImportDialog.dialog("close");
+                refreshInterfaces(projectSelected.id);
+            }
+        },
+        error: function () {
+            closeLoading();
+            alert("上传失败");
+        }
+    });
 }
 
 /**

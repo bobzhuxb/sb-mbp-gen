@@ -115,7 +115,7 @@ public class AhClassCodeController {
     }
 
     /**
-     * 上传类所在文件夹
+     * 上传类文件
      * @param projectId 所属项目ID
      * @param fileType 文件类型（JAVA或CLASS）
      * @param file
