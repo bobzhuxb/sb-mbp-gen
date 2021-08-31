@@ -610,14 +610,14 @@ function getInterface(interfaceId) {
         success: function(result) {
             closeLoading();
             if (result.resultCode != "1") {
-                alert("获取工程失败");
+                alert("获取接口失败");
                 return;
             }
             inter = result.data;
         },
         error: function () {
             closeLoading();
-            alert("获取工程失败");
+            alert("获取接口失败");
         }
     });
     return inter;
