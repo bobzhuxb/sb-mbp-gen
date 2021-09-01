@@ -1,0 +1,18 @@
+logging:
+    level:
+        ROOT: INFO
+        com.ts.dt: INFO
+
+spring:
+    datasource:
+        driverClassName: com.mysql.cj.jdbc.Driver
+        url: "jdbc:mysql://192.168.50.155:3307/api_helper?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8\
+            &useSSL=false&useLegacyDatetimeCode=false&allowPublicKeyRetrieval=true"
+        username: root
+        password: P@ss1234
+    http:
+        multipart:
+            location: /root/projects/apihelper
+
+server:
+    port: 9090
