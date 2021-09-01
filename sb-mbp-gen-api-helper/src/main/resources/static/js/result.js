@@ -414,6 +414,8 @@ function refreshResultData() {
     var basePackage = projectSelected.basePackage;
     $("#fromObject").html("");
     $("#toObject").html("<div class='to-insert-line'></div>");
+    // 初始化结果页事件
+    initResultTabEvents();
     if (interfaceSelected == null) {
         $("#resultSearch").val("");
         return;
@@ -428,6 +430,11 @@ function refreshResultData() {
     // 加载结果类到fromObject和toObject
     loadReturnClassFromObject();
     loadDataJsonToObject();
+}
+
+function returnClassLoadBtnClicked() {
+    loadReturnClassFromObject();
+    $("#toObject").html("<div class='to-insert-line'></div>");
     // 初始化结果页事件
     initResultTabEvents();
 }

@@ -560,7 +560,6 @@ function selectInterface(inter) {
     }
     // 显示centerTabs
     $("#centerTabs").show();
-    initResultTabEvents();
     // 准备修改接口
     addingInterface = false;
     $(".interface").removeClass("list-selected");
