@@ -264,7 +264,7 @@ public class AhInterfaceServiceImpl extends ServiceImpl<AhInterfaceMapper, AhInt
                 if (!configDTO.getHttpUrl().startsWith("/")) {
                     throw new CommonException("URL格式错误，必须以/开头");
                 }
-                String correctFileName = configDTO.getHttpUrl().substring(1).replace("/", "_")
+                String correctFileName = configDTO.getHttpUrl().substring(1).replace("/", "_") + "_"
                         + configDTO.getHttpMethod() + "_" + configDTO.getInterNo() + ".json";
                 if (!correctFileName.equals(originalFileName)) {
                     throw new CommonException("文件名与内容不匹配");

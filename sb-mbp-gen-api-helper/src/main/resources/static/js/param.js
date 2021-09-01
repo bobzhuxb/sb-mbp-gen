@@ -22,7 +22,7 @@ function refreshParamData() {
     // 1、条件
     if (param.criteriaList != null && param.criteriaList.length > 0) {
         for (var i = 0; i < param.criteriaList.length; i++) {
-            subMainAddLine(document.getElementById("criteriaAddBtn"), 'criteriaToAdd');
+            subMainAddLine(document.getElementById("criteriaAddBtn"), "criteriaToAdd");
         }
         var blocks = $("div[idfrom='criteriaToAdd']");
         for (var i = 0; i < blocks.length; i++) {
@@ -34,9 +34,10 @@ function refreshParamData() {
                 $(blocks[i]).find("input[name='fixedValueIsDigit']").prop("checked",true);
             }
             $(blocks[i]).find("select[name='emptyToNull']").val(criteria.emptyToNull);
-            var toCriteriaLines = $(blocks[i]).find("div[idfrom='toCriteriaToAdd']");
-            for (var j = 0; j < toCriteriaLines.length; j++) {
-                $(toCriteriaLines[j]).val(criteria.toCriteriaList[j]);
+            var $toCriteriaAddBtn = $(blocks[i]).find(".to-criteria-add-btn");
+            for (var j = 0; j < criteria.toCriteriaList.length; j++) {
+                var toCriteriaValue = criteria.toCriteriaList[j];
+                subMainAddLine($toCriteriaAddBtn.get(0), "toCriteriaToAdd", toCriteriaValue);
             }
         }
     }
@@ -77,12 +78,15 @@ function refreshParamData() {
 /**
  * 复制一行
  */
-function subMainAddLine(obj, toAddDomId) {
+function subMainAddLine(obj, toAddDomId, defaultValue) {
     var $toAdd = $("#" + toAddDomId).clone();
     $toAdd.removeAttr("id");
     $toAdd.removeClass("template");
     $toAdd.attr("idFrom", toAddDomId);
     $toAdd.addClass("copied");
+    if (typeof(defaultValue) != "undefined") {
+        $toAdd.find("input[name='toCriteriaList']").val(defaultValue);
+    }
     $(obj).parent().append($toAdd);
 }
 

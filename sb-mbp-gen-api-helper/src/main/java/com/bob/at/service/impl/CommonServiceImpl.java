@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Random;
 
 /**
  * 共通
@@ -25,10 +26,15 @@ public class CommonServiceImpl implements CommonService {
         Date nowDate = new Date();
         // 获取文件名和文件内容
         String fileName = file.getOriginalFilename();
+        // 后缀（注意扩展名可能不存在的情况）
+        int lastPointPosition = fileName.lastIndexOf(".");
+        String extension = lastPointPosition < 0 ? "" : fileName.substring(lastPointPosition);
         // 相对路径
-        String relativePath = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(nowDate);
+        String relativePath = new SimpleDateFormat("yyyyMMdd").format(nowDate);
         // 新文件名
-        String newFileName = fileName;
+        int fileRandomInt = new Random().nextInt(1000);
+        String newFileName = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(nowDate) + "_"
+                + fileRandomInt + extension;
         // 本地（服务器）绝对路径
         String localPath = ymlConfig.getLocation() + File.separator + relativePath;
         // 生成文件
