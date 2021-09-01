@@ -729,6 +729,9 @@ function showCurrentJson() {
         return;
     }
     var interInfoData = validAndGenInterData();
+    if (interInfoData == null) {
+        return;
+    }
     openInterJsonDialog(formatJson(interInfoData), saveInterface, saveInterfaceAndExport);
 }
 
@@ -808,6 +811,17 @@ function validAndGenInterData() {
     interInfoData.result.data = "返回数据";
     interInfoData.result.fieldList = new Array();
     var toObjectDataList = $("#toObject .to-data-line");
+    // 重名验证
+    var fullNameSet = new Set();
+    for (var i = 0; i < toObjectDataList.length; i++) {
+        var toObjectData = toObjectDataList[i];
+        var fullName = $(toObjectData).attr("fullName");
+        if (fullNameSet.has(fullName)) {
+            alert(fullName + "名称重复");
+            return null;
+        }
+        fullNameSet.add(fullName);
+    }
     for (var i = 0; i < toObjectDataList.length; i++) {
         var field = new Object();
         var toObjectData = toObjectDataList[i];
@@ -868,6 +882,9 @@ function saveInterface(successCallback) {
         return;
     }
     var interInfoData = validAndGenInterData();
+    if (interInfoData == null) {
+        return;
+    }
     var interInfoJson = JSON.stringify(interInfoData);
     // 保存参数
     var interParam = new Object();
