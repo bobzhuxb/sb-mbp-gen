@@ -136,7 +136,7 @@ function loadDataJsonToObject() {
                 + " identify='" + toIdentify + "'"
                 + " level='" + level + "'"
                 + " type='" + type + "'"
-                + " fieldRealTypeName=' " + fieldRealTypeName + "'"
+                + " fieldRealTypeName='" + fieldRealTypeName + "'"
                 + " title='来源全路径：" + oriFullName + "\n来源类型：" + fieldRealTypeName + "\n当前全路径：" + fullName + "'"
                 + " fullName='" + fullName + "'"
                 + " oriFullName='" + oriFullName + "'";
@@ -494,19 +494,49 @@ function toNameTextEvent() {
  * 转换后属性名更新
  */
 function toNameTextChanged(obj) {
+    // 获取数据并显示
     var $toNameDisplay = $(obj).parent().children(".to-name");
     var newVal = $(obj).val();
+    // 更新前的fullName
+    var fullNamePrefix = $(obj).parent().attr("fullName");
     $toNameDisplay.html(newVal);
-    var fullName = $(obj).parent.attr("fullName");
-    if (fullName.lastIndexOf(".") < 0) {
-        fullName = newVal;
-    } else {
-        fullName = fullName.substring(0, fullName.lastIndexOf(".") + 1) + newVal;
-    }
-    $(obj).parent.attr("fullName", fullName);
     $toNameDisplay.show();
     $(obj).hide();
-    // TODO：递归修改所有子目录的fullName和title
+    toNameTextChangeRelate($(obj).parent(), fullNamePrefix, newVal);
+}
+
+
+/**
+ * 级联更新子目录的fullName及title
+ */
+function toNameTextChangeRelate($divObj, fullNamePrefix, newVal) {
+    // 更新相关字段
+    var oriFullName = $divObj.attr("oriFullName");
+    var fieldRealTypeName = $divObj.attr("fieldRealTypeName");
+    var fullName = $divObj.attr("fullName");
+    // fullNamePrefix要变更成的全名
+    var tmpFullName;
+    if (fullName.lastIndexOf(".") < 0) {
+        tmpFullName = newVal;
+    } else {
+        tmpFullName = fullNamePrefix.substring(0, fullNamePrefix.lastIndexOf(".") + 1) + newVal;
+    }
+    if (fullName == fullNamePrefix) {
+        // 当前实际修改的字段
+        fullName = tmpFullName;
+    } else {
+        // 被关联修改的子目录
+        fullName = tmpFullName + fullName.substring(fullNamePrefix.length);
+    }
+    $divObj.attr("fullName", fullName);
+    $divObj.attr("title", "来源全路径：" + oriFullName + "\n来源类型：" + fieldRealTypeName + "\n当前全路径：" + fullName);
+    // 递归修改所有子目录的fullName和title
+    var myIdentify = $divObj.attr("identify");
+    var children = $(".to-data-line[parent='" + myIdentify + "']");
+    for (var i = 0; i < children.length; i++) {
+        var childDiv = children[i];
+        toNameTextChangeRelate($(childDiv), fullNamePrefix, newVal);
+    }
 }
 
 /**
@@ -580,7 +610,6 @@ function fromLineDropped($dragging, $toObj) {
     var genericTypeName = $dragging.attr("genericTypeName");
     // toObject的相关属性生成
     var toIdentify = generateUUID();
-    var toParent = null;
     // 分析该字段的实际类型
     var fieldRealTypeName = fieldType;
     if (fieldType == "java.util.List") {
@@ -591,6 +620,7 @@ function fromLineDropped($dragging, $toObj) {
         fromParent = null;
     }
     var fullName = oriFullName;
+    var toParent = null;
     // 待修改的Object
     var mayModify = {"draggingLevel": draggingLevel, "fullName": fullName, "toParent": toParent};
     // 验证是否可插入到此处
@@ -632,13 +662,13 @@ function fromLineDropped($dragging, $toObj) {
  * $toObj表示的是insertLine行
  * 来源行可能是从fromObject或toObject而来
  */
-function validateFormLine(fromDivDomId, $toObj, fromIdentify, mayModify, draggingLevel, oriFullName) {
+function validateFormLine(fromDivDomId, $toLineObj, fromIdentify, mayModify, draggingLevel, oriFullName) {
     // $toObj的前一行
-    var $prevDataLine = $toObj.prev();
+    var $prevDataLineDiv = $toLineObj.prev();
     // $toObj的前一行是否为object或list
     var prevIsObjectOrList = false;
-    if ($prevDataLine.length > 0) {
-        var prevType = $prevDataLine.attr("type");
+    if ($prevDataLineDiv.length > 0) {
+        var prevType = $prevDataLineDiv.attr("type");
         if (prevType == "object" || prevType == "list") {
             prevIsObjectOrList = true;
         }
@@ -647,13 +677,14 @@ function validateFormLine(fromDivDomId, $toObj, fromIdentify, mayModify, draggin
     // 验证逻辑（重点）：只要不跨越list（往上升级或往下降级），都是允许的
     // 最终要变成的level
     var finalLevel;
-    // 最终要变成的fullName
-    var finalFullName;
     // 最终要设置的parent
     var finalParent = null;
-    if ($prevDataLine.length == 0) {
+    // 最终要变成的fullName
+    var finalFullName;
+    if ($prevDataLineDiv.length == 0) {
         // 移动到第一行
         finalLevel = 1;
+        finalParent = null;
         var lastDotIndex = oriFullName.lastIndexOf(".");
         // 当前fullName最后一个点后面的属性名
         if (lastDotIndex < 0) {
@@ -666,9 +697,9 @@ function validateFormLine(fromDivDomId, $toObj, fromIdentify, mayModify, draggin
         if (prevIsObjectOrList) {
             // 前一行的type是object或list
             // level比前一行多一层
-            finalLevel = parseInt($prevDataLine.attr("level")) + 1;
+            finalLevel = parseInt($prevDataLineDiv.attr("level")) + 1;
             // parent就是前一行的identify
-            finalParent = $prevDataLine.attr("identify");
+            finalParent = $prevDataLineDiv.attr("identify");
             // 当前fullName最后一个点的位置
             var curLastDotIndex = oriFullName.lastIndexOf(".");
             // 当前fullName最后一个点后面的属性名
@@ -680,13 +711,16 @@ function validateFormLine(fromDivDomId, $toObj, fromIdentify, mayModify, draggin
                 curLastName = oriFullName.substring(curLastDotIndex + 1);
             }
             // 前一行的fullName
-            var prevFullName = $prevDataLine.attr("fullName");
+            var prevFullName = $prevDataLineDiv.attr("fullName");
             // 最终的fullName就是在前一行fullName的基础上，叠加上自己的lastName
             finalFullName = prevFullName + "." + curLastName;
         } else {
             // 前一行的type是normal（修改为与前一行相同）
-            finalLevel = parseInt($prevDataLine.attr("level"));
-            finalParent = $prevDataLine.attr("parent");
+            finalLevel = parseInt($prevDataLineDiv.attr("level"));
+            finalParent = $prevDataLineDiv.attr("parent");
+            if (typeof(finalParent) == "undefined") {
+                finalParent = null;
+            }
             // 当前fullName最后一个点的位置
             var curLastDotIndex = oriFullName.lastIndexOf(".");
             // 当前fullName最后一个点后面的属性名
@@ -698,7 +732,7 @@ function validateFormLine(fromDivDomId, $toObj, fromIdentify, mayModify, draggin
                 curLastName = oriFullName.substring(curLastDotIndex + 1);
             }
             // 前一行的fullName
-            var prevFullName = $prevDataLine.attr("fullName");
+            var prevFullName = $prevDataLineDiv.attr("fullName");
             // 前一行fullName最后一个点的位置
             var prevLastDotIndex = prevFullName.lastIndexOf(".");
             // 前一行fullName最后一个点前面的属性（包括最后一个点）
@@ -833,7 +867,7 @@ function formDataLineAndInsertLine($toObj, draggingLevel, toIdentify, type, fiel
         + " identify='" + toIdentify + "'"
         + " level='" + draggingLevel + "'"
         + " type='" + type + "'"
-        + " fieldRealTypeName=' " + fieldRealTypeName + "'"
+        + " fieldRealTypeName='" + fieldRealTypeName + "'"
         + " title='来源全路径：" + oriFullName + "\n来源类型：" + fieldRealTypeName + "\n当前全路径：" + fullName + "'"
         + " fullName='" + fullName + "'"
         + " oriFullName='" + oriFullName + "'";
@@ -1008,7 +1042,7 @@ function toLineDropped($dragging, $toObj) {
     var draggingLevel = $dragging.attr("level");
     var identify = $dragging.attr("identify");
     var type = $dragging.attr("type");
-    var oriFullName = $dragging.attr("fullName");
+    var oriFullName = $dragging.attr("oriFullName");
     var descr = $dragging.children(".to-descr").html();
     var parent = $dragging.attr("parent");
     var draggingContent = $dragging.children(".to-name").html();
@@ -1018,8 +1052,9 @@ function toLineDropped($dragging, $toObj) {
         parent = null;
     }
     var fullName = oriFullName;
+    var toParent = null;
     // 待修改的Object
-    var mayModify = {"draggingLevel": draggingLevel, "fullName": fullName, "parent": parent};
+    var mayModify = {"draggingLevel": draggingLevel, "fullName": fullName, "toParent": toParent};
     // 验证是否可插入到此处
     var validateResult = validateFormLine("toObject", $toObj, identify, mayModify, draggingLevel, oriFullName);
     if (!validateResult) {
@@ -1028,10 +1063,10 @@ function toLineDropped($dragging, $toObj) {
     // 待修改的Object的字段重新设置回来（有可能已经修改过）
     draggingLevel = mayModify.draggingLevel;
     fullName = mayModify.fullName;
-    parent = mayModify.parent;
+    toParent = mayModify.toParent;
     // 生成数据行和插入行
     var $prevInsertLine = formDataLineAndInsertLine($toObj, draggingLevel, identify, type, fieldRealTypeName,
-        oriFullName, fullName, descr, parent, draggingContent);
+        oriFullName, fullName, descr, toParent, draggingContent);
     // 删除原先行及其下一行
     $dragging.next().remove();
     $dragging.remove();
