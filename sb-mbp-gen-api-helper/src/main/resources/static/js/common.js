@@ -167,21 +167,21 @@ function downLoadFile(options) {
 }
 
 function toastSuccess(message) {
-    $.Toast("成功", message, "success", {position_class: "toast-top-center"});
+    $.Toast("成功", message, "success", {position_class: "toast-top-right"});
 }
 
 function toastError(message) {
-    $.Toast("错误", message, "error", {position_class: "toast-top-center"});
+    $.Toast("错误", message, "error", {position_class: "toast-top-right"});
 }
 
 function toastWarn(message) {
-    $.Toast("警告", message, "warning", {position_class: "toast-top-center"});
+    $.Toast("警告", message, "warning", {position_class: "toast-top-right"});
 }
 
 function toastNotice(message) {
-    $.Toast("通知", message, "notice", {position_class: "toast-top-center"});
+    $.Toast("通知", message, "notice", {position_class: "toast-top-right"});
 }
 
 function toastInfo(message) {
-    $.Toast("信息", message, "info", {position_class: "toast-top-center"});
+    $.Toast("信息", message, "info", {position_class: "toast-top-right"});
 }

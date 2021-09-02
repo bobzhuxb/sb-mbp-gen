@@ -157,10 +157,15 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
     public ReturnCommonDTO uploadClassFiles(String projectId, String fileType, String overwrite, MultipartFile[] files) {
         Set<Class> classSet = new HashSet<>();
         List<String> fullFileNameList = new ArrayList<>();
+        Date nowDate = new Date();
         for (MultipartFile file : files) {
             // 获取文件名和文件信息
-            ReturnFileUploadDTO fileUploadDTO = commonService.uploadFileToLocal(file);
+            ReturnFileUploadDTO fileUploadDTO = commonService.uploadFileToLocal(file, false, nowDate);
             String fullFileName = fileUploadDTO.getAbsolutePath();
+            if (!fullFileName.endsWith(fileType)) {
+                // 过滤掉后缀不对的文件
+                continue;
+            }
             if (fullFileName.endsWith(fileType)) {
                 fullFileNameList.add(fileUploadDTO.getAbsolutePath());
             }
@@ -173,8 +178,7 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
                     classSet.add(clazz);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-                throw new CommonException("java文件动态编译加载异常", e);
+                throw new CommonException("java文件动态编译加载异常，请查看日志", e);
             }
         } else if (".class".equals(fileType)) {
             // class文件

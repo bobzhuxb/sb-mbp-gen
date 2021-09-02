@@ -254,7 +254,7 @@ public class AhInterfaceServiceImpl extends ServiceImpl<AhInterfaceMapper, AhInt
         List<ApiAdapterConfigDTO> configList = new ArrayList<>();
         for (MultipartFile file : files) {
             // 获取文件名和文件信息
-            ReturnFileUploadDTO fileUploadDTO = commonService.uploadFileToLocal(file);
+            ReturnFileUploadDTO fileUploadDTO = commonService.uploadFileToLocal(file, true, new Date());
             String fullFileName = fileUploadDTO.getAbsolutePath();
             String jsonData = FileUtil.readString(new File(fullFileName), "UTF-8");
             String originalFileName = fileUploadDTO.getOriginalFileName();
