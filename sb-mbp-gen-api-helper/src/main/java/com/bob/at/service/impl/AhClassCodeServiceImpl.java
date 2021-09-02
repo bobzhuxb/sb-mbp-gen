@@ -1,5 +1,6 @@
 package com.bob.at.service.impl;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -171,6 +172,21 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
             }
         }
         if (".java".equals(fileType)) {
+            // 过滤掉所有注解
+            for (String fullFileName : fullFileNameList) {
+                List<String> lines = FileUtil.readLines(fullFileName, "UTF-8");
+                List<String> newLines = new ArrayList<>();
+                for (String line : lines) {
+                    if (line.trim().startsWith("@")) {
+                        continue;
+                    }
+                    if (line.trim().startsWith("import") && line.trim().contains(".annotation.")) {
+                        continue;
+                    }
+                    newLines.add(line);
+                }
+                FileUtil.writeLines(newLines, fullFileName, "UTF-8");
+            }
             try {
                 Map<String, byte[]> byteCodeMap = DynamicLoader.compile(fullFileNameList);
                 for (String keyName : byteCodeMap.keySet()) {
