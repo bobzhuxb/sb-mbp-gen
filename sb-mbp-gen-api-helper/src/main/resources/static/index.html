@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>拖拽生成配置文件</title>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" type="text/css" href="toast/css/toast.style.css">
+
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
@@ -13,6 +15,9 @@
     <link rel="stylesheet" type="text/css" href="css/result.css">
 
     <script type="text/javascript" src="layout/jquery.layout.js"></script>
+    <script type="text/javascript" src="toast/js/toast.script.js"></script>
+
+    <script type="text/javascript" src="js/common.js"></script>
     <script type="text/javascript" src="js/common.js"></script>
     <script type="text/javascript" src="js/main.js"></script>
     <script type="text/javascript" src="js/base.js"></script>
@@ -26,12 +31,12 @@
                 <li><a href="#projectDiv">工程</a></li>
                 <li><a href="#interfaceDiv">接口</a></li>
             </ul>
-            <div id="projectDiv" style="width:130px;overflow:auto;background:#EEEEEE;">
+            <div id="projectDiv" style="width:425px;overflow:auto;background:#EEEEEE;">
                 <a href="#" class="tool_btn" onclick="openAddProjectDialog();" style="margin-bottom:3px;" title="添加工程">+</a>
                 <input id="projectSearch" type="text" style="width: 120px;" />
                 <div id="projects"></div>
             </div>
-            <div id="interfaceDiv" style="width:130px;overflow:auto;background:#EEEEEE;">
+            <div id="interfaceDiv" style="width:425px;overflow:auto;background:#EEEEEE;">
                 <a href="#" class="tool_btn" onclick="prepareForAddInterface();" style="margin-bottom:3px;" title="添加接口">+</a>
                 <input id="interfaceSearch" type="text" style="width: 120px;" />
                 <div id="interfaces"></div>
@@ -44,6 +49,8 @@
         <span>当前接口：<span id="curInterface" class="highlight-text" title=""></span></span>
         &nbsp;|&nbsp;
         <a href="#" class="tool_btn" onclick="abortChangingInterface();">放弃修改并刷新</a>
+        &nbsp;|&nbsp;
+        <a href="#" class="tool_btn" onclick="cloneInterface();">克隆接口</a>
         &nbsp;|&nbsp;
         <a href="#" class="tool_btn" onclick="showCurrentJson();">预览JSON</a>
         &nbsp;|&nbsp;

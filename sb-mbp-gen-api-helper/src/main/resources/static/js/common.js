@@ -165,3 +165,23 @@ function downLoadFile(options) {
     $("body").append($iframe);
     $form.submit();
 }
+
+function toastSuccess(message) {
+    $.Toast("成功", message, "success", {position_class: "toast-top-center"});
+}
+
+function toastError(message) {
+    $.Toast("错误", message, "error", {position_class: "toast-top-center"});
+}
+
+function toastWarn(message) {
+    $.Toast("警告", message, "warning", {position_class: "toast-top-center"});
+}
+
+function toastNotice(message) {
+    $.Toast("通知", message, "notice", {position_class: "toast-top-center"});
+}
+
+function toastInfo(message) {
+    $.Toast("信息", message, "info", {position_class: "toast-top-center"});
+}

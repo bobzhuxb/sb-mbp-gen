@@ -799,7 +799,7 @@ function passJsonList(fromDivDomId, fromIdentify, oriFullName, finalFullName) {
     var oriListFullPath = getListFullPath(fromDivDomId, fromIdentify, null);
     var finalListFullPath = getListFullPath(fromDivDomId, null, finalSubNames);
     if (oriListFullPath != finalListFullPath) {
-        alert("不得跨越list层级");
+        toastError("不得跨越list层级");
         return true;
     }
     return false;

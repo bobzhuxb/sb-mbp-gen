@@ -21,6 +21,7 @@ function doLayout() {
             north__closable: false,//可以被关闭
             north__resizable: false,//可以改变大小
             north__size: 50,//pane的大小
+            west__size: 500,
             spacing_open: 8,//边框的间隙
             spacing_closed: 60,//关闭时边框的间隙
             resizerTip: "可调整大小",//鼠标移到边框时，提示语
@@ -77,7 +78,6 @@ function doLayout() {
             */
         }
     );
-
     initTab();
 }
 
@@ -189,7 +189,7 @@ function refreshProjects() {
         success: function(result) {
             closeLoading();
             if (result.resultCode != "1") {
-                alert("刷新工程失败");
+                toastError("刷新工程失败");
                 return;
             }
             var projects = result.data;
@@ -217,7 +217,7 @@ function refreshProjects() {
         },
         error: function () {
             closeLoading();
-            alert("刷新工程失败");
+            toastError("刷新工程失败");
         }
     });
 }
@@ -347,7 +347,7 @@ function addOrUpdateProject(httpType) {
         },
         error: function () {
             closeLoading();
-            alert("操作失败");
+            toastError("操作失败");
         }
     });
 }
@@ -368,7 +368,7 @@ function deleteProject(projectId) {
         },
         error: function () {
             closeLoading();
-            alert("操作失败");
+            toastError("操作失败");
         }
     });
 }
@@ -397,7 +397,7 @@ function deleteInterface(interfaceId) {
         },
         error: function () {
             closeLoading();
-            alert("操作失败");
+            toastError("操作失败");
         }
     });
 }
@@ -407,7 +407,7 @@ function deleteInterface(interfaceId) {
  */
 function openUploadClassFilesDialog() {
     if (projectSelected == null) {
-        alert("请先选择工程");
+        toastWarn("请先选择工程");
         return;
     }
     var addButtons = {
@@ -425,7 +425,7 @@ function openUploadClassFilesDialog() {
  */
 function uploadClassFiles() {
     if (projectSelected == null) {
-        alert("请先选择工程");
+        toastWarn("请先选择工程");
         return;
     }
     $("#uploadClassDialog").find("input[name='projectId']").val(projectSelected.id);
@@ -439,13 +439,13 @@ function uploadClassFiles() {
         contentType : false,
         success : function(result) {
             closeLoading();
-            alert("上传完成");
+            toastSuccess("上传完成");
             uploadClassDialog.dialog("close");
             $(".project[identify='" + projectSelected.id + "']").trigger("click");
         },
         error: function () {
             closeLoading();
-            alert("上传失败");
+            toastError("上传失败");
         }
     });
 }
@@ -506,7 +506,7 @@ function refreshInterfaces(projectId) {
         success: function(result) {
             closeLoading();
             if (result.resultCode != "1") {
-                alert("刷新接口失败");
+                toastError("刷新接口失败");
                 return;
             }
             var interfaces = result.data;
@@ -517,8 +517,9 @@ function refreshInterfaces(projectId) {
                     var interface = interfaces[i];
                     var interfaceHtml = "<div identify='" + interface.id + "' class='interface' search='"
                         + interface.httpUrl + "_" + interface.interDescr + "' "
-                        + "title='" + interface.interDescr + "' onclick='selectInterface(this);'>"
-                        + "<span>" + interface.httpUrl + "</span>"
+                        + "title='" + interface.interDescr + "\n" + interface.httpMethod + "\n"
+                        + interface.interNo + "' onclick='selectInterface(this);'>"
+                        + "<span>" + interface.httpUrl + "（" + interface.httpMethod + "_" + interface.interNo + "）" + "</span>"
                         + "<a href='#' style='margin-left: 10px; color: red;' title='点击删除' "
                         + "onclick='openDeleteInterfaceDialog(this);'>X</a></div>";
                     var $interfaceLine = $(interfaceHtml);
@@ -531,7 +532,7 @@ function refreshInterfaces(projectId) {
         },
         error: function () {
             closeLoading();
-            alert("刷新接口失败");
+            toastError("刷新接口失败");
         }
     });
 }
@@ -584,14 +585,14 @@ function getProject(projectId) {
         success: function(result) {
             closeLoading();
             if (result.resultCode != "1") {
-                alert("获取工程失败");
+                toastError("获取工程失败");
                 return;
             }
             project = result.data;
         },
         error: function () {
             closeLoading();
-            alert("获取工程失败");
+            toastError("获取工程失败");
         }
     });
     return project;
@@ -611,14 +612,14 @@ function getInterface(interfaceId) {
         success: function(result) {
             closeLoading();
             if (result.resultCode != "1") {
-                alert("获取接口失败");
+                toastError("获取接口失败");
                 return;
             }
             inter = result.data;
         },
         error: function () {
             closeLoading();
-            alert("获取接口失败");
+            toastError("获取接口失败");
         }
     });
     return inter;
@@ -638,14 +639,14 @@ function getClassCode(classId) {
         success: function(result) {
             closeLoading();
             if (result.resultCode != "1") {
-                alert("获取实体类失败");
+                toastError("获取实体类失败");
                 return;
             }
             clazz = result.data;
         },
         error: function () {
             closeLoading();
-            alert("获取实体类失败");
+            toastError("获取实体类失败");
         }
     });
     return clazz;
@@ -665,14 +666,14 @@ function getClassCodeByFullName(fullClassName) {
         success: function(result) {
             closeLoading();
             if (result.resultCode != "1") {
-                alert("获取实体类失败");
+                toastError("获取实体类失败");
                 return;
             }
             clazz = result.data;
         },
         error: function () {
             closeLoading();
-            alert("获取实体类失败");
+            toastError("获取实体类失败");
         }
     });
     return clazz;
@@ -683,17 +684,35 @@ function getClassCodeByFullName(fullClassName) {
  */
 function abortChangingInterface() {
     if (projectSelected == null) {
-        alert("请先选择工程");
+        toastWarn("请先选择工程");
         return;
     }
     if (interfaceSelected == null && !addingInterface) {
-        alert("请先选择接口或新增接口");
+        toastWarn("请先选择接口或新增接口");
         return;
     }
     refreshInterfaceData();
     if (addingInterface) {
         $("#curInterface").html("新增中...");
     }
+}
+
+/**
+ * 从当前克隆一份接口
+ */
+function cloneInterface() {
+    if (projectSelected == null) {
+        toastWarn("请先选择工程");
+        return;
+    }
+    if (interfaceSelected == null) {
+        toastWarn("请先选择接口");
+        return;
+    }
+    addingInterface = true;
+    interfaceSelected = null;
+    $(".interface").removeClass("list-selected");
+    $("#curInterface").html("新增中...");
 }
 
 /**
@@ -720,11 +739,11 @@ function refreshInterfaceData() {
  */
 function showCurrentJson() {
     if (projectSelected == null) {
-        alert("请先选择工程");
+        toastWarn("请先选择工程");
         return;
     }
     if (interfaceSelected == null && !addingInterface) {
-        alert("请先选择接口或新增接口");
+        toastWarn("请先选择接口或新增接口");
         return;
     }
     var interInfoData = validAndGenInterData();
@@ -748,7 +767,7 @@ function validAndGenInterData() {
     interInfoData.returnType = emptyStringToNull(returnTypeName);
     if (interInfoData.interNo == null || interInfoData.httpMethod == null || interInfoData.addDefaultPrefix == null
         || interInfoData.httpUrl == null || interInfoData.interDescr == null || interInfoData.returnType == null) {
-        alert("接口号、接口方法、追加默认前缀、接口URL、接口描述、接口返回类型不允许为空");
+        toastWarn("接口号、接口方法、追加默认前缀、接口URL、接口描述、接口返回类型不允许为空");
         return;
     }
     // 2、参数信息
@@ -816,7 +835,7 @@ function validAndGenInterData() {
         var toObjectData = toObjectDataList[i];
         var fullName = $(toObjectData).attr("fullName");
         if (fullNameSet.has(fullName)) {
-            alert(fullName + "名称重复");
+            toastError(fullName + "名称重复");
             return null;
         }
         fullNameSet.add(fullName);
@@ -873,11 +892,11 @@ function getStringArrayFromList(domObjList) {
  */
 function saveInterface(successCallback) {
     if (projectSelected == null) {
-        alert("请先选择工程");
+        toastWarn("请先选择工程");
         return;
     }
     if (interfaceSelected == null && !addingInterface) {
-        alert("请先选择接口或新增接口");
+        toastWarn("请先选择接口或新增接口");
         return;
     }
     var interInfoData = validAndGenInterData();
@@ -894,7 +913,7 @@ function saveInterface(successCallback) {
     } else {
         // 更新接口
         method = "PUT";
-        interParam.id = interfaceSelected.id
+        interParam.id = interfaceSelected.id;
     }
     interParam.interNo = interInfoData.interNo;
     interParam.httpUrl = interInfoData.httpUrl;
@@ -918,17 +937,21 @@ function saveInterface(successCallback) {
                 if (typeof (successCallback) != "undefined") {
                     successCallback();
                 } else {
-                    alert("保存成功");
+                    toastSuccess("保存成功");
                 }
                 interJsonDialog.dialog("close");
-                refreshInterfaces(projectSelected.data);
+                if (interfaceSelected == null) {
+                    interfaceSelected = new Object();
+                    interfaceSelected.id = result.data;
+                }
+                refreshInterfaces(projectSelected.id);
             } else {
-                alert(result.errMsg);
+                toastError(result.errMsg);
             }
         },
         error: function () {
             closeLoading();
-            alert("保存失败");
+            toastError("保存失败");
         }
     });
 }
@@ -957,7 +980,7 @@ function exportCurrentJson() {
  */
 function openImportInterJsonFilesDialog() {
     if (projectSelected == null) {
-        alert("请先选择工程");
+        toastWarn("请先选择工程");
         return;
     }
     var addButtons = {
@@ -975,7 +998,7 @@ function openImportInterJsonFilesDialog() {
  */
 function importInterJsonFiles() {
     if (projectSelected == null) {
-        alert("请先选择工程");
+        toastWarn("请先选择工程");
         return;
     }
     // 批量导入JSON
@@ -991,16 +1014,16 @@ function importInterJsonFiles() {
         success : function(result) {
             closeLoading();
             if (result.resultCode != "1") {
-                alert(result.errMsg);
+                toastError(result.errMsg);
             } else {
-                alert("上传完成");
+                toastSuccess("上传完成");
                 jsonImportDialog.dialog("close");
                 refreshInterfaces(projectSelected.id);
             }
         },
         error: function () {
             closeLoading();
-            alert("上传失败");
+            toastError("上传失败");
         }
     });
 }
@@ -1010,7 +1033,7 @@ function importInterJsonFiles() {
  */
 function exportCurrentProject() {
     if (projectSelected == null) {
-        alert("请先选择工程");
+        toastWarn("请先选择工程");
         return;
     }
     downLoadFile({
