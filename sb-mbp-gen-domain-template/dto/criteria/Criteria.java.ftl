@@ -1,5 +1,6 @@
 package ${packageName}.dto.criteria;
 
+import ${packageName}.annotation.GenComment;
 import ${packageName}.dto.criteria.filter.*;
 
 import java.io.Serializable;
@@ -15,20 +16,24 @@ public class ${eentityName}Criteria extends BaseCriteria implements Serializable
     <#list fieldList as field>
 	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
 
-    private <#if field.javaType == 'String'>StringFilter<#elseif field.javaType == 'Long'>LongFilter<#elseif field.javaType == 'Integer'>IntegerFilter<#elseif field.javaType == 'Double'>DoubleFilter<#else>Filter</#if> ${field.camelName};    // ${field.comment}
+    @GenComment("${field.comment}")
+    private <#if field.javaType == 'String'>StringFilter<#elseif field.javaType == 'Long'>LongFilter<#elseif field.javaType == 'Integer'>IntegerFilter<#elseif field.javaType == 'Double'>DoubleFilter<#else>Filter</#if> ${field.camelName};
 	</#if>
     </#list>
 	<#list toFromList as toFrom>
 
-    private StringFilter ${toFrom.toFromEntityName}Id;    // ${toFrom.toFromComment}ID
+    @GenComment("${toFrom.toFromComment}ID")
+    private StringFilter ${toFrom.toFromEntityName}Id;
 	</#list>
 	<#list toFromList as toFrom>
 
-    private ${toFrom.toFromEntityType}Criteria ${toFrom.toFromEntityName};    // ${toFrom.toFromComment}
+    @GenComment("${toFrom.toFromComment}")
+    private ${toFrom.toFromEntityType}Criteria ${toFrom.toFromEntityName};
 	</#list>
 	<#list fromToList as fromTo>
 
-    private ${fromTo.fromToEntityType}Criteria ${fromTo.fromToEntityName}List;    // ${fromTo.fromToComment}
+    @GenComment("${fromTo.fromToComment}")
+    private ${fromTo.fromToEntityType}Criteria ${fromTo.fromToEntityName}List;
 	</#list>
 
     // ================self code:增强的查询条件参数start=====================

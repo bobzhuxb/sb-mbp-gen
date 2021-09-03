@@ -314,9 +314,13 @@ function formFromLines(ahClassCode, level, parentIdentify, parentFullName) {
         var fieldTypeName = field.typeName;
         var fieldName = field.fieldName;
         var genericTypeName = field.genericTypeName;
+        var descr = field.descr;
         if (fieldName.startsWith("_")) {
             // 该字段是为了匹配数据库使用的，过滤掉
             continue;
+        }
+        if (descr == null || descr.trim == "") {
+            descr = "（请填写注释）";
         }
         var isObject = false;
         var isArray = false;
@@ -340,13 +344,13 @@ function formFromLines(ahClassCode, level, parentIdentify, parentFullName) {
             fromLinesHtml += " type='normal' class='from-data-line'";
         }
         fromLinesHtml += " fullName='" + fullName + "' title='全路径：" + fullName + "\n类型：" + fieldTypeName
-            + "' descr='（请填写注释）' fieldType='" + fieldTypeName + "' parent='" + parentIdentify + "'>";
+            + "' descr='" + descr + "' fieldType='" + fieldTypeName + "' parent='" + parentIdentify + "'>";
         if (isArray || isObject) {
             fromLinesHtml += "<span class='fold-unfold' onclick='foldOrUnfoldFrom(this, false);' title='点击展开'>+</span> ";
         } else {
             fromLinesHtml += "<span class='no-fold'></span> ";
         }
-        fromLinesHtml += "<span class='from-name'>" + fieldName + "</span> | （请填写注释）</div>";
+        fromLinesHtml += "<span class='from-name'>" + fieldName + "</span> | " + descr + "</div>";
     }
     return fromLinesHtml;
 }

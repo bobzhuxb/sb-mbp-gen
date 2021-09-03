@@ -1,5 +1,6 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
 import com.alibaba.fastjson.annotation.JSONField;
 
 /**
@@ -8,24 +9,33 @@ import com.alibaba.fastjson.annotation.JSONField;
  */
 public class TxMapSearchDataDTO {
 
-    private String id;                  // POI唯一标识
+    @GenComment("POI唯一标识")
+    private String id;
 
-    private String title;               // 提示文字
+    @GenComment("提示文字")
+    private String title;
 
-    private String address;             // 地址
+    @GenComment("地址")
+    private String address;
 
-    private String province;            // 省
+    @GenComment("省")
+    private String province;
 
-    private String city;                // 市
+    @GenComment("市")
+    private String city;
 
-    private String adcode;              // 行政区划代码
+    @GenComment("行政区划代码")
+    private String adcode;
 
-    private Integer type;               // POI类型，值说明：0:普通POI / 1:公交车站 / 2:地铁站 / 3:公交线路 / 4:行政区划
+    @GenComment("POI类型，值说明：0:普通POI / 1:公交车站 / 2:地铁站 / 3:公交线路 / 4:行政区划")
+    private Integer type;
 
+    @GenComment("传入location（定位坐标）参数时，返回定位坐标到各POI的距离")
     @JSONField(name = "_distance")
-    private String distance;            // 传入location（定位坐标）参数时，返回定位坐标到各POI的距离
+    private String distance;
 
-    private TxMapLocationDTO location;  // 提示所述位置坐标
+    @GenComment("提示所述位置坐标")
+    private TxMapLocationDTO location;
 
     public String getId() {
         return id;

@@ -1,18 +1,23 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
+
 /**
  * 登录状态
  * @author Bob
  */
 public class WxLoginStatusDTO extends ReturnCommonDTO {
 
-    // 登录账号
+    @GenComment("登录账号")
     private String loginName;
-    // openId用于识别用户
+
+    @GenComment("openId用于识别用户")
     private String openId;
-    // 微信名
+
+    @GenComment("微信名")
     private String wxName;
-    // token信息
+
+    @GenComment("token信息")
     private String token;
 
     public String getLoginName() {

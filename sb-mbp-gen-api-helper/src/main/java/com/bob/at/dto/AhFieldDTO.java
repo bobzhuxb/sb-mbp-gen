@@ -14,6 +14,8 @@ public class AhFieldDTO extends BaseDTO {
 
     private String fieldName;       // 字段名
 
+    private String descr;           // 注释
+
     private String ahClassCodeId;   // 实体类ID
     
 	///////////////////////// 附加关联属性 /////////////////////////
@@ -45,6 +47,14 @@ public class AhFieldDTO extends BaseDTO {
 
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
+    }
+
+    public String getDescr() {
+        return descr;
+    }
+
+    public void setDescr(String descr) {
+        this.descr = descr;
     }
 
     public String getAhClassCodeId() {

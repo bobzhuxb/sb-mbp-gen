@@ -1,5 +1,6 @@
 package ${packageName}.domain;
 
+import ${packageName}.annotation.GenComment;
 import com.baomidou.mybatisplus.annotation.TableField;
 
 import java.util.Objects;
@@ -14,17 +15,20 @@ public class ${eentityName} extends BaseDomain {
     <#list fieldList as field>
 	<#if (field.camelName) != 'insertTime' && (field.camelName) != 'updateTime' && (field.camelName) != 'insertUserId' && (field.camelName) != 'operateUserId'>
 
-    private ${field.javaType} ${field.camelName};    // ${field.comment}
+    @GenComment("${field.comment}")
+    private ${field.javaType} ${field.camelName};
 	<#if (field.dictionaryType)??>
     
+    @GenComment("${field.commentDic}（数据字典值）")
     @TableField(exist = false)
-    private String ${field.camelNameDic};    // ${field.commentDic}（数据字典值）
+    private String ${field.camelNameDic};
 	</#if>
 	</#if>
     </#list>
 	<#list toFromList as toFrom>
 
-    private String ${toFrom.toFromEntityName}Id;    // ${toFrom.toFromComment}ID
+    @GenComment("${toFrom.toFromComment}ID")
+    private String ${toFrom.toFromEntityName}Id;
 	</#list>
 	<#if (eentityName) == 'SystemLog'>
 

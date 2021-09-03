@@ -1,5 +1,7 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
@@ -9,11 +11,13 @@ import javax.validation.constraints.Size;
  */
 public class FileDownloadDTO {
 
+    @GenComment("待下载的文件的相对路径")
     @NotBlank
     @Size(min = 1)
-    private String relativePath;        // 待下载的文件的相对路径
+    private String relativePath;
 
-    private String changeFileName;      // 修改后的文件名
+    @GenComment("修改后的文件名")
+    private String changeFileName;
 
     public String getRelativePath() {
         return relativePath;

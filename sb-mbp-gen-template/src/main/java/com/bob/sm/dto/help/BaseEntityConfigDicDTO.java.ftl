@@ -1,17 +1,30 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
+
 /**
  * 用于共通化Service代码的实体配置DTO
  * @author Bob
  */
 public class BaseEntityConfigDicDTO {
 
-    private String fieldName;       // 域名
-    private String fieldValueName;  // 值的域名
-    private String columnName;      // 数据表中的列名
-    private String columnValueName; // 值的列名
-    private String dicType;         // 数据字典中的Type标识
-    private String dicTypeName;     // 数据字典类别名称
+    @GenComment("域名")
+    private String fieldName;
+
+    @GenComment("值的域名")
+    private String fieldValueName;
+
+    @GenComment("数据表中的列名")
+    private String columnName;
+
+    @GenComment("值的列名")
+    private String columnValueName;
+
+    @GenComment("数据字典中的Type标识")
+    private String dicType;
+
+    @GenComment("数据字典类别名称")
+    private String dicTypeName;
 
     public BaseEntityConfigDicDTO() {
 

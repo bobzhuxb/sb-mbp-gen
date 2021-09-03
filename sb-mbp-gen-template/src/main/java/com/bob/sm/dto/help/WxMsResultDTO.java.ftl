@@ -1,16 +1,21 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
+
 /**
  * 远程微服务（封装腾讯服务）的返回
  * @author Bob
  */
 public class WxMsResultDTO<T> {
 
-    private Integer code;       // 状态（0：成功  1：失败）
+    @GenComment("状态（0：成功  1：失败）")
+    private Integer code;
 
-    private String msg;         // 信息
+    @GenComment("信息")
+    private String msg;
 
-    private T data;             // 微信的实际返回
+    @GenComment("微信的实际返回")
+    private T data;
 
     public Integer getCode() {
         return code;

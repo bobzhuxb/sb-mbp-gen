@@ -1,20 +1,27 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
+
 /**
  * 文件上传
  * @author Bob
  */
 public class ReturnFileUploadDTO {
 
-    private String originalFileName;            // 文件原始名称
+    @GenComment("文件原始名称")
+    private String originalFileName;
 
-    private String relativePath;                // 文件相对路径
+    @GenComment("文件相对路径")
+    private String relativePath;
 
-    private String compressedRelativePath;      // 压缩后文件相对路径
+    @GenComment("压缩后文件相对路径")
+    private String compressedRelativePath;
 
-    private String uploadTime;                  // 文件上传时间
+    @GenComment("文件上传时间")
+    private String uploadTime;
 
-    private String extension;                   // 文件后缀
+    @GenComment("文件后缀")
+    private String extension;
 
     public String getOriginalFileName() {
         return originalFileName;

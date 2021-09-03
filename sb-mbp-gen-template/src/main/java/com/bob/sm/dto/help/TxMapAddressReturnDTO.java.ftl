@@ -1,5 +1,6 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
 import com.alibaba.fastjson.annotation.JSONField;
 
 /**
@@ -8,14 +9,18 @@ import com.alibaba.fastjson.annotation.JSONField;
  */
 public class TxMapAddressReturnDTO {
 
-    private Integer status;             // 状态码
+    @GenComment("状态码")
+    private Integer status;
 
-    private String message;             // 状态说明
+    @GenComment("状态说明")
+    private String message;
 
+    @GenComment("本次请求的唯一标识")
     @JSONField(name = "request_id")
-    private String requestId;           // 本次请求的唯一标识
+    private String requestId;
 
-    private TxMapAddressDTO result;     // 返回结果
+    @GenComment("返回结果")
+    private TxMapAddressDTO result;
 
     public Integer getStatus() {
         return status;

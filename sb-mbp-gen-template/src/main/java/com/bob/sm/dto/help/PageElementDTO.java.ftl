@@ -1,5 +1,6 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
 import java.util.List;
 
 /**
@@ -8,15 +9,20 @@ import java.util.List;
  */
 public class PageElementDTO implements Cloneable {
 
-    private String code;        // 页面或页面元素的代码
+    @GenComment("页面或页面元素的代码")
+    private String code;
 
-    private String name;        // 页面或页面元素的名称
+    @GenComment("页面或页面元素的名称")
+    private String name;
 
-    private String type;        // 类型（PAGE：页面  ELEMENT：页面元素）
+    @GenComment("类型（PAGE：页面  ELEMENT：页面元素）")
+    private String type;
 
-    private List<PageElementDTO> childList;     // 子元素
+    @GenComment("子元素")
+    private List<PageElementDTO> childList;
 
-    private Integer selected;   // 是否选中（1：是  2或不填：否）
+    @GenComment("是否选中（1：是  2或不填：否）")
+    private Integer selected;
 
     public PageElementDTO() {
     }

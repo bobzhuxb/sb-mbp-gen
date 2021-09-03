@@ -1,28 +1,39 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
+
 /**
  * 用于共通化Service代码的实体关系配置DTO
  * @author Bob
  */
 public class BaseEntityConfigRelationDTO {
 
-    private String relationType;        // OneToOne和OneToMany
+    @GenComment("OneToOne和OneToMany")
+    private String relationType;
 
-    private String fromOrTo;            // from或to
+    @GenComment("from或to")
+    private String fromOrTo;
 
-    private String fromType;            // from类型
+    @GenComment("from类型")
+    private String fromType;
 
-    private String fromName;            // from名称
+    @GenComment("from名称")
+    private String fromName;
 
-    private String toType;              // to类型
+    @GenComment("to类型")
+    private String toType;
 
-    private String toName;              // to名称
+    @GenComment("to名称")
+    private String toName;
 
-    private String fromToComment;       // to在from中的注释
+    @GenComment("to在from中的注释")
+    private String fromToComment;
 
-    private String toFromComment;       // from在to中的注释
+    @GenComment("from在to中的注释")
+    private String toFromComment;
 
-    private String cascadeDelete;       // 级联删除类型（DELETE：级联删除，FORBIDDEN：禁止删除，NULL：级联置空）
+    @GenComment("级联删除类型（DELETE：级联删除，FORBIDDEN：禁止删除，NULL：级联置空）")
+    private String cascadeDelete;
 
     public BaseEntityConfigRelationDTO() {}
 

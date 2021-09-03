@@ -23,26 +23,29 @@ public class ${eentityName}DTO extends BaseDTO {
 	<#list fieldList as field>
 	<#if field.camelName != 'insertTime' && field.camelName != 'updateTime' && field.camelName != 'insertUserId' && field.camelName != 'operateUserId'>
 
+    @GenComment("${field.comment}")
 	<#if (field.annotationList)??>
 	<#list field.annotationList as annotation>
     ${annotation}
 	</#list>
 	</#if>
-    private ${field.javaType} ${field.camelName};    // ${field.comment}
+    private ${field.javaType} ${field.camelName};
 	<#if (field.dictionaryType)??>
 
-    private String ${field.camelNameDic};    // ${field.commentDic}（数据字典值）
+    @GenComment("${field.commentDic}（数据字典值）")
+    private String ${field.camelNameDic};
 	</#if>
 	</#if>
 	</#list>
 	<#list toFromList as toFrom>
 
+    @GenComment("${toFrom.toFromComment}ID")
 	<#if (toFrom.annotationList)??>
 	<#list toFrom.annotationList as annotation>
     ${annotation}
 	</#list>
 	</#if>
-    private String ${toFrom.toFromEntityName}Id;    // ${toFrom.toFromComment}ID
+    private String ${toFrom.toFromEntityName}Id;
 	</#list>
 	<#if (toFromList?? && (toFromList?size > 0)) || (fromToList?? && (fromToList?size > 0)) >
     
@@ -50,21 +53,25 @@ public class ${eentityName}DTO extends BaseDTO {
 	</#if>
 	<#list toFromList as toFrom>
 
-    private ${toFrom.toFromEntityType}DTO ${toFrom.toFromEntityName};    // ${toFrom.toFromComment}
+    @GenComment("${toFrom.toFromComment}")
+    private ${toFrom.toFromEntityType}DTO ${toFrom.toFromEntityName};
 	</#list>
 	<#list fromToList as fromTo>
 
     @Valid
 	<#if fromTo.relationType == "OneToMany">
-    private List<${fromTo.fromToEntityType}DTO> ${fromTo.fromToEntityName}List;    // ${fromTo.fromToComment}列表
+    @GenComment("${fromTo.fromToComment}列表")
+    private List<${fromTo.fromToEntityType}DTO> ${fromTo.fromToEntityName}List;
 	</#if>
 	<#if fromTo.relationType == "OneToOne">
-    private ${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName};    // ${fromTo.fromToComment}
+    @GenComment("${fromTo.fromToComment}")
+    private ${fromTo.fromToEntityType}DTO ${fromTo.fromToEntityName};
 	</#if>
 	</#list>
 	<#if eentityName == 'SystemUser'>
 
-    private List<SystemRoleDTO> systemRoleList;    // 具体角色列表
+    @GenComment("具体角色列表")
+    private List<SystemRoleDTO> systemRoleList;
 	</#if>
 
     // ================self code:自定义属性start=====================

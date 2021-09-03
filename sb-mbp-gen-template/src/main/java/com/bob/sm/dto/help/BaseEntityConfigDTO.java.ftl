@@ -1,5 +1,6 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
 import java.util.List;
 
 /**
@@ -8,9 +9,11 @@ import java.util.List;
  */
 public class BaseEntityConfigDTO {
 
-    private String tableName;       // 当前实体对应的表名
+    @GenComment("当前实体对应的表名")
+    private String tableName;
 
-    private String fullDomainName;       // 当前实体对应的domain全限定名（com.bob.sm.domain.XXX）
+    @GenComment("当前实体对应的domain全限定名（com.bob.sm.domain.XXX）")
+    private String fullDomainName;
 
     public String getTableName() {
         return tableName;

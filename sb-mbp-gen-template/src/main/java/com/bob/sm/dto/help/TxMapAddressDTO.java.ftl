@@ -1,5 +1,6 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
 import com.alibaba.fastjson.annotation.JSONField;
 
 /**
@@ -8,10 +9,12 @@ import com.alibaba.fastjson.annotation.JSONField;
  */
 public class TxMapAddressDTO {
 
-    private String address;             // 地址
+    @GenComment("地址")
+    private String address;
 
+    @GenComment("位置描述")
     @JSONField(name = "formatted_addresses")
-    private TxMapFormattedAddressDTO formattedAddress;  // 位置描述
+    private TxMapFormattedAddressDTO formattedAddress;
 
     public String getAddress() {
         return address;

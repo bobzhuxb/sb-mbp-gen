@@ -83,7 +83,9 @@ public class AhInterfaceServiceImpl extends ServiceImpl<AhInterfaceMapper, AhInt
         AhInterface existInterface = baseMapper.selectOne(new QueryWrapper<AhInterface>()
                 .eq(AhInterface._httpUrl, ahInterfaceDTO.getHttpUrl())
                 .eq(AhInterface._httpMethod, ahInterfaceDTO.getHttpMethod())
-                .eq(AhInterface._interNo, ahInterfaceDTO.getInterNo()));
+                .eq(AhInterface._interNo, ahInterfaceDTO.getInterNo())
+                .eq(AhInterface._ahProjectId, ahInterfaceDTO.getAhProjectId())
+                .last("limit 1"));
         if (existInterface != null && !existInterface.getId().equals(ahInterfaceDTO.getId())) {
             throw new CommonException("该接口已存在");
         }

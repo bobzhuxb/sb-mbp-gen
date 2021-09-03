@@ -1,5 +1,7 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -11,18 +13,22 @@ import javax.validation.constraints.Size;
  */
 public class ParamMapKeywordSearchDTO {
 
+    @GenComment("关键字")
     @NotBlank
     @Size(min = 1, max = 1000)
-    private String keyword;         // 关键字
+    private String keyword;
 
+    @GenComment("搜索范围（例如：苏州）")
     @Size(max = 255)
-    private String region;          // 搜索范围（例如：苏州）
+    private String region;
 
+    @GenComment("每页条数")
     @Max(20)
-    private Integer size = 10;      // 每页条数
+    private Integer size = 10;
 
+    @GenComment("页数")
     @Min(1)
-    private Integer current = 1;    // 页数
+    private Integer current = 1;
 
     public String getKeyword() {
         return keyword;

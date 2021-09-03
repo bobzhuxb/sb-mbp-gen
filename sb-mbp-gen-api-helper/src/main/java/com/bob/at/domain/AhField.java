@@ -16,6 +16,8 @@ public class AhField extends BaseDomain {
 
     private String fieldName;       // 字段名
 
+    private String descr;           // 注释
+
     private String ahClassCodeId;   // 实体类ID
 
     public String getTypeName() {
@@ -40,6 +42,14 @@ public class AhField extends BaseDomain {
 
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
+    }
+
+    public String getDescr() {
+        return descr;
+    }
+
+    public void setDescr(String descr) {
+        this.descr = descr;
     }
 
     public String getAhClassCodeId() {

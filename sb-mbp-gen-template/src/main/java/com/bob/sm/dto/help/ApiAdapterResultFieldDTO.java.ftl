@@ -1,5 +1,6 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
 import java.util.List;
 
 /**
@@ -8,14 +9,23 @@ import java.util.List;
  */
 public class ApiAdapterResultFieldDTO {
 
-    private String name;        // 转换后的参数名称
-    private String type;        // 转换后的参数类型（list：列表  object或不填：Object）
-    private String fromName;    // 转换前的参数名称
-    private String descr;       // 返回参数描述
+    @GenComment("转换后的参数名称")
+    private String name;
 
-    private Integer level;      // 转换后所在list层级
+    @GenComment("转换后的参数类型（list：列表  object或不填：Object）")
+    private String type;
 
-    private List<ApiAdapterResultFieldDTO> subFieldList;    // 本字段包含的子数据
+    @GenComment("转换前的参数名称")
+    private String fromName;
+
+    @GenComment("返回参数描述")
+    private String descr;
+
+    @GenComment("转换后所在list层级")
+    private Integer level;
+
+    @GenComment("本字段包含的子数据")
+    private List<ApiAdapterResultFieldDTO> subFieldList;
 
     public String getName() {
         return name;

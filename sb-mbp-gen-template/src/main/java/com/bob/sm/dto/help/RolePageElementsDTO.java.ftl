@@ -1,5 +1,7 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.List;
@@ -10,20 +12,25 @@ import java.util.List;
  */
 public class RolePageElementsDTO {
 
-    private String roleId;               // 角色ID
+    @GenComment("角色ID")
+    private String roleId;
 
+    @GenComment("角色标识")
     @NotBlank
     @Size(min = 1, max = 255)
-    private String name;    // 角色标识
+    private String name;
 
+    @GenComment("角色中文名称")
     @NotBlank
     @Size(min = 1, max = 255)
-    private String chineseName;    // 角色中文名称
+    private String chineseName;
 
+    @GenComment("角色描述")
     @Size(max = 255)
-    private String description;    // 角色描述
+    private String description;
 
-    private List<String> pageElementCodeList;   // 页面或页面元素的代码列表
+    @GenComment("页面或页面元素的代码列表")
+    private List<String> pageElementCodeList;
 
     public String getRoleId() {
         return roleId;

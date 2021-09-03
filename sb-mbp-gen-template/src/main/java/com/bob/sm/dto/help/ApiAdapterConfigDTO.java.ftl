@@ -1,5 +1,6 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
 import java.util.List;
 
 /**
@@ -8,15 +9,29 @@ import java.util.List;
  */
 public class ApiAdapterConfigDTO {
 
-    private String interNo;     // 接口识别号（同一接口类别和URL下唯一）
-    private String httpMethod;  // 接口方法（GET/POST/PUT/DELETE）
-    private String addDefaultPrefix;    // 是否追加默认URL前缀（yes：是  no或不填：否）
-    private String httpUrl;     // 接口URL
-    private String interDescr;  // 接口描述
-    private ApiAdapterParamDTO param;       // 接口参数配置
-    private ApiAdapterResultDTO result;     // 接口返回数据配置
+    @GenComment("接口识别号（同一接口类别和URL下唯一）")
+    private String interNo;
+    
+    @GenComment("接口方法（GET/POST/PUT/DELETE）")
+    private String httpMethod;
+    
+    @GenComment("是否追加默认URL前缀（yes：是  no或不填：否）")
+    private String addDefaultPrefix;
+    
+    @GenComment("接口URL")
+    private String httpUrl;
+    
+    @GenComment("接口描述")
+    private String interDescr;
+    
+    @GenComment("接口参数配置")
+    private ApiAdapterParamDTO param;
+    
+    @GenComment("接口返回数据配置")
+    private ApiAdapterResultDTO result;
 
-    private List<ApiAdapterResultFieldDTO> returnConfigTreeList;    // 将返回配置处理成树状结构的结果
+    @GenComment("将返回配置处理成树状结构的结果")
+    private List<ApiAdapterResultFieldDTO> returnConfigTreeList;
 
     public String getInterNo() {
         return interNo;

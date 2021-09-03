@@ -1,5 +1,6 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
 import ${packageName}.dto.SystemUserDTO;
 
 /**
@@ -8,11 +9,14 @@ import ${packageName}.dto.SystemUserDTO;
  */
 public class InnerUserInfoDetailDTO {
 
-    private Boolean bureauRole;             // 是否局端人员
+    @GenComment("是否局端人员")
+    private Boolean bureauRole;
 
-    private Boolean streetRole;             // 是否街道人员
+    @GenComment("是否街道人员")
+    private Boolean streetRole;
 
-    private SystemUserDTO systemUserDTO;    // 用户信息
+    @GenComment("用户信息")
+    private SystemUserDTO systemUserDTO;
 
     public Boolean getBureauRole() {
         return bureauRole;

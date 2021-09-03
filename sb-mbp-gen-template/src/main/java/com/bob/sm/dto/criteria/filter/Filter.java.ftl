@@ -1,5 +1,7 @@
 package ${packageName}.dto.criteria.filter;
 
+import ${packageName}.annotation.GenComment;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
@@ -11,24 +13,54 @@ import java.util.Objects;
 public class Filter<FIELD_TYPE> implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private FIELD_TYPE equals;      // 等于
-    private FIELD_TYPE notEquals;   // 不等于
-    private Boolean nullable;       // 是否为null
-    private List<FIELD_TYPE> in;    // SQL中的in
-    private List<FIELD_TYPE> notIn; // SQL中的not in
-    private List<String> exists;    // SQL中的exists
-    private List<String> notExists; // SQL中的not exists
+    
+    @GenComment("等于")
+    private FIELD_TYPE equals;
+    
+    @GenComment("不等于")
+    private FIELD_TYPE notEquals;
+    
+    @GenComment("是否为null")
+    private Boolean nullable;
+    
+    @GenComment("SQL中的in")
+    private List<FIELD_TYPE> in;
+    
+    @GenComment("SQL中的not in")
+    private List<FIELD_TYPE> notIn;
+    
+    @GenComment("SQL中的exists")
+    private List<String> exists;
+    
+    @GenComment("SQL中的not exists")
+    private List<String> notExists;
 
+    @GenComment("大于")
     private FIELD_TYPE greaterThan;
+    
+    @GenComment("小于")
     private FIELD_TYPE lessThan;
+    
+    @GenComment("大于等于")
     private FIELD_TYPE greaterOrEqualThan;
+    
+    @GenComment("小于等于")
     private FIELD_TYPE lessOrEqualThan;
+    
+    @GenComment("起始于")
     private FIELD_TYPE betweenFrom;
+    
+    @GenComment("结束于")
     private FIELD_TYPE betweenTo;
+    
+    @GenComment("不起始于")
     private FIELD_TYPE notBetweenFrom;
+    
+    @GenComment("不结束于")
     private FIELD_TYPE notBetweenTo;
 
-    private String realFieldType;   // 实际数据类型
+    @GenComment("实际数据类型")
+    private String realFieldType;
 
     public FIELD_TYPE getEquals() {
         return equals;

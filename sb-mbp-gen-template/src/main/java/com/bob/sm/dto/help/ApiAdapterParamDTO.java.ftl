@@ -1,5 +1,6 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
 import java.util.List;
 
 /**
@@ -8,13 +9,23 @@ import java.util.List;
  */
 public class ApiAdapterParamDTO {
 
-    private List<ApiAdapterCriteriaDTO> criteriaList;       // 条件参数配置（GET）
-    private List<String> associationNameList;               // 级联查询的参数名列表（GET）
-    private List<String> dictionaryNameList;                // 数据字典查询列表（GET）
-    private List<String> sqlColumnList;                     // SQL查询的字段（GET）
-    private String orderBy;                                 // 排序的字符串（GET）
+    @GenComment("条件参数配置（GET）")
+    private List<ApiAdapterCriteriaDTO> criteriaList;
 
-    private Object jsonBody;                                // json格式的body实体内容
+    @GenComment("级联查询的参数名列表（GET）")
+    private List<String> associationNameList;
+
+    @GenComment("数据字典查询列表（GET）")
+    private List<String> dictionaryNameList;
+
+    @GenComment("SQL查询的字段（GET）")
+    private List<String> sqlColumnList;
+
+    @GenComment("排序的字符串（GET）")
+    private String orderBy;
+
+    @GenComment("json格式的body实体内容")
+    private Object jsonBody;
 
     public List<ApiAdapterCriteriaDTO> getCriteriaList() {
         return criteriaList;

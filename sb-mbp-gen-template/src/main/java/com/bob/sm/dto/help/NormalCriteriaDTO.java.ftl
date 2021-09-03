@@ -1,16 +1,21 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
+
 /**
  * 普通查询条件DTO
  * @author Bob
  */
 public class NormalCriteriaDTO {
 
-    private String tableName;   // 表名的别名
+    @GenComment("表名的别名")
+    private String tableName;
 
-    private String fieldName;   // Criteria的成员变量名
+    @GenComment("Criteria的成员变量名")
+    private String fieldName;
 
-    private Object value;       // 参数值
+    @GenComment("参数值")
+    private Object value;
 
     public String getTableName() {
         return tableName;

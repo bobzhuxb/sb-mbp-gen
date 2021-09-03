@@ -1,5 +1,6 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
 import java.util.List;
 
 /**
@@ -8,11 +9,17 @@ import java.util.List;
  */
 public class ApiAdapterResultDTO {
 
-    private String resultCode;                          // 返回码说明
-    private String errMsg;                              // 错误消息
-    private String data;                                // data说明
+    @GenComment("返回码说明")
+    private String resultCode;
 
-    private List<ApiAdapterResultFieldDTO> fieldList;   // 返回数据转换的字段配置
+    @GenComment("错误消息")
+    private String errMsg;
+
+    @GenComment("data说明")
+    private String data;
+
+    @GenComment("返回数据转换的字段配置")
+    private List<ApiAdapterResultFieldDTO> fieldList;
 
     public String getResultCode() {
         return resultCode;

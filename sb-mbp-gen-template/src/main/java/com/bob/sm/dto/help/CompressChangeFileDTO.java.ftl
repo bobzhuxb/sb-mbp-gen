@@ -1,14 +1,18 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
+
 /**
  * 文件压缩时改名DTO
  * @author Bob
  */
 public class CompressChangeFileDTO {
 
-    private String changeFileName;      // 修改后的文件名（包括后缀）
+    @GenComment("修改后的文件名（包括后缀）")
+    private String changeFileName;
 
-    private String fullFileName;        // 文件全路径
+    @GenComment("文件全路径")
+    private String fullFileName;
 
     public CompressChangeFileDTO() {}
 

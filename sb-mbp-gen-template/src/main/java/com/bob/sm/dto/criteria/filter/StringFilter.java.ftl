@@ -1,5 +1,6 @@
 package ${packageName}.dto.criteria.filter;
 
+import ${packageName}.annotation.GenComment;
 import java.util.Objects;
 
 /**
@@ -10,13 +11,17 @@ public class StringFilter extends Filter<String> {
 
     private static final long serialVersionUID = 1L;
 
-    private String contains;    // SQL中的like
+    @GenComment("SQL中的like")
+    private String contains;
 
-    private String notContains;    // SQL中的not like
+    @GenComment("SQL中的not like")
+    private String notContains;
 
-    private String startWith;    // SQL中的like xx%
+    @GenComment("SQL中的like xx%")
+    private String startWith;
 
-    private String endWith;    // SQL中的like %xx
+    @GenComment("SQL中的like %xx")
+    private String endWith;
 
     public String getContains() {
         return contains;

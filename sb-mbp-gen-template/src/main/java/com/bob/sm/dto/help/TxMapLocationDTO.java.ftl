@@ -1,14 +1,18 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
+
 /**
  * 腾讯地图详细地址（根据经纬度解析）
  * @author Bob
  */
 public class TxMapLocationDTO {
 
-    private String lat;             // 纬度
+    @GenComment("纬度")
+    private String lat;
 
-    private String lng;             // 	经度
+    @GenComment("经度")
+    private String lng;
 
     public String getLat() {
         return lat;

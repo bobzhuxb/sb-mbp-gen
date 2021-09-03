@@ -5,7 +5,6 @@ import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.bob.at.config.YmlConfig;
 import com.bob.at.domain.AhClassCode;
 import com.bob.at.domain.AhField;
 import com.bob.at.dto.AhClassCodeDTO;
@@ -26,8 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -172,16 +172,21 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
             }
         }
         if (".java".equals(fileType)) {
-            // 过滤掉所有注解
+            // 过滤掉所有注解（除了注解类本身）
             for (String fullFileName : fullFileNameList) {
                 List<String> lines = FileUtil.readLines(fullFileName, "UTF-8");
+                String fileName = fullFileName.substring(fullFileName.lastIndexOf(File.separator) + 1);
                 List<String> newLines = new ArrayList<>();
                 for (String line : lines) {
-                    if (line.trim().startsWith("@")) {
-                        continue;
-                    }
-                    if (line.trim().startsWith("import") && line.trim().contains(".annotation.")) {
-                        continue;
+                    line = line.trim();
+                    if (!"GenComment.java".equals(fileName)) {
+                        if (line.startsWith("@") && !line.startsWith("@GenComment(")) {
+                            continue;
+                        }
+                        if (line.startsWith("import") && line.contains(".annotation.")
+                                && !(line.endsWith(".annotation.*;") || line.endsWith(".annotation.GenComment;"))) {
+                            continue;
+                        }
                     }
                     newLines.add(line);
                 }
@@ -269,6 +274,20 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
             for (Field field : fieldList) {
                 String fieldFullTypeName = ClassUtil.getClassName(field.getType(), false);
                 String fieldName = field.getName();
+                Annotation[] annotations = field.getAnnotations();
+                String descr = null;
+                if (annotations != null && annotations.length == 1) {
+                    try {
+                        Class<?> annotationClass = annotations[0].getClass();
+                        Method valueMethod = annotationClass.getMethod("value");
+                        Object descrObj = valueMethod.invoke(annotations[0]);
+                        if (descrObj != null) {
+                            descr = descrObj.toString().trim();
+                        }
+                    } catch (Exception e) {
+                        throw new CommonException(e.getMessage(), e);
+                    }
+                }
                 String genericTypeName = null;
                 if ("java.util.List".equals(fieldFullTypeName)) {
                     // 继续获取泛型名
@@ -283,6 +302,7 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
                 ahFieldAdd.setTypeName(fieldFullTypeName);
                 ahFieldAdd.setFieldName(fieldName);
                 ahFieldAdd.setGenericTypeName(genericTypeName);
+                ahFieldAdd.setDescr(descr);
                 ahFieldAdd.setAhClassCodeId(classCodeIdRelate);
                 ahFieldAdd.setInsertTime(nowTimeStr);
                 ahFieldMapper.insert(ahFieldAdd);

@@ -1,5 +1,7 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
+
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -9,13 +11,17 @@ import java.util.function.Predicate;
  */
 public class InnerAuthFilterOperateDTO {
 
-    private String roleName;        // 角色
+    @GenComment("角色")
+    private String roleName;
 
-    private Predicate<Map<String, Object>> operateOverwrite;    // 覆盖原本的操作
+    @GenComment("覆盖原本的操作")
+    private Predicate<Map<String, Object>> operateOverwrite;
 
-    private Predicate<Map<String, Object>> operateBefore;       // 原本操作前的动作
+    @GenComment("原本操作前的动作")
+    private Predicate<Map<String, Object>> operateBefore;
 
-    private Predicate<Map<String, Object>> operateAfter;        // 原本操作后的动作
+    @GenComment("原本操作后的动作")
+    private Predicate<Map<String, Object>> operateAfter;
 
     public InnerAuthFilterOperateDTO() {}
 

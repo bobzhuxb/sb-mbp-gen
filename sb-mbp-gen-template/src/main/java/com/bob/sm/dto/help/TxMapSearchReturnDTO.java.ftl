@@ -1,5 +1,6 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
 import com.alibaba.fastjson.annotation.JSONField;
 
 import java.util.List;
@@ -10,16 +11,21 @@ import java.util.List;
  */
 public class TxMapSearchReturnDTO {
 
-    private Integer status;             // 状态码
+    @GenComment("状态码")
+    private Integer status;
 
-    private String message;             // 状态说明
+    @GenComment("状态说明")
+    private String message;
 
+    @GenComment("本次请求的唯一标识")
     @JSONField(name = "request_id")
-    private String requestId;           // 本次请求的唯一标识
+    private String requestId;
 
-    private Integer count;              // 结果总数
+    @GenComment("结果总数")
+    private Integer count;
 
-    private List<TxMapSearchDataDTO> data;    // 返回结果
+    @GenComment("返回结果")
+    private List<TxMapSearchDataDTO> data;
 
     public Integer getStatus() {
         return status;

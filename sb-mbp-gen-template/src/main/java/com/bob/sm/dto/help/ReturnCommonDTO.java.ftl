@@ -1,5 +1,6 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
 import ${packageName}.config.Constants;
 
 /**
@@ -8,16 +9,16 @@ import ${packageName}.config.Constants;
  */
 public class ReturnCommonDTO<T> {
 
-    // 返回状态
+    @GenComment("返回状态")
     private String resultCode;
 
-    // 返回消息
+    @GenComment("返回消息")
     private String errMsg;
 
-    // 返回数据
+    @GenComment("返回数据")
     private T data;
 
-    // 返回数据的类型（object、list、page）
+    @GenComment("返回数据的类型（object、list、page）")
     private String dataType;
 
     public ReturnCommonDTO() {

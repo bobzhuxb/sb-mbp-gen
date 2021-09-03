@@ -1,5 +1,6 @@
 package ${packageName}.domain;
 
+import ${packageName}.annotation.GenComment;
 import java.io.Serializable;
 
 /**
@@ -8,15 +9,20 @@ import java.io.Serializable;
  */
 public class BaseDomain implements Serializable {
 
+    @GenComment("主键ID")
     private String id;
 
-    private String insertUserId;    // 创建者用户ID
+    @GenComment("创建者用户ID")
+    private String insertUserId;
 
-    private String operateUserId;    // 操作者用户ID
+    @GenComment("操作者用户ID")
+    private String operateUserId;
 
-    private String insertTime;    // 插入时间
+    @GenComment("插入时间")
+    private String insertTime;
 
-    private String updateTime;    // 更新时间
+    @GenComment("更新时间")
+    private String updateTime;
 
     public String getId() {
         return id;

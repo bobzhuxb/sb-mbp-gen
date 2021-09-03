@@ -1,5 +1,6 @@
 package ${packageName}.dto.criteria.filter;
 
+import ${packageName}.annotation.GenComment;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -11,13 +12,14 @@ public class NothingFilter implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @GenComment("什么条件都没有（占位用）")
+    private String none;
+
     public NothingFilter() {}
 
     public NothingFilter(String none) {
         this.none = none;
     }
-
-    private String none;    // 什么条件都没有（占位用）
 
     public String getNone() {
         return none;

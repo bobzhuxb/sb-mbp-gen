@@ -1,22 +1,30 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
+
 /**
  * 腾讯地图详细地址（根据经纬度解析）
  * @author Bob
  */
 public class ReturnMapSearchResultDTO {
 
-    private String title;               // 提示文字
+    @GenComment("提示文字")
+    private String title;
 
-    private String address;             // 地址
+    @GenComment("地址")
+    private String address;
 
-    private String province;            // 省
+    @GenComment("省")
+    private String province;
 
-    private String city;                // 市
+    @GenComment("市")
+    private String city;
 
-    private String longitude;           // 经度
+    @GenComment("经度")
+    private String longitude;
 
-    private String latitude;            // 纬度
+    @GenComment("纬度")
+    private String latitude;
 
     public String getTitle() {
         return title;

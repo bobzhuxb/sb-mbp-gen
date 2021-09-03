@@ -1,5 +1,6 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
 import ${packageName}.config.Constants;
 
 /**
@@ -8,7 +9,7 @@ import ${packageName}.config.Constants;
  */
 public class ReturnUploadCommonDTO<T> extends ReturnCommonDTO<T> {
 
-    // 返回状态
+    @GenComment("返回状态")
     private String code;
 
     public ReturnUploadCommonDTO(String code) {

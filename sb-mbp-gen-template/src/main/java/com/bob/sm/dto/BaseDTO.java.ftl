@@ -1,5 +1,6 @@
 package ${packageName}.dto;
 
+import ${packageName}.annotation.GenComment;
 import ${packageName}.annotation.RestFieldAllow;
 
 import java.io.Serializable;
@@ -12,30 +13,37 @@ public class BaseDTO implements Serializable {
 
     private String id;
 
+    @GenComment("创建者用户ID")
     @RestFieldAllow(allowSet = false)
-    private String insertUserId;    // 创建者用户ID
+    private String insertUserId;
 
+    @GenComment("操作者用户ID")
     @RestFieldAllow(allowSet = false)
-    private String operateUserId;    // 操作者用户ID
+    private String operateUserId;
 
+    @GenComment("插入时间")
     @RestFieldAllow(allowSet = false)
-    private String insertTime;    // 插入时间
+    private String insertTime;
 
+    @GenComment("更新时间")
     @RestFieldAllow(allowSet = false)
-    private String updateTime;    // 更新时间
+    private String updateTime;
 
     ///////////////////////// 附加关联属性 /////////////////////////
 
+    @GenComment("创建者用户")
     @RestFieldAllow(allowSet = false)
     private SystemUserDTO insertUser;
 
+    @GenComment("操作者用户")
     @RestFieldAllow(allowSet = false)
     private SystemUserDTO operateUser;
 
     ///////////////////////// 其他属性 /////////////////////////
 
+    @GenComment("是否在级联保存或删除（1：是  2或不填：否）")
     @RestFieldAllow(allowSet = false)
-    private Integer cascadeSave;      // 是否在级联保存或删除（1：是  2或不填：否）
+    private Integer cascadeSave;
 
     public String getId() {
         return id;

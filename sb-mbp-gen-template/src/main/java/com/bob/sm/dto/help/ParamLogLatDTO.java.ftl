@@ -1,5 +1,6 @@
 package ${packageName}.dto.help;
 
+import ${packageName}.annotation.GenComment;
 import ${packageName}.annotation.validation.ValidLonLat;
 import ${packageName}.dto.BaseDTO;
 
@@ -12,13 +13,15 @@ import javax.validation.constraints.Size;
  */
 public class ParamLogLatDTO {
 
+    @GenComment("经度")
     @NotBlank
     @ValidLonLat
-    private String longitude;       // 经度
+    private String longitude;
 
+    @GenComment("纬度")
     @NotBlank
     @ValidLonLat
-    private String latitude;        // 纬度
+    private String latitude;
 
     public String getLongitude() {
         return longitude;

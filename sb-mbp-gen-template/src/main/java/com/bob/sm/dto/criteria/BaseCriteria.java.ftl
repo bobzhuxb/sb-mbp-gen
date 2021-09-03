@@ -1,5 +1,6 @@
 package ${packageName}.dto.criteria;
 
+import ${packageName}.annotation.GenComment;
 import ${packageName}.annotation.RestFieldAllow;
 import ${packageName}.dto.criteria.filter.*;
 
@@ -11,43 +12,61 @@ import java.util.List;
  */
 public class BaseCriteria {
 
+    @GenComment("主键ID")
     private StringFilter id;
 
-    private NothingFilter nothing;    // 无任何操作
+    @GenComment("无任何操作")
+    private NothingFilter nothing;
 
-    private StringFilter insertUserId;    // 创建者用户ID
+    @GenComment("创建者用户ID")
+    private StringFilter insertUserId;
 
-    private StringFilter operateUserId;    // 操作者用户ID
+    @GenComment("操作者用户ID")
+    private StringFilter operateUserId;
 
-    private StringFilter insertTime;    // 插入时间
+    @GenComment("插入时间")
+    private StringFilter insertTime;
 
-    private StringFilter updateTime;    // 更新时间
+    @GenComment("更新时间")
+    private StringFilter updateTime;
 
+    @GenComment("直接使用的排序")
     @RestFieldAllow(allowSet = false)
-    private Integer useDirectOrderBy;   // 直接使用的排序
+    private Integer useDirectOrderBy;
 
-    private String appendRelated;       // 另外关联使用的表的属性
+    @GenComment("另外关联使用的表的属性")
+    private String appendRelated;
 
-    private String orderBy;     // 排序属性（属性名+asc/desc的方式，逗号隔开，例如 realName, myAddress desc）
+    @GenComment("排序")
+    private String orderBy;
 
-    private Integer limit;      // 限制的查询数量
+    @GenComment("限制的查询数量")
+    private Integer limit;
 
-    private List<String> associationNameList;   // 关联属性获取（列出的属性都会关联查询）
+    @GenComment("关联属性")
+    private List<String> associationNameList;
 
-    private List<String> dictionaryNameList;    // 关联数据字典值获取（列出的属性都会关联查询）
+    @GenComment("关联数据字典")
+    private List<String> dictionaryNameList;
 
-    private List<String> sqlColumnList;         // 需要查询的表的列
+    @GenComment("需要查询的表的列")
+    private List<String> sqlColumnList;
 
-    private SystemUserCriteria insertUser;    // 创建者用户
+    @GenComment("创建者用户")
+    private SystemUserCriteria insertUser;
 
-    private SystemUserCriteria operateUser;    // 操作者用户
+    @GenComment("操作者用户")
+    private SystemUserCriteria operateUser;
 
+    @GenComment("权限是否已验证过（1：是  2或不填：否）")
     @RestFieldAllow(allowSet = false)
-    private Integer authorityPass;      // 权限是否已验证过（1：是  2或不填：否）
+    private Integer authorityPass;
 
-    private Integer findFromCache;      // 是否从缓存查（1：是  2或不填：否）
+    @GenComment("是否从缓存查（1：是  2或不填：否）")
+    private Integer findFromCache;
 
-    private String interNo;             // 查询的interNo条件
+    @GenComment("查询的interNo条件")
+    private String interNo;
 
     public StringFilter getId() {
         return id;
