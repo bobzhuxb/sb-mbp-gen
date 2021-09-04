@@ -132,7 +132,7 @@ function initLayoutWest() {
     uploadClassDialog = $("#uploadClassDialog").dialog({
         autoOpen: false,
         height: 300,
-        width: 350,
+        width: 450,
         modal: true,
         close: function() {
             uploadClassForm[0].reset();

@@ -158,21 +158,25 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
     public ReturnCommonDTO uploadClassFiles(String projectId, String fileType, String overwrite, MultipartFile[] files) {
         Set<Class> classSet = new HashSet<>();
         List<String> fullFileNameList = new ArrayList<>();
+        List<String> fileNameList = new ArrayList<>();
         Date nowDate = new Date();
         for (MultipartFile file : files) {
             // 获取文件名和文件信息
             ReturnFileUploadDTO fileUploadDTO = commonService.uploadFileToLocal(file, false, nowDate);
             String fullFileName = fileUploadDTO.getAbsolutePath();
+            String fileName = fileUploadDTO.getOriginalFileName();
             if (!fullFileName.endsWith(fileType)) {
                 // 过滤掉后缀不对的文件
                 continue;
             }
             if (fullFileName.endsWith(fileType)) {
-                fullFileNameList.add(fileUploadDTO.getAbsolutePath());
+                fullFileNameList.add(fullFileName);
+                fileNameList.add(fileName);
             }
         }
         if (".java".equals(fileType)) {
             // 过滤掉所有注解（除了注解类本身）
+            boolean hasGenComment = fileNameList.contains("GenComment.java");
             for (String fullFileName : fullFileNameList) {
                 List<String> lines = FileUtil.readLines(fullFileName, "UTF-8");
                 String fileName = fullFileName.substring(fullFileName.lastIndexOf(File.separator) + 1);
@@ -180,12 +184,23 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
                 for (String line : lines) {
                     line = line.trim();
                     if (!"GenComment.java".equals(fileName)) {
-                        if (line.startsWith("@") && !line.startsWith("@GenComment(")) {
-                            continue;
-                        }
-                        if (line.startsWith("import") && line.contains(".annotation.")
-                                && !(line.endsWith(".annotation.*;") || line.endsWith(".annotation.GenComment;"))) {
-                            continue;
+                        if (hasGenComment) {
+                            // 有注解GenComment
+                            if (line.startsWith("@") && !line.startsWith("@GenComment(")) {
+                                continue;
+                            }
+                            if (line.startsWith("import ") && line.contains(".annotation.")
+                                    && !(line.endsWith(".annotation.*;") || line.endsWith(".annotation.GenComment;"))) {
+                                continue;
+                            }
+                        } else {
+                            // 没有注解GenComment
+                            if (line.startsWith("@")) {
+                                continue;
+                            }
+                            if (line.startsWith("import ") && line.contains(".annotation.")) {
+                                continue;
+                            }
                         }
                     }
                     newLines.add(line);

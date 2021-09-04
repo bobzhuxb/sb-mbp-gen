@@ -93,10 +93,12 @@ function loadDataJsonToObject() {
         }
         // 对fieldList重新排序，符合父子结构
         var sortedFieldList = new Array();
-        // Key：field所在的全路径  Value：field的类型（只记录object和list的类型）
+        // Key：field所在的from全路径  Value：field的实际类型
         var fieldPathTypeMap = new Map();
         fieldPathTypeMap.set("-", searchFullClassName);
-        // 从第1层级开始处理
+        // 从第1层级开始处理fromName，形成Map
+        sortFieldFromMap(fieldPathTypeMap, fieldList, 1);
+        // 从第1层级开始处理，根据name（to）进行排序
         var result = sortFieldList(fieldPathTypeMap, fieldList, sortedFieldList, 1);
         if (!result || sortedFieldList == null || sortedFieldList.length == 0) {
             // 上一步解析发生错误
@@ -175,38 +177,97 @@ function loadDataJsonToObject() {
 }
 
 /**
+ * 用于为sortedFieldList生成fieldPathTypeMap
+ */
+function sortFieldFromMap(fieldPathTypeMap, fieldList, processingLevel) {
+    for (var i = 0; i < fieldList.length; i++) {
+        var field = fieldList[i];
+        // from全路径名
+        var oriFullName = field.fromName;
+        // from全路径拆解
+        var splitFromFullNameArr = oriFullName.split(".");
+        // to所在层级
+        var level = splitFromFullNameArr.length;
+        if (level != processingLevel) {
+            // 过滤掉不是当前处理层级的
+            continue;
+        }
+        // 获取from中该字段所在类的类型
+        var key;
+        if (oriFullName.indexOf(".") < 0) {
+            // oriFullName没有点，说明from中在第一层
+            key = "-";
+        } else {
+            // from中在其他层
+            key = oriFullName.substring(0, oriFullName.lastIndexOf("."));
+        }
+        var parentTypeName = fieldPathTypeMap.get(key);
+        // 根据oriFullName查找fieldRealTypeName
+        var fieldRealTypeName = getFieldRealTypeName(oriFullName, parentTypeName);
+        if (fieldRealTypeName == null) {
+            return false;
+        }
+        field.realTypeName = fieldRealTypeName;
+        // 设置Map
+        fieldPathTypeMap.set(oriFullName, field.realTypeName);
+        // 标记该field已处理完
+        field.fromProcessed = true;
+    }
+    // 每次处理完一个层级之后，都验证一下是否全部处理完成
+    var allProcessed = true;
+    for (var i = 0; i < fieldList.length; i++) {
+        var field = fieldList[i];
+        if (!field.fromProcessed) {
+            allProcessed = false;
+            break;
+        }
+    }
+    // 未处理完成，则继续处理下一层级，处理完成则结束
+    if (!allProcessed) {
+        var result = sortFieldFromMap(fieldPathTypeMap, fieldList, processingLevel + 1);
+        if (!result) {
+            return false;
+        }
+    }
+    // 处理完成
+    return true;
+}
+
+/**
  * 对fieldList重新排序，符合父子结构
  */
 function sortFieldList(fieldPathTypeMap, fieldList, sortedFieldList, processingLevel) {
     for (var i = 0; i < fieldList.length; i++) {
         var field = fieldList[i];
-        // 来源全路径名
-        var fullName = field.fromName;
+        // to全路径名
+        var fullName = field.name;
+        // // from全路径名
+        // var oriFullName = field.fromName;
+        // to全路径拆解
         var splitFullNameArr = fullName.split(".");
-        // 层级
+        // to所在层级
         var level = splitFullNameArr.length;
         if (level != processingLevel) {
             // 过滤掉不是当前处理层级的
             continue;
         }
-        var parentTypeName = null;
-        if (processingLevel == 1) {
-            parentTypeName = fieldPathTypeMap.get("-");
-        } else {
-            var key = fullName.substring(0, fullName.lastIndexOf("."));
-            parentTypeName = fieldPathTypeMap.get(key);
-        }
-        // 根据fullName查找fieldRealTypeName
-        var fieldRealTypeName = getFieldRealTypeName(fullName, parentTypeName);
-        if (fieldRealTypeName == null) {
-            return false;
-        }
-        field.realTypeName = fieldRealTypeName;
-        // 当前如果是object或者list，需要记录下类型
-        var type = field.type;
-        if (type != null && (type == "object" || type == "list")) {
-            fieldPathTypeMap.set(fullName, field.realTypeName);
-        }
+        // // 获取from中该字段所在类的类型
+        // var key;
+        // if (oriFullName.indexOf(".") < 0) {
+        //     // oriFullName没有点，说明from中在第一层
+        //     key = "-";
+        // } else {
+        //     // from中在其他层
+        //     key = oriFullName.substring(0, oriFullName.lastIndexOf("."));
+        // }
+        // var parentTypeName = fieldPathTypeMap.get(key);
+        // // 根据oriFullName查找fieldRealTypeName
+        // var fieldRealTypeName = getFieldRealTypeName(oriFullName, parentTypeName);
+        // if (fieldRealTypeName == null) {
+        //     return false;
+        // }
+        // field.realTypeName = fieldRealTypeName;
+        // 添加进sortedFieldList，并设置toParent
         if (processingLevel == 1) {
             // 第一层的parent为null
             field.toParent = null;
@@ -214,11 +275,11 @@ function sortFieldList(fieldPathTypeMap, fieldList, sortedFieldList, processingL
             sortedFieldList.push(field);
         } else {
             // 其他层级
-            var parentFromName = fullName.substring(0, fullName.lastIndexOf("."));
+            var parentName = fullName.substring(0, fullName.lastIndexOf("."));
             for (var j = 0; j < fieldList.length; j++) {
                 var findParentField = fieldList[j];
-                var findParentFieldFromName = findParentField.fromName;
-                if (findParentFieldFromName == parentFromName) {
+                var findParentFieldName = findParentField.name;
+                if (findParentFieldName == parentName) {
                     // 找到对应的parent了
                     // 设置当前的parent的identify
                     field.toParent = findParentField.identify;
@@ -259,10 +320,10 @@ function sortFieldList(fieldPathTypeMap, fieldList, sortedFieldList, processingL
 }
 
 /**
- * 根据全路径名获取field类型全称
+ * 根据来源全路径名获取field类型全称
  */
-function getFieldRealTypeName(fullPathName, nowClassTypeName) {
-    var fullPathNameArr = fullPathName.split(".");
+function getFieldRealTypeName(oriFullPathName, nowClassTypeName) {
+    var fullPathNameArr = oriFullPathName.split(".");
     // 找到对应的classCode
     var classCodeList = projectSelected.ahClassCodeList;
     var nowClassCode = null;
