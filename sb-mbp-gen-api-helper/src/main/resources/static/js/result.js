@@ -1,6 +1,3 @@
-// 从fromObject拖拽是是否包括子元素（业务意义上）
-var fromChildInclude = true;
-
 /**
  * 初始化当前页的事件
  */
@@ -654,7 +651,7 @@ function toInsertLineEvent() {
             var parentId = $dragging.parent().attr("id");
             if (parentId == "fromObject") {
                 // 从转换前字段拖拽而来
-                fromLineDropped($dragging, $(this));
+                fromLineDropped($dragging, $(this), true);
             } else {
                 // 从转换后字段拖拽而来（上下移动）
                 toLineDropped($dragging, $(this));
@@ -667,9 +664,51 @@ function toInsertLineEvent() {
 }
 
 /**
+ * 打开清空toObject的数据对话框
+ */
+function openClearToObjectDialog() {
+    openConfirmDialog("确认清空转换后数据？", clearToObject);
+}
+
+/**
+ * 清空toObject的数据
+ */
+function clearToObject() {
+    $("#toObject").html("<div class='to-insert-line'></div>");
+    // 初始化结果页事件
+    initResultTabEvents();
+}
+
+/**
+ * 打开清空toObject的数据，并从fromObject拷贝所有对话框
+ */
+function openClearToAndCopyAllDialog() {
+    openConfirmDialog("确认全量覆盖？", clearToAndCopyAll);
+}
+
+/**
+ * 清空toObject的数据，并从fromObject拷贝所有
+ */
+function clearToAndCopyAll() {
+    // 清空toObject
+    clearToObject();
+    // 从fromObject拷贝所有
+    var fromLines = $(".from-data-line[level='1']:visible");
+    // 初始的插入行
+    for (var i = fromLines.length - 1; i >= 0; i--) {
+        var fromLine = fromLines[i];
+        var $toObj = $("#toObject .to-insert-line:first");
+        fromLineDropped($(fromLine), $toObj, true);
+    }
+    // 插入行之后的操作
+    doAfterDroppedHtmlFormed();
+    refreshToObjectLines();
+}
+
+/**
  * 从转换前字段拖拽
  */
-function fromLineDropped($dragging, $toObj) {
+function fromLineDropped($dragging, $toObj, childInclude) {
     // 插入字段和空行
     var draggingLevel = $dragging.attr("level");
     var fromIdentify = $dragging.attr("identify");
@@ -707,7 +746,7 @@ function fromLineDropped($dragging, $toObj) {
     // 生成数据行和插入行
     var $prevInsertLine = formDataLineAndInsertLine($toObj, draggingLevel, toIdentify, type, fieldRealTypeName,
         oriFullName, fullName, descr, toParent, draggingContent);
-    if (fromChildInclude) {
+    if (childInclude) {
         // 子元素一并拖拽
         // 如果被拖拽的元素是object或list，必须带着所有子元素（业务意义上）一起拖拽
         if (type == "object" || type == "list") {
@@ -722,7 +761,7 @@ function fromLineDropped($dragging, $toObj) {
                 var $childToObj = $prevInsertLine;
                 // 继续拖拽子目录（非折叠的）
                 if ($child.css("display") != "none") {
-                    fromLineDropped($child, $childToObj);
+                    fromLineDropped($child, $childToObj, true);
                 }
             }
         }
