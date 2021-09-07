@@ -1092,6 +1092,37 @@ function foldOrUnfoldTo(obj) {
     }
 }
 
+function sortNum(nameClass) {
+    return function(a, b) {
+        var name1 = $($(a).children(nameClass)[0]).html();
+        var name2 = $($(b).children(nameClass)[0]).html();
+        // console.log(name1 + "==========" + name2 + "===========" + (name1 - name2));
+        return name1 - name2;
+    }
+}
+
+/**
+ * fromObject的排序
+ */
+function orderFromLines() {
+    var lines = $("#fromObject div[level='1']");
+    // for (var i = 0; i < lines.length; i++) {
+    //     console.log($($(lines[i]).children(".from-name")[0]).html());
+    // }
+    lines.sort(sortNum(".from-name"));
+    // console.log("=============================");
+    // for (var i = 0; i < lines.length; i++) {
+    //     console.log($($(lines[i]).children(".from-name")[0]).html());
+    // }
+}
+
+/**
+ * toObject的排序
+ */
+function orderToLines() {
+
+}
+
 /**
  * 打开删除拖拽后的数据行确认框
  */

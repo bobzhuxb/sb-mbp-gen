@@ -686,6 +686,13 @@ function getClassCodeByFullName(fullClassName) {
 }
 
 /**
+ * 放弃修改接口确认框
+ */
+function confirmAbortChangingInterfaceDialog() {
+    openConfirmDialog("确认放弃当前修改并刷新？", abortChangingInterface);
+}
+
+/**
  * 放弃修改接口
  */
 function abortChangingInterface() {
