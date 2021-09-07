@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bob.at.domain.AhClassCode;
 import com.bob.at.domain.AhField;
+import com.bob.at.domain.AhProject;
 import com.bob.at.dto.AhClassCodeDTO;
 import com.bob.at.dto.AhFieldDTO;
 import com.bob.at.dto.criteria.AhClassCodeCriteria;
@@ -14,6 +15,7 @@ import com.bob.at.dto.help.ReturnCommonDTO;
 import com.bob.at.dto.help.ReturnFileUploadDTO;
 import com.bob.at.mapper.AhClassCodeMapper;
 import com.bob.at.mapper.AhFieldMapper;
+import com.bob.at.mapper.AhProjectMapper;
 import com.bob.at.service.AhClassCodeService;
 import com.bob.at.util.DynamicLoader;
 import com.bob.at.util.MemoryClassLoader;
@@ -47,6 +49,9 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
 
     @Autowired
     private AhFieldMapper ahFieldMapper;
+
+    @Autowired
+    private AhProjectMapper ahProjectMapper;
 
     @Autowired
     private AhClassCodeService ahClassCodeService;
@@ -156,6 +161,10 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
 
     @Override
     public ReturnCommonDTO uploadClassFiles(String projectId, String fileType, String overwrite, MultipartFile[] files) {
+        // 获取工程信息
+        AhProject project = ahProjectMapper.selectById(projectId);
+        String basePackage = project.getBasePackage();
+        // 上传文件
         Set<Class> classSet = new HashSet<>();
         List<String> fullFileNameList = new ArrayList<>();
         List<String> fileNameList = new ArrayList<>();

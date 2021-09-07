@@ -221,7 +221,12 @@
                 <input type="radio" name="overwrite" value="yes" />全量覆盖
                 <input type="radio" name="overwrite" value="no" checked="checked" />增量更新
                 <hr>
-                <input type="file" name="folder" accept="text/java" webkitdirectory multiple />
+                <a href="#" class="tool_btn" onclick="extendClassFile();">添加文件</a>
+                <a href="#" class="tool_btn" onclick="extendClassFolder();">添加文件夹</a>
+                <div id="classFilesDiv">
+                    <input class="class_file" style="display:none;" type="file" accept="text/java" multiple />
+                    <input class="class_folder" style="display:none;" type="file" accept="text/java" webkitdirectory multiple />
+                </div>
             </fieldset>
         </form>
     </div>

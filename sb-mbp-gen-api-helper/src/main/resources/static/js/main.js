@@ -131,7 +131,7 @@ function initLayoutWest() {
     });
     uploadClassDialog = $("#uploadClassDialog").dialog({
         autoOpen: false,
-        height: 300,
+        height: 350,
         width: 450,
         modal: true,
         close: function() {
@@ -418,6 +418,8 @@ function openUploadClassFilesDialog() {
     };
     $("#uploadClassDialog").dialog("option", "buttons", addButtons);
     uploadClassDialog.dialog("open");
+    $("#classFilesDiv input:visible").remove();
+    $("#classFilesDiv a").remove();
 }
 
 /**
@@ -1046,4 +1048,25 @@ function exportCurrentProject() {
         isNewWinOpen: false,
         method: "GET"
     });
+}
+
+function extendClassFile() {
+    var classFileHtml = $(".class_file:first").prop("outerHTML");
+    $("#classFilesDiv").append(classFileHtml);
+    $(".class_file:last").attr("name", "folder");
+    $(".class_file:last").show();
+    $("#classFilesDiv").append("<a href='#' onclick='deleteClassFiles(this);' title='点击删除'>X</a>");
+}
+
+function extendClassFolder() {
+    var classFileHtml = $(".class_folder:first").prop("outerHTML");
+    $("#classFilesDiv").append(classFileHtml);
+    $(".class_folder:last").attr("name", "folder");
+    $(".class_folder:last").show();
+    $("#classFilesDiv").append("<a href='#' onclick='deleteClassFiles(this);' title='点击删除'>X</a>");
+}
+
+function deleteClassFiles(obj) {
+    $(obj).prev().remove();
+    $(obj).remove();
 }
