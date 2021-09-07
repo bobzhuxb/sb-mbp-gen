@@ -1092,12 +1092,14 @@ function foldOrUnfoldTo(obj) {
     }
 }
 
-function sortNum(nameClass) {
+/**
+ * 按属性名称排序
+ */
+function sortByPropName(nameClass) {
     return function(a, b) {
         var name1 = $($(a).children(nameClass)[0]).html();
         var name2 = $($(b).children(nameClass)[0]).html();
-        // console.log(name1 + "==========" + name2 + "===========" + (name1 - name2));
-        return name1 - name2;
+        return name1.localeCompare(name2);
     }
 }
 
@@ -1106,21 +1108,49 @@ function sortNum(nameClass) {
  */
 function orderFromLines() {
     var lines = $("#fromObject div[level='1']");
-    // for (var i = 0; i < lines.length; i++) {
-    //     console.log($($(lines[i]).children(".from-name")[0]).html());
-    // }
-    lines.sort(sortNum(".from-name"));
-    // console.log("=============================");
-    // for (var i = 0; i < lines.length; i++) {
-    //     console.log($($(lines[i]).children(".from-name")[0]).html());
-    // }
+    var sortedLines = new Array();
+    if (typeof(lines) != "undefined" && lines.length > 0) {
+        orderLinesOfCurLevel("fromObject", ".from-name", lines, sortedLines);
+    }
+    $("#fromObject").html("");
+    for (var i = 0; i < sortedLines.length; i++) {
+        var line = sortedLines[i];
+        $("#fromObject").append($(line).prop("outerHTML"));
+    }
 }
 
 /**
  * toObject的排序
  */
 function orderToLines() {
+    var dataLines = $("#toObject div[level='1']");
+    var sortedLines = new Array();
+    if (typeof(dataLines) != "undefined" && dataLines.length > 0) {
+        orderLinesOfCurLevel("toObject", ".to-name", dataLines, sortedLines);
+    }
+    $("#toObject").html("<div class='to-insert-line'></div>");
+    for (var i = 0; i < sortedLines.length; i++) {
+        var line = sortedLines[i];
+        $("#toObject").append($(line).prop("outerHTML"));
+        $("#toObject").append("<div class='to-insert-line'></div>");
+    }
+    doAfterDroppedHtmlFormed();
+}
 
+/**
+ * 递归排序每一层数据
+ */
+function orderLinesOfCurLevel(objectDivId, className, lines, sortedLines) {
+    lines.sort(sortByPropName(className));
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        sortedLines.push(line);
+        var identify = $(line).attr("identify");
+        var subLines = $("#" + objectDivId + " div[parent='" + identify + "']");
+        if (typeof(subLines) != "undefined" && subLines.length > 0) {
+            orderLinesOfCurLevel(objectDivId, className, subLines, sortedLines);
+        }
+    }
 }
 
 /**
