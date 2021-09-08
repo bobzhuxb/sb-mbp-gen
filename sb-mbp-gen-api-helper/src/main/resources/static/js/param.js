@@ -91,7 +91,14 @@ function subMainAddLine(obj, toAddDomId, defaultValue) {
 }
 
 /**
- * 删除sqlColumn
+ * 打开删除条件行确认框
+ */
+function openRemoveSubMainLineDialog(obj) {
+    openConfirmDialog("确认删除？", removeSubMainLine, obj);
+}
+
+/**
+ * 删除条件行
  */
 function removeSubMainLine(obj) {
     $(obj).parent().parent().remove();

@@ -50,7 +50,7 @@
         &nbsp;|&nbsp;
         <a href="#" class="tool_btn" onclick="confirmAbortChangingInterfaceDialog();">放弃修改并刷新</a>
         &nbsp;|&nbsp;
-        <a href="#" class="tool_btn" onclick="cloneInterface();">克隆接口</a>
+        <a href="#" class="tool_btn" onclick="openCloneInterfaceDialog();">克隆接口</a>
         &nbsp;|&nbsp;
         <a href="#" class="tool_btn" onclick="showCurrentJson();">预览JSON</a>
         &nbsp;|&nbsp;
@@ -69,11 +69,11 @@
             </ul>
             <div id="baseInfo">
                 <div class="sub-main">
-                    <div class="sub-main-title">接口号（interNo）</div>
+                    <div class="sub-main-title"><span class="required">*</span>接口号（interNo）</div>
                     <input name="interNo" type="text" class="base-input" />
                 </div>
                 <div class="sub-main">
-                    <div class="sub-main-title">接口方法（httpMethod）</div>
+                    <div class="sub-main-title"><span class="required">*</span>接口方法（httpMethod）</div>
                     <select name="httpMethod" class="base-select">
                         <option value="GET" selected="selected">GET</option>
                         <option value="POST">POST</option>
@@ -82,14 +82,14 @@
                     </select>
                 </div>
                 <div class="sub-main">
-                    <div class="sub-main-title">追加默认URL前缀（addDefaultPrefix）</div>
+                    <div class="sub-main-title"><span class="required">*</span>追加默认URL前缀（addDefaultPrefix）</div>
                     <select name="addDefaultPrefix" class="base-select">
                         <option value="yes" selected="selected">是</option>
                         <option value="no">否</option>
                     </select>
                 </div>
                 <div class="sub-main">
-                    <div class="sub-main-title">接口URL（httpUrl）</div>
+                    <div class="sub-main-title"><span class="required">*</span>接口URL（httpUrl）</div>
                     <input name="httpUrl" type="text" class="base-input" />
                 </div>
                 <div class="sub-main">
@@ -110,7 +110,7 @@
                                     background-color: #fffa90;">
                             参数名：<input name="fromParam" type="text" class="base-input" />
                             <span style="display:-moz-inline-box; display:inline-block; width:80px;"></span>
-                            <a href="#" onclick="removeSubMainLine(this);">删除</a>
+                            <a href="#" onclick="openRemoveSubMainLineDialog(this);">删除</a>
                             <div></div>
                             描述：<input name="descr" type="text" class="base-input" />
                             <div></div>
@@ -128,7 +128,7 @@
                                 <div id="toCriteriaToAdd" class="template">
                                     <div style="display: inline-block;">
                                         <input name="toCriteriaList" type="text" class="base-input" />
-                                        <a href="#" onclick="removeSubMainLine(this);">删除</a>
+                                        <a href="#" onclick="openRemoveSubMainLineDialog(this);">删除</a>
                                     </div>
                                 </div>
                             </div>
@@ -141,7 +141,7 @@
                     <div id="associationNameToAdd" class="template">
                         <div style="display: inline-block;">
                             <input name="associationNameList" type="text" class="base-input" />
-                            <a href="#" onclick="removeSubMainLine(this);">删除</a>
+                            <a href="#" onclick="openRemoveSubMainLineDialog(this);">删除</a>
                         </div>
                     </div>
                 </div>
@@ -151,7 +151,7 @@
                     <div id="dictionaryNameToAdd" class="template">
                         <div style="display: inline-block;">
                             <input name="dictionaryNameList" type="text" class="base-input" />
-                            <a href="#" onclick="removeSubMainLine(this);">删除</a>
+                            <a href="#" onclick="openRemoveSubMainLineDialog(this);">删除</a>
                         </div>
                     </div>
                 </div>
@@ -165,7 +165,7 @@
                     <div id="sqlColumnToAdd" class="template">
                         <div style="display: inline-block;">
                             <input name="sqlColumnList" type="text" class="base-input" />
-                            <a href="#" onclick="removeSubMainLine(this);">删除</a>
+                            <a href="#" onclick="openRemoveSubMainLineDialog(this);">删除</a>
                         </div>
                     </div>
                 </div>

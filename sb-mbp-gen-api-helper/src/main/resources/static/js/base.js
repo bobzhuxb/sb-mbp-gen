@@ -11,7 +11,8 @@ function initBaseTabEvents() {
 function refreshBaseData() {
     if (interfaceSelected == null) {
         $("#baseInfo").find("input").val("");
-        $("#baseInfo").find("select").val("");
+        $("select[name='httpMethod'] option:first").prop("selected", "selected");
+        $("select[name='addDefaultPrefix'] option:first").prop("selected", "selected");
         return;
     }
     $("input[name='interNo']").val(interfaceSelected.interNo);

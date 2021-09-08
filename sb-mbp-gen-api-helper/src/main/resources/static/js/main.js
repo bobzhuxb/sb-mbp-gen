@@ -469,6 +469,7 @@ function prepareForAddInterface() {
     interfaceSelected = null;
     refreshInterfaceData();
     $(".interface").removeClass("list-selected");
+    $("#curInterface").removeAttr("title");
     $("#curInterface").html("新增中...");
     // 显示centerTabs
     $("#centerTabs").show();
@@ -711,8 +712,17 @@ function abortChangingInterface() {
     }
     refreshInterfaceData();
     if (addingInterface) {
+        $("#curInterface").removeAttr("title");
         $("#curInterface").html("新增中...");
     }
+}
+
+/**
+ * 打开克隆接口对话框
+ */
+function openCloneInterfaceDialog() {
+    openConfirmDialog("确认从当前页面克隆接口？<br/><span style='color: red; font-weight: bold;'>"
+        + "注意：请先保存当前接口数据！</span>", cloneInterface);
 }
 
 /**
@@ -730,6 +740,7 @@ function cloneInterface() {
     addingInterface = true;
     interfaceSelected = null;
     $(".interface").removeClass("list-selected");
+    $("#curInterface").removeAttr("title");
     $("#curInterface").html("新增中...");
 }
 
@@ -958,10 +969,10 @@ function saveInterface(successCallback) {
                     toastSuccess("保存成功");
                 }
                 interJsonDialog.dialog("close");
-                if (interfaceSelected == null) {
-                    interfaceSelected = new Object();
-                    interfaceSelected.id = result.data;
-                }
+                interfaceSelected = getInterface(result.data);
+                $("#curInterface").html($("#baseInfo").find("input[name='httpUrl']").val());
+                $("#curInterface").attr("title", interfaceSelected.httpUrl + "\n" + interfaceSelected.interNo
+                    + "\n" + interfaceSelected.interDescr);
                 refreshInterfaces(projectSelected.id);
             } else {
                 toastError(result.errMsg);
