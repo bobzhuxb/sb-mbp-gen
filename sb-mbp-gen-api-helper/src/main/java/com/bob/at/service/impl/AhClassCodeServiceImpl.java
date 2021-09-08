@@ -161,6 +161,8 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
 
     @Override
     public ReturnCommonDTO uploadClassFiles(String projectId, String fileType, String overwrite, MultipartFile[] files) {
+        AhProject project = ahProjectMapper.selectById(projectId);
+        String basePackage = project.getBasePackage();
         // 上传文件
         Set<Class> classSet = new HashSet<>();
         List<String> fullFileNameList = new ArrayList<>();
@@ -189,30 +191,47 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
                 List<String> newLines = new ArrayList<>();
                 for (String line : lines) {
                     line = line.trim();
-                    if (!"GenComment.java".equals(fileName)) {
-                        if (hasGenComment) {
-                            // 有注解GenComment
-                            if (line.startsWith("@") && !line.startsWith("@GenComment(")) {
-                                continue;
-                            }
-                            if (line.startsWith("import ") && line.contains(".annotation.")
-                                    && !(line.endsWith(".annotation.*;") || line.endsWith(".annotation.GenComment;"))) {
-                                continue;
-                            }
-                        } else {
-                            // 没有注解GenComment
-                            if (line.startsWith("@")) {
-                                continue;
-                            }
-                            if (line.startsWith("import ") && line.contains(".annotation.")) {
-                                continue;
+                    boolean needLine = false;
+                    if ("MbpPage.java".equals(fileName)) {
+                        if (line.startsWith("package ")) {
+                            needLine = true;
+                        }
+                    } else if (!"GenComment.java".equals(fileName)) {
+                        if (line.startsWith("package ")) {
+                            needLine = true;
+                        }
+                        boolean isFieldLine = (line.startsWith("private ") || line.startsWith("public ")
+                                || line.startsWith("protected ")) && !line.contains("(");
+                        if (isFieldLine) {
+                            needLine = true;
+                        }
+                        if (line.startsWith("import ")) {
+                            if (line.startsWith("import java.") || line.startsWith("import " + basePackage + ".")) {
+                                if (!line.contains(".annotation.") && !line.endsWith(".Constants;")) {
+                                    needLine = true;
+                                }
+                                if (hasGenComment) {
+                                    if (line.endsWith(".annotation.*;") || line.endsWith(".annotation.GenComment;")) {
+                                        needLine = true;
+                                    }
+                                }
                             }
                         }
-                        if (line.startsWith("import ") && line.contains(".validation.")) {
-                            continue;
+                        if (hasGenComment && line.startsWith("@GenComment(")) {
+                            needLine = true;
                         }
+                    } else {
+                        needLine = true;
                     }
-                    newLines.add(line);
+                    if (needLine) {
+                        newLines.add(line);
+                    }
+                }
+                if ("MbpPage.java".equals(fileName)) {
+                    newLines.add("public class MbpPage<T> {");
+                }
+                if (!"GenComment.java".equals(fileName)) {
+                    newLines.add("}");
                 }
                 FileUtil.writeLines(newLines, fullFileName, "UTF-8");
             }
