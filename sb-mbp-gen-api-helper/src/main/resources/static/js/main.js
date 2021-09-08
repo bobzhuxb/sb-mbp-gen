@@ -342,8 +342,13 @@ function addOrUpdateProject(httpType) {
         dataType: "JSON",
         success: function(result) {
             closeLoading();
-            projectDialog.dialog("close");
-            refreshProjects();
+            if (result.resultCode == "1") {
+                toastSuccess("操作成功");
+                projectDialog.dialog("close");
+                refreshProjects();
+            } else {
+                toastError("操作失败。" + result.errMsg);
+            }
         },
         error: function () {
             closeLoading();

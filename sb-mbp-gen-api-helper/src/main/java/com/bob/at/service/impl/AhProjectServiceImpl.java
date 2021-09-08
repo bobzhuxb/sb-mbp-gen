@@ -17,6 +17,7 @@ import com.bob.at.mapper.AhInterfaceMapper;
 import com.bob.at.mapper.AhProjectMapper;
 import com.bob.at.service.AhProjectService;
 import com.bob.at.util.MyBeanUtil;
+import com.bob.at.web.rest.errors.CommonAlertException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +47,11 @@ public class AhProjectServiceImpl extends ServiceImpl<AhProjectMapper, AhProject
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO createAhProject(AhProjectDTO ahProjectDTO) {
+        AhProject projectExist = baseMapper.selectOne(new QueryWrapper<AhProject>()
+                .eq(AhProject._name, ahProjectDTO.getName()).last("limit 1"));
+        if (projectExist != null) {
+            throw new CommonAlertException("该工程已存在");
+        }
         AhProject ahProject = new AhProject();
         MyBeanUtil.copyNonNullProperties(ahProjectDTO, ahProject);
         baseMapper.insert(ahProject);
@@ -55,6 +61,11 @@ public class AhProjectServiceImpl extends ServiceImpl<AhProjectMapper, AhProject
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO updateAhProject(AhProjectDTO ahProjectDTO) {
+        AhProject projectExist = baseMapper.selectOne(new QueryWrapper<AhProject>()
+                .eq(AhProject._name, ahProjectDTO.getName()).last("limit 1"));
+        if (projectExist != null && !projectExist.getId().equals(ahProjectDTO.getId())) {
+            throw new CommonAlertException("该工程已存在");
+        }
         AhProject ahProject = new AhProject();
         MyBeanUtil.copyNonNullProperties(ahProjectDTO, ahProject);
         baseMapper.updateById(ahProject);
@@ -97,7 +108,8 @@ public class AhProjectServiceImpl extends ServiceImpl<AhProjectMapper, AhProject
     @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<List<AhProjectDTO>> getAllAhProjects(AhProjectCriteria criteria) {
         List<AhProject> projectList = baseMapper.selectList(new QueryWrapper<AhProject>()
-            .like(StrUtil.isNotBlank(criteria.getNameLike()), AhProject._name, criteria.getNameLike()));
+                .like(StrUtil.isNotBlank(criteria.getNameLike()), AhProject._name, criteria.getNameLike())
+                .orderByAsc(AhProject._name));
         if (projectList == null || projectList.size() == 0) {
             return new ReturnCommonDTO<>(new ArrayList<>());
         }

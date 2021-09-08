@@ -161,9 +161,6 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
 
     @Override
     public ReturnCommonDTO uploadClassFiles(String projectId, String fileType, String overwrite, MultipartFile[] files) {
-        // 获取工程信息
-        AhProject project = ahProjectMapper.selectById(projectId);
-        String basePackage = project.getBasePackage();
         // 上传文件
         Set<Class> classSet = new HashSet<>();
         List<String> fullFileNameList = new ArrayList<>();
@@ -210,6 +207,9 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
                             if (line.startsWith("import ") && line.contains(".annotation.")) {
                                 continue;
                             }
+                        }
+                        if (line.startsWith("import ") && line.contains(".validation.")) {
+                            continue;
                         }
                     }
                     newLines.add(line);
