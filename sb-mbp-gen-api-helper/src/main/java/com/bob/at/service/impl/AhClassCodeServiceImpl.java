@@ -168,11 +168,13 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
         List<String> fullFileNameList = new ArrayList<>();
         List<String> fileNameList = new ArrayList<>();
         Date nowDate = new Date();
-        for (MultipartFile file : files) {
+        for (int i = 0; i < files.length; i++) {
+            MultipartFile file = files[i];
             // 获取文件名和文件信息
             ReturnFileUploadDTO fileUploadDTO = commonService.uploadFileToLocal(file, false, nowDate);
             String fullFileName = fileUploadDTO.getAbsolutePath();
             String fileName = fileUploadDTO.getOriginalFileName();
+            String fullFilePath = fullFileName.substring(0, fullFileName.lastIndexOf(File.separator) + 1);
             if (!fullFileName.endsWith(fileType)) {
                 // 过滤掉后缀不对的文件
                 continue;
@@ -180,6 +182,12 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
             if (fullFileName.endsWith(fileType)) {
                 fullFileNameList.add(fullFileName);
                 fileNameList.add(fileName);
+            }
+            if (i == 0) {
+                String iPageFullFileName = fullFilePath + "IPage.java";
+                FileUtil.writeLines(genJavaSrcIPage(basePackage), iPageFullFileName, "UTF-8");
+                fullFileNameList.add(iPageFullFileName);
+                fileNameList.add("IPage.java");
             }
         }
         if (".java".equals(fileType)) {
@@ -225,6 +233,9 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
                     }
                     if (needLine) {
                         newLines.add(line);
+                    }
+                    if (line.startsWith("package ") && !"IPage.java".equals(fileName)) {
+                        newLines.add("import " + basePackage + ".IPage;");
                     }
                 }
                 if ("MbpPage.java".equals(fileName)) {
@@ -351,6 +362,17 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
                 ahFieldMapper.insert(ahFieldAdd);
             }
         }
+    }
 
+    private List<String> genJavaSrcIPage(String basePackage) {
+        return Arrays.asList("package " + basePackage + ";\n",
+                "import java.util.List;",
+                "public class IPage<T> {\n",
+                "private long pages;\n",
+                "private List<T> records;\n",
+                "private long total;\n",
+                "private long size;\n",
+                "private long current;\n",
+                "}\n");
     }
 }
