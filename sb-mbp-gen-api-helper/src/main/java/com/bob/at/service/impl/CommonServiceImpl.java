@@ -67,4 +67,11 @@ public class CommonServiceImpl implements CommonService {
         }
     }
 
+    @Override
+    public String getUploadFullFilePath(Date nowDate) {
+        String relativePath = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(nowDate);
+        String localPath = ymlConfig.getLocation() + File.separator + relativePath + File.separator;
+        return localPath;
+    }
+
 }

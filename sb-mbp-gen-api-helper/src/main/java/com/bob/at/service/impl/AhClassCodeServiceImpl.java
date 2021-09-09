@@ -161,6 +161,9 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
 
     @Override
     public ReturnCommonDTO uploadClassFiles(String projectId, String fileType, String overwrite, MultipartFile[] files) {
+        // 预置的Java文件
+        List<String> reservedFileNameList = Arrays.asList("IPage.java", "GenComment.java", "MbpPage.java");
+        // 获取basePackage信息
         AhProject project = ahProjectMapper.selectById(projectId);
         String basePackage = project.getBasePackage();
         // 上传文件
@@ -168,84 +171,107 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
         List<String> fullFileNameList = new ArrayList<>();
         List<String> fileNameList = new ArrayList<>();
         Date nowDate = new Date();
+        // 特殊类固定生成
+        String fullFilePath = commonService.getUploadFullFilePath(nowDate);
+        // IPage.java
+        String iPageFullFileName = fullFilePath + "IPage.java";
+        FileUtil.writeLines(genJavaSrcIPage(basePackage), iPageFullFileName, "UTF-8");
+        fullFileNameList.add(iPageFullFileName);
+        fileNameList.add("IPage.java");
+        // MbpPage.java
+        String mbpPageFullFileName = fullFilePath + "MbpPage.java";
+        FileUtil.writeLines(genJavaSrcMbpPage(basePackage), mbpPageFullFileName, "UTF-8");
+        fullFileNameList.add(mbpPageFullFileName);
+        fileNameList.add("MbpPage.java");
+        // GenComment.java
+        String genCommentFullFileName = fullFilePath + "GenComment.java";
+        FileUtil.writeLines(genJavaSrcGenComment(basePackage), genCommentFullFileName, "UTF-8");
+        fullFileNameList.add(genCommentFullFileName);
+        fileNameList.add("GenComment.java");
+        // 其他Java文件的导入
         for (int i = 0; i < files.length; i++) {
             MultipartFile file = files[i];
+            // 预置的文件，忽略从外部导入的文件
+            String fileNameTmp = file.getOriginalFilename();
+            if (fileNameTmp.contains("/")) {
+                fileNameTmp = fileNameTmp.substring(fileNameTmp.lastIndexOf("/") + 1);
+            }
+            if (reservedFileNameList.contains(fileNameTmp)) {
+                continue;
+            }
             // 获取文件名和文件信息
             ReturnFileUploadDTO fileUploadDTO = commonService.uploadFileToLocal(file, false, nowDate);
             String fullFileName = fileUploadDTO.getAbsolutePath();
             String fileName = fileUploadDTO.getOriginalFileName();
-            String fullFilePath = fullFileName.substring(0, fullFileName.lastIndexOf(File.separator) + 1);
             if (!fullFileName.endsWith(fileType)) {
                 // 过滤掉后缀不对的文件
                 continue;
             }
+            // 其他类添加
             if (fullFileName.endsWith(fileType)) {
                 fullFileNameList.add(fullFileName);
                 fileNameList.add(fileName);
             }
-            if (i == 0) {
-                String iPageFullFileName = fullFilePath + "IPage.java";
-                FileUtil.writeLines(genJavaSrcIPage(basePackage), iPageFullFileName, "UTF-8");
-                fullFileNameList.add(iPageFullFileName);
-                fileNameList.add("IPage.java");
-            }
         }
         if (".java".equals(fileType)) {
-            // 过滤掉所有注解（除了注解类本身）
-            boolean hasGenComment = fileNameList.contains("GenComment.java");
+            // 过滤掉所有不必要的行
             for (String fullFileName : fullFileNameList) {
                 List<String> lines = FileUtil.readLines(fullFileName, "UTF-8");
                 String fileName = fullFileName.substring(fullFileName.lastIndexOf(File.separator) + 1);
+                // 预置的类不处理
+                if (reservedFileNameList.contains(fileName)) {
+                    continue;
+                }
                 List<String> newLines = new ArrayList<>();
                 for (String line : lines) {
                     line = line.trim();
+                    // 该行是否留下
                     boolean needLine = false;
-                    if ("MbpPage.java".equals(fileName)) {
-                        if (line.startsWith("package ")) {
-                            needLine = true;
-                        }
-                    } else if (!"GenComment.java".equals(fileName)) {
-                        if (line.startsWith("package ")) {
-                            needLine = true;
-                        }
-                        boolean isFieldLine = (line.startsWith("private ") || line.startsWith("public ")
-                                || line.startsWith("protected ")) && !line.contains("(");
-                        if (isFieldLine) {
-                            needLine = true;
-                        }
-                        if (line.startsWith("import ")) {
-                            if (line.startsWith("import java.") || line.startsWith("import " + basePackage + ".")) {
-                                if (!line.contains(".annotation.") && !line.endsWith(".Constants;")) {
-                                    needLine = true;
-                                }
-                                if (hasGenComment) {
-                                    if (line.endsWith(".annotation.*;") || line.endsWith(".annotation.GenComment;")) {
-                                        needLine = true;
-                                    }
-                                }
-                            }
-                        }
-                        if (hasGenComment && line.startsWith("@GenComment(")) {
-                            needLine = true;
-                        }
-                    } else {
+                    // package行留下
+                    if (line.startsWith("package ")) {
                         needLine = true;
                     }
+                    // 成员变量留下
+                    boolean isFieldLine = (line.startsWith("private ") || line.startsWith("public ")
+                            || line.startsWith("protected ")) && !line.contains("(");
+                    if (isFieldLine) {
+                        needLine = true;
+                    }
+                    // import行的去留
+                    if (line.startsWith("import ")) {
+                        if (line.endsWith(".IPage;") || line.endsWith(".MbpPage;") || line.endsWith(".GenComment;")) {
+                            needLine = false;
+                        } else if (line.contains(".annotation.")) {
+                            needLine = false;
+                        } else if (line.contains(".Constants;")) {
+                            needLine = false;
+                        } else if (line.startsWith("import java.") || line.startsWith("import " + basePackage + ".")) {
+                            needLine = true;
+                        }
+                    }
+                    // 唯一留下的特殊注解
+                    if (line.startsWith("@GenComment(")) {
+                        needLine = true;
+                    }
+                    // 需要追加的行写入
                     if (needLine) {
                         newLines.add(line);
                     }
-                    if (line.startsWith("package ") && !"IPage.java".equals(fileName)) {
-                        newLines.add("import " + basePackage + ".IPage;");
+                    // 所有的类先把IPage和GenComment加上
+                    if (line.startsWith("package ")) {
+                        if (!reservedFileNameList.contains(fileName)) {
+                            newLines.add("import " + basePackage + ".IPage;");
+                            newLines.add("import " + basePackage + ".MbpPage;");
+                            newLines.add("import " + basePackage + ".GenComment;");
+                        }
                     }
                 }
-                if ("MbpPage.java".equals(fileName)) {
-                    newLines.add("public class MbpPage<T> {");
-                }
-                if (!"GenComment.java".equals(fileName)) {
-                    newLines.add("}");
-                }
+                // 类结束的大括号
+                newLines.add("}");
+                // 重新写入文件
                 FileUtil.writeLines(newLines, fullFileName, "UTF-8");
             }
+            // 编译Java类
             try {
                 Map<String, byte[]> byteCodeMap = DynamicLoader.compile(fullFileNameList);
                 for (String keyName : byteCodeMap.keySet()) {
@@ -364,15 +390,32 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
         }
     }
 
+    private List<String> genJavaSrcMbpPage(String basePackage) {
+        return Arrays.asList("package " + basePackage + ";",
+                "public class MbpPage<T> {",
+                "}");
+    }
+
     private List<String> genJavaSrcIPage(String basePackage) {
-        return Arrays.asList("package " + basePackage + ";\n",
+        return Arrays.asList("package " + basePackage + ";",
                 "import java.util.List;",
-                "public class IPage<T> {\n",
-                "private long pages;\n",
-                "private List<T> records;\n",
-                "private long total;\n",
-                "private long size;\n",
-                "private long current;\n",
+                "public class IPage<T> {",
+                "private long pages;",
+                "private List<T> records;",
+                "private long total;",
+                "private long size;",
+                "private long current;",
                 "}\n");
+    }
+
+    private List<String> genJavaSrcGenComment(String basePackage) {
+        return Arrays.asList("package " + basePackage + ";",
+                "import java.lang.annotation.*;",
+                "@Documented",
+                "@Target({ElementType.FIELD})",
+                "@Retention(RetentionPolicy.RUNTIME)",
+                "public @interface GenComment {",
+                "String value();",
+                "}");
     }
 }

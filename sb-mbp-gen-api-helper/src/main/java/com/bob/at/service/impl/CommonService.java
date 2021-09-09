@@ -9,4 +9,6 @@ public interface CommonService {
 
     ReturnFileUploadDTO uploadFileToLocal(MultipartFile file, boolean changeFileName, Date nowDate);
 
+    String getUploadFullFilePath(Date nowDate);
+
 }
