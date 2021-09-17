@@ -742,8 +742,9 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                                       List<ApiAdapterResultFieldDTO> fieldConfigSortList, int levelLoop) {
         for (ApiAdapterResultFieldDTO fieldConfigSort : fieldConfigSortList) {
             String newName = fieldConfigSort.getName();
-            if (!newName.startsWith(lastName)) {
-                // 不是上一层级对应的层级，过滤掉
+            if (!"".equals(lastName) && !newName.startsWith(lastName + ".")) {
+                // 不是上一层级对应的层级，直接过滤掉
+                // 但排除掉第一层级先不过滤，用接下来两个判断来过滤
                 continue;
             }
             String[] newNames = newName.split("\\.");
