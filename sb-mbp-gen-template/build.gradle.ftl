@@ -17,7 +17,6 @@ apply plugin: 'io.spring.dependency-management'
 
 apply from: "codeup.gradle"
 
-archivesBaseName = '${projectName}'
 group = '${packageName}'
 version = '0.1'
 sourceCompatibility = 1.8
