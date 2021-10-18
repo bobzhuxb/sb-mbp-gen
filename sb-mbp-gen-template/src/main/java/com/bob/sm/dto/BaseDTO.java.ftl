@@ -11,6 +11,7 @@ import java.io.Serializable;
  */
 public class BaseDTO implements Serializable {
 
+    @GenComment("主键ID")
     private String id;
 
     @GenComment("创建者用户ID")
