@@ -1,11 +1,5 @@
 package ${packageName}.config;
 
-import ${packageName}.dto.help.PageElementDTO;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * 常量类
  * @author Bob
