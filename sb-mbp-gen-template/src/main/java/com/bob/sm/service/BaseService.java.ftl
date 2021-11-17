@@ -1188,8 +1188,6 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 baseDoAfterSaveOutTrans(dto, appendMap);
             }
         });
-        // 获取主键ID，根据ID存在与否判断是新增还是修改
-        String dtoIdUpdate = dto.getId();
         // 设置当前用户和时间
         String nowTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         String nowUserId = GlobalCache.getCommonUserService().getCurrentUserId();
@@ -1203,6 +1201,9 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             // 不继续保存,在此处终止
             return new ReturnCommonDTO(Constants.commonReturnStatus.SUCCESS.getValue(), null, dto.getId());
         }
+        // 获取主键ID，根据ID存在与否判断是新增还是修改
+        // 注：可能在baseSaveValidator中将新增改为修改，或将修改改为新增
+        String dtoIdUpdate = dto.getId();
         // 获取实体配置
         Class<? extends BaseDomain> entityClass = GlobalCache.getDomainClassMap().get(entityTypeName);
         T entity = null;
