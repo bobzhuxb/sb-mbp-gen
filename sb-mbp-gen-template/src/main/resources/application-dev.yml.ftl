@@ -46,7 +46,7 @@ tools:
                 token-validity-in-seconds-for-remember-me: 2592000
 
 api-pdf:
-    generate: true
+    generate: false
 
 ms-wx:
     verify-token: hychG#$vd!qB8T@RZ5Z5sKCa5Xmqz7QY
