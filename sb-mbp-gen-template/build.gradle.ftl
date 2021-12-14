@@ -125,7 +125,7 @@ dependencies {
 	// Alibaba的FastJson
 	compile "com.alibaba:fastjson:1.2.76"
 	// POI操作Office
-	compile "com.ts:bpoi:1.0"
+	compile "com.ts:bpoi:1.1.3"
 	// iText操作PDF
 	compile "com.itextpdf:itextpdf:5.5.13"
 	// 快速SAX模式的XML解析器
