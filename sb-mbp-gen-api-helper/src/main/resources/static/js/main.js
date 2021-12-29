@@ -671,7 +671,7 @@ function getClassCodeByFullName(fullClassName) {
     var clazz = null;
     showLoading("body");
     $.ajax({
-        url: "/api/ah-class-code-one?fullNameEq=" + fullClassName,
+        url: "/api/ah-class-code-one?projectIdEq=" + projectSelected.id + "&fullNameEq=" + fullClassName,
         type: "GET",
         dataType: "JSON",
         async: false,

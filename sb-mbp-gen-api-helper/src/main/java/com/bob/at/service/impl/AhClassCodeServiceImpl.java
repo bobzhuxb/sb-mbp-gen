@@ -131,12 +131,14 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
     @Transactional(rollbackFor = Exception.class)
     public ReturnCommonDTO<AhClassCodeDTO> getAhClassCodeOne(AhClassCodeCriteria criteria) {
         String fullNameEq = criteria.getFullNameEq();
-        if (StrUtil.isNotBlank(fullNameEq)) {
+        String projectIdEq = criteria.getProjectIdEq();
+        if (StrUtil.isNotBlank(fullNameEq) && StrUtil.isNotBlank(projectIdEq)) {
             String packageName = fullNameEq.substring(0, fullNameEq.lastIndexOf("."));
             String className = fullNameEq.substring(fullNameEq.lastIndexOf(".") + 1);
             AhClassCode classCode = baseMapper.selectOne(new QueryWrapper<AhClassCode>()
                     .eq(AhClassCode._packageName, packageName)
                     .eq(AhClassCode._className, className)
+                    .eq(AhClassCode._ahProjectId, projectIdEq)
                     .last("limit 1"));
             if (classCode != null) {
                 AhClassCodeDTO classCodeDTO = new AhClassCodeDTO();
