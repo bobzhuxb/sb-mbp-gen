@@ -35,9 +35,11 @@ function refreshParamData() {
             }
             $(blocks[i]).find("select[name='emptyToNull']").val(criteria.emptyToNull);
             var $toCriteriaAddBtn = $(blocks[i]).find(".to-criteria-add-btn");
-            for (var j = 0; j < criteria.toCriteriaList.length; j++) {
-                var toCriteriaValue = criteria.toCriteriaList[j];
-                subMainAddLine($toCriteriaAddBtn.get(0), "toCriteriaToAdd", toCriteriaValue);
+            if (criteria.toCriteriaList != null && criteria.toCriteriaList.length > 0) {
+                for (var j = 0; j < criteria.toCriteriaList.length; j++) {
+                    var toCriteriaValue = criteria.toCriteriaList[j];
+                    subMainAddLine($toCriteriaAddBtn.get(0), "toCriteriaToAdd", toCriteriaValue);
+                }
             }
         }
     }
