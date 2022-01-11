@@ -368,7 +368,9 @@ function formFromLines(ahClassCode, level, parentIdentify, parentFullName) {
     var fieldList = ahClassCode.ahFieldList;
     for (var i = 0; i < fieldList.length; i++) {
         var field = fieldList[i];
-        var identify = field.id;
+        // 随机生成唯一值
+        // var identify = field.id;
+        var identify = generateUUID();
         var fieldTypeName = field.typeName;
         var fieldName = field.fieldName;
         var genericTypeName = field.genericTypeName;
