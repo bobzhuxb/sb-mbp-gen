@@ -5,10 +5,9 @@ import ${packageName}.dto.help.CompressChangeFileDTO;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
 
 import java.io.*;
+import java.util.Base64;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -147,7 +146,7 @@ public class FileUtil {
             in.read(data);
         }
         // 返回Base64编码过的字节数组字符串
-        return new BASE64Encoder().encode(data);
+        return new String(Base64.getEncoder().encode(data));
     }
 
     /**
@@ -157,10 +156,9 @@ public class FileUtil {
      * @return
      */
     public static void generateImageFromBase64(String imgStr, String fullFileName) throws IOException {
-        BASE64Decoder decoder = new BASE64Decoder();
         try (OutputStream out = new FileOutputStream(fullFileName)) {
             // Base64解码
-            byte[] b = decoder.decodeBuffer(imgStr);
+            byte[] b = Base64.getDecoder().decode(imgStr);
             for (int i = 0;i < b.length; ++i) {
                 if (b[i] < 0) {
                     // 调整异常数据
