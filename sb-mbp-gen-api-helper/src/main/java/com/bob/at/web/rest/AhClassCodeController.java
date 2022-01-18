@@ -104,13 +104,15 @@ public class AhClassCodeController {
      * @param projectId 所属项目ID
      * @param fileType 文件类型（JAVA或CLASS）
      * @param overwrite yes全覆盖  no增量更新
+     * @param exceptClassNames 排除的类
      * @param folder
      * @return
      */
     @PostMapping("/ah-class-code-folder-upload")
     public ResponseEntity<ReturnCommonDTO> uploadClassFolder(String projectId, String fileType, String overwrite,
+                                                             String exceptClassNames,
                                                              @RequestParam("folder") MultipartFile[] folder) {
-        ReturnCommonDTO resultDTO = ahClassCodeService.uploadClassFiles(projectId, fileType, overwrite, folder);
+        ReturnCommonDTO resultDTO = ahClassCodeService.uploadClassFiles(projectId, fileType, overwrite, exceptClassNames, folder);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 
@@ -122,9 +124,9 @@ public class AhClassCodeController {
      * @return
      */
     @PostMapping("/ah-class-code-file-upload")
-    public ResponseEntity<ReturnCommonDTO> uploadClassFile(String projectId, String fileType, MultipartFile file) {
+    public ResponseEntity<ReturnCommonDTO> uploadClassFile(String projectId, String fileType, String exceptClassNames, MultipartFile file) {
         // 单文件只增量更新
-        ReturnCommonDTO resultDTO = ahClassCodeService.uploadClassFiles(projectId, fileType, "no", new MultipartFile[] {file});
+        ReturnCommonDTO resultDTO = ahClassCodeService.uploadClassFiles(projectId, fileType, "no", exceptClassNames, new MultipartFile[] {file});
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 

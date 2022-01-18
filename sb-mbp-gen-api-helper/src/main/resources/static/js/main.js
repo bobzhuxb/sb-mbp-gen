@@ -131,8 +131,8 @@ function initLayoutWest() {
     });
     uploadClassDialog = $("#uploadClassDialog").dialog({
         autoOpen: false,
-        height: 350,
-        width: 450,
+        height: 600,
+        width: 530,
         modal: true,
         close: function() {
             uploadClassForm[0].reset();
@@ -414,6 +414,10 @@ function openUploadClassFilesDialog() {
     if (projectSelected == null) {
         toastWarn("请先选择工程");
         return;
+    }
+    var exceptClassNames = projectSelected.exceptClassNames;
+    if (exceptClassNames != null && exceptClassNames.trim() != '') {
+        $("#uploadClassDialog").find("textarea[name='exceptClassNames']").html(exceptClassNames);
     }
     var addButtons = {
         "上传": uploadClassFiles,

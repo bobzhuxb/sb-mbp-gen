@@ -26,6 +26,8 @@ public class AhProjectDTO extends BaseDTO {
     @NotBlank
     @Size(min = 1)
     private String basePackage;     // 基础包名
+
+    private String exceptClassNames;     // 导入排除的实体类
     
 	///////////////////////// 附加关联属性 /////////////////////////
 
@@ -84,6 +86,13 @@ public class AhProjectDTO extends BaseDTO {
         this.ahClassCodeList = ahClassCodeList;
     }
 
+    public String getExceptClassNames() {
+        return exceptClassNames;
+    }
+
+    public void setExceptClassNames(String exceptClassNames) {
+        this.exceptClassNames = exceptClassNames;
+    }
     // ================self code:自定义属性的get/set方法start=====================
     // ================self code:自定义属性的get/set方法end=====================
 
@@ -116,6 +125,7 @@ public class AhProjectDTO extends BaseDTO {
                 ", descr='" + getDescr() + "'" +
                 ", urlPrefix='" + getUrlPrefix() + "'" +
                 ", basePackage='" + getBasePackage() + "'" +
+                ", exceptClassNames='" + getExceptClassNames() + "'" +
                 ", insertTime='" + getInsertTime() + "'" +
                 ", updateTime='" + getUpdateTime() + "'" +
                 "}";

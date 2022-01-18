@@ -162,7 +162,17 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
     }
 
     @Override
-    public ReturnCommonDTO uploadClassFiles(String projectId, String fileType, String overwrite, MultipartFile[] files) {
+    public ReturnCommonDTO uploadClassFiles(String projectId, String fileType, String overwrite, String exceptClassNames,  MultipartFile[] files) {
+        // 更新exceptClassNames
+        AhProject ahProjectUpdate = new AhProject();
+        ahProjectUpdate.setId(projectId);
+        ahProjectUpdate.setExceptClassNames(exceptClassNames);
+        ahProjectMapper.updateById(ahProjectUpdate);
+        // 解析手动排除的类
+        List<String> exceptClassNameList = new ArrayList<>();
+        if (StrUtil.isNotBlank(exceptClassNames)) {
+            exceptClassNameList = Arrays.asList(exceptClassNames.split("\r\n"));
+        }
         // 预置的Java文件
         List<String> reservedFileNameList = Arrays.asList("IPage.java", "GenComment.java", "MbpPage.java");
         // 获取basePackage信息
@@ -216,14 +226,18 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
             }
         }
         if (".java".equals(fileType)) {
+            List<String> fullFileNameListNew = new ArrayList<>();
             // 过滤掉所有不必要的行
             for (String fullFileName : fullFileNameList) {
                 List<String> lines = FileUtil.readLines(fullFileName, "UTF-8");
                 String fileName = fullFileName.substring(fullFileName.lastIndexOf(File.separator) + 1);
                 // 预置的类不处理
                 if (reservedFileNameList.contains(fileName)) {
+                    fullFileNameListNew.add(fullFileName);
                     continue;
                 }
+                // 是否手动排除的类
+                boolean isExceptFile = false;
                 List<String> newLines = new ArrayList<>();
                 for (String line : lines) {
                     line = line.trim();
@@ -231,6 +245,15 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
                     boolean needLine = false;
                     // package行留下
                     if (line.startsWith("package ")) {
+                        // 过滤掉手动排除的类
+                        String nowPackageName = line.substring(8, line.length() - 1);
+                        String nowClassName = fileName.substring(0, fileName.indexOf("."));
+                        String nowFullClassName = nowPackageName + "." + nowClassName;
+                        if (exceptClassNameList.contains(nowFullClassName)) {
+                            isExceptFile = true;
+                            break;
+                        }
+                        // package行留下
                         needLine = true;
                     }
                     // 成员变量留下
@@ -247,8 +270,15 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
                             needLine = false;
                         } else if (line.contains(".Constants;")) {
                             needLine = false;
-                        } else if (line.startsWith("import java.") || line.startsWith("import " + basePackage + ".")) {
+                        } else if (line.startsWith("import java.")) {
                             needLine = true;
+                        } else if (line.startsWith("import " + basePackage + ".")) {
+                            if (line.startsWith("import " + basePackage + ".domain.")
+                                || line.startsWith("import " + basePackage + ".dto.")) {
+                                needLine = true;
+                            } else {
+                                needLine = false;
+                            }
                         }
                     }
                     // 唯一留下的特殊注解
@@ -268,6 +298,10 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
                         }
                     }
                 }
+                // 过滤掉手动排除的类
+                if (!isExceptFile) {
+                    fullFileNameListNew.add(fullFileName);
+                }
                 // 类结束的大括号
                 newLines.add("}");
                 // 重新写入文件
@@ -275,7 +309,7 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
             }
             // 编译Java类
             try {
-                Map<String, byte[]> byteCodeMap = DynamicLoader.compile(fullFileNameList);
+                Map<String, byte[]> byteCodeMap = DynamicLoader.compile(fullFileNameListNew);
                 for (String keyName : byteCodeMap.keySet()) {
                     Class<?> clazz = new MemoryClassLoader(byteCodeMap).loadClass(keyName);
                     classSet.add(clazz);

@@ -32,7 +32,7 @@ public interface AhClassCodeService extends IService<AhClassCode> {
 
     ReturnCommonDTO<AhClassCodeDTO> getAhClassCodeOne(AhClassCodeCriteria criteria);
 
-    ReturnCommonDTO uploadClassFiles(String projectId, String fileType, String overwrite, MultipartFile[] files);
+    ReturnCommonDTO uploadClassFiles(String projectId, String fileType, String overwrite, String exceptClassNames, MultipartFile[] files);
 
     void reloadClassCodeAndField(String projectId, String overwrite, Set<Class> classSet);
 
