@@ -334,13 +334,13 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
         } else {
             throw new CommonException("fileType类别错误");
         }
-        ahClassCodeService.reloadClassCodeAndField(projectId, overwrite, classSet);
+        ahClassCodeService.reloadClassCodeAndField(projectId, overwrite, basePackage, classSet);
         return new ReturnCommonDTO();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void reloadClassCodeAndField(String projectId, String overwrite, Set<Class> classSet) {
+    public void reloadClassCodeAndField(String projectId, String overwrite, String basePackage, Set<Class> classSet) {
         // 获取当前时间
         LocalDateTime nowTime = LocalDateTime.now();
         String nowTimeStr = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(nowTime);
@@ -405,10 +405,12 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
                     }
                 }
                 String genericTypeName = null;
-                if ("java.util.List".equals(fieldFullTypeName)) {
-                    // 继续获取泛型名
+                if ("java.util.List".equals(fieldFullTypeName)
+                        || (basePackage + ".IPage").equals(fieldFullTypeName)
+                        || (basePackage + ".MbpPage").equals(fieldFullTypeName)) {
                     String genericTypeStr = field.getGenericType().getTypeName();
-                    Matcher matcher = LIST_TYPE_PATTERN.matcher(genericTypeStr);
+                    Pattern pattern = Pattern.compile("^" + fieldFullTypeName.replace(".", "\\.") + "\\<(.*)\\>$");
+                    Matcher matcher = pattern.matcher(genericTypeStr);
                     if (matcher.find()) {
                         genericTypeName = matcher.group(1);
                     }

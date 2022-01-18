@@ -34,6 +34,6 @@ public interface AhClassCodeService extends IService<AhClassCode> {
 
     ReturnCommonDTO uploadClassFiles(String projectId, String fileType, String overwrite, String exceptClassNames, MultipartFile[] files);
 
-    void reloadClassCodeAndField(String projectId, String overwrite, Set<Class> classSet);
+    void reloadClassCodeAndField(String projectId, String overwrite, String basePackage, Set<Class> classSet);
 
 }

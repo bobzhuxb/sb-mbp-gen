@@ -347,7 +347,9 @@ function getFieldRealTypeName(oriFullPathName, nowClassTypeName) {
         // 获取field的实际类型
         var typeName = field.typeName;
         var fieldRealTypeName = typeName;
-        if (fieldRealTypeName == "java.util.List") {
+        if (fieldRealTypeName == "java.util.List"
+                || fieldRealTypeName == projectSelected.packageName + ".IPage"
+                || fieldRealTypeName == projectSelected.packageName + ".MbpPage") {
             fieldRealTypeName = field.genericTypeName;
         }
         if (fullPathNameArr[fullPathNameArr.length - 1] == fieldName) {
@@ -395,11 +397,21 @@ function formFromLines(ahClassCode, level, parentIdentify, parentFullName) {
         }
         // 组装HTML
         fromLinesHtml += "<div identify='" + identify + "' level='" + level + "'";
+        // 泛型的genericTypeName初始化为父级的genericTypeName
+        if (genericTypeName != null && genericTypeName.trim() != "") {
+            if (genericTypeName.indexOf(".") < 0) {
+                genericTypeName = $("#fromObject").find("div[identify='" + parentIdentify + "']").attr("genericTypeName");
+            }
+        }
         if (isArray) {
             fromLinesHtml += " type='list'" + " genericTypeName='" + genericTypeName
                 + "' class='from-data-line data-is-list'";
         } else if (isObject) {
-            fromLinesHtml += " type='object' class='from-data-line data-is-object'";
+            fromLinesHtml += " type='object'";
+            if (genericTypeName != null && genericTypeName.trim() != "") {
+                fromLinesHtml += " genericTypeName='" + genericTypeName + "'";
+            }
+            fromLinesHtml += " class='from-data-line data-is-object'";
         } else {
             fromLinesHtml += " type='normal' class='from-data-line'";
         }
@@ -431,11 +443,16 @@ function foldOrUnfoldFrom(obj, forceUnfold) {
         } else {
             // 未加载过，调用接口获取数据加载
             var type = $(obj).parent().attr("type");
+            var genericTypeName = $(obj).parent().attr("genericTypeName");
             var loadingTypeName;
             if (type == "object") {
-                loadingTypeName = $(obj).parent().attr("fieldType");
+                if (typeof(genericTypeName) == "undefined") {
+                    loadingTypeName = genericTypeName;
+                } else {
+                    loadingTypeName = $(obj).parent().attr("fieldType");
+                }
             } else if (type == "list") {
-                loadingTypeName = $(obj).parent().attr("genericTypeName");
+                loadingTypeName = genericTypeName;
             } else {
                 // 无需加载
                 return;
@@ -725,7 +742,9 @@ function fromLineDropped($dragging, $toObj, childInclude) {
     var toIdentify = generateUUID();
     // 分析该字段的实际类型
     var fieldRealTypeName = fieldType;
-    if (fieldType == "java.util.List") {
+    if (fieldType == "java.util.List"
+            || fieldType == projectSelected.packageName + ".IPage"
+            || fieldType == projectSelected.packageName + ".MbpPage") {
         fieldRealTypeName = genericTypeName;
     }
     // 第一层不存在父级
