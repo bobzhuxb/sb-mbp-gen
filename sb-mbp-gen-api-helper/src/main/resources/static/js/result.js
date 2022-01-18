@@ -443,16 +443,18 @@ function foldOrUnfoldFrom(obj, forceUnfold) {
         } else {
             // 未加载过，调用接口获取数据加载
             var type = $(obj).parent().attr("type");
-            var genericTypeName = $(obj).parent().attr("genericTypeName");
+            var fieldType = $(obj).parent().attr("fieldType");
             var loadingTypeName;
             if (type == "object") {
-                if (typeof(genericTypeName) != "undefined") {
-                    loadingTypeName = genericTypeName;
+                if (fieldType.indexOf(".") < 0) {
+                    // 泛型，获取父级的genericTypeName
+                    loadingTypeName = $("#fromObject").find("div[identify='" + myIdentify + "']").attr("genericTypeName");
                 } else {
-                    loadingTypeName = $(obj).parent().attr("fieldType");
+                    // 普通Object
+                    loadingTypeName = fieldType;
                 }
             } else if (type == "list") {
-                loadingTypeName = genericTypeName;
+                loadingTypeName = $(obj).parent().attr("genericTypeName");
             } else {
                 // 无需加载
                 return;
