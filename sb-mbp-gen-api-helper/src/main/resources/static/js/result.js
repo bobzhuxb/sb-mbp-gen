@@ -446,7 +446,7 @@ function foldOrUnfoldFrom(obj, forceUnfold) {
             var genericTypeName = $(obj).parent().attr("genericTypeName");
             var loadingTypeName;
             if (type == "object") {
-                if (typeof(genericTypeName) == "undefined") {
+                if (typeof(genericTypeName) != "undefined") {
                     loadingTypeName = genericTypeName;
                 } else {
                     loadingTypeName = $(obj).parent().attr("fieldType");
