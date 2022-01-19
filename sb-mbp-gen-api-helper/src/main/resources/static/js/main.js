@@ -148,6 +148,12 @@ function initLayoutWest() {
         width: 800,
         modal: true
     });
+    yapiJsonDialog = $("#yapiJsonDialog").dialog({
+        autoOpen: false,
+        height: 600,
+        width: 800,
+        modal: true
+    });
     jsonImportDialog = $("#jsonImportDialog").dialog({
         autoOpen: false,
         height: 300,
@@ -242,6 +248,24 @@ function openInterJsonDialog(content, saveCallback, exportCallback) {
     $("#interJsonShow").html(content);
     $("#interJsonDialog").dialog("option", "buttons", addButtons);
     interJsonDialog.dialog("open");
+}
+
+/**
+ * 打开接口YAPI配置预览对话框
+ */
+function openYapiJsonDialog(content, sendCallback) {
+    var addButtons = {
+        "发送至Yapi": function () {
+            sendCallback();
+            yapiJsonDialog.dialog("close");
+        },
+        "取消": function() {
+            yapiJsonDialog.dialog("close");
+        }
+    };
+    $("#yapiJsonShow").html(content);
+    $("#yapiJsonDialog").dialog("option", "buttons", addButtons);
+    yapiJsonDialog.dialog("open");
 }
 
 /**
@@ -783,7 +807,71 @@ function showCurrentJson() {
     if (interInfoData == null) {
         return;
     }
-    openInterJsonDialog(formatJson(interInfoData), saveInterface, saveInterfaceAndExport);
+    openInterJsonDialog(formatJson(interInfoData, 8), saveInterface, saveInterfaceAndExport);
+}
+
+/**
+ * 显示当前页面的Yapi配置
+ */
+function showYapiJson() {
+    if (projectSelected == null) {
+        toastWarn("请先选择工程");
+        return;
+    }
+    if (interfaceSelected == null && !addingInterface) {
+        toastWarn("请先选择接口或新增接口");
+        return;
+    }
+    var yapiInfoData = validAndGenYapiData();
+    if (yapiInfoData == null) {
+        return;
+    }
+    openYapiJsonDialog(formatJson(yapiInfoData, 4), sendYapiConfig);
+}
+
+/**
+ * 发送Yapi配置以新增或更新接口文档
+ */
+function sendYapiConfig() {
+    if (projectSelected == null) {
+        toastWarn("请先选择工程");
+        return;
+    }
+    if (interfaceSelected == null && !addingInterface) {
+        toastWarn("请先选择接口或新增接口");
+        return;
+    }
+    var yapiInfoData = validAndGenYapiData();
+    if (yapiInfoData == null) {
+        return;
+    }
+    var yapiInfoJson = JSON.stringify(yapiInfoData);
+    // 保存参数
+    var interParam = new Object();
+    interParam.dataJson = yapiInfoJson;
+    interParam.ahProjectId = projectSelected.id;
+    // 保存数据
+    showLoading("body");
+    $.ajax({
+        url: "/api/ah-interface-send-yapi",
+        type: "POST",
+        data: JSON.stringify(interParam),
+        contentType: "application/json",
+        dataType: "JSON",
+        success: function(result) {
+            closeLoading();
+            if (result.resultCode == "1") {
+                toastSuccess("保存成功");
+                yapiJsonDialog.dialog("close");
+            } else {
+                toastError(result.errMsg);
+            }
+        },
+        error: function () {
+            closeLoading();
+            toastError("保存失败");
+        }
+    });
 }
 
 /**
@@ -895,6 +983,124 @@ function validAndGenInterData() {
     removeNullProperty(interInfoData, ["param", "result"]);
     // 返回数据
     return interInfoData;
+}
+
+/**
+ * 验证并生成YAPI配置数据
+ */
+function validAndGenYapiData() {
+    // 基础信息
+    var yapiInfoData = new Object();
+    var interMap = new Map();
+    var httpUrl = emptyStringToNull($("#baseInfo").find("input[name='httpUrl']").val());
+    var interNo = emptyStringToNull($("#baseInfo").find("input[name='interNo']").val());
+    var httpMethod = emptyStringToNull($("#baseInfo").find("select[name='httpMethod']").val());
+    var interMapValue = new Object();
+    interMap.set(httpUrl + "?interNo=" + interNo, interMapValue);
+    yapiInfoData.paths = mapToObj(interMap);
+    // 接口内的信息
+    var interDetail = new Object();
+    interMapValue.get = interDetail;
+    var interDetailTags = new Array();
+    interDetail.tags = interDetailTags;
+    var yapiTag = emptyStringToNull($("#baseInfo").find("input[name='yapiTags']").val());
+    interDetailTags.push(yapiTag);
+    interDetail.summary = emptyStringToNull($("#baseInfo").find("input[name='interDescr']").val());
+    interDetail.description = "";
+    if (httpUrl == null || interNo == null || httpMethod == null || yapiTag == null || interDetail.summary == null) {
+        toastWarn("接口号、接口方法、接口URL、接口描述、所属Yapi分类不允许为空");
+        return;
+    }
+    // 参数
+    var parameters = new Array();
+    interDetail.parameters = parameters;
+    var criteriaList = $("#paramInfo").find("div[idFrom='criteriaToAdd']");
+    if (typeof(criteriaList) != "undefined") {
+        if (criteriaList.length > 0) {
+            for (var i = 0; i < criteriaList.length; i++) {
+                var criteria = criteriaList[i];
+                var fromParam = emptyStringToNull($(criteria).find("input[name='fromParam']").val());
+                var descr = emptyStringToNull($(criteria).find("input[name='descr']").val());
+                var fixedValue = emptyStringToNull($(criteria).find("input[name='fixedValue']").val());
+                if (fromParam == null || fixedValue != null) {
+                    continue;
+                }
+                var parameter = new Object();
+                parameter.name = fromParam;
+                parameter.in = "query";
+                parameter.required = true;
+                parameter.description = descr;
+                parameter.type = "string";
+                // 添加到parameters中
+                parameters.push(parameter);
+            }
+        }
+    }
+    // 返回
+    var response = new Map();
+    var responseInfo = new Object();
+    response.set("200", responseInfo);
+    interDetail.responses = mapToObj(response);
+    responseInfo.description = "successful operation";
+    var responseSchema = new Map();
+    responseSchema.set("$schema", "http://json-schema.org/draft-04/schema#");
+    responseSchema.set("type", "object");
+    var responseMain = new Object();
+    responseSchema.set("properties", responseMain);
+    responseInfo.schema = mapToObj(responseSchema);
+    var resultCode = new Object();
+    responseMain.resultCode = resultCode;
+    resultCode.type = "string";
+    resultCode.description = "返回码（1：操作成功  2：操作失败）";
+    var errMsg = new Object();
+    responseMain.errMsg = errMsg;
+    errMsg.type = "null";
+    errMsg.description = "错误信息";
+    var data = new Object();
+    responseMain.data = data;
+    data.type = "object";
+    data.description = "实际数据";
+    // 返回值中的真实信息
+    var resultProperties = new Map();
+    // TODO：写入返回数据.....
+    var fieldInfo = new Object();
+    fieldInfo.type = "string";
+    fieldInfo.description = "下架总数量";
+    resultProperties.set("outStockTotalCount", fieldInfo);
+    data.properties = mapToObj(resultProperties);
+    // 返回数据解析
+    var toObjectDataList = $("#toObject .to-data-line");
+    // 重名验证
+    var fullNameSet = new Set();
+    for (var i = 0; i < toObjectDataList.length; i++) {
+        var toObjectData = toObjectDataList[i];
+        var fullName = $(toObjectData).attr("fullName");
+        // 验证重复
+        if (fullNameSet.has(fullName)) {
+            toastError(fullName + "名称重复");
+            return null;
+        }
+        fullNameSet.add(fullName);
+    }
+    for (var i = 0; i < toObjectDataList.length; i++) {
+        var field = new Object();
+        var toObjectData = toObjectDataList[i];
+        var finalName = $(toObjectData).attr("fullName");
+        var type = $(toObjectData).attr("type");
+        var descr = $(toObjectData).find(".to-descr").html();
+        if (type == "normal") {
+            type = null;
+        }
+        // 移除field的空值属性
+        removeNullProperty(field);
+        // 添加field
+        interInfoData.result.fieldList.push(field);
+    }
+    // // 移除result的空值属性
+    // removeNullProperty(interInfoData.param);
+
+    // 返回数据
+    return yapiInfoData;
 }
 
 /**

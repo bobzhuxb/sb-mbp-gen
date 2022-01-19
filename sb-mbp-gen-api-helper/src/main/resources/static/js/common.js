@@ -14,6 +14,8 @@ var uploadClassDialog;
 var uploadClassForm;
 // 接口JSON预览框
 var interJsonDialog;
+// YAPI配置预览框
+var yapiJsonDialog;
 // 确认对话框
 var confirmDialog;
 // JSON导入对话框
@@ -80,10 +82,22 @@ $.fn.toJSON = function()
     return o;
 };
 
-function formatJson(msg) {
+function mapToObj(strMap) {
+    let obj= Object.create(null);
+    for (let[k,v] of strMap) {
+        obj[k] = v;
+    }
+    return obj;
+}
+
+function formatJson(msg, tabSpaceCount) {
     var rep = "~";
     var jsonStr = JSON.stringify(msg, null, rep);
     var str = "";
+    var tabSpace = "";
+    for (var i = 0; i < tabSpaceCount; i++) {
+        tabSpace += "&nbsp;";
+    }
     for (var i = 0; i < jsonStr.length; i++) {
         var text2 = jsonStr.charAt(i);
         if (i > 1) {
@@ -98,7 +112,7 @@ function formatJson(msg) {
     for (var i = 0; i < str.length; i++) {
         var text = str.charAt(i);
         if (rep == text) {
-            jsonStr += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+            jsonStr += tabSpace;
         } else {
             jsonStr += text;
         }

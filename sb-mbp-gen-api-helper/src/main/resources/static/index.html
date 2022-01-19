@@ -54,6 +54,8 @@
         &nbsp;|&nbsp;
         <a href="#" class="tool_btn" onclick="showCurrentJson();">预览JSON</a>
         &nbsp;|&nbsp;
+        <a href="#" class="tool_btn" onclick="showYapiJson();">预览YAPI配置</a>
+        &nbsp;|&nbsp;
         <a href="#" class="tool_btn" onclick="saveInterface();">保存接口</a>
         &nbsp;|&nbsp;
         <a href="#" class="tool_btn" onclick="openImportInterJsonFilesDialog();">导入接口JSON</a>
@@ -93,8 +95,12 @@
                     <input name="httpUrl" type="text" class="base-input" />
                 </div>
                 <div class="sub-main">
-                    <div class="sub-main-title">接口描述（interDescr）</div>
+                    <div class="sub-main-title"><span class="required">*</span>接口描述（interDescr）</div>
                     <input name="interDescr" type="text" class="base-input" />
+                </div>
+                <div class="sub-main">
+                    <div class="sub-main-title"><span class="required">*</span>所属Yapi分类</div>
+                    <input name="yapiTags" type="text" class="base-input" />
                 </div>
                 <div class="sub-main">
                     <div class="sub-main-title">相关截图（interPic）</div>
@@ -237,6 +243,12 @@
     <div id="interJsonDialog" title="接口数据预览">
         <form>
             <div id="interJsonShow"></div>
+            <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+        </form>
+    </div>
+    <div id="yapiJsonDialog" title="Yapi配置预览">
+        <form>
+            <div id="yapiJsonShow"></div>
             <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
         </form>
     </div>
