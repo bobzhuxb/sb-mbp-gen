@@ -154,7 +154,7 @@ public class AhInterfaceServiceImpl extends ServiceImpl<AhInterfaceMapper, AhInt
             throw new CommonException("该工程没有接口");
         }
         // 压缩文件
-        String relativePath = new SimpleDateFormat("yyyyMMdd").format(nowDate);
+        String relativePath = Constants.INTER_JSON_FILE_UPLOAD_RELATIVE_PATH + new SimpleDateFormat("yyyyMMdd").format(nowDate);
         int fileRandomInt = new Random().nextInt(1000);
         // 新文件名
         String newZipFileName = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(nowDate) + "_"
@@ -235,7 +235,7 @@ public class AhInterfaceServiceImpl extends ServiceImpl<AhInterfaceMapper, AhInt
         int lastPointPosition = fileName.lastIndexOf(".");
         String extension = lastPointPosition < 0 ? "" : fileName.substring(lastPointPosition);
         // 相对路径
-        String relativePath = new SimpleDateFormat("yyyyMMdd").format(nowDate);
+        String relativePath = Constants.INTER_JSON_FILE_UPLOAD_RELATIVE_PATH + new SimpleDateFormat("yyyyMMdd").format(nowDate);
         int fileRandomInt = new Random().nextInt(1000);
         // 新文件名
         String newFileName = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(nowDate) + "_"
@@ -256,7 +256,8 @@ public class AhInterfaceServiceImpl extends ServiceImpl<AhInterfaceMapper, AhInt
         List<ApiAdapterConfigDTO> configList = new ArrayList<>();
         for (MultipartFile file : files) {
             // 获取文件名和文件信息
-            ReturnFileUploadDTO fileUploadDTO = commonService.uploadFileToLocal(file, true, new Date());
+            ReturnFileUploadDTO fileUploadDTO = commonService.uploadFileToLocal(file,
+                    Constants.INTER_JSON_FILE_UPLOAD_RELATIVE_PATH, true, new Date());
             String fullFileName = fileUploadDTO.getAbsolutePath();
             String jsonData = FileUtil.readString(new File(fullFileName), "UTF-8");
             String originalFileName = fileUploadDTO.getOriginalFileName();

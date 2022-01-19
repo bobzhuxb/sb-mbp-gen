@@ -22,7 +22,8 @@ public class CommonServiceImpl implements CommonService {
     private YmlConfig ymlConfig;
 
     @Override
-    public ReturnFileUploadDTO uploadFileToLocal(MultipartFile file, boolean changeFileName, Date nowDate) {
+    public ReturnFileUploadDTO uploadFileToLocal(MultipartFile file, String relativeBasePath,
+                                                 boolean changeFileName, Date nowDate) {
         // 获取文件名和文件内容
         String fileName = file.getOriginalFilename();
         if (fileName.contains("/")) {
@@ -31,17 +32,17 @@ public class CommonServiceImpl implements CommonService {
         // 后缀（注意扩展名可能不存在的情况）
         int lastPointPosition = fileName.lastIndexOf(".");
         String extension = lastPointPosition < 0 ? "" : fileName.substring(lastPointPosition);
-        String relativePath = null;
+        String relativePath = relativeBasePath;
         String newFileName = null;
         if (changeFileName) {
             // 相对路径
-            relativePath = new SimpleDateFormat("yyyyMMdd").format(nowDate);
+            relativePath = relativePath + new SimpleDateFormat("yyyyMMdd").format(nowDate);
             // 新文件名
             int fileRandomInt = new Random().nextInt(1000);
             newFileName = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(nowDate) + "_"
                     + fileRandomInt + extension;
         } else {
-            relativePath = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(nowDate);
+            relativePath = relativePath + new SimpleDateFormat("yyyyMMddHHmmssSSS").format(nowDate);
             newFileName = fileName;
         }
         // 本地（服务器）绝对路径

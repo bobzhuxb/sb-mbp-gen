@@ -7,6 +7,21 @@ package com.bob.at.config;
 public class Constants {
 
     /**
+     * class或java文件上传的相对路径
+     */
+    public static final String CLASS_FILE_UPLOAD_RELATIVE_PATH = "class/";
+
+    /**
+     * 接口json文件导入的相对路径
+     */
+    public static final String INTER_JSON_FILE_UPLOAD_RELATIVE_PATH = "interJson/";
+
+    /**
+     * yapi的json文件生成的相对路径
+     */
+    public static final String YAPI_JSON_FILE_UPLOAD_RELATIVE_PATH = "yapiJson/";
+
+    /**
      * 系统通用返回状态
      */
     public enum commonReturnStatus {

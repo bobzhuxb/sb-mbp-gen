@@ -7,7 +7,8 @@ import java.util.Date;
 
 public interface CommonService {
 
-    ReturnFileUploadDTO uploadFileToLocal(MultipartFile file, boolean changeFileName, Date nowDate);
+    ReturnFileUploadDTO uploadFileToLocal(MultipartFile file, String relativeBasePath,
+                                          boolean changeFileName, Date nowDate);
 
     String getUploadFullFilePath(Date nowDate);
 

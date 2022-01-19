@@ -5,6 +5,7 @@ import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.bob.at.config.Constants;
 import com.bob.at.domain.AhClassCode;
 import com.bob.at.domain.AhField;
 import com.bob.at.domain.AhProject;
@@ -212,7 +213,8 @@ public class AhClassCodeServiceImpl extends ServiceImpl<AhClassCodeMapper, AhCla
                 continue;
             }
             // 获取文件名和文件信息
-            ReturnFileUploadDTO fileUploadDTO = commonService.uploadFileToLocal(file, false, nowDate);
+            ReturnFileUploadDTO fileUploadDTO = commonService.uploadFileToLocal(file,
+                    Constants.CLASS_FILE_UPLOAD_RELATIVE_PATH, false, nowDate);
             String fullFileName = fileUploadDTO.getAbsolutePath();
             String fileName = fileUploadDTO.getOriginalFileName();
             if (!fullFileName.endsWith(fileType)) {
