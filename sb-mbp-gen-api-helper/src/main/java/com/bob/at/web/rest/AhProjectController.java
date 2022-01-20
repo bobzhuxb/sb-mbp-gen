@@ -3,6 +3,7 @@ package com.bob.at.web.rest;
 import com.bob.at.dto.AhProjectDTO;
 import com.bob.at.dto.criteria.AhProjectCriteria;
 import com.bob.at.dto.help.ReturnCommonDTO;
+import com.bob.at.dto.help.YapiSendDTO;
 import com.bob.at.service.AhProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -85,6 +86,17 @@ public class AhProjectController {
     @GetMapping("/ah-project-all")
     public ResponseEntity<ReturnCommonDTO<List<AhProjectDTO>>> getAllAhProjects(AhProjectCriteria criteria) {
         ReturnCommonDTO<List<AhProjectDTO>> resultDTO = ahProjectService.getAllAhProjects(criteria);
+        return ResponseEntity.ok().headers(null).body(resultDTO);
+    }
+
+    /**
+     * 将接口信息发送至YAPI
+     * @param yapiSendDTO 发送参数
+     * @return 结果返回码和消息
+     */
+    @PostMapping("/ah-interface-send-yapi")
+    public ResponseEntity<ReturnCommonDTO> sendInterToYapi(@Valid @RequestBody YapiSendDTO yapiSendDTO) {
+        ReturnCommonDTO resultDTO = ahProjectService.sendInterToYapi(yapiSendDTO);
         return ResponseEntity.ok().headers(null).body(resultDTO);
     }
 

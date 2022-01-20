@@ -1,30 +1,40 @@
 package com.bob.at.service.impl;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.bob.at.config.Constants;
+import com.bob.at.config.YmlConfig;
 import com.bob.at.domain.AhClassCode;
 import com.bob.at.domain.AhInterface;
 import com.bob.at.domain.AhProject;
 import com.bob.at.dto.AhClassCodeDTO;
 import com.bob.at.dto.AhInterfaceDTO;
 import com.bob.at.dto.AhProjectDTO;
+import com.bob.at.dto.adapter.ApiAdapterConfigDTO;
 import com.bob.at.dto.criteria.AhProjectCriteria;
 import com.bob.at.dto.help.ReturnCommonDTO;
+import com.bob.at.dto.help.YapiSendDTO;
 import com.bob.at.mapper.AhClassCodeMapper;
 import com.bob.at.mapper.AhFieldMapper;
 import com.bob.at.mapper.AhInterfaceMapper;
 import com.bob.at.mapper.AhProjectMapper;
 import com.bob.at.service.AhProjectService;
+import com.bob.at.util.CommandUtil;
 import com.bob.at.util.MyBeanUtil;
 import com.bob.at.web.rest.errors.CommonAlertException;
+import com.bob.at.web.rest.errors.CommonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -43,6 +53,9 @@ public class AhProjectServiceImpl extends ServiceImpl<AhProjectMapper, AhProject
 
     @Autowired
     private AhInterfaceMapper ahInterfaceMapper;
+
+    @Autowired
+    private YmlConfig ymlConfig;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -139,5 +152,41 @@ public class AhProjectServiceImpl extends ServiceImpl<AhProjectMapper, AhProject
                 }).collect(Collectors.toList());
         projectDTO.setAhClassCodeList(ahClassCodeList);
         projectDTO.setAhInterfaceList(ahInterfaceList);
+    }
+
+    @Override
+    public ReturnCommonDTO sendInterToYapi(YapiSendDTO yapiSendDTO) {
+        AhProject project = baseMapper.selectById(yapiSendDTO.getAhProjectId());
+        String yapiToken = project.getYapiToken();
+        String yapiUrl = project.getYapiUrl();
+        if (StrUtil.isBlank(yapiToken)) {
+            throw new CommonAlertException("工程没有设置yapiToken");
+        }
+        if (StrUtil.isBlank(yapiUrl)) {
+            throw new CommonAlertException("工程没有设置yapiUrl");
+        }
+        Date nowDate = new Date();
+        // 获取接口数据，并生成JSON文件名
+        String sendFileName = "yapi.json";
+        String bootFileName = "yapi-import.json";
+        // 相对路径
+        String relativePath = Constants.YAPI_JSON_FILE_UPLOAD_RELATIVE_PATH + new SimpleDateFormat("yyyyMMddHHmmssSSS").format(nowDate);
+        // 本地（服务器）绝对路径
+        String localPath = ymlConfig.getLocation() + File.separator + relativePath;
+        String localSendFileName = localPath + File.separator + sendFileName;
+        String localBootFileName = localPath + File.separator + bootFileName;
+        // 创建启动的json文件脚本
+        String bootContent = "{\"type\":\"swagger\",\"token\":\"" + yapiToken + "\",\"file\":\"" + sendFileName
+                + "\",\"merge\":\"good\",\"server\":\"" + yapiUrl + "\"}";
+        // 写入启动json和要传输的json文件
+        FileUtil.writeString(bootContent, localBootFileName, "UTF-8");
+        FileUtil.writeString(yapiSendDTO.getDataJson(), localSendFileName, "UTF-8");
+        // 执行
+        try {
+            CommandUtil.exeCmd("cd " + localPath + " && yapi import");
+        } catch (Exception e) {
+            throw new CommonException("命令执行失败", e);
+        }
+        return new ReturnCommonDTO();
     }
 }

@@ -207,7 +207,8 @@ function refreshProjects() {
                     var projectHtml = "<div identify='" + project.id + "' class='project' search='"
                         + project.name + "_" + project.descr + "' projectName='" + project.name
                         + "' projectDescr='" + project.descr + "' basePackage='" + project.basePackage
-                        + "' urlPrefix='" + project.urlPrefix + "'" + "title='" + project.descr
+                        + "' urlPrefix='" + project.urlPrefix + "' yapiToken='" + project.yapiToken
+                        + "' yapiUrl='" + project.yapiUrl + "' title='" + project.descr
                         + "' onclick='selectProject(this);'><span>" + project.name
                         + "</span><a href='#' style='margin-left: 10px; color: dodgerblue;' title='点击修改' "
                         + "onclick='openUpdateProjectDialog(this);'>M</a>"
@@ -311,11 +312,15 @@ function openUpdateProjectDialog(domObj) {
     var projectDescr = $(domObj).parent().attr("projectDescr");
     var urlPrefix = $(domObj).parent().attr("urlPrefix");
     var basePackage = $(domObj).parent().attr("basePackage");
+    var yapiToken = $(domObj).parent().attr("yapiToken");
+    var yapiUrl = $(domObj).parent().attr("yapiUrl");
     $("#projectDialog").find("input[name='id']").val(projectId);
     $("#projectDialog").find("input[name='name']").val(projectName);
     $("#projectDialog").find("input[name='descr']").val(projectDescr);
     $("#projectDialog").find("input[name='urlPrefix']").val(urlPrefix);
     $("#projectDialog").find("input[name='basePackage']").val(basePackage);
+    $("#projectDialog").find("input[name='yapiToken']").val(yapiToken);
+    $("#projectDialog").find("input[name='yapiUrl']").val(yapiUrl);
     // 弹对话框
     var updateButtons = {
         "修改": updateProject,

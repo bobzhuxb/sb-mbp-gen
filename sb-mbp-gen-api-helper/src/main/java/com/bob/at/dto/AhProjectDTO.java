@@ -27,6 +27,14 @@ public class AhProjectDTO extends BaseDTO {
     @Size(min = 1)
     private String basePackage;     // 基础包名
 
+    @NotBlank
+    @Size(min = 1)
+    private String yapiToken;     // Yapi的Token
+
+    @NotBlank
+    @Size(min = 1)
+    private String yapiUrl;     // Yapi的URL
+
     private String exceptClassNames;     // 导入排除的实体类
     
 	///////////////////////// 附加关联属性 /////////////////////////
@@ -70,6 +78,30 @@ public class AhProjectDTO extends BaseDTO {
         this.basePackage = basePackage;
     }
 
+    public String getYapiToken() {
+        return yapiToken;
+    }
+
+    public void setYapiToken(String yapiToken) {
+        this.yapiToken = yapiToken;
+    }
+
+    public String getYapiUrl() {
+        return yapiUrl;
+    }
+
+    public void setYapiUrl(String yapiUrl) {
+        this.yapiUrl = yapiUrl;
+    }
+
+    public String getExceptClassNames() {
+        return exceptClassNames;
+    }
+
+    public void setExceptClassNames(String exceptClassNames) {
+        this.exceptClassNames = exceptClassNames;
+    }
+
     public List<AhInterfaceDTO> getAhInterfaceList() {
         return ahInterfaceList;
     }
@@ -84,14 +116,6 @@ public class AhProjectDTO extends BaseDTO {
 
     public void setAhClassCodeList(List<AhClassCodeDTO> ahClassCodeList) {
         this.ahClassCodeList = ahClassCodeList;
-    }
-
-    public String getExceptClassNames() {
-        return exceptClassNames;
-    }
-
-    public void setExceptClassNames(String exceptClassNames) {
-        this.exceptClassNames = exceptClassNames;
     }
     // ================self code:自定义属性的get/set方法start=====================
     // ================self code:自定义属性的get/set方法end=====================
@@ -125,6 +149,8 @@ public class AhProjectDTO extends BaseDTO {
                 ", descr='" + getDescr() + "'" +
                 ", urlPrefix='" + getUrlPrefix() + "'" +
                 ", basePackage='" + getBasePackage() + "'" +
+                ", yapiToken='" + getYapiToken() + "'" +
+                ", yapiUrl='" + getYapiUrl() + "'" +
                 ", exceptClassNames='" + getExceptClassNames() + "'" +
                 ", insertTime='" + getInsertTime() + "'" +
                 ", updateTime='" + getUpdateTime() + "'" +

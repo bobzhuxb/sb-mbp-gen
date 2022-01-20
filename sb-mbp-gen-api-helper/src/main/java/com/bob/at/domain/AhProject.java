@@ -18,6 +18,10 @@ public class AhProject extends BaseDomain {
 
     private String basePackage;     // 基础包名
 
+    private String yapiToken;     // Yapi的Token
+
+    private String yapiUrl;     // Yapi的URL
+
     private String exceptClassNames;     // 导入排除的实体类
 
     public String getName() {
@@ -50,6 +54,22 @@ public class AhProject extends BaseDomain {
 
     public void setBasePackage(String basePackage) {
         this.basePackage = basePackage;
+    }
+
+    public String getYapiToken() {
+        return yapiToken;
+    }
+
+    public void setYapiToken(String yapiToken) {
+        this.yapiToken = yapiToken;
+    }
+
+    public String getYapiUrl() {
+        return yapiUrl;
+    }
+
+    public void setYapiUrl(String yapiUrl) {
+        this.yapiUrl = yapiUrl;
     }
 
     public String getExceptClassNames() {
@@ -88,7 +108,9 @@ public class AhProject extends BaseDomain {
                 ", descr='" + getDescr() + "'" +
                 ", urlPrefix='" + getUrlPrefix() + "'" +
                 ", basePackage='" + getBasePackage() + "'" +
-                ", basePackage='" + getBasePackage() + "'" +
+                ", yapiToken='" + getYapiToken() + "'" +
+                ", yapiUrl='" + getYapiUrl() + "'" +
+                ", exceptClassNames='" + getExceptClassNames() + "'" +
                 ", insertTime='" + getInsertTime() + "'" +
                 ", exceptClassNames='" + getExceptClassNames() + "'" +
                 "}";
@@ -100,6 +122,8 @@ public class AhProject extends BaseDomain {
     public static final String _descr = "descr";    // 描述
     public static final String _urlPrefix = "url_prefix";    // URL前缀
     public static final String _basePackage = "base_package";    // 基础包名
-    public static final String _exceptClassNames = "base_package";    // 导入排除的实体类
+    public static final String _yapiToken = "yapi_token";    // Yapi的Token
+    public static final String _yapiUrl = "yapi_url";    // Yapi的URL
+    public static final String _exceptClassNames = "except_class_names";    // 导入排除的实体类
 
 }
