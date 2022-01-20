@@ -1060,14 +1060,6 @@ function validAndGenYapiData() {
     responseMain.data = data;
     data.type = "object";
     data.description = "实际数据";
-    // 返回值中的真实信息
-    var resultProperties = new Map();
-    // TODO：写入返回数据.....
-    var fieldInfo = new Object();
-    fieldInfo.type = "string";
-    fieldInfo.description = "下架总数量";
-    resultProperties.set("outStockTotalCount", fieldInfo);
-    data.properties = mapToObj(resultProperties);
     // 返回数据解析
     var toObjectDataList = $("#toObject .to-data-line");
     // 重名验证
@@ -1082,25 +1074,93 @@ function validAndGenYapiData() {
         }
         fullNameSet.add(fullName);
     }
+    // 处理返回数据，按.分割，排序
+    var maxLevels = 0;
+    var toDataList = new Array();
     for (var i = 0; i < toObjectDataList.length; i++) {
-        var field = new Object();
         var toObjectData = toObjectDataList[i];
+        var toData = new Object();
+        var identify = $(toObjectData).attr("identify");
+        var parent = $(toObjectData).attr("parent");
         var finalName = $(toObjectData).attr("fullName");
         var type = $(toObjectData).attr("type");
         var descr = $(toObjectData).find(".to-descr").html();
-        if (type == "normal") {
-            type = null;
+        var nameLevels = finalName.split(".").length;
+        if (nameLevels > maxLevels) {
+            maxLevels = nameLevels;
         }
-        // 移除field的空值属性
-        removeNullProperty(field);
-        // 添加field
-        interInfoData.result.fieldList.push(field);
+        if (typeof(parent) == "undefined") {
+            parent = null;
+        }
+        toData.identify = identify;
+        toData.parent = parent;
+        toData.finalName = finalName;
+        toData.type = type;
+        toData.descr = descr;
+        toData.nameLevels = nameLevels;
+        toDataList.push(toData);
     }
-    // // 移除result的空值属性
-    // removeNullProperty(interInfoData.param);
-
+    // 将数据按指定格式组织
+    data.properties = formCurLevel(toDataList, 1, null);
     // 返回数据
     return yapiInfoData;
+}
+
+function formCurLevel(allToDataList, curLevel, parentIdentify) {
+    // 第curLevel层级的信息
+    var properties = new Map();
+    for (var i = 0; i < allToDataList.length; i++) {
+        var toData = allToDataList[i];
+        var identify = toData.identify;
+        var parent = toData.parent;
+        var finalName = toData.finalName;
+        var type = toData.type;
+        var descr = toData.descr;
+        var nameLevels = toData.nameLevels;
+        // 过滤掉非当前层级的数据
+        if (curLevel != nameLevels) {
+            continue;
+        }
+        // 过滤掉不是指定parentIdentify的子数据的行
+        if (parent != parentIdentify) {
+            continue;
+        }
+        var finalType = null;
+        if (type == "list") {
+            // 数组
+            finalType = "array";
+        } else if (type == "object") {
+            // 对象
+            finalType = "object";
+        } else {
+            // 普通数据，待优化
+            finalType = "string";
+        }
+        // 自述字段描述
+        var selfDescrObj = new Object();
+        selfDescrObj.type = finalType;
+        selfDescrObj.description = descr;
+        // 设置当前层级的属性
+        properties.set(finalName, selfDescrObj);
+        // list和object有下一层级
+        if (type == "list" || type == "object") {
+            // 递归调用其他层级，挂靠到当前父层级下
+            var childProperties = formCurLevel(allToDataList, curLevel + 1, identify);
+            if (type == "list") {
+                // 数组
+                selfDescrObj.items = new Object();
+                selfDescrObj.items.type = "object";
+                selfDescrObj.items.description = "条目";
+                selfDescrObj.items.properties = childProperties;
+            } else if (type == "object") {
+                // 对象
+                selfDescrObj.properties = childProperties;
+            }
+        }
+    }
+    // 第curLevel层级的转换
+    var propertiesObj = mapToObj(properties);
+    return propertiesObj;
 }
 
 /**
