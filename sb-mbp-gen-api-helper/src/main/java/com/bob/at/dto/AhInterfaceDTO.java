@@ -30,6 +30,10 @@ public class AhInterfaceDTO extends BaseDTO {
     @Size(min = 1)
     private String interDescr;    // 描述
 
+    @NotBlank
+    @Size(min = 1)
+    private String yapiTags;    // Yapi的Tags
+
     @Size(min = 1)
     private String returnType;    // 返回类型全名
 
@@ -85,6 +89,14 @@ public class AhInterfaceDTO extends BaseDTO {
 
     public void setInterDescr(String interDescr) {
         this.interDescr = interDescr;
+    }
+
+    public String getYapiTags() {
+        return yapiTags;
+    }
+
+    public void setYapiTags(String yapiTags) {
+        this.yapiTags = yapiTags;
     }
 
     public String getReturnType() {
@@ -152,6 +164,7 @@ public class AhInterfaceDTO extends BaseDTO {
                 ", httpMethod='" + getHttpMethod() + "'" +
                 ", addDefaultPrefix='" + getAddDefaultPrefix() + "'" +
                 ", interDescr='" + getInterDescr() + "'" +
+                ", yapiTags='" + getYapiTags() + "'" +
                 ", dataJson='" + getDataJson() + "'" +
                 ", insertTime='" + getInsertTime() + "'" +
                 ", updateTime='" + getUpdateTime() + "'" +

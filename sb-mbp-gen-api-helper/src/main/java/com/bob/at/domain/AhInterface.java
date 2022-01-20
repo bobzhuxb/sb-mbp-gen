@@ -20,6 +20,8 @@ public class AhInterface extends BaseDomain {
 
     private String interDescr;    // 描述
 
+    private String yapiTags;    // Yapi的Tags
+
     private String returnType;    // 返回类型全名
 
     private String dataJson;    // 配置JSON
@@ -64,6 +66,14 @@ public class AhInterface extends BaseDomain {
 
     public void setInterDescr(String interDescr) {
         this.interDescr = interDescr;
+    }
+
+    public String getYapiTags() {
+        return yapiTags;
+    }
+
+    public void setYapiTags(String yapiTags) {
+        this.yapiTags = yapiTags;
     }
 
     public String getReturnType() {
@@ -119,6 +129,7 @@ public class AhInterface extends BaseDomain {
                 ", httpMethod='" + getHttpMethod() + "'" +
                 ", addDefaultPrefix='" + getAddDefaultPrefix() + "'" +
                 ", interDescr='" + getInterDescr() + "'" +
+                ", yapiTags='" + getYapiTags() + "'" +
                 ", dataJson='" + getDataJson() + "'" +
                 ", insertTime='" + getInsertTime() + "'" +
                 ", updateTime='" + getUpdateTime() + "'" +
@@ -133,6 +144,7 @@ public class AhInterface extends BaseDomain {
     public static final String _httpMethod = "http_method";    // Http方法
     public static final String _addDefaultPrefix = "add_default_prefix";    // 是否有默认前缀
     public static final String _interDescr = "inter_descr";    // 描述
+    public static final String _yapiTags = "yapi_tags";    // Yapi的Tags
     public static final String _dataJson = "data_json";    // 配置JSON
     public static final String _ahProjectId = "ah_project_id";    // 项目ID
 

@@ -113,8 +113,8 @@ function initLayoutWest() {
     });
     projectDialog = $("#projectDialog").dialog({
         autoOpen: false,
-        height: 300,
-        width: 350,
+        height: 350,
+        width: 400,
         modal: true,
         close: function() {
             projectAddForm[0].reset();
@@ -1226,6 +1226,7 @@ function saveInterface(successCallback) {
     interParam.interDescr = interInfoData.interDescr;
     interParam.returnType = interInfoData.returnType;
     interParam.dataJson = interInfoJson;
+    interParam.yapiTags = emptyStringToNull($("#baseInfo").find("input[name='yapiTags']").val());
     interParam.ahProjectId = projectSelected.id;
     // 保存数据
     showLoading("body");

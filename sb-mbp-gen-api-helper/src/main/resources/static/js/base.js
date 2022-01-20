@@ -20,4 +20,5 @@ function refreshBaseData() {
     $("select[name='addDefaultPrefix']").val(interfaceSelected.addDefaultPrefix);
     $("input[name='httpUrl']").val(interfaceSelected.httpUrl);
     $("input[name='interDescr']").val(interfaceSelected.interDescr);
+    $("input[name='yapiTags']").val(interfaceSelected.yapiTags);
 }
