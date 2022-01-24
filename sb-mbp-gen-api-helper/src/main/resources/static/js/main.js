@@ -891,9 +891,11 @@ function validAndGenInterData() {
     interInfoData.httpUrl = emptyStringToNull($("#baseInfo").find("input[name='httpUrl']").val());
     interInfoData.interDescr = emptyStringToNull($("#baseInfo").find("input[name='interDescr']").val());
     interInfoData.returnType = emptyStringToNull(returnTypeName);
+    var yapiTag = emptyStringToNull($("#baseInfo").find("input[name='yapiTags']").val());
     if (interInfoData.interNo == null || interInfoData.httpMethod == null || interInfoData.addDefaultPrefix == null
-        || interInfoData.httpUrl == null || interInfoData.interDescr == null || interInfoData.returnType == null) {
-        toastWarn("接口号、接口方法、追加默认前缀、接口URL、接口描述、接口返回类型不允许为空");
+        || interInfoData.httpUrl == null || interInfoData.interDescr == null || interInfoData.returnType == null
+        || yapiTag == null) {
+        toastWarn("接口号、接口方法、追加默认前缀、接口URL、接口描述、所属Yapi分类、接口返回类型不允许为空");
         return;
     }
     // 2、参数信息
