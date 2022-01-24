@@ -28,20 +28,24 @@ public class CommandUtil {
         }
     }
 
-    public static void exeCmd(String commandStr)  {
+    public static void exeCmd(String commandStr) throws Exception {
         Process process = null;
-        String cmd = getOsCmd()+ commandStr;
+        String osCmd = getOsCmd();
         try {
-            process = Runtime.getRuntime().exec(cmd);
+            if (osCmd.startsWith("cmd ")) {
+                process = Runtime.getRuntime().exec(osCmd + commandStr);
+            } else {
+                String[] commandArr = { "/bin/sh", "-c", commandStr};
+                process = Runtime.getRuntime().exec(commandArr);
+            }
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line = null;
             while ((line = bufferedReader.readLine()) != null) {
-                System.out.println(new String(line.getBytes(),"GBK"));
+                System.out.println(new String(line.getBytes(),"UTF-8"));
             }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        finally {
+        } catch (Exception e) {
+            throw e;
+        } finally {
             process.destroy();
         }
     }
@@ -49,10 +53,10 @@ public class CommandUtil {
     public static String getOsCmd(){
         Properties props=System.getProperties(); //获得系统属性集
         String osName = props.getProperty("os.name"); //操作系统名称
-        if(osName.toLowerCase().contains("linux")){
-            return "/bin/sh -c";
-        }else if(osName.toLowerCase().contains("windows")){
-            return "cmd /c";
+        if (osName.toLowerCase().contains("linux")) {
+            return "/bin/sh -c ";
+        } else if(osName.toLowerCase().contains("windows")) {
+            return "cmd /c ";
         }else{
             throw new RuntimeException("服务器不是linux|windows操作系统");
         }

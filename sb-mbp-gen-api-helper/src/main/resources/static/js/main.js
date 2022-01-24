@@ -1146,6 +1146,9 @@ function formCurLevel(allToDataList, curLevel, parentIdentify) {
         selfDescrObj.type = finalType;
         selfDescrObj.description = descr;
         // 设置当前层级的属性
+        if (finalName.indexOf(".") >= 0) {
+            finalName = finalName.substring(finalName.lastIndexOf(".") + 1);
+        }
         properties.set(finalName, selfDescrObj);
         // list和object有下一层级
         if (type == "list" || type == "object") {
