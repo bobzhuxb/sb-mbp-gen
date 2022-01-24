@@ -2,6 +2,8 @@ package com.bob.at.aop.exception;
 
 import com.alibaba.fastjson.JSONException;
 import com.bob.at.dto.help.ReturnCommonDTO;
+import com.bob.at.util.HttpUtil;
+import com.bob.at.web.rest.errors.BadRequestAlertException;
 import com.bob.at.web.rest.errors.CommonAlertException;
 import com.bob.at.web.rest.errors.CommonException;
 import org.slf4j.Logger;
@@ -42,6 +44,18 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * 拦截请求错误（不记录错误日志）
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(BadRequestAlertException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ReturnCommonDTO handleRequestFault(BadRequestAlertException ex) {
+        String message = ex.getMessage();
+        return new ReturnCommonDTO("-996", message);
+    }
+
+    /**
      * 拦截JSON解析错误（记录错误日志）
      * @param ex
      * @return
@@ -50,7 +64,8 @@ public class GlobalExceptionHandler {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ReturnCommonDTO handleJsonParseFault(HttpServletRequest request, JSONException ex) {
         String message = "请求错误，请确认JSON格式";
-        log.error(message, ex);
+        String messageDetail = "JSON解析错误\r\n" + HttpUtil.getRequestDetailInfo(request);
+        log.error(messageDetail, ex);
         return new ReturnCommonDTO("-995", message);
     }
 
@@ -63,7 +78,8 @@ public class GlobalExceptionHandler {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ReturnCommonDTO handleHttpMessageNotReadableFault(HttpServletRequest request, HttpMessageNotReadableException ex) {
         String message = "请求错误，请确认HTTP Body的数据";
-        log.error(message, ex);
+        String messageDetail = "HTTP请求错误\r\n" + HttpUtil.getRequestDetailInfo(request);
+        log.error(messageDetail, ex);
         return new ReturnCommonDTO("-994", message);
     }
 
@@ -76,7 +92,8 @@ public class GlobalExceptionHandler {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ReturnCommonDTO handleContentTypeFault(HttpServletRequest request, HttpMediaTypeNotSupportedException ex) {
         String message = "请求的Content-Type不正确";
-        log.error(message, ex);
+        String messageDetail = "请求的Content-Type不正确：\r\n" + HttpUtil.getRequestDetailInfo(request);
+        log.error(messageDetail, ex);
         return new ReturnCommonDTO("-993", message);
     }
 
@@ -89,7 +106,8 @@ public class GlobalExceptionHandler {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ReturnCommonDTO handleContentTypeNotAcceptableFault(HttpServletRequest request, HttpMediaTypeNotAcceptableException ex) {
         String message = "请求的Content-Type被禁止";
-        log.error(message, ex);
+        String messageDetail = "请求的Content-Type被禁止：" + "\r\n" + HttpUtil.getRequestDetailInfo(request);
+        log.error(messageDetail, ex);
         return new ReturnCommonDTO("-992", message);
     }
 
@@ -102,20 +120,40 @@ public class GlobalExceptionHandler {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ReturnCommonDTO handleBindFault(HttpServletRequest request, BindException ex) {
         String message = "请求参数转换错误";
-        log.error(message, ex);
+        String messageDetail = "参数转换错误：" + "\r\n" + HttpUtil.getRequestDetailInfo(request);
+        log.error(messageDetail, ex);
         return new ReturnCommonDTO("-991", message);
     }
 
     /**
-     * 拦截业务错误
+     * 拦截业务错误（不记录错误日志）
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(CommonAlertException.class)
+    @ResponseStatus(value = HttpStatus.OK)
+    public ReturnCommonDTO handleBusinessFault(CommonAlertException ex) {
+        String code = ex.getCode();
+        String message = ex.getMessage();
+        return new ReturnCommonDTO(code, message);
+    }
+
+    /**
+     * 拦截业务异常（记录错误日志）
      * @param ex
      * @return
      */
     @ExceptionHandler(CommonException.class)
     @ResponseStatus(value = HttpStatus.OK)
-    public ReturnCommonDTO handleBusinessFault(CommonException ex) {
+    public ReturnCommonDTO handleBusinessError(HttpServletRequest request, CommonException ex) {
         String code = ex.getCode();
         String message = ex.getMessage();
+        String messageDetail = message;
+        if (ex.getErrDetail() != null && !"".equals(ex.getErrDetail().trim())) {
+            messageDetail += " ==> " + ex.getErrDetail();
+        }
+        messageDetail += "\r\n" + HttpUtil.getRequestDetailInfo(request);
+        log.error(messageDetail, ex);
         return new ReturnCommonDTO(code, message);
     }
 
@@ -127,8 +165,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     public ReturnCommonDTO handleUnexpectedServer(HttpServletRequest request, Exception ex) {
-        String message = "系统错误";
-        log.error(message, ex);
+        String messageDetail = "系统异常：" + "\r\n" + HttpUtil.getRequestDetailInfo(request);
+        log.error(messageDetail, ex);
         return new ReturnCommonDTO("-999", "系统错误");
     }
 

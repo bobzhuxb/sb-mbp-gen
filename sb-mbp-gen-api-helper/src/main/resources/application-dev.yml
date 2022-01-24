@@ -12,7 +12,7 @@ spring:
         password: 123456
     http:
         multipart:
-            location: D:/localFile/apihelper
+            location: D:\localFile\apihelper
 
 server:
     port: 9090
