@@ -43,7 +43,7 @@ function removeNullProperty(obj, excludeProList) {
         if (typeof(excludeProList) != "undefined" && excludeProList.includes(item)) {
             return;
         }
-        if (!obj[item]) {
+        if (obj[item] != 0 && !obj[item]) {
             delete obj[item];
         }
     });
