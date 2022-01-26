@@ -92,9 +92,11 @@ function loadDataJsonToObject() {
         var sortedFieldList = new Array();
         // Key：field所在的from全路径  Value：field的实际类型
         var fieldPathTypeMap = new Map();
+        // Key：分页field所在的from全路径  Value：field的实际类型
+        var pageTypeMap = new Map();
         fieldPathTypeMap.set("-", searchFullClassName);
         // 从第1层级开始处理fromName，形成Map
-        sortFieldFromMap(fieldPathTypeMap, fieldList, 1);
+        sortFieldFromMap(fieldPathTypeMap, pageTypeMap, fieldList, 1);
         // 从第1层级开始处理，根据name（to）进行排序
         var result = sortFieldList(fieldPathTypeMap, fieldList, sortedFieldList, 1);
         if (!result || sortedFieldList == null || sortedFieldList.length == 0) {
@@ -176,7 +178,7 @@ function loadDataJsonToObject() {
 /**
  * 用于为sortedFieldList生成fieldPathTypeMap
  */
-function sortFieldFromMap(fieldPathTypeMap, fieldList, processingLevel) {
+function sortFieldFromMap(fieldPathTypeMap, pageTypeMap, fieldList, processingLevel) {
     for (var i = 0; i < fieldList.length; i++) {
         var field = fieldList[i];
         // from全路径名
@@ -200,7 +202,7 @@ function sortFieldFromMap(fieldPathTypeMap, fieldList, processingLevel) {
         }
         var parentTypeName = fieldPathTypeMap.get(key);
         // 根据oriFullName查找fieldRealTypeName
-        var fieldRealTypeName = getFieldRealTypeName(oriFullName, parentTypeName);
+        var fieldRealTypeName = getFieldRealTypeName(oriFullName, parentTypeName, fieldPathTypeMap, pageTypeMap);
         if (fieldRealTypeName == null) {
             return false;
         }
@@ -221,7 +223,7 @@ function sortFieldFromMap(fieldPathTypeMap, fieldList, processingLevel) {
     }
     // 未处理完成，则继续处理下一层级，处理完成则结束
     if (!allProcessed) {
-        var result = sortFieldFromMap(fieldPathTypeMap, fieldList, processingLevel + 1);
+        var result = sortFieldFromMap(fieldPathTypeMap, pageTypeMap, fieldList, processingLevel + 1);
         if (!result) {
             return false;
         }
@@ -319,7 +321,7 @@ function sortFieldList(fieldPathTypeMap, fieldList, sortedFieldList, processingL
 /**
  * 根据来源全路径名获取field类型全称
  */
-function getFieldRealTypeName(oriFullPathName, nowClassTypeName) {
+function getFieldRealTypeName(oriFullPathName, nowClassTypeName, fieldPathTypeMap, pageTypeMap) {
     var fullPathNameArr = oriFullPathName.split(".");
     // 找到对应的classCode
     var classCodeList = projectSelected.ahClassCodeList;
@@ -345,15 +347,20 @@ function getFieldRealTypeName(oriFullPathName, nowClassTypeName) {
         // 字段名称
         var fieldName = field.fieldName;
         // 获取field的实际类型
-        var typeName = field.typeName;
-        var fieldRealTypeName = typeName;
-        if (fieldRealTypeName == "java.util.List"
-                || fieldRealTypeName == projectSelected.packageName + ".IPage"
-                || fieldRealTypeName == projectSelected.packageName + ".MbpPage") {
+        var fieldRealTypeName = field.typeName;
+        if (fieldRealTypeName == "java.util.List") {
             fieldRealTypeName = field.genericTypeName;
+        }
+        if (fieldRealTypeName == projectSelected.basePackage + ".IPage"
+                || fieldRealTypeName == projectSelected.basePackage + ".MbpPage") {
+            pageTypeMap.set(oriFullPathName + ".records", field.genericTypeName);
         }
         if (fullPathNameArr[fullPathNameArr.length - 1] == fieldName) {
             // 找到了对应的字段，返回当前字段的类型
+            if (fieldRealTypeName == "T") {
+                // IPage类型的特殊处理
+                fieldRealTypeName = pageTypeMap.get(oriFullPathName);
+            }
             return fieldRealTypeName;
         }
     }
