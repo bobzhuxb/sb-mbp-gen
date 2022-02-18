@@ -1,8 +1,0 @@
-{
-    "httpMethod": "GET",
-    "httpUrl": "/api/authenticate",
-    "interDescr": "判断当前请求是否已登录",
-    "result":{
-        "string": "登录的用户"
-    }
-}
