@@ -37,6 +37,8 @@ import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
@@ -515,7 +517,20 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                                         }
                                     } else {
                                         // Filter类别的参数（最后一层）或普通类别的参数
-                                        if ("class java.lang.String".equals(field.getGenericType().toString())) {
+                                        if ("FIELD_TYPE".equals(field.getGenericType().toString())) {
+                                            ParameterizedType pt = (ParameterizedType) objIter.getClass().getGenericSuperclass();
+                                            Type[] actualTypes = pt.getActualTypeArguments();
+                                            String fileRealTypeName = actualTypes[0].getTypeName();
+                                            if ("java.lang.String".equals(fileRealTypeName)) {
+                                                field.set(objIter, value);
+                                            } else if ("java.lang.Integer".equals(fileRealTypeName)) {
+                                                field.set(objIter, Integer.parseInt(value));
+                                            } else if ("java.lang.Double".equals(fileRealTypeName)) {
+                                                field.set(objIter, Double.parseDouble(value));
+                                            } else {
+                                                field.set(objIter, value);
+                                            }
+                                        } else if ("class java.lang.String".equals(field.getGenericType().toString())) {
                                             field.set(objIter, value);
                                         } else if ("class java.lang.Integer".equals(field.getGenericType().toString())) {
                                             field.set(objIter, Integer.parseInt(value));
