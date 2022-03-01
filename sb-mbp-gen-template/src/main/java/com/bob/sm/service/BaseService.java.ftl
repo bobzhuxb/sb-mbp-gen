@@ -242,7 +242,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         try {
             criteria = (C)criteriaClass.newInstance();
         } catch (Exception e) {
-            throw new CommonException(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
         MyBeanUtil.copyNonNullProperties(baseCriteria, criteria);
         Wrapper<T> wrapper = baseGetWrapper(entityTypeName, null, criteria, appendParamMap, null, null, null);
@@ -429,7 +429,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
             try {
                 criteriaFieldObj = criteriaField.get(criteria);
             } catch (Exception e) {
-                throw new CommonException("获取字段" + fieldName + "异常");
+                throw new RuntimeException("获取字段" + fieldName + "异常");
             }
             // 只处理BaseCriteria子类对象的属性
             if (criteriaFieldObj != null && criteriaFieldObj instanceof BaseCriteria) {
@@ -448,10 +448,10 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                         columnNameField.setAccessible(true);
                         joinColumnName = columnNameField.get(domainClass);
                     } catch (Exception e) {
-                        throw new CommonException("获取字段_" + fieldName + "Id异常");
+                        throw new RuntimeException("获取字段_" + fieldName + "Id异常");
                     }
                     if (joinColumnName == null) {
-                        throw new CommonException("字段_" + fieldName + "Id值为空");
+                        throw new RuntimeException("字段_" + fieldName + "Id值为空");
                     }
                     // 上级级联
                     joinSubSql += " LEFT JOIN " + GlobalCache.getServiceMap().get(fieldDomainName).baseFormJoinTable(
@@ -474,10 +474,10 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                                 columnNameField.setAccessible(true);
                                 selfJoinColumnName = columnNameField.get(toDomainClass);
                             } catch (Exception e) {
-                                throw new CommonException("获取字段_" + fieldName + "Id异常");
+                                throw new RuntimeException("获取字段_" + fieldName + "Id异常");
                             }
                             if (selfJoinColumnName == null) {
-                                throw new CommonException("字段_" + fieldName + "Id值为空");
+                                throw new RuntimeException("字段_" + fieldName + "Id值为空");
                             }
                             // 往下级联
                             joinSubSql += " LEFT JOIN " + GlobalCache.getServiceMap().get(fieldDomainName).baseFormJoinTable(
@@ -794,7 +794,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                             normalCriteriaList);
                 }
             } catch (Exception e) {
-                throw new CommonException(e.getMessage());
+                throw new RuntimeException(e.getMessage());
             }
         }
         if (firstStackElement) {
@@ -877,7 +877,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                 }
             }
         } catch (Exception e) {
-            throw new CommonException(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -1210,7 +1210,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         try {
             entity = (T)entityClass.newInstance();
         } catch (Exception e) {
-            throw new CommonException(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
         MyBeanUtil.copyNonNullProperties(dto, entity);
         // 新增或更新当前实体
@@ -1265,7 +1265,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     try {
                         relationIdField.set(subDTO, dtoId);
                     } catch (Exception e) {
-                        throw new CommonException(e.getMessage());
+                        throw new RuntimeException(e.getMessage());
                     }
                     if (subDTO.getId() == null) {
                         // 新增：设置创建人和创建时间
@@ -1280,8 +1280,10 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
                     // 级联保存
                     GlobalCache.getServiceMap().get(relationDTO.getToType()).baseSave(relationDTO.getToType(), subDTO, new HashMap<>());
                 });
+            } catch (CommonException e) {
+                throw e;
             } catch (Exception e) {
-                throw new CommonException(e.getMessage());
+                throw new RuntimeException(e.getMessage());
             }
         }
         // 所有保存完成后的操作
@@ -1754,7 +1756,7 @@ public interface BaseService<T extends BaseDomain, C extends BaseCriteria, O ext
         try {
             dto = (O)dtoClass.newInstance();
         } catch (Exception e) {
-            throw new CommonException(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
         MyBeanUtil.copyNonNullProperties(entity, dto);
         ((BaseService)AopContext.currentProxy()).baseGetAssociationsAll(entityTypeName, dto, criteria,
