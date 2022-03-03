@@ -778,6 +778,28 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
             // 追加子层级的数据
             List<ApiAdapterResultFieldDTO> nextLevelConfigList = new ArrayList<>();
             formReturnConfigTree(nextLevelConfigList, newName, fieldConfigSortList, levelLoop + 1);
+            // 分页数据的特殊处理
+            String fromName = fieldConfigSort.getFromName();
+            if (fromName != null && fromName.endsWith("pageData")) {
+                // IPage类型的特例处理
+                List<ApiAdapterResultFieldDTO> pageRecordsFieldList = new ArrayList<>();
+                for (ApiAdapterResultFieldDTO subFieldDTO : nextLevelConfigList) {
+                    String pageFromName = subFieldDTO.getFromName();            // 配置的fromName
+                    if (pageFromName.endsWith(".records")) {
+                        pageRecordsFieldList = subFieldDTO.getSubFieldList();     // records实例的属性
+                        // IPage已经过滤掉两层属性，需要修改属性全路径名以便于获取值
+                        Optional.ofNullable(pageRecordsFieldList).orElse(new ArrayList<>())
+                                .stream().forEach(pageRecordsField -> {
+                            String pageFieldFromName = pageRecordsField.getFromName();
+                            // 过滤两层
+                            pageFieldFromName = pageFieldFromName.substring(pageFieldFromName.indexOf(".") + 1);
+                            pageFieldFromName = pageFieldFromName.substring(pageFieldFromName.indexOf(".") + 1);
+                            pageRecordsField.setFromName(pageFieldFromName);
+                        });
+                        break;
+                    }
+                }
+            }
             fieldConfigSort.setSubFieldList(nextLevelConfigList);
         }
     }
@@ -804,11 +826,26 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
                 Object newObjIterNow = null;
                 if ("object".equals(newType)) {
                     // 转换后当前层是Object
-                    newObjIterNow = new JSONObject();
-                    // 还有下一层
-                    if (subFieldList != null) {
-                        // 继续往下迭代，塞数据
-                        formNewReturnData(subFieldList, newObjIterNow, currentLevel + 1, oldObjIter, indexList);
+                    // 获取对应的Object
+                    Object realData = getDataFromOldReturn(oldName, oldObjIter, indexList);
+                    if (realData instanceof IPage) {
+                        // IPage类型的特例处理
+                        List<ApiAdapterResultFieldDTO> pageRecordsFieldList = new ArrayList<>();
+                        for (ApiAdapterResultFieldDTO subFieldDTO : subFieldList) {
+                            String pageFromName = subFieldDTO.getFromName();            // 配置的fromName
+                            if (pageFromName.endsWith(".records")) {
+                                pageRecordsFieldList = subFieldDTO.getSubFieldList();     // records实例的属性
+                                break;
+                            }
+                        }
+                        newObjIterNow = pageDataForm(realData, pageRecordsFieldList, currentLevel + 2, indexList);
+                    } else {
+                        newObjIterNow = new JSONObject();
+                        // 还有下一层
+                        if (subFieldList != null) {
+                            // 继续往下迭代，塞数据
+                            formNewReturnData(subFieldList, newObjIterNow, currentLevel + 1, oldObjIter, indexList);
+                        }
                     }
                 } else if ("list".equals(newType)) {
                     // 转换后当前层是List
