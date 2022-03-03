@@ -1,5 +1,6 @@
 package ${packageName}.service.impl;
 
+import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -37,6 +38,7 @@ import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
@@ -876,6 +878,11 @@ public class ApiAdapterServiceImpl implements ApiAdapterService {
             if (oldField != null) {
                 oldField.setAccessible(true);
                 Object oldFieldData = oldField.get(oldObjIter);
+                if (oldField.getGenericType().getTypeName().startsWith("com.baomidou.mybatisplus.core.metadata.IPage")) {
+                    String methodName = "get" + oldNameSingle.substring(0, 1).toUpperCase() + oldNameSingle.substring(1);
+                    Method oldMethod = ClassUtil.getDeclaredMethod(oldObjIter.getClass(), methodName, null);
+                    oldFieldData = oldMethod.invoke(oldObjIter);
+                }
                 if (i != oldNames.length - 1) {
                     // 前面几层的参数
                     if (oldFieldData instanceof List && ((List)oldFieldData).size() > 0) {
